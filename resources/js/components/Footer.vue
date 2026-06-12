@@ -9,12 +9,12 @@ import AppLogo from './AppLogo.vue';
                 <div
                     class="flex flex-col items-center text-center md:col-span-5 md:items-start md:text-left"
                 >
-                    <AppLogo/>
+                    <AppLogo />
                     <p
                         class="mt-4 max-w-sm text-sm leading-relaxed text-slate-500"
                     >
-                        Empowering the next generation of students with
-                        high quality, direct, and accessible academic resources.
+                        Empowering the next generation of students with high
+                        quality, direct, and accessible academic resources.
                     </p>
                     <p
                         class="mt-4 hidden text-xs font-medium text-slate-400 md:block"
@@ -59,11 +59,11 @@ import AppLogo from './AppLogo.vue';
                             </li>
                             <li>
                                 <a
-                                    href="https://go.tajimz.xyz/community"
+                                    href="/about-us"
                                     target="_blank"
                                     class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
-                                    Community
+                                    About us
                                 </a>
                             </li>
                         </ul>
