@@ -14,11 +14,14 @@ Route::inertia('/join', 'platform/JoinTeam');
 Route::inertia('/about-us', 'platform/AboutUs');
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
-
+    
     Route::get('/subjects', [AdminSubjectController::class, 'index'])->name("subjects.index");
     Route::get('/subjects/create', [AdminSubjectController::class, 'create'])->name("subjects.create");
     Route::post('/subjects', [AdminSubjectController::class, 'store'])->name("subjects.store");
 
+    Route::get('/subjects/{subject:slug}/nodes/create', [AdminNodeController::class, 'create'])->name('nodes.create');
+    Route::post('/subjects/{subject}/nodes', [AdminNodeController::class, 'store'])->name('nodes.store');
+    Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
 });
 
 Route::get('/', [SubjectController::class, 'index']);
