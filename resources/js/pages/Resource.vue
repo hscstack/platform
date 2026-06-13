@@ -14,7 +14,6 @@ defineProps({
     },
 });
 
-// Safe browser back trigger
 const handleBack = () => {
     if (typeof window !== 'undefined') {
         window.history.back();
@@ -80,7 +79,7 @@ const handleBack = () => {
                     Unsupported Preview: <span class="capitalize text-indigo-600">{{ resource.resource_type }}</span>
                 </h3>
                 <p class="mx-auto mt-2 max-w-sm text-xs font-medium text-slate-500 sm:text-sm">
-                    This file configuration isn't built for inline web reading. Grab a direct copy to view it on your system.
+                    The file can't be shown here. Please download.
                 </p>
 
                 <div class="mt-6 flex justify-center">
@@ -92,7 +91,7 @@ const handleBack = () => {
                         class="inline-flex touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98]"
                     >
                         <Download class="h-4 w-4 stroke-[2.5]" />
-                        Download File Resource
+                        Download
                     </a>
                     <div 
                         v-else 

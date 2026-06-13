@@ -74,7 +74,8 @@ const handleBack = () => {
                 </a>
 
                 <Link
-                    href="#"
+                    v-if="parent?.id"
+                    :href="`/admin/resources/create?node_id=${parent.id}`"
                     type="button"
                     class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700"
                 >
