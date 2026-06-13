@@ -13,13 +13,10 @@ const props = defineProps({
     resources: Array,
 });
 
-const totalItemsCount = computed(() => {
-    const nodesCount = props.nodes?.length || 0;
-    const resourcesCount = props.resources.length;
-    return nodesCount + resourcesCount;
-});
-
-
+const crumbs = computed(() => props.breadcrumb ?? []);
+const currentTitle = computed(() => crumbs.value.at(-1)?.name ?? props.subject?.name);
+const parentTitle = computed(() => crumbs.value.at(-2)?.name ?? props.subject?.name);
+const totalItemsCount = computed(() => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0));
 </script>
 
 <template>
@@ -29,19 +26,16 @@ const totalItemsCount = computed(() => {
         <BreadcrumbNav :subject="subject" :breadcrumb="breadcrumb" />
 
         <header class="mb-8">
-            <h1
-                class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl"
-            >
-                {{ props.subject?.name }}
+            <h1 class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                {{ currentTitle }}
             </h1>
             <p class="mt-1.5 text-sm font-semibold text-slate-400">
+                <span v-if="crumbs.length">{{ parentTitle }} · </span>
                 {{ totalItemsCount }} Items Total
             </p>
         </header>
 
-        <div
-            class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
-        >
+        <div class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div
                 class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-3.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6"
             >
@@ -51,19 +45,9 @@ const totalItemsCount = computed(() => {
 
             <div class="flex-1 divide-y divide-slate-100">
                 <template v-if="totalItemsCount > 0">
-                    <NodeRow
-                        v-for="node in props.nodes"
-                        :key="`node-${node.id}`"
-                        :node="node"
-                    />
-
-                    <ResourceRow
-                        v-for="resource in resources"
-                        :key="`resource-${resource.id}`"
-                        :resource="resource"
-                    />
+                    <NodeRow v-for="node in nodes" :key="`node-${node.id}`" :node="node" />
+                    <ResourceRow v-for="resource in resources" :key="`resource-${resource.id}`" :resource="resource" />
                 </template>
-
                 <EmptyState v-else />
             </div>
         </div>
