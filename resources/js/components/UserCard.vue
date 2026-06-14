@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Github, Facebook } from 'lucide-vue-next';
 
-const props = defineProps({
+defineProps({
     member: Object,
 });
 

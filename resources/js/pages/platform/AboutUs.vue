@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import UserCard from '@/components/UserCard.vue';
 import { Link } from '@inertiajs/vue3';
 import { ArrowLeft} from 'lucide-vue-next';
+import UserCard from '@/components/UserCard.vue';
 
 defineProps({
     users: Array,

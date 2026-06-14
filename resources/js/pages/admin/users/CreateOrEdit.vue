@@ -2,7 +2,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { UserPlus, Loader2, Save } from 'lucide-vue-next';
 
-const props = defineProps({
+defineProps({
     user: Object,
 });
 
@@ -12,7 +12,6 @@ const roles = [
     { value: 'editor', label: 'Editor' },
 ];
 
-console.log(props.user);
 
 const form = useForm({
     name: props.user?.name || '',
