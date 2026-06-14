@@ -35,7 +35,7 @@ class NodeController extends Controller
 
         $nodes = Node::where('parent_id', $node->id)
             ->orderBy('sort_order')
-            ->withCount('children')
+            ->withCount(['children', 'resources'])
             ->get(['id', 'name', 'slug']);
 
         $resources = $node->resources()->get();
