@@ -103,4 +103,16 @@ class ResourceController extends Controller
 
         return redirect($redirect)->with('success', 'Resource updated successfully.');
     }
+
+    public function destroy(Resource $resource)
+    {
+        if ($resource->file_url) {
+            $oldPath = str_replace('/storage/', '', parse_url($resource->file_url, PHP_URL_PATH));
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $resource->delete();
+
+        return redirect()->back()->with('success', 'Resource deleted successfully.');
+    }
 }

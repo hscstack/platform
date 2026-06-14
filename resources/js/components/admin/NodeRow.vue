@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { Folder, Pencil } from 'lucide-vue-next';
+import { Link, router } from '@inertiajs/vue3';
+import { Folder, Pencil, Trash2 } from 'lucide-vue-next';
 
 const { node } = defineProps({
     node: Object,
 });
+
+const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this Folder?')) {
+        router.delete(`/admin/nodes/${node.id}`);
+    }
+};
 </script>
 
 <template>
-    <Link
-        :href="`${$page.url}/${node.slug}`"
-        class="group relative flex flex-col items-center justify-center rounded-xl border border-transparent p-2 text-center transition-all duration-200 hover:border-indigo-100/60 hover:bg-slate-50/60 hover:shadow-sm active:scale-95"
+    <div
+        @click="router.visit(`${$page.url}/${node.slug}`)"
+        class="group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border border-transparent p-2 text-center transition-all duration-200 hover:border-indigo-100/60 hover:bg-slate-50/60 hover:shadow-sm active:scale-95"
     >
         <div
-            class="absolute top-1 right-1 z-10 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100"
+            class="absolute top-1 right-1 z-10 flex gap-1 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100"
             @click.stop
         >
             <Link
@@ -24,6 +30,16 @@ const { node } = defineProps({
                 <Pencil class="h-2.5 w-2.5" :stroke-width="2.2" />
                 <span>Edit</span>
             </Link>
+
+            <button
+                type="button"
+                @click="handleDelete"
+                class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                title="Delete Node"
+            >
+                <Trash2 class="h-2.5 w-2.5" :stroke-width="2.2" />
+                <span>Delete</span>
+            </button>
         </div>
 
         <div
@@ -40,7 +56,5 @@ const { node } = defineProps({
                 {{ node.name }}
             </span>
         </div>
-    </Link>
+    </div>
 </template>
-
-<style scoped></style>

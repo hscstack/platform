@@ -178,4 +178,12 @@ class NodeController extends Controller
 
         return redirect($redirect)->with('success', 'Node updated successfully.');
     }
+
+    public function destroy(Node $node)
+    {
+
+        $node->delete();
+
+        return redirect()->back()->with('success', 'Node deleted successfully.');
+    }
 }

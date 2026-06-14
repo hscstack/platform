@@ -86,4 +86,12 @@ class SubjectController extends Controller
 
         return redirect()->route('admin.subjects.index');
     }
+
+
+    public function destroy(Subject $subject)
+    {
+        $subject->delete();
+
+        return redirect()->back()->with('success', 'Node deleted successfully.');
+    }
 }

@@ -14,7 +14,7 @@
     Route::inertia('/terms-service', 'legal/TermsConditions');
     Route::inertia('/join', 'platform/JoinTeam');
     Route::inertia('/about-us', 'platform/AboutUs');
-    
+
     Route::prefix('admin')->middleware(['auth', 'verified', 'role:manager|admin'])->name('admin.')->group(function () {
 
         Route::get('/', [DashboardController::class, 'index']);
@@ -41,6 +41,12 @@
 
         Route::post('/resources', [AdminResourceController::class, 'store']);
         Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update']);
+    });
+
+    Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->name('admin.')->group(function () {
+        Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy']);
+        Route::delete('/subjects/{subject}', [AdminSubjectController::class, 'destroy']);
+        Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy']);
     });
 
 

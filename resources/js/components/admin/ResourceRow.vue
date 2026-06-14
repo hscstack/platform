@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { Book, File, FileArchive, FileImage, FileVideo, Pencil } from 'lucide-vue-next';
+import { Link, router } from '@inertiajs/vue3';
+import { Book, File, FileArchive, FileImage, FileVideo, Pencil, Trash2 } from 'lucide-vue-next';
 
 const { resource } = defineProps({
     resource: Object,
 });
+
+const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this Resource?')) {
+        router.delete(`/admin/resources/${resource.id}`);
+    }
+};
 </script>
 
 <template>
-    <Link
-        :href="`/resources/${resource.id}`"
-        class="group relative flex flex-col items-center justify-center rounded-xl border border-transparent p-2 text-center transition-all duration-200 hover:border-amber-100/60 hover:bg-amber-50/30 hover:shadow-sm active:scale-95"
+    <div
+        @click="router.visit(`/resources/${resource.id}`)"
+        class="group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border border-transparent p-2 text-center transition-all duration-200 hover:border-amber-100/60 hover:bg-amber-50/30 hover:shadow-sm active:scale-95"
     >
         <div
-            class="absolute top-1 right-1 z-10 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100"
+            class="absolute top-1 right-1 z-10 flex gap-1 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100"
             @click.stop
         >
             <Link
@@ -25,6 +31,16 @@ const { resource } = defineProps({
                 <Pencil class="h-2.5 w-2.5" :stroke-width="2.2" />
                 <span>Edit</span>
             </Link>
+
+            <button
+                type="button"
+                @click="handleDelete"
+                class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                title="Delete Resource"
+            >
+                <Trash2 class="h-2.5 w-2.5" :stroke-width="2.2" />
+                <span>Delete</span>
+            </button>
         </div>
 
         <div
@@ -57,7 +73,6 @@ const { resource } = defineProps({
                 {{ resource.title }}
             </span>
         </div>
-    </Link>
+    </div>
 </template>
 
-<style scoped></style>

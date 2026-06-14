@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
 import {
     Search,
@@ -12,8 +12,9 @@ import {
     PenTool,
     BarChart3,
     Pencil,
+    Trash2,
 } from 'lucide-vue-next';
-defineProps({
+const { subject } = defineProps({
     subject: Object,
 });
 
@@ -28,14 +29,22 @@ const icons = {
     BarChart3,
     Search,
 };
+
+const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this Subject?')) {
+        router.delete(`/admin/subjects/${subject.id}`);
+    }
+};
 </script>
 
 <template>
     <div
-        class="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:border-indigo-200 hover:bg-slate-50/40 hover:shadow-sm"
+        @click="router.visit(`/admin/subjects/${subject.slug}/nodes`)"
+        class="group relative flex cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:border-indigo-200 hover:bg-slate-50/40 hover:shadow-sm"
     >
         <div
-            class="absolute top-2 right-2 z-10 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100"
+            class="absolute top-2 right-2 z-10 flex gap-1 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100"
+            @click.stop
         >
             <Link
                 :href="`/admin/subjects/edit/${subject.id}`"
@@ -45,12 +54,19 @@ const icons = {
                 <Pencil class="h-3 w-3" :stroke-width="2" />
                 <span>Edit</span>
             </Link>
+
+            <button
+                type="button"
+                @click="handleDelete"
+                class="inline-flex h-6 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                title="Delete Subject"
+            >
+                <Trash2 class="h-3 w-3" :stroke-width="2" />
+                <span>Delete</span>
+            </button>
         </div>
 
-        <Link
-            :href="`/admin/subjects/${subject.slug}/nodes`"
-            class="flex flex-col items-start text-left focus:outline-none"
-        >
+        <div class="flex flex-col items-start text-left focus:outline-none">
             <div
                 :class="[
                     subject.tailwind_format || 'bg-slate-100 text-slate-600',
@@ -74,6 +90,6 @@ const icons = {
                     {{ subject.nodes_count || 0 }} items
                 </p>
             </div>
-        </Link>
+        </div>
     </div>
 </template>
