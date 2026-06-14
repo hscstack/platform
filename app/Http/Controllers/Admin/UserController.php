@@ -24,18 +24,32 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6'],
-            'role'     => ['required', 'string'],
+            'name'        => ['required', 'string', 'max:255'],
+            'email'       => ['required', 'email', 'unique:users,email'],
+            'password'    => ['required', 'string', 'min:6'],
+            'role'        => ['required', 'string'],
+
+            'image'       => ['nullable', 'string', 'max:255'],
+            'about'       => ['nullable', 'string'],
+            'institution' => ['nullable', 'string', 'max:255'],
+            'facebook'    => ['nullable', 'string', 'max:255'],
+            'github'      => ['nullable', 'string', 'max:255'],
         ]);
 
-        $user = User::create([
-            'name'              => $validated['name'],
-            'email'             => $validated['email'],
-            'password'          => Hash::make($validated['password']),
-            'email_verified_at' => now(),
-        ]);
+        $user = new User();
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->password = Hash::make($validated['password']);
+        $user->email_verified_at = now();
+
+        $user->image = $validated['image'] ?? null;
+        $user->about = $validated['about'] ?? null;
+        $user->institution = $validated['institution'] ?? null;
+        $user->facebook = $validated['facebook'] ?? null;
+        $user->github = $validated['github'] ?? null;
+
+        $user->save();
 
         $user->assignRole($validated['role']);
 
@@ -53,10 +67,16 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'email' => ['sometimes', 'required', 'email', 'unique:users,email,' . $user->id],
-            'password' => ['sometimes', 'nullable', 'string', 'min:6'],
-            'role' => ['sometimes', 'required', 'string'],
+            'name'        => ['sometimes', 'required', 'string', 'max:255'],
+            'email'       => ['sometimes', 'required', 'email', 'unique:users,email,' . $user->id],
+            'password'    => ['sometimes', 'nullable', 'string', 'min:6'],
+            'role'        => ['sometimes', 'required', 'string'],
+
+            'image'       => ['sometimes', 'nullable', 'string', 'max:255'],
+            'about'       => ['sometimes', 'nullable', 'string'],
+            'institution' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'facebook'    => ['sometimes', 'nullable', 'string', 'max:255'],
+            'github'      => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
 
         if (array_key_exists('name', $validated)) {
@@ -69,6 +89,26 @@ class UserController extends Controller
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
+        }
+
+        if (array_key_exists('image', $validated)) {
+            $user->image = $validated['image'];
+        }
+
+        if (array_key_exists('about', $validated)) {
+            $user->about = $validated['about'];
+        }
+
+        if (array_key_exists('institution', $validated)) {
+            $user->institution = $validated['institution'];
+        }
+
+        if (array_key_exists('facebook', $validated)) {
+            $user->facebook = $validated['facebook'];
+        }
+
+        if (array_key_exists('github', $validated)) {
+            $user->github = $validated['github'];
         }
 
         $user->save();

@@ -1,5 +1,6 @@
     <?php
 
+    use App\Http\Controllers\AboutUsController;
     use App\Http\Controllers\Admin\AuthController;
     use App\Http\Controllers\Admin\DashboardController;
     use App\Http\Controllers\Admin\NodeController as AdminNodeController;
@@ -14,7 +15,6 @@
     Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
     Route::inertia('/terms-service', 'legal/TermsConditions');
     Route::inertia('/join', 'platform/JoinTeam');
-    Route::inertia('/about-us', 'platform/AboutUs');
 
     Route::prefix('admin')->middleware(['auth', 'verified', 'role:manager|admin|editor'])->name('admin.')->group(function () {
 
@@ -28,7 +28,7 @@
 
         Route::get('/resources/create', [AdminResourceController::class, 'create']);
         Route::get('/resources/edit/{resource}', [AdminResourceController::class, 'edit']);
-        
+
         Route::get('/users', [AdminUserController::class, 'index'])->name("users.index");
         Route::get('/users/create', [AdminUserController::class, 'create']);
         Route::get('/users/edit/{user}', [AdminUserController::class, 'edit']);
@@ -59,6 +59,7 @@
     });
 
 
+    Route::get('/about-us', [AboutUsController::class, 'index']);
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);

@@ -19,6 +19,12 @@ const form = useForm({
     email: props.user?.email || '',
     password: '',
     role: props.user?.roles?.[0]?.name || 'manager',
+
+    image: props.user?.image || '',
+    about: props.user?.about || '',
+    institution: props.user?.institution || '',
+    facebook: props.user?.facebook || '',
+    github: props.user?.github || '',
 });
 
 const goBack = () => {
@@ -187,6 +193,139 @@ const submitForm = () => {
                         </p>
                     </div>
                 </div>
+
+                <!-- NEW FIELDS START -->
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <label
+                            for="image"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        >
+                            Profile Image URL
+                        </label>
+                        <input
+                            v-model="form.image"
+                            type="text"
+                            id="image"
+                            placeholder="https://example.com/image.jpg"
+                            :disabled="form.processing"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            :class="
+                                form.errors.image
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
+                        />
+                        <p v-if="form.errors.image" class="mt-1 text-sm text-rose-600">
+                            {{ form.errors.image }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="institution"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        >
+                            Institution
+                        </label>
+                        <input
+                            v-model="form.institution"
+                            type="text"
+                            id="institution"
+                            placeholder="University / Company"
+                            :disabled="form.processing"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            :class="
+                                form.errors.institution
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
+                        />
+                        <p v-if="form.errors.institution" class="mt-1 text-sm text-rose-600">
+                            {{ form.errors.institution }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <label
+                            for="facebook"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        >
+                            Facebook
+                        </label>
+                        <input
+                            v-model="form.facebook"
+                            type="text"
+                            id="facebook"
+                            placeholder="Facebook profile URL"
+                            :disabled="form.processing"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            :class="
+                                form.errors.facebook
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
+                        />
+                        <p v-if="form.errors.facebook" class="mt-1 text-sm text-rose-600">
+                            {{ form.errors.facebook }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="github"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        >
+                            GitHub
+                        </label>
+                        <input
+                            v-model="form.github"
+                            type="text"
+                            id="github"
+                            placeholder="GitHub profile URL"
+                            :disabled="form.processing"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            :class="
+                                form.errors.github
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
+                        />
+                        <p v-if="form.errors.github" class="mt-1 text-sm text-rose-600">
+                            {{ form.errors.github }}
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        for="about"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                    >
+                        About
+                    </label>
+                    <textarea
+                        v-model="form.about"
+                        id="about"
+                        rows="4"
+                        placeholder="Short bio..."
+                        :disabled="form.processing"
+                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                        :class="
+                            form.errors.about
+                                ? 'border-rose-500 focus:ring-rose-500/20'
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                        "
+                    ></textarea>
+                    <p v-if="form.errors.about" class="mt-1 text-sm text-rose-600">
+                        {{ form.errors.about }}
+                    </p>
+                </div>
+
+                <!-- NEW FIELDS END -->
 
                 <div
                     class="space-y-3.5 rounded-xl border border-gray-300 bg-slate-50/50 p-4.5"
