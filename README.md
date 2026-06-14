@@ -53,7 +53,7 @@ Browsing is open to everyone. But to **contribute**, you need to be an HSCStack 
 
 Only HSCStack members can upload resources. To become a member:
 
-1. Join at 👉 **[hscstack.mvp.com/join][join]**
+1. Join at 👉 **[hscstack.mvp.bd/join][join]**
 2. Once accepted, log in and go to the relevant subject and chapter.
 3. Upload your resource — add a title, type, and short description.
 4. Your contribution goes live after a quick admin review.
@@ -77,7 +77,7 @@ Only HSCStack members can upload resources. To become a member:
 
 HSCStack is not open for general pull requests. To contribute code, you must be a **core developer** on the team.
 
-To apply, join via 👉 **[hscstack.mvp.com/join][join]** — once your application is reviewed and accepted, we'll onboard you to the codebase.
+To apply, join via 👉 **[hscstack.mvp.bd/join][join]** — once your application is reviewed and accepted, we'll onboard you to the codebase.
 
 Once you're a core developer:
 
