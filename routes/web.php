@@ -24,7 +24,7 @@
         Route::get('/subjects/edit/{subject}', [AdminSubjectController::class, 'edit'])->name("subjects.edit");
 
         Route::get('/subjects/{subject:slug}/nodes/create', [AdminNodeController::class, 'create'])->name('nodes.create');
-        Route::get('/subjects/{subject}/nodes/edit/{node}', [AdminNodeController::class, 'edit'])->name('nodes.edit');
+        Route::get('/nodes/edit/{node}', [AdminNodeController::class, 'edit'])->name('nodes.edit');
 
         Route::get('/resources/create', [AdminResourceController::class, 'create']);
         Route::get('/resources/edit/{resource}', [AdminResourceController::class, 'edit']);

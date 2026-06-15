@@ -23,7 +23,7 @@ const handleDelete = () => {
             @click.stop
         >
             <Link
-                :href="`/admin/subjects/${node.subject_id}/nodes/edit/${node.id}`"
+                :href="`/admin/nodes/edit/${node.id}`"
                 class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
                 title="Edit Node"
             >
