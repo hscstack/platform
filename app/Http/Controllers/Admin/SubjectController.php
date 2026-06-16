@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Subject\StoreSubjectRequest;
+use App\Http\Requests\Subject\UpdateSubjectRequest;
 use App\Models\Node;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -34,55 +36,17 @@ class SubjectController extends Controller
     }
 
 
-    public function store(Request $request)
+    public function store(StoreSubjectRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', 'min:3', 'unique:subjects,name'],
-            'tailwind_format' => ['required', 'string', 'max:100'],
-            'icon' => ['required', 'string', 'max:50'],
-            'sort_order' => ['nullable', 'integer'],
-        ]);
-
-        $subject = new Subject();
-
-        $subject->name = $validated['name'];
-        $subject->tailwind_format = $validated['tailwind_format'];
-        $subject->slug = Str::slug($validated['name']);
-        $subject->icon = $validated['icon'];
-        $subject->sort_order = $validated['sort_order'] ?? 0;
-
-        $subject->save();
+        Subject::create($request->validated());
 
         return redirect()->route('admin.subjects.index');
     }
 
-    public function update(Request $request, Subject $subject)
+    public function update(UpdateSubjectRequest $request, Subject $subject)
     {
-        $validated = $request->validate([
-            'name'            => ['sometimes', 'string', 'max:100', 'min:3', Rule::unique('subjects', 'name')->ignore($subject->id),],
-            'tailwind_format' => ['sometimes', 'string', 'max:100'],
-            'icon'            => ['sometimes', 'string', 'max:50'],
-            'sort_order'      => ['sometimes', 'nullable', 'integer'],
-        ]);
+        $subject->update($request->validated());
 
-        if (isset($validated['name'])) {
-            $subject->name = $validated['name'];
-            $subject->slug = Str::slug($validated['name']);
-        }
-
-        if (isset($validated['tailwind_format'])) {
-            $subject->tailwind_format = $validated['tailwind_format'];
-        }
-
-        if (isset($validated['icon'])) {
-            $subject->icon = $validated['icon'];
-        }
-
-        if (array_key_exists('sort_order', $validated)) {
-            $subject->sort_order = $validated['sort_order'] ?? 0;
-        }
-
-        $subject->save();
 
         return redirect()->route('admin.subjects.index');
     }
