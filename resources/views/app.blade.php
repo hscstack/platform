@@ -7,7 +7,12 @@
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
+<meta property="og:title" content="HSC Stack - Open source repository">
+<meta property="og:description" content="A curated resource platform for HSC students of Bangladesh — built by members, for everyone.">
+<meta property="og:image" content="https://hscstack.tajimz.xyz/feature.png">
+<meta property="og:url" content="https://hscstack.tajimz.xyz">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HSC Stack">
         @fonts
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
