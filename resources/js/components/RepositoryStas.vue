@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 
-const props = defineProps({
+defineProps({
     totalSubjects: {
         type: Number,
         required: true,
@@ -22,7 +21,7 @@ const props = defineProps({
 <template>
     <section class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
         <div class="mb-10 text-center">
-            
+
             <h2 class="mt-1 text-2xl font-black tracking-tight text-indigo-600 sm:text-3xl">
                 Repository Statistics
             </h2>
