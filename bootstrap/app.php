@@ -7,6 +7,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -30,31 +31,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+
+
+        $exceptions->render(function (
+            UnauthorizedException $e,
+            Request $request
+        ) {
+            return redirect()
+                ->back()
+                ->with('error', 'You do not have permission to perform this action.');
+        });
+
         $exceptions->shouldRenderJsonWhen(
             fn(Request $request) => $request->is('api/*'),
         );
-        $exceptions->render(function (\Illuminate\Http\Request $request) {
-
-            $request->session()->flash('error', 'Access Denied: You do not have permission to access that section.');
-
-            $previousUrl = url()->previous();
-            $currentUrl = $request->fullUrl();
-
-            // If the previous URL is empty or matches the current URL, fallback to home page
-            if (!$previousUrl || $previousUrl === $currentUrl) {
-                return redirect()->to('/');
-            }
-
-            return redirect()->back();
-        });
-
-        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $exception, \Illuminate\Http\Request $request) {
-            if ($response->getStatusCode() === 404) {
-                return \Inertia\Inertia::render('Error')
-                    ->toResponse($request)
-                    ->setStatusCode(404);
-            }
-
-            return $response;
-        });
     })->create();
