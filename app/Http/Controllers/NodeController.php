@@ -36,11 +36,11 @@ class NodeController extends Controller
             return Node::where('parent_id', $node->id)
                 ->orderBy('sort_order')
                 ->withCount(['children', 'resources'])
-                ->get(['id', 'name', 'slug']);
+                ->get(['id', 'name', 'slug'])->toArray();
         });
 
         $resources = Cache::rememberForever("node_resources_{$node->id}", function () use ($node) {
-            return $node->resources()->get();
+            return $node->resources()->get()->toArray();
         });
 
         return Inertia::render('Node', [
