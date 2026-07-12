@@ -147,9 +147,9 @@ const parseYoutubeUrl = (url) => {
 
         if (!videoId) return null;
 
-        return `https://www.youtube-nocookie.com/embed/${videoId}?controls=0&disablekb=1&playsinline=1&rel=0&iv_load_policy=3&enablejsapi=1`;
+        return `https://www.youtube.com/embed/${videoId}`;
     } catch {
-        return null;
+        return 'https://www.youtube.com/embed/NpEaa2P7qZI';
     }
 };
 </script>
@@ -302,7 +302,7 @@ const parseYoutubeUrl = (url) => {
             </div>
             <div v-else-if="resource.resource_type === 'video'">
                 <div
-                    v-if="parseYoutubeUrl(resource.content)"
+                    v-if="resource.content"
                     class="border-b border-slate-100 bg-white p-6 sm:p-8"
                 >
                     <div
@@ -328,7 +328,7 @@ const parseYoutubeUrl = (url) => {
                         class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm"
                     >
                         <iframe
-                            :src="`${resource.content}?rel=0&modestbranding=1&controls=1&iv_load_policy=3&playsinline=1`"
+                            :src="parseYoutubeUrl(resource.content)"
                             :title="resource.title"
                             class="absolute inset-0 h-full w-full"
                             allow="
