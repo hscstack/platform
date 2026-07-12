@@ -49,7 +49,7 @@ class ResourceSeeder extends Seeder
                     'user_id' => 1,
                     'resource_type' => 'video',
                     'title' => $node->name . ' - ভিডিও লেকচার',
-                    'content' => null,
+                    'content' => "https://www.youtube.com/embed/a3ICNMQW7Ok",
                     'file_url' => 'https://www.youtube.com/embed/a3ICNMQW7Ok',
                     'created_at' => now(),
                     'updated_at' => now(),
