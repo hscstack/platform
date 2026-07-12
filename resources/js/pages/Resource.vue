@@ -10,12 +10,13 @@ import {
     Minimize2,
     RotateCcw,
     User,
+    FilePlay,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 defineProps({
     resource: {
         type: Object,
-        required: true,
+        reired: true,
     },
 });
 
@@ -86,8 +87,8 @@ const handlePointerMove = (e: MouseEvent | TouchEvent) => {
     }
 
     if (!isDragging.value || scale.value === 1) {
-return;
-}
+        return;
+    }
 
     e.preventDefault();
 
@@ -102,8 +103,8 @@ const handlePointerUp = () => {
     isDragging.value = false;
 
     if (scale.value < 1) {
-resetZoom();
-}
+        resetZoom();
+    }
 };
 
 const handleWheel = (e: WheelEvent) => {
@@ -114,8 +115,8 @@ const handleWheel = (e: WheelEvent) => {
     scale.value = Math.min(Math.max(newScale, 1), 5);
 
     if (scale.value === 1) {
-resetZoom();
-}
+        resetZoom();
+    }
 };
 
 watch(isFullscreen, (val) => {
@@ -123,6 +124,34 @@ watch(isFullscreen, (val) => {
         document.body.style.overflow = val ? 'hidden' : '';
     }
 });
+
+const parseYoutubeUrl = (url) => {
+    try {
+        const parsed = new URL(url);
+
+        let videoId = null;
+
+        if (parsed.hostname.includes('youtube.com')) {
+            if (parsed.pathname === '/watch') {
+                videoId = parsed.searchParams.get('v');
+            } else if (parsed.pathname.startsWith('/embed/')) {
+                videoId = parsed.pathname.split('/embed/')[1];
+            } else if (parsed.pathname.startsWith('/shorts/')) {
+                videoId = parsed.pathname.split('/shorts/')[1];
+            }
+        }
+
+        if (parsed.hostname === 'youtu.be') {
+            videoId = parsed.pathname.slice(1);
+        }
+
+        if (!videoId) return null;
+
+        return `https://www.youtube-nocookie.com/embed/${videoId}?controls=0&disablekb=1&playsinline=1&rel=0&iv_load_policy=3&enablejsapi=1`;
+    } catch {
+        return null;
+    }
+};
 </script>
 
 <template>
@@ -160,6 +189,11 @@ watch(isFullscreen, (val) => {
                                 v-else-if="resource.resource_type === 'image'"
                                 class="h-3 w-3"
                             />
+                            <FilePlay
+                                v-else-if="resource.resource_type === 'video'"
+                                class="h-3 w-3"
+                            />
+
                             <Download v-else class="h-3 w-3" />
                             {{ resource.resource_type }}
                         </span>
@@ -266,7 +300,51 @@ watch(isFullscreen, (val) => {
                     </div>
                 </div>
             </div>
+            <div v-else-if="resource.resource_type === 'video'">
+                <div
+                    v-if="parseYoutubeUrl(resource.content)"
+                    class="border-b border-slate-100 bg-white p-6 sm:p-8"
+                >
+                    <div
+                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base"
+                    >
+                        <h3
+                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase"
+                        >
+                            Note:
+                        </h3>
+                        <p
+                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900"
+                        >
+                            This content is hosted on YouTube by the original
+                            creator. We have embedded it here for educational
+                            reference only.
+                        </p>
+                    </div>
+                </div>
 
+                <div class="bg-slate-950/5 p-4 sm:p-8">
+                    <div
+                        class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm"
+                    >
+                        <iframe
+                            :src="`${resource.content}?rel=0&modestbranding=1&controls=1&iv_load_policy=3&playsinline=1`"
+                            :title="resource.title"
+                            class="absolute inset-0 h-full w-full"
+                            allow="
+                                accelerometer;
+                                autoplay;
+                                clipboard-write;
+                                encrypted-media;
+                                gyroscope;
+                                picture-in-picture;
+                                web-share;
+                            "
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
             <div v-else class="p-6 text-center sm:p-10">
                 <div
                     class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600"
