@@ -36,9 +36,7 @@ Browsing is open to everyone. But to **contribute**, you need to be an HSCStack 
 | **Notes** | Handwritten or typed notes by fellow students |
 | **PDFs** | Formatted documents, guides, and reference sheets |
 | **Images** | Diagrams, charts, and visual study aids |
-| **Videos** | Recorded explanations and walkthroughs |
-| **Questions** | Practice questions, past papers, and MCQs |
-
+| **Videos** | Classes from Youtube |
 ---
 
 ## 🚀 Getting Started
