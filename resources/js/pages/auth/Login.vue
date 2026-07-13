@@ -31,7 +31,7 @@ const submit = () => {
         <div class="w-full max-w-sm">
             <div class="mb-10 text-center">
                 <h1 class="text-3xl font-black tracking-tight text-slate-900">
-                    Admin Portal
+                    Member Portal
                 </h1>
                 <p
                     class="mt-2 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase"
@@ -105,6 +105,18 @@ const submit = () => {
                 >
                     {{ form.processing ? 'Authenticating...' : 'Enter System' }}
                 </button>
+
+                <div class="mt-6 text-center">
+                    <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        Want to be a member?
+                        <Link
+                            href="/join"
+                            class="ml-1 text-indigo-600 transition-colors hover:text-indigo-800"
+                        >
+                            Join here
+                        </Link>
+                    </p>
+                </div>
             </form>
 
             <div class="mt-8 text-center">

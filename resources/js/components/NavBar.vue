@@ -24,7 +24,7 @@ defineProps({
                     v-if="isAdmin"
                     class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold tracking-wider text-slate-400 uppercase"
                 >
-                    Admin
+                    Login
                 </span>
             </div>
 
@@ -33,7 +33,7 @@ defineProps({
                     :href="isAdmin ? '/' : '/admin'"
                     class="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
                 >
-                    {{ isAdmin ? 'Home' : 'Admin' }}
+                    {{ isAdmin ? 'Home' : 'Login' }}
                 </Link>
             </div>
         </div>
