@@ -9,6 +9,7 @@ use App\Models\Node;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -49,7 +50,8 @@ class ResourceController extends Controller
             $validated['file_url'] = $fileUrl;
         }
 
-        Resource::create($validated);
+        $resource = Resource::create($validated);
+        Cache::forget("node_resources_{$resource->node_id}");
 
         $redirect = $validated['redirect'] ?? explode('/resources', url()->previous())[0];
 
@@ -75,6 +77,8 @@ class ResourceController extends Controller
         }
 
         $resource->update($validated);
+        Cache::forget("resource_{$resource->id}");
+        Cache::forget("node_resources_{$resource->node_id}");
 
         $redirect = $validated['redirect'] ?? "/admin/subjects";
 
@@ -88,6 +92,8 @@ class ResourceController extends Controller
             Storage::disk('public')->delete($oldPath);
         }
 
+        Cache::forget("resource_{$resource->id}");
+        Cache::forget("node_resources_{$resource->node_id}");
         $resource->delete();
 
         return redirect()->back()->with('success', 'Resource deleted successfully.');

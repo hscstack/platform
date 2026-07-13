@@ -7,6 +7,7 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
@@ -29,6 +30,7 @@ class UserController extends Controller
 
         $user = User::create($validated);
         $user->assignRole($validated['role']);
+        Cache::forget('about_us_info');
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
@@ -49,6 +51,7 @@ class UserController extends Controller
         if (isset($validated['role'])) {
             $user->syncRoles([$validated['role']]);
         }
+        Cache::forget('about_us_info');
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User updated successfully.');
@@ -57,7 +60,7 @@ class UserController extends Controller
     function destroy(User $user)
     {
         $user->delete();
-
+        Cache::forget('about_us_info');
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User deleted successfully.');

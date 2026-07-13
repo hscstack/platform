@@ -8,6 +8,7 @@ use App\Http\Requests\Subject\UpdateSubjectRequest;
 use App\Models\Node;
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -39,6 +40,7 @@ class SubjectController extends Controller
     public function store(StoreSubjectRequest $request)
     {
         Subject::create($request->validated());
+        Cache::forget('home_page_data');
 
         return redirect()->route('admin.subjects.index');
     }
@@ -46,6 +48,7 @@ class SubjectController extends Controller
     public function update(UpdateSubjectRequest $request, Subject $subject)
     {
         $subject->update($request->validated());
+        Cache::forget('home_page_data');
 
 
         return redirect()->route('admin.subjects.index');
@@ -55,7 +58,8 @@ class SubjectController extends Controller
     public function destroy(Subject $subject)
     {
         $subject->delete();
+        Cache::forget('home_page_data');
 
-        return redirect()->back()->with('success', 'Node deleted successfully.');
+        return redirect()->back()->with('success', 'Subject deleted successfully.');
     }
 }
