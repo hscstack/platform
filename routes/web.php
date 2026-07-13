@@ -86,7 +86,7 @@
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
         Route::get('/', [SubjectController::class, 'index'])->name('index');
-        Route::get('/resources/{resource:id}', [ResourceController::class, 'show']);
+        Route::get('/resources/{id}', [ResourceController::class, 'show']);
         Route::get('/{subject:slug}', [SubjectController::class, 'show']);
         Route::get('/{subject:slug}/{path}', [NodeController::class, 'show'])->where('path', '.*');
     });

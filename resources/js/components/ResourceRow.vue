@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import { Book, File, FileArchive, FileImage, FileVideo } from 'lucide-vue-next';
 
 const { resource } = defineProps({
-  resource: Object,
+    resource: Object,
 });
 </script>
 
@@ -37,7 +37,7 @@ const { resource } = defineProps({
 
             <div class="min-w-0">
                 <span
-                    class="block truncate text-base font-bold text-slate-900 transition-colors group-hover:text-amber-700"
+                    class="block text-base font-bold break-words text-slate-900 transition-colors group-hover:text-amber-700"
                 >
                     {{ resource.title }}
                 </span>
