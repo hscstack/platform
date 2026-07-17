@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HTMLEditor from '@/components/HTMLEditor.vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { Upload } from 'lucide-vue-next';
 
@@ -201,22 +202,16 @@ const submitForm = () => {
 
                 <div>
                     <label
-                        for="content"
                         class="mb-1.5 block text-sm font-semibold text-slate-700"
-                        >Blog Content (Supports HTML)</label
+                        >Blog Content</label
                     >
-                    <textarea
+
+                    <HTMLEditor
                         v-model="form.content"
-                        id="content"
-                        rows="12"
+                        :error="form.errors.content"
                         placeholder="Write your article content here..."
-                        class="w-full rounded-lg border px-4 py-2.5 font-sans transition outline-none"
-                        :class="
-                            form.errors.content
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
-                        "
-                    ></textarea>
+                    />
+
                     <p
                         v-if="form.errors.content"
                         class="mt-1 text-sm text-rose-600"
