@@ -145,7 +145,9 @@ const parseYoutubeUrl = (url) => {
             videoId = parsed.pathname.slice(1);
         }
 
-        if (!videoId) return null;
+        if (!videoId) {
+return null;
+}
 
         return `https://www.youtube.com/embed/${videoId}`;
     } catch {

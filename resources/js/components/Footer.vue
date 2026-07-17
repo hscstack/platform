@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppLogo from './AppLogo.vue';
 import { Github, Facebook } from 'lucide-vue-next';
+import AppLogo from './AppLogo.vue';
 </script>
 
 <template>

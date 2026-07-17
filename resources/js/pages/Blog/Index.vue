@@ -1,10 +1,10 @@
-<script setup>
-import { ref } from 'vue';
+<script setup lang="ts">
 import { router, Link } from '@inertiajs/vue3';
-import BlogCard from '@/components/BlogCard.vue';
 import { Search, X, ArrowRight, AlertTriangle } from 'lucide-vue-next';
+import { ref } from 'vue';
+import BlogCard from '@/components/BlogCard.vue';
 
-const props = defineProps({
+defineProps({
     blogs: Object,
 });
 
@@ -113,21 +113,26 @@ const clearSearch = () => {
             class="mt-16 border-t border-slate-100 pt-6"
         >
             <div class="hidden sm:flex sm:flex-wrap sm:justify-center sm:gap-2">
-                <component
-                    :is="link.url ? Link : 'span'"
-                    v-for="(link, index) in blogs.links"
-                    :key="index"
-                    :href="link.url"
-                    v-html="link.label"
-                    class="rounded-xl px-4 py-2 text-sm font-medium transition"
-                    :class="{
-                        'bg-indigo-600 text-white shadow-sm': link.active,
-                        'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50':
-                            !link.active && link.url,
-                        'cursor-not-allowed border border-slate-100 bg-slate-50/50 text-slate-300':
-                            !link.url,
-                    }"
-                />
+                <div
+                    class="hidden sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
+                >
+                    <component
+                        :is="link.url ? Link : 'span'"
+                        v-for="(link, index) in blogs.links"
+                        :key="index"
+                        :href="link.url"
+                        class="rounded-xl px-4 py-2 text-sm font-medium transition"
+                        :class="{
+                            'bg-indigo-600 text-white shadow-sm': link.active,
+                            'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50':
+                                !link.active && link.url,
+                            'cursor-not-allowed border border-slate-100 bg-slate-50/50 text-slate-300':
+                                !link.url,
+                        }"
+                    >
+                        <span v-html="link.label"></span>
+                    </component>
+                </div>
             </div>
 
             <div class="flex items-center justify-between px-2 sm:hidden">

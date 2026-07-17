@@ -1,16 +1,23 @@
-<script setup>
-import { computed, ref } from 'vue';
+<script setup lang="ts">
 import { Link, Head } from '@inertiajs/vue3';
 import { Calendar, User, Eye, ArrowLeft } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     blog: Object,
 });
 
 const formattedDate = computed(() => {
-    if (!props.blog.created_at) return '';
+    if (!props.blog.created_at) {
+return '';
+}
+
     const date = new Date(props.blog.created_at);
-    if (isNaN(date.getTime())) return '';
+
+    if (isNaN(date.getTime())) {
+return '';
+}
+
     return new Intl.DateTimeFormat('en-US', {
         month: 'short',
         day: 'numeric',
