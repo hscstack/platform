@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Github, Facebook } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
@@ -71,22 +72,20 @@ import AppLogo from './AppLogo.vue';
                                 </a>
                             </li>
                             <li>
-                                <a
+                                <Link
                                     href="/join"
-                                    target="_blank"
                                     class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
                                     Join Our Team
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a
+                                <Link
                                     href="/about-us"
-                                    target="_blank"
                                     class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
                                     Our Contributors
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -99,22 +98,20 @@ import AppLogo from './AppLogo.vue';
                         </h4>
                         <ul class="mt-5 space-y-3.5">
                             <li>
-                                <a
+                                <Link
                                     href="/privacy-policy"
-                                    target="_blank"
                                     class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
                                     Privacy Policy
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a
+                                <Link
                                     href="/terms-service"
-                                    target="_blank"
                                     class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
                                     Terms of Service
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
