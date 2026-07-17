@@ -16,7 +16,7 @@ class UpdateBlogRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $excerpt = Str::limit(strip_tags($this->input('content')), 160);
+        $excerpt = Str::limit(strip_tags($this->input('content')), 150);
 
         $this->merge([
             'slug' => Str::slug($this->input('title')),
