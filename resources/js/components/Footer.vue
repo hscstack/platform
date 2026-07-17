@@ -66,6 +66,7 @@ import { Link } from '@inertiajs/vue3';
                             <li>
                                 <a
                                     href="https://tajimz.xyz/projects"
+                                    target="_blank"
                                     class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
                                     More From Us
