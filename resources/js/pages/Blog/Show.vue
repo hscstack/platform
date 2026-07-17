@@ -107,17 +107,21 @@ const copyLink = async () => {
                 />
             </div>
 
-            <div
-                class="prose prose-slate prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-600 prose-p:leading-relaxed prose-a:text-indigo-600 hover:prose-a:text-indigo-800 prose-img:rounded-2xl max-w-none"
-                v-html="blog.content"
-            ></div>
+            <div class="blog-content max-w-none" v-html="blog.content"></div>
         </article>
 
         <!-- "Write for us" CTA Banner -->
-        <section class="mt-12 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6 sm:flex sm:items-center sm:justify-between">
+        <section
+            class="mt-12 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6 sm:flex sm:items-center sm:justify-between"
+        >
             <div class="mb-4 sm:mb-0">
-                <h3 class="text-lg font-bold text-slate-900">Want to write a blog on this site?</h3>
-                <p class="mt-1 text-sm text-slate-600">Share your thoughts, stories, and expertise with our community.</p>
+                <h3 class="text-lg font-bold text-slate-900">
+                    Want to write a blog on this site?
+                </h3>
+                <p class="mt-1 text-sm text-slate-600">
+                    Share your thoughts, stories, and expertise with our
+                    community.
+                </p>
             </div>
             <Link
                 href="/join"
@@ -161,22 +165,18 @@ const copyLink = async () => {
         </footer>
     </main>
 </template>
-
 <style scoped>
-:deep(.prose) {
-    font-size: 1rem;
-}
-:deep(.prose p) {
-    margin-bottom: 1.5rem;
-}
-:deep(.prose h2) {
-    font-size: 1.75rem;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-}
-:deep(.prose h3) {
-    font-size: 1.5rem;
-    margin-top: 1.75rem;
-    margin-bottom: 0.75rem;
+:deep(.blog-content h1),
+:deep(.blog-content h2),
+:deep(.blog-content h3),
+:deep(.blog-content h4),
+:deep(.blog-content h5),
+:deep(.blog-content h6),
+:deep(.blog-content p),
+:deep(.blog-content ul),
+:deep(.blog-content ol),
+:deep(.blog-content blockquote),
+:deep(.blog-content a) {
+    all: revert;
 }
 </style>
