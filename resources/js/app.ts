@@ -10,6 +10,8 @@ createInertiaApp({
         switch (true) {
             case name.startsWith('admin/'):
                 return AdminLayout;
+            case name.startsWith('errors/503'):
+                return null;
             default:
                 return AppLayout;
         }
