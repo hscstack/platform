@@ -12,6 +12,7 @@ use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -45,7 +46,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (NotFoundHttpException $e) {
-            return Inertia::render('Error');
+            return Inertia::render('errors/404');
+        });
+
+        $exceptions->render(function (HttpException $e) {
+            if ($e->getStatusCode() === 503) {
+                return Inertia::render('errors/503');
+            }
         });
 
         $exceptions->shouldRenderJsonWhen(
