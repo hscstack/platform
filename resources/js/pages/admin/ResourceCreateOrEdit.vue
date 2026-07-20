@@ -18,15 +18,21 @@ const props = defineProps({
 
 const form = useForm({
     redirect: props?.redirect || '/',
-    resource_type: props.resource?.resource_type || 'pdf',
+    resource_type: props.resource?.resource_type || 'image',
     title: props.resource?.title || '',
     content: props.resource?.content || '',
     file: null,
     node_id: props.node.id,
 });
 
-
 const resourceTypes = [
+    {
+        id: 'image',
+        name: 'Image',
+        icon: ImageIcon,
+        color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+    },
+
     {
         id: 'pdf',
         name: 'PDF Document',
@@ -38,12 +44,6 @@ const resourceTypes = [
         name: 'Text Note',
         icon: FileText,
         color: 'text-amber-600 bg-amber-50 border-amber-200',
-    },
-    {
-        id: 'image',
-        name: 'Image',
-        icon: ImageIcon,
-        color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
     },
     {
         id: 'video',
