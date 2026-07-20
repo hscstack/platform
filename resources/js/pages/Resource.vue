@@ -6,6 +6,7 @@ import {
     Download,
     AlertCircle,
     ArrowLeft,
+    ArrowRight,
     Maximize2,
     Minimize2,
     RotateCcw,
@@ -13,12 +14,23 @@ import {
     FilePlay,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-defineProps({
+
+const props = defineProps({
     resource: {
         type: Object,
-        reired: true,
+        required: true,
+    },
+    previousResourceId: {
+        type: Number,
+        default: null,
+    },
+    nextResourceId: {
+        type: Number,
+        default: null,
     },
 });
+console.log(props.previousResourceId);
+console.log(props.nextResourceId);
 
 const isFullscreen = ref(false);
 
@@ -146,8 +158,8 @@ const parseYoutubeUrl = (url) => {
         }
 
         if (!videoId) {
-return null;
-}
+            return null;
+        }
 
         return `https://www.youtube.com/embed/${videoId}`;
     } catch {
@@ -158,9 +170,9 @@ return null;
 
 <template>
     <div
-        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-4 pt-8 pb-20 sm:px-6 sm:pt-12"
+        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-4 pt-4 pb-20 sm:px-6 sm:pt-4"
     >
-        <div class="mb-6">
+        <div class="mb-2">
             <button
                 @click="handleBack"
                 class="group inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600"
@@ -383,6 +395,63 @@ return null;
                     >
                         No download target generated for this asset.
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Friendly Sticky Floating Navigation Strip -->
+    <div
+        class="pointer-events-none fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-slate-900/10 via-slate-900/5 to-transparent pt-10 pb-6"
+    >
+        <div class="pointer-events-auto mx-auto max-w-4xl px-4 sm:px-6">
+            <div
+                class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-md"
+            >
+                <div>
+                    <Link
+                        v-if="previousResourceId"
+                        :href="`/resources/${previousResourceId}`"
+                        replace
+                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97]"
+                    >
+                        <ArrowLeft
+                            class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
+                        />
+                        <span class="xs:inline hidden">Previous Page</span>
+                        <span class="xs:hidden">Prev Page</span>
+                    </Link>
+                    <span
+                        v-else
+                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none"
+                        >First Page</span
+                    >
+                </div>
+
+                <div
+                    class="hidden text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none sm:block"
+                >
+                    Quick Navigation
+                </div>
+
+                <div>
+                    <Link
+                        v-if="nextResourceId"
+                        :href="`/resources/${nextResourceId}`"
+                        replace
+                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97]"
+                    >
+                        <span class="xs:inline hidden">Next Page</span>
+                        <span class="xs:hidden">Next Page</span>
+                        <ArrowRight
+                            class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                        />
+                    </Link>
+                    <span
+                        v-else
+                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none"
+                        >Last Page</span
+                    >
                 </div>
             </div>
         </div>

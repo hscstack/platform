@@ -11,13 +11,28 @@ class ResourceController extends Controller
 {
     //
 
-    function show($id)
+    public function show($id)
     {
-        $resource = Cache::rememberForever("resource_{$id}", function () use ($id) {
-            return Resource::with('user')->findOrFail($id)->toArray();
+        $data = Cache::rememberForever("resource_{$id}", function () use ($id) {
+            $resource = Resource::with('user')->findOrFail($id);
+
+            $previousResourceId = Resource::where('node_id', $resource->node_id)
+                ->where('id', '<', $resource->id)
+                ->orderByDesc('id')
+                ->value('id');
+
+            $nextResourceId = Resource::where('node_id', $resource->node_id)
+                ->where('id', '>', $resource->id)
+                ->orderBy('id')
+                ->value('id');
+
+            return [
+                'resource' => $resource->toArray(),
+                'previousResourceId' => $previousResourceId,
+                'nextResourceId' => $nextResourceId,
+            ];
         });
-        return Inertia::render('Resource', [
-            'resource' => $resource
-        ]);
+
+        return Inertia::render('Resource', $data);
     }
 }

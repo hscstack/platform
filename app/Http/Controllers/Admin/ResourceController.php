@@ -52,6 +52,7 @@ class ResourceController extends Controller
 
         $resource = Resource::create($validated);
         Cache::forget("node_resources_{$resource->node_id}");
+        $this->clearResourcePageCache($resource->node_id);
 
         $redirect = $validated['redirect'] ?? explode('/resources', url()->previous())[0];
 
@@ -92,10 +93,19 @@ class ResourceController extends Controller
             Storage::disk('public')->delete($oldPath);
         }
 
+        $resource->delete();
+        $this->clearResourcePageCache($resource->node_id);
         Cache::forget("resource_{$resource->id}");
         Cache::forget("node_resources_{$resource->node_id}");
-        $resource->delete();
 
         return redirect()->back()->with('success', 'Resource deleted successfully.');
+    }
+    private function clearResourcePageCache(int $nodeId): void
+    {
+        $ids = Resource::where('node_id', $nodeId)->pluck('id')->toArray();
+
+        foreach ($ids as $id) {
+            Cache::forget("resource_{$id}");
+        }
     }
 }
