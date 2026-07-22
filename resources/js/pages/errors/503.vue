@@ -104,7 +104,7 @@ import {
 
                     <!-- GitHub Profile -->
                     <a
-                        href="https://github.com/hsc-stack"
+                        href="https://github.com/hscstack"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="group flex items-center justify-between rounded-xl border border-slate-100 bg-white/40 p-3 text-sm font-medium text-slate-700 transition-all duration-150 hover:border-slate-200 hover:bg-white/80 hover:shadow-sm"

@@ -25,8 +25,8 @@ If you're not yet a core developer but found a bug or have a suggestion, please 
 
 ```bash
 # Clone the repo
-git clone https://github.com/trtajim/hsc-stack.git
-cd hsc-stack
+git clone https://github.com/hscstack/platform
+cd platform
 
 # Install PHP dependencies
 composer install
@@ -127,7 +127,7 @@ Please only upload content you created or have permission to share, and avoid co
 
 ## Reporting Bugs & Requesting Features
 
-- Use [GitHub Issues](https://github.com/trtajim/hsc-stack/issues) for bugs and feature requests.
+- Use [GitHub Issues](https://github.com/trtajim/hscstack/issues) for bugs and feature requests.
 - Include steps to reproduce, expected vs. actual behavior, and screenshots if relevant (for UI bugs).
 
 ## Questions?

@@ -21,7 +21,7 @@ import { Link } from '@inertiajs/vue3';
 
                     <div class="mt-4 flex items-center gap-4">
                         <a
-                            href="https://github.com/hsc-stack"
+                            href="https://github.com/hscstack"
                             rel="noopener noreferrer"
                             class="text-slate-400 transition-colors duration-150 hover:text-slate-900"
                             aria-label="GitHub Repository"
