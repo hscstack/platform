@@ -8,6 +8,7 @@ use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Models\Permission;
 
 class UserController extends Controller
@@ -57,6 +58,13 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
+        if (
+            $request->user()->id !== $user->id &&
+            !$request->user()->can('manage users')
+        ) {
+            throw UnauthorizedException::forPermissions(['manage users']);
+        }
+
         $validated = $request->validated();
         $user->update($validated);
 

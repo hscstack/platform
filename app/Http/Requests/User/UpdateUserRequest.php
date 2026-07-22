@@ -30,20 +30,28 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         $user = $this->route('user');
-        return [
+
+        $rules = [
             'name'        => ['sometimes', 'string', 'max:255'],
             'email'       => ['sometimes', 'email', 'unique:users,email,' . $user->id],
             'password'    => ['sometimes', 'nullable', 'string', 'min:6'],
-            'role'        => ['sometimes', 'string'],
-            'permissions'   => ['sometimes', 'array'],
-            'permissions.*' => ['string', 'exists:permissions,name'],
             'image'       => ['sometimes', 'nullable', 'string', 'max:255'],
             'about'       => ['sometimes', 'nullable', 'string'],
             'title'       => ['sometimes', 'nullable', 'string'],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255'],
             'facebook'    => ['sometimes', 'nullable', 'string', 'max:255'],
-            'instagram'    => ['sometimes', 'nullable', 'string', 'max:255'],
+            'instagram'   => ['sometimes', 'nullable', 'string', 'max:255'],
             'github'      => ['sometimes', 'nullable', 'string', 'max:255'],
         ];
+
+        if ($this->user()->can('manage users')) {
+            $rules['role'] = ['sometimes', 'string'];
+            $rules['permissions'] = ['sometimes', 'array'];
+            $rules['permissions.*'] = ['string', 'exists:permissions,name'];
+        }
+
+        return $rules;
     }
+
+    
 }

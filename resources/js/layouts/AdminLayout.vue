@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { LayoutDashboard, Users, BookOpen, Bell, Book } from 'lucide-vue-next';
+import { LayoutDashboard, Users, BookOpen, Bell, Book, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
 import MobileSideBar from '@/components/admin/MobileSideBar.vue';
 import NavBar from '@/components/NavBar.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
+import { usePage } from '@inertiajs/vue3';
 
 const isMobileSidebarOpen = ref(false);
-
+const myId = usePage().props.auth.user.id;
 const navigation = [
     { name: 'Dashboard', to: '/admin', icon: LayoutDashboard },
     { name: 'Manage Contents', to: '/admin/subjects', icon: BookOpen },
     { name: 'Manage Blogs', to: '/admin/blogs', icon: Book },
     { name: 'Site Notice', to: '/admin/notice', icon: Bell },
     { name: 'Users', to: '/admin/users', icon: Users },
+    { name: 'My Profile', to: `/admin/users/edit/${myId}`, icon: User },
 ];
 
 const openMobileSidebar = () => {
