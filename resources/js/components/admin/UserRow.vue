@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { Trash2 } from 'lucide-vue-next';
 defineProps({
     user: Object,
 });
-const page = usePage();
-const userId = page.props.auth.user.id;
 
 const getRoleBadgeStyles = (role: string) => {
     switch (role) {
@@ -28,35 +26,22 @@ const deleteUser = (id: number) => {
 </script>
 <template>
     <tr
-        class="block border-b border-gray-100 p-5 transition-colors duration-200 last:border-b-0 md:table-row md:border-b md:border-gray-200/60 md:p-0"
-        :class="[
-            user.id === userId
-                ? 'bg-blue-50/50 md:bg-blue-50/30 md:hover:bg-blue-50/50'
-                : 'bg-white md:hover:bg-gray-50/50',
-        ]"
+        class="block border-b border-gray-100 bg-white p-5 transition-colors duration-200 last:border-b-0 md:table-row md:border-b md:border-gray-200/60 md:p-0 md:hover:bg-gray-50/50"
     >
         <td
             class="block py-1.5 font-medium text-gray-900 md:table-cell md:px-6 md:py-4.5"
         >
             <div class="flex items-center gap-3.5">
                 <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold tracking-wider text-slate-700 uppercase shadow-xs ring-1 ring-black/5"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold tracking-wider text-slate-700 uppercase shadow-sm ring-1 ring-black/5"
                 >
                     {{ user.name.charAt(0) }}
                 </div>
                 <div class="flex min-w-0 flex-col">
-                    <div class="flex items-center gap-1.5">
-                        <span
-                            class="truncate text-sm font-semibold text-gray-900"
-                            >{{ user.name }}</span
-                        >
-                        <span
-                            v-if="user.id === userId"
-                            class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700"
-                        >
-                            You
-                        </span>
-                    </div>
+                    <span
+                        class="truncate text-sm font-semibold text-gray-900"
+                        >{{ user.name }}</span
+                    >
                     <span
                         class="mt-0.5 truncate text-xs text-gray-400 md:hidden"
                     >

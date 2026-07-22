@@ -71,8 +71,8 @@
         Route::middleware('permission:manage users')->group(function () {
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
             Route::post('/users', [AdminUserController::class, 'store'])->name("users.store");
+            Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name("users.update");
         });
-        Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name("users.update");
     });
 
     Route::post('/login', [AuthController::class, 'login'])
