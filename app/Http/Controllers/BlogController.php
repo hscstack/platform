@@ -40,7 +40,7 @@ class BlogController extends Controller
 
         $blogs = $blogs
             ->latest()
-            ->paginate(5)
+            ->paginate(6)
             ->withQueryString();
 
         return Inertia::render('Blog/Index', [
