@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Resource;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 

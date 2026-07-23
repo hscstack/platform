@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Blog;
 
-use App\Models\Blog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;

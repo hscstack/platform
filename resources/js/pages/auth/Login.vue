@@ -107,7 +107,9 @@ const submit = () => {
                 </button>
 
                 <div class="mt-6 text-center">
-                    <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                    <p
+                        class="text-[10px] font-black tracking-widest text-slate-400 uppercase"
+                    >
                         Want to be a member?
                         <Link
                             href="/join"

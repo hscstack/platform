@@ -5,13 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Subject\StoreSubjectRequest;
 use App\Http\Requests\Subject\UpdateSubjectRequest;
-use App\Models\Node;
 use App\Models\Subject;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class SubjectController extends Controller
 {
