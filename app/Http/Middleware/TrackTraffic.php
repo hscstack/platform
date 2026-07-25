@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Traffic;
 use Closure;
 use Illuminate\Http\Request;
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackTraffic
@@ -16,6 +17,12 @@ class TrackTraffic
      */
     public function handle(Request $request, Closure $next): Response
     {
+
+        $crawlerDetect = new CrawlerDetect();
+        if ($crawlerDetect->isCrawler($request->userAgent())) {
+            return $next($request);
+        }
+
         $source = $request->query('utm_source') ?? match (true) {
             $request->has('fbclid')  => 'facebook',
             $request->has('gclid')   => 'google_ads',
