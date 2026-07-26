@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Github, Facebook } from 'lucide-vue-next';
+import { Github, Facebook, BookOpen, Users, UserPlus, ExternalLink } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 </script>
 
@@ -66,29 +66,44 @@ import AppLogo from './AppLogo.vue';
                         </h4>
                         <ul class="mt-5 space-y-3.5">
                             <li>
-                                <a
-                                    href="https://tajimz.xyz/projects"
-                                    target="_blank"
-                                    class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
-                                >
-                                    More From Us
-                                </a>
-                            </li>
-                            <li>
                                 <Link
-                                    href="/join"
-                                    class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
+                                    href="/guide"
+                                    class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
-                                    Join Our Team
+                                    <BookOpen class="h-4 w-4 text-indigo-500" />
+                                    <span>Documentation</span>
                                 </Link>
                             </li>
                             <li>
                                 <Link
                                     href="/about-us"
-                                    class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
+                                    class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
-                                    Our Contributors
+                                    <Users class="h-4 w-4 text-indigo-500" />
+                                    <span>Our Contributors</span>
                                 </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/join"
+                                    class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
+                                >
+                                    <UserPlus class="h-4 w-4 text-indigo-500" />
+                                    <span>Join Our Team</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <a
+                                    href="https://tajimz.xyz/projects"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
+                                >
+                                    <ExternalLink
+                                        class="h-4 w-4 text-indigo-500"
+                                    />
+                                    <span>More From Us</span>
+                                </a>
                             </li>
                         </ul>
                     </div>
