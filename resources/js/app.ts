@@ -1,8 +1,12 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import AdminLayout from './layouts/AdminLayout.vue';
 import AppLayout from './layouts/AppLayout.vue';
+import { registerSW } from 'virtual:pwa-register';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+registerSW({ immediate: true });
+
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
