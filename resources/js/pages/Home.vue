@@ -6,6 +6,7 @@ import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import RepositoryStas from '@/components/RepositoryStas.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
+import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 
 const props = defineProps({
     subjects: Array,
@@ -29,9 +30,13 @@ const filteredSubjects = computed(() => {
 <template>
     <NoticeDialog v-if="notice" :notice="notice" />
 
+    <PwaInstallPrompt v-if="!notice" variant="modal" />
+
     <HomeHeader v-model="searchQuery" />
 
     <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+        <PwaInstallPrompt variant="banner" class="mb-6" />
+
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SubjectCard
                 v-for="subject in filteredSubjects"

@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
     plugins: [
@@ -29,6 +30,27 @@ export default defineConfig({
         }),
         wayfinder({
             formVariants: true,
+        }),
+        VitePWA({
+            registerType: 'autoUpdate',
+            devOptions: {
+                enabled: true,
+            },
+            manifest: {
+                name: 'HSC Stack',
+                short_name: 'HSC Stack',
+                start_url: '/',
+                display: 'standalone',
+                background_color: '#ffffff',
+                theme_color: '#000000',
+                icons: [
+                    {
+                        src: '/favicon.png',
+                        sizes: '512x512',
+                        type: 'image/png',
+                    },
+                ],
+            },
         }),
     ],
 });
