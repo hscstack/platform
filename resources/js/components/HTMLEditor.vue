@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {
     Bold, Italic, Underline, Strikethrough,
     List, ListOrdered, Heading1, Heading2, Heading3,
     Quote, Link2, Undo2, Redo2, Eraser,
 } from 'lucide-vue-next';
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps({
     modelValue: {
@@ -41,7 +41,10 @@ const activeStates = reactive({
 });
 
 const updateActiveStates = () => {
-    if (!editorRef.value) return;
+    if (!editorRef.value) {
+return;
+}
+
     activeStates.bold = document.queryCommandState('bold');
     activeStates.italic = document.queryCommandState('italic');
     activeStates.underline = document.queryCommandState('underline');
@@ -76,7 +79,11 @@ const toggleBlock = (tag: string) => {
 
 const insertLink = () => {
     const url = window.prompt('Enter a URL');
-    if (!url) return;
+
+    if (!url) {
+return;
+}
+
     focusEditor();
     document.execCommand('createLink', false, url);
     updateContent();
@@ -112,18 +119,27 @@ const handlePaste = (event: ClipboardEvent) => {
 
 const handleKeydown = (event: KeyboardEvent) => {
     const isMod = event.metaKey || event.ctrlKey;
-    if (!isMod) return;
+
+    if (!isMod) {
+return;
+}
 
     const key = event.key.toLowerCase();
-    if (key === 'b') { event.preventDefault(); format('bold'); }
-    else if (key === 'i') { event.preventDefault(); format('italic'); }
-    else if (key === 'u') { event.preventDefault(); format('underline'); }
+
+    if (key === 'b') {
+ event.preventDefault(); format('bold'); 
+} else if (key === 'i') {
+ event.preventDefault(); format('italic'); 
+} else if (key === 'u') {
+ event.preventDefault(); format('underline'); 
+}
 };
 
 onMounted(() => {
     if (editorRef.value && props.modelValue) {
         editorRef.value.innerHTML = props.modelValue;
     }
+
     document.addEventListener('selectionchange', updateActiveStates);
 });
 

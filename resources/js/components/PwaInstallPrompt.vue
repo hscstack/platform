@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, shallowRef, onMounted, onUnmounted } from 'vue';
 
 defineOptions({
@@ -38,7 +38,9 @@ onMounted(() => {
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true;
 
-    if (isStandalone) return;
+    if (isStandalone) {
+        return;
+    }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     window.addEventListener('appinstalled', handleAppInstalled);
@@ -50,7 +52,9 @@ onUnmounted(() => {
 });
 
 const handleInstall = async () => {
-    if (!deferredPrompt.value) return;
+    if (!deferredPrompt.value) {
+        return;
+    }
 
     try {
         await deferredPrompt.value.prompt();
@@ -67,6 +71,7 @@ const handleInstall = async () => {
 
 const handleDismiss = () => {
     isVisible.value = false;
+
     if (props.variant === 'modal') {
         sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     }
@@ -76,15 +81,26 @@ const handleDismiss = () => {
 <template>
     <template v-if="isVisible && deferredPrompt">
         <Teleport v-if="variant === 'modal'" to="body">
-            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-                <div class="w-full max-w-sm rounded-2xl border border-slate-100 bg-white p-6 shadow-xl">
+            <div
+                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+            >
+                <div
+                    class="w-full max-w-sm rounded-2xl border border-slate-100 bg-white p-6 shadow-xl"
+                >
                     <div class="mb-4 flex items-center gap-3">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-xl text-indigo-600">
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-xl text-indigo-600"
+                        >
                             📱
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-slate-900">Install Mobile App</h3>
-                            <p class="text-xs text-slate-500">Get fast, offline access right from your home screen.</p>
+                            <h3 class="text-base font-bold text-slate-900">
+                                Install Mobile App
+                            </h3>
+                            <p class="text-xs text-slate-500">
+                                Get fast, offline access right from your home
+                                screen.
+                            </p>
                         </div>
                     </div>
 
@@ -112,16 +128,22 @@ const handleDismiss = () => {
             class="flex flex-col gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-slate-50/80 p-4 shadow-sm backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
         >
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/10 text-xl text-indigo-600">
+                <div
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/10 text-xl text-indigo-600"
+                >
                     📱
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-slate-900">Install Mobile App</h3>
-                    <p class="text-xs text-slate-500">Fast, offline access right from your home screen.</p>
+                    <h3 class="text-sm font-bold text-slate-900">
+                        Install Mobile App
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                        Fast, offline access right from your home screen.
+                    </p>
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-2 shrink-0">
+            <div class="flex shrink-0 items-center justify-end gap-2">
                 <button
                     @click="handleInstall"
                     class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow transition hover:bg-indigo-700 active:scale-95"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import HTMLEditor from '@/components/HTMLEditor.vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { Upload } from 'lucide-vue-next';
+import HTMLEditor from '@/components/HTMLEditor.vue';
 
 const props = defineProps({
     blog: {
