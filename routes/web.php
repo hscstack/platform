@@ -83,6 +83,7 @@
         Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
         Route::inertia('/terms-service', 'legal/TermsConditions');
         Route::inertia('/join', 'platform/JoinTeam');
+        Route::inertia('/guide', 'ContributorGuide');
 
         Route::get('/about-us', [AboutUsController::class, 'index']);
 

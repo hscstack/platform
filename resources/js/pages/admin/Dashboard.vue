@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { LayoutGrid, Sparkles, Users, Eye, Share2 } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
+import { LayoutGrid, Sparkles, Users, Eye, Share2, BookOpen, ArrowRight } from 'lucide-vue-next';
 
 defineProps({
     stats: Object,
@@ -8,6 +9,7 @@ defineProps({
 
 <template>
     <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
+        <!-- Main Dashboard Header -->
         <div
             class="relative overflow-hidden rounded-2xl border border-slate-300 bg-gradient-to-r from-white via-slate-50 to-white p-6 shadow-sm sm:p-8"
         >
@@ -38,6 +40,42 @@ defineProps({
             </div>
         </div>
 
+        <!-- Highlighted Guide/Tour Card (Placed Directly Below Header) -->
+        <div
+            class="relative overflow-hidden rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-xs transition-colors hover:border-indigo-300 sm:p-6"
+        >
+            <div
+                class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+                <div class="flex items-start gap-3.5 sm:items-center">
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs"
+                    >
+                        <BookOpen class="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">
+                            New to the Contributor Workspace?
+                        </h2>
+                        <p class="mt-0.5 text-xs text-slate-600 sm:text-sm">
+                            Learn how to manage subjects, upload resources, create blogs, and navigate panel permissions.
+                        </p>
+                    </div>
+                </div>
+
+                <Link
+                    href="/guide"
+                    class="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95"
+                >
+                    <span>Take a Tour</span>
+                    <ArrowRight
+                        class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                    />
+                </Link>
+            </div>
+        </div>
+
+        <!-- Metrics Section -->
         <div class="grid gap-6 md:grid-cols-2">
             <div class="space-y-6">
                 <div
