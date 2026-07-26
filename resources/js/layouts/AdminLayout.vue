@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
 import { LayoutDashboard, Users, BookOpen, Bell, Book, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
 import MobileSideBar from '@/components/admin/MobileSideBar.vue';
 import NavBar from '@/components/NavBar.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
-import { usePage } from '@inertiajs/vue3';
 
 const isMobileSidebarOpen = ref(false);
 const myId = usePage().props.auth.user.id;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import { Github, Facebook } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
-import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>

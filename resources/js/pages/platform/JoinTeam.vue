@@ -69,6 +69,7 @@ const whatsappLink = computed(() => {
     const text = encodeURIComponent(
         `Hello, I want to join as a ${currentRoleTitle.value}.`,
     );
+
     return `https://wa.me/${baseNumber}?text=${text}`;
 });
 </script>
