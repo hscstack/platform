@@ -4,7 +4,7 @@ const searchQuery = defineModel();
 </script>
 
 <template>
-    <div class="px-6 pt-16 pb-12 text-center sm:pt-24 sm:pb-16">
+    <div class="px-6 pt-16 pb-3 text-center sm:pt-24 sm:pb-6">
         <div class="mx-auto max-w-3xl">
             <h1
                 class="mb-4 text-4xl font-black tracking-tight text-slate-900 sm:text-6xl lg:leading-[1.15]"
