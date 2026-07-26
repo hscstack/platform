@@ -15,7 +15,7 @@ const props = defineProps({
 const isVisible = ref(false);
 const deferredPrompt = shallowRef(null);
 
-const handleBeforeInstall = (e) => {
+const handleBeforeInstall = (e: Event) => {
     e.preventDefault();
     deferredPrompt.value = e;
 
@@ -36,7 +36,7 @@ const handleAppInstalled = () => {
 onMounted(() => {
     const isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true;
+        (window.navigator as Record<string, unknown>).standalone === true;
 
     if (isStandalone) {
         return;
@@ -98,8 +98,7 @@ const handleDismiss = () => {
                                 Install Mobile App
                             </h3>
                             <p class="text-xs text-slate-500">
-                                Get fast, offline access right from your home
-                                screen.
+                                Get fast, offline access right from your home screen.
                             </p>
                         </div>
                     </div>
@@ -122,37 +121,38 @@ const handleDismiss = () => {
             </div>
         </Teleport>
 
+        <!-- Compact Inline Banner (Mobile) / Scaled Up (PC) -->
         <div
             v-else
             v-bind="$attrs"
-            class="flex flex-col gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-slate-50/80 p-4 shadow-sm backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
+            class="flex items-center justify-between gap-2.5 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-slate-50/80 px-3 py-2 shadow-sm backdrop-blur-sm sm:gap-4 sm:px-5 sm:py-3.5"
         >
-            <div class="flex items-center gap-3">
+            <div class="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
                 <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/10 text-xl text-indigo-600"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600/10 text-base sm:h-10 sm:w-10 sm:rounded-xl sm:text-xl"
                 >
                     📱
                 </div>
-                <div>
-                    <h3 class="text-sm font-bold text-slate-900">
+                <div class="min-w-0">
+                    <h3 class="truncate text-xs font-bold text-slate-900 sm:text-sm">
                         Install Mobile App
                     </h3>
-                    <p class="text-xs text-slate-500">
-                        Fast, offline access right from your home screen.
+                    <p class="truncate text-[11px] text-slate-500 sm:text-xs">
+                        Fast, offline home screen access.
                     </p>
                 </div>
             </div>
 
-            <div class="flex shrink-0 items-center justify-end gap-2">
+            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 <button
                     @click="handleInstall"
-                    class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow transition hover:bg-indigo-700 active:scale-95"
+                    class="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 sm:rounded-lg sm:px-4 sm:py-2 sm:text-xs"
                 >
-                    Install App
+                    Install
                 </button>
                 <button
                     @click="handleDismiss"
-                    class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-200/50 hover:text-slate-600"
+                    class="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-200/50 hover:text-slate-600 sm:h-8 sm:w-8"
                     title="Dismiss"
                 >
                     ✕
