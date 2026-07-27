@@ -42,5 +42,9 @@ return [
         'folder_name' => env('GOOGLE_DRIVE_FOLDER_NAME', 'backup'),
     ],
 
+    'youtube' => [
+        'key' => env('YOUTUBE_API_KEY'),
+    ],
+
 
 ];
