@@ -13,6 +13,7 @@
     use App\Http\Controllers\NodeController;
     use App\Http\Controllers\ResourceController;
     use App\Http\Controllers\SubjectController;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Cache;
     use Illuminate\Support\Facades\Route;
 
@@ -57,7 +58,7 @@
 
         Route::post('/resources', [AdminResourceController::class, 'store'])->middleware("permission:create resources");
         Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update'])->middleware("permission:edit resources");
-        
+
         Route::post('/resources/bulk/images', [AdminResourceController::class, 'storeBulkImages'])->middleware("permission:create resources");
 
         Route::patch('/notice', [AdminNoticeController::class, 'update'])->middleware("permission:edit notice")->name('notice.update');
@@ -80,6 +81,14 @@
 
     Route::post('/login', [AuthController::class, 'login'])
         ->middleware('throttle:10,1');
+
+
+
+    Route::get('/local/oauth2callback', function (Request $request) {
+        abort_unless(app()->environment('local'), 403);
+
+        dd($request->code);
+    });
 
 
     Route::middleware('throttle:60,1')->group(function () {

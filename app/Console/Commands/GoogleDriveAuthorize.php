@@ -30,7 +30,7 @@ class GoogleDriveAuthorize extends Command
         $client = new GoogleClient();
         $client->setClientId($clientId);
         $client->setClientSecret($clientSecret);
-        $client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob'); // out-of-band, no web server needed
+        $client->setRedirectUri('http://127.0.0.1:8000/local/oauth2callback');
         $client->setScopes([GoogleDrive::DRIVE_FILE]);
         $client->setAccessType('offline');
         $client->setPrompt('consent'); // forces a refresh token even on repeat authorizations
