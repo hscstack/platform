@@ -34,8 +34,6 @@ const closeDropdown = (e) => {
 
 onMounted(() => document.addEventListener('click', closeDropdown));
 onUnmounted(() => document.removeEventListener('click', closeDropdown));
-
-
 </script>
 
 <template>
@@ -90,7 +88,11 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                 </a>
 
                 <!-- Add Resource Dropdown -->
-                <div v-if="parent?.id" ref="dropdownRef" class="relative inline-block">
+                <div
+                    v-if="parent?.id"
+                    ref="dropdownRef"
+                    class="relative inline-block"
+                >
                     <button
                         type="button"
                         @click="isDropdownOpen = !isDropdownOpen"
@@ -117,7 +119,14 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                             @click="isDropdownOpen = false"
                             class="block rounded-md px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
-                            Upload Bulk Image
+                            Upload Bulk Images
+                        </Link>
+                        <Link
+                            :href="`/admin/resources/create/bulk/videos?node_id=${parent.id}&redirect=${currentUrl}`"
+                            @click="isDropdownOpen = false"
+                            class="block rounded-md px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                            Upload Bulk Videos
                         </Link>
                     </div>
                 </div>
