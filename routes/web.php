@@ -36,6 +36,7 @@
         Route::get('/nodes/edit/{node}', [AdminNodeController::class, 'edit'])->name('nodes.edit');
 
         Route::get('/resources/create', [AdminResourceController::class, 'create']);
+        Route::get('/resources/create/bulk/images', [AdminResourceController::class, 'createBulkImages']);
         Route::get('/resources/edit/{resource}', [AdminResourceController::class, 'edit']);
 
         Route::get('/users', [AdminUserController::class, 'index'])->name("users.index");
@@ -56,6 +57,8 @@
 
         Route::post('/resources', [AdminResourceController::class, 'store'])->middleware("permission:create resources");
         Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update'])->middleware("permission:edit resources");
+        
+        Route::post('/resources/bulk/images', [AdminResourceController::class, 'storeBulkImages'])->middleware("permission:create resources");
 
         Route::patch('/notice', [AdminNoticeController::class, 'update'])->middleware("permission:edit notice")->name('notice.update');
         Route::post('/clear-cache', function () {

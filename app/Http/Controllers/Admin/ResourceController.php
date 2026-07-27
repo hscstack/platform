@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BulkImageStoreRequest;
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
 use App\Models\Node;
@@ -10,6 +11,7 @@ use App\Models\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -107,5 +109,38 @@ class ResourceController extends Controller
         foreach ($ids as $id) {
             Cache::forget("resource_{$id}");
         }
+    }
+    function createBulkImages(Request $request)
+    {
+        $redirect = $request->input('redirect', url()->previous());
+        $node = Node::findOrFail($request->node_id);
+
+
+        return Inertia::render('admin/resources/BulkImageCreate', [
+            'redirect' => $redirect,
+            'node' => $node
+        ]);
+    }
+
+    function storeBulkImages(BulkImageStoreRequest $request)
+    {
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($request, $validated) {
+            foreach ($request->file('files') as $index => $file) {
+
+                $validated['title'] = $validated['custom_titles'][$index];
+                $validated['file_url'] = Storage::url($file->store('resources/images', 'public'));
+                $validated['user_id'] = Auth::id();
+                $validated['resource_type'] = 'image';
+
+                Resource::create($validated);
+            }
+        });
+
+        Cache::forget("node_resources_{$validated['node_id']}");
+        $this->clearResourcePageCache($validated['node_id']);
+
+        return redirect($validated['redirect'])->with('success', 'Bulk images uploaded successfully.');
     }
 }
