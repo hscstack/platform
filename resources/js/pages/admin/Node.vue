@@ -21,7 +21,26 @@ const totalItemsCount = computed(
 );
 
 const handleBack = () => {
-    window.history.back();
+    const url = new URL(window.location.href);
+    const segments = url.pathname.split('/').filter(Boolean);
+
+    // Already at /admin/subjects
+    if (segments.join('/') === 'admin/subjects') {
+        return;
+    }
+
+    const nodesIndex = segments.indexOf('nodes');
+
+    // At /admin/subjects/{subject}/nodes
+    if (nodesIndex === segments.length - 1) {
+        window.location.href = '/admin/subjects';
+        return;
+    }
+
+    // Remove the last nested node slug
+    segments.pop();
+
+    window.location.href = '/' + segments.join('/');
 };
 
 const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -58,7 +77,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                         {{ parent?.name ? parent.name : subject.name }}
                     </h3>
                     <p class="mt-0.5 text-sm text-gray-500">
-                        Curriculum structure and related resources.
+                        Curriculum structure and related resources. bal
                     </p>
                 </div>
             </div>
@@ -72,7 +91,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                     </span>
                 </div>
 
-                <a
+                <Link
                     :href="
                         parent
                             ? `/admin/subjects/${subject.slug}/nodes/create?parent_id=${parent.id}`
@@ -85,7 +104,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                         :stroke-width="2"
                     />
                     Add Folder
-                </a>
+                </Link>
 
                 <!-- Add Resource Dropdown -->
                 <div
