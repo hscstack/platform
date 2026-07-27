@@ -171,7 +171,7 @@ class ResourceController extends Controller
         $playlistId = $query['list'] ?? null;
 
         if (!$playlistId) {
-            return back()->withErrors('Invalid YouTube playlist URL');
+            return back()->with("error", "Invalid Youtube URL");
         }
 
         $videos = [];
@@ -187,7 +187,7 @@ class ResourceController extends Controller
             ]);
 
             if (!$response->successful()) {
-                return back()->withErrors('Unable to fetch YouTube playlist.');
+                return back()->with("error", "Unable to fetch youtube url");
             }
 
             $data = $response->json();

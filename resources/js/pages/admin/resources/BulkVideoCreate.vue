@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
 import { Youtube, FileSpreadsheet, Hash, Tag, Info } from 'lucide-vue-next';
 
