@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
