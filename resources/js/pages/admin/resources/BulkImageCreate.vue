@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
 import { Upload, X, Trash2, FileSpreadsheet, Hash, Tag } from 'lucide-vue-next';
 import { ref, computed, onUnmounted } from 'vue';
