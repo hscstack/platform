@@ -1,16 +1,36 @@
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Github, Facebook, Instagram } from 'lucide-vue-next';
 
 defineProps({
     member: Object,
     id: String,
 });
+
+const activeHash = ref('');
+
+const updateHash = () => {
+    activeHash.value = window.location.hash;
+};
+
+onMounted(() => {
+    updateHash();
+    window.addEventListener('hashchange', updateHash);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('hashchange', updateHash);
+});
 </script>
 
 <template>
     <div
         :id="id"
-        class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-slate-300 hover:shadow-md hover:shadow-slate-100/50"
+        class="group flex scroll-mt-64 flex-col justify-between rounded-2xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-slate-300 hover:shadow-md hover:shadow-slate-100/50"
+        :class="{
+            'border-indigo-500 shadow-lg ring-2 shadow-indigo-100 ring-indigo-500 ring-offset-4':
+                activeHash === `#${id}`,
+        }"
     >
         <div class="flex flex-col items-center">
             <div class="mb-6">
