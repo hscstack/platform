@@ -2,39 +2,65 @@
 
 use App\Models\Subject;
 
-test('admin subject lifecycle can create, edit, and delete a subject', function () {
-    $admin = adminUserWithPermissions([
-        'view admin',
-        'create subjects',
-        'edit subjects',
-        'delete subjects',
-    ]);
+test('admin can create a subject', function () {
+    $admin = adminUserWithPermissions(['view admin', 'create subjects']);
 
-    $createResponse = $this->actingAs($admin)->post('/admin/subjects', [
+    $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Platform Testing',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
-    $createResponse->assertRedirect(route('admin.subjects.index'));
-    $this->assertDatabaseHas('subjects', ['name' => 'Platform Testing']);
+    $response->assertRedirect(route('admin.subjects.index'));
+    $this->assertDatabaseHas('subjects', [
+        'name' => 'Platform Testing',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+    ]);
+});
 
-    $subject = Subject::where('name', 'Platform Testing')->firstOrFail();
+test('admin can update a subject', function () {
+    $admin = adminUserWithPermissions(['view admin', 'edit subjects']);
 
-    $updateResponse = $this->actingAs($admin)->patch("/admin/subjects/edit/{$subject->id}", [
+    $subject = Subject::create([
+        'name' => 'Platform Testing',
+        'slug' => 'platform-testing',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+    ]);
+
+    $response = $this->actingAs($admin)->patch("/admin/subjects/edit/{$subject->id}", [
         'name' => 'Platform Testing Updated',
         'tailwind_format' => 'bg-slate-600',
         'icon' => 'book-open',
         'sort_order' => 2,
     ]);
 
-    $updateResponse->assertRedirect(route('admin.subjects.index'));
-    $this->assertDatabaseHas('subjects', ['name' => 'Platform Testing Updated', 'sort_order' => 2]);
+    $response->assertRedirect(route('admin.subjects.index'));
+    $this->assertDatabaseHas('subjects', [
+        'id' => $subject->id,
+        'name' => 'Platform Testing Updated',
+        'sort_order' => 2,
+    ]);
+});
 
-    $deleteResponse = $this->actingAs($admin)->delete("/admin/subjects/{$subject->id}");
+test('admin can delete a subject', function () {
+    $admin = adminUserWithPermissions(['view admin', 'delete subjects']);
 
-    $deleteResponse->assertRedirect();
+    $subject = Subject::create([
+        'name' => 'Platform Testing',
+        'slug' => 'platform-testing',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+    ]);
+
+    $response = $this->actingAs($admin)->delete("/admin/subjects/{$subject->id}");
+
+    $response->assertRedirect();
     $this->assertDatabaseMissing('subjects', ['id' => $subject->id]);
 });
 
