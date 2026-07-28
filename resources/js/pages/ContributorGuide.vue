@@ -104,7 +104,7 @@ onUnmounted(() => {
         <p
             class="mx-auto max-w-lg text-xs font-bold tracking-widest text-slate-500 uppercase sm:text-sm"
         >
-            A Step-by-Step Manual for Managing Content
+            Content Management-এর ধাপে ধাপে সম্পূর্ণ নির্দেশিকা
         </p>
     </header>
 
@@ -182,12 +182,11 @@ onUnmounted(() => {
                 <p
                     class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                 >
-                    Thank you for helping us keep
                     <strong class="font-bold text-slate-900">HSCStack</strong>
-                    organized and helpful for students. This guide will walk you
-                    through how our admin panel works in simple,
-                    easy-to-understand language. No technical background is
-                    needed!
+                    -কে আরও গোছানো এবং শিক্ষার্থীদের জন্য আরও উপকারী করে তুলতে
+                    আপনার অবদানের জন্য ধন্যবাদ। এই গাইডে আমাদের admin panel
+                    কীভাবে কাজ করে তা সহজ ভাষায় ব্যাখ্যা করা হয়েছে। এটি বুঝতে
+                    কোনো technical জ্ঞানের প্রয়োজন নেই।
                 </p>
 
                 <div
@@ -208,8 +207,8 @@ onUnmounted(() => {
                             <p
                                 class="mt-1 text-xs leading-relaxed font-medium text-indigo-800/90 sm:text-sm"
                             >
-                                You must have an approved contributor account to
-                                access the admin panel.
+                                Admin panel ব্যবহার করার জন্য আপনার একটি
+                                approved contributor account থাকা আবশ্যক।
                             </p>
                         </div>
                     </div>
@@ -224,9 +223,10 @@ onUnmounted(() => {
                 <p
                     class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                 >
-                    Once our team approves your request, we will assign you a
-                    specific role based on what you’ll be doing, and send you
-                    your private login credentials (username and password).
+                    আপনার account approve হওয়ার পর, আপনি কী ধরনের কাজ করবেন তার
+                    ভিত্তিতে আপনাকে একটি নির্দিষ্ট role প্রদান করা হবে, এবং সেই
+                    সাথে আপনার ব্যক্তিগত login credentials (email ও password)
+                    পাঠানো হবে।
                 </p>
             </section>
 
@@ -249,15 +249,15 @@ onUnmounted(() => {
                     <p
                         class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                     >
-                        This is your main screen right after logging in. It
-                        displays basic statistics, such as visitor traffic and
-                        quick numbers about the site.
+                        Login করার পর এটিই হবে আপনার প্রথম screen। এখানে visitor
+                        traffic এবং ওয়েবসাইটের বিভিন্ন basic statistics দেখতে
+                        পাবেন।
                     </p>
                     <p
                         class="block rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs font-semibold text-slate-500 italic sm:text-sm"
                     >
-                        💡 Note: You don't need to perform any actions here. It
-                        is just for viewing stats.
+                        💡 Note: এখানে আপনার কোনো action নেওয়ার প্রয়োজন নেই।
+                        এটি শুধু statistics দেখার জন্য।
                     </p>
                 </div>
             </section>
@@ -284,10 +284,10 @@ onUnmounted(() => {
                         <p
                             class="mt-1 text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                         >
-                            This is where you will spend most of your time. This
-                            section is used to manage <strong>Subjects</strong>,
-                            <strong>Folders</strong>, and individual
-                            <strong>Resources</strong>.
+                            আপনি সবচেয়ে বেশি সময় এই section-এ কাজ করবেন। এখানে
+                            <strong>Subjects</strong>, <strong>Folders</strong>,
+                            এবং individual <strong>Resources</strong> manage করা
+                            হয়।
                         </p>
                     </div>
 
@@ -305,23 +305,24 @@ onUnmounted(() => {
                             <p
                                 class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base"
                             >
-                                Subjects represent main academic courses like
+                                Subject বলতে মূল academic course বোঝায়, যেমন:
                                 <strong class="text-slate-900"
                                     >Bangla 1st Paper</strong
                                 >
-                                or
+                                অথবা
                                 <strong class="text-slate-900"
                                     >English 1st Paper</strong
-                                >.
+                                >।
                             </p>
                             <div
                                 class="rounded-lg border border-amber-200/60 bg-amber-50 p-3 text-xs leading-relaxed font-medium text-amber-900 sm:text-sm"
                             >
-                                <strong>Important Rule:</strong> Always create
-                                separate subjects for separate papers (e.g.,
-                                create one for "Bangla 1st Paper" and another
-                                for "Bangla 2nd Paper"). Combining them into one
-                                makes navigation confusing for students.
+                                <strong>Important Rule:</strong> প্রতিটি
+                                paper-এর জন্য আলাদা Subject তৈরি করুন। (যেমন:
+                                Bangla 1st Paper-এর জন্য একটি Subject এবং Bangla
+                                2nd Paper-এর জন্য সম্পূর্ণ আলাদা একটি Subject
+                                থাকবে।) দুটি একসাথে রাখলে শিক্ষার্থীদের বুঝতে
+                                অসুবিধা হতে পারে ।
                             </div>
                         </div>
 
@@ -336,22 +337,20 @@ onUnmounted(() => {
                             <p
                                 class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base"
                             >
-                                Inside a subject, you can create folders. Think
-                                of top-level folders as
-                                <strong>Chapters</strong> (for example:
-                                <em>Bangla 1st Paper → Prottupokar Chapter</em
-                                >).
+                                একটি Subject-এর ভেতরে Folder তৈরি করা যায়।
+                                এক্ষেত্রে Folder-কে
+                                <strong>Chapter</strong> হিসেবে ভাবতে পারেন
+                                (উদাহরণ:
+                                <em>Bangla 1st Paper → বই পড়া প্রবন্ধ Folder</em>)।
                             </p>
                             <p
                                 class="text-xs leading-relaxed font-normal text-slate-600 sm:text-sm"
                             >
-                                You can create sub-folders inside folders if
-                                needed. Click the
+                                নতুন Folder তৈরি করতে
                                 <strong class="text-slate-900"
                                     >"Add Folder"</strong
                                 >
-                                button to make a new one. If you don't see this
-                                button, ask an Admin to grant access.
+                                বাটন ব্যবহার করুন।
                             </p>
                         </div>
 
@@ -361,14 +360,16 @@ onUnmounted(() => {
                             <h4
                                 class="text-xs font-black tracking-wider text-indigo-600 uppercase"
                             >
-                                Inside Folders: Resources
+                                Folder-এর ভেতরে: Resources
                             </h4>
                             <p
                                 class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base"
                             >
-                                Resources are the actual study materials stored
-                                inside a folder (e.g., 1 page of a note = 1
-                                resource).
+                                Resource হলো আসল study material, যা শিক্ষার্থীরা
+                                ব্যবহার করবে। যেমন: একটি handwritten note-এর ১টি
+                                page = ১টি Resource। সব নোট বা ক্লাস একসাথে
+                                আপলোড না করে, ফোল্ডার অনুযায়ী ভাগ করে আপলোড
+                                করুন।
                             </p>
 
                             <p
@@ -385,8 +386,8 @@ onUnmounted(() => {
                                         >Image</span
                                     >
                                     <span
-                                        >Single file upload for handwritten
-                                        notes or photo pages.</span
+                                        >Handwritten note বা photo page-এর জন্য
+                                        single image upload।</span
                                     >
                                 </li>
                                 <li class="flex items-start gap-2">
@@ -395,8 +396,8 @@ onUnmounted(() => {
                                         >Video</span
                                     >
                                     <span
-                                        >Only YouTube video links are
-                                        supported.</span
+                                        >শুধু YouTube video link সাপোর্ট করা
+                                        হয়।</span
                                     >
                                 </li>
                                 <li class="flex items-start gap-2">
@@ -405,11 +406,12 @@ onUnmounted(() => {
                                         >PDF</span
                                     >
                                     <span
-                                        >Direct links ending with
+                                        >এমন direct link যা
                                         <code
                                             class="rounded bg-slate-200 px-1 font-mono text-slate-800"
                                             >.pdf</code
-                                        >.</span
+                                        >
+                                        দিয়ে শেষ হয়।</span
                                     >
                                 </li>
                                 <li class="flex items-start gap-2">
@@ -418,16 +420,16 @@ onUnmounted(() => {
                                         >Text Note</span
                                     >
                                     <span
-                                        >Written announcements or important text
-                                        notes.</span
+                                        >লিখিত announcement বা গুরুত্বপূর্ণ text
+                                        note-এর জন্য।</span
                                     >
                                 </li>
                             </ul>
                             <p
                                 class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base"
                             >
-                                For faster content management, you can also use
-                                the bulk upload tools:
+                                দ্রুত content management-এর জন্য Bulk Upload
+                                Tools ব্যবহার করতে পারেন:
                             </p>
 
                             <ul
@@ -439,9 +441,12 @@ onUnmounted(() => {
                                         >Bulk Images</span
                                     >
                                     <span
-                                        >Upload multiple image pages at once
-                                        instead of adding each image
-                                        individually.</span
+                                        >একসাথে অনেকগুলো image page আপলোড করতে
+                                        পারবেন, ফলে প্রতিটি image আলাদাভাবে add
+                                        করার প্রয়োজন হবে না। শিক্ষার্থীদের
+                                        confusion এড়াতে "auto serial number"
+                                        অপশনটি ব্যবহার করুন, যাতে image-গুলো
+                                        সঠিক ক্রমে নামকরণ হয়।</span
                                     >
                                 </li>
                                 <li class="flex items-start gap-2">
@@ -450,9 +455,10 @@ onUnmounted(() => {
                                         >Bulk Videos</span
                                     >
                                     <span
-                                        >Import all videos from a YouTube
-                                        playlist automatically instead of adding
-                                        each video link manually.</span
+                                        >YouTube playlist থেকে সব video
+                                        স্বয়ংক্রিয়ভাবে import করতে পারবেন, ফলে
+                                        প্রতিটি video link ম্যানুয়ালি add করতে
+                                        হবে না।</span
                                     >
                                 </li>
                             </ul>
@@ -480,15 +486,15 @@ onUnmounted(() => {
                     <p
                         class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                     >
-                        Assigned blog writers can click
-                        <strong class="text-slate-900">"Create Blog"</strong> to
-                        publish articles.
+                        যেসব contributor-কে blog লেখার দায়িত্ব দেওয়া হয়েছে,
+                        তারা
+                        <strong class="text-slate-900">"Create Blog"</strong>
+                        ব্যবহার করে article publish করতে পারবেন।
                     </p>
                     <p
                         class="text-xs leading-relaxed font-normal text-slate-600 sm:text-sm"
                     >
-                        Use the toolbar at the top of the editor to format your
-                        text:
+                        Editor-এর উপরের toolbar ব্যবহার করে লেখা ফরম্যাট করুন:
                     </p>
                     <div
                         class="flex flex-wrap gap-2 text-xs font-semibold text-slate-700"
@@ -534,14 +540,15 @@ onUnmounted(() => {
                         </h3>
                         <span
                             class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-800 uppercase sm:text-xs"
-                            >Admin Only</span
+                            >শুধুমাত্র Admin-এর জন্য</span
                         >
                     </div>
                     <p
                         class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                     >
-                        Controls broadcast banners on the public landing page.
-                        Reserved for senior administrators.
+                        Public landing page-এর broadcast banner manage করার জন্য
+                        এটি ব্যবহার করা হয়। এই section শুধুমাত্র senior
+                        administrator-দের জন্য সংরক্ষিত।
                     </p>
                 </div>
             </section>
@@ -567,14 +574,14 @@ onUnmounted(() => {
                         </h3>
                         <span
                             class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-800 uppercase sm:text-xs"
-                            >Admin Only</span
+                            >শুধুমাত্র Admin-এর জন্য</span
                         >
                     </div>
                     <p
                         class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                     >
-                        Allows team leaders to manage user accounts and assign
-                        permission roles.
+                        Senior administrator-রা এখান থেকে user account manage
+                        করতে এবং permission role assign করতে পারবেন।
                     </p>
                 </div>
             </section>
@@ -598,9 +605,10 @@ onUnmounted(() => {
                     <p
                         class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base"
                     >
-                        Update your account details anytime. For profile photos,
-                        upload to a service like Imgur/PostImages and paste the
-                        direct link into your profile.
+                        যেকোনো সময় আপনি আপনার account details update করতে
+                        পারবেন। Profile photo-এর জন্য Imgur বা PostImages-এর মতো
+                        কোনো service-এ ছবি আপলোড করে, সেই direct link আপনার
+                        profile-এ ব্যবহার করুন।
                     </p>
                 </div>
             </section>
@@ -635,7 +643,7 @@ onUnmounted(() => {
                         <p
                             class="text-xs leading-relaxed font-medium text-emerald-800/90"
                         >
-                            Your changes saved properly and are now live.
+                            আপনার changes সফলভাবে save হয়েছে এবং এখন live আছে।
                         </p>
                     </div>
 
@@ -653,8 +661,8 @@ onUnmounted(() => {
                         <p
                             class="text-xs leading-relaxed font-medium text-rose-800/90"
                         >
-                            Your account is missing permission. Contact an admin
-                            to request access.
+                            এই কাজের জন্য প্রয়োজনীয় permission আপনার account-এ
+                            নেই। Access পাওয়ার জন্য Admin-এর সাথে যোগাযোগ করুন।
                         </p>
                     </div>
                 </div>
@@ -670,13 +678,13 @@ onUnmounted(() => {
                     <HelpCircle class="h-5 w-5" />
                 </div>
                 <h3 class="text-base font-bold sm:text-lg">
-                    Need Help or Special Access?
+                    Help বা বিশেষ Access প্রয়োজন?
                 </h3>
                 <p
                     class="mx-auto max-w-md text-xs leading-relaxed font-normal text-slate-300 sm:text-sm"
                 >
-                    If you get stuck or need permission to manage a specific
-                    section, reach out directly on WhatsApp.
+                    কোনো সমস্যায় পড়লে বা কোনো specific section manage করার
+                    permission প্রয়োজন হলে, সরাসরি WhatsApp-এ যোগাযোগ করুন।
                 </p>
                 <div class="pt-2">
                     <a
