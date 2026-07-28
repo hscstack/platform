@@ -96,6 +96,7 @@
     Route::middleware('throttle:60,1')->group(function () {
         Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
         Route::inertia('/terms-service', 'legal/TermsConditions');
+        Route::inertia('/content-policy', 'legal/ContentPolicy');
         Route::inertia('/join', 'platform/JoinTeam');
         Route::inertia('/guide', 'ContributorGuide');
 

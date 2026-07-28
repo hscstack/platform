@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Github, Facebook, BookOpen, Users, UserPlus, ExternalLink } from 'lucide-vue-next';
+import {
+    Github,
+    Facebook,
+    BookOpen,
+    Users,
+    UserPlus,
+    ExternalLink,
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 </script>
 
@@ -129,6 +136,15 @@ import AppLogo from './AppLogo.vue';
                                     class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
                                     Terms of Service
+                                </Link>
+                            </li>
+
+                            <li>
+                                <Link
+                                    href="/content-policy"
+                                    class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
+                                >
+                                    Content Policy
                                 </Link>
                             </li>
                         </ul>
