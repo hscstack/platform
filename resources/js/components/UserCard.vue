@@ -58,7 +58,7 @@ onBeforeUnmount(() => {
                     {{ member.name }}
                 </h3>
                 <span
-                    class="inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                    class="inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider capitalize"
                     :class="{
                         'border border-rose-100 bg-rose-50 text-rose-600':
                             member.roles[0].name.toLowerCase() === 'admin',
@@ -68,7 +68,11 @@ onBeforeUnmount(() => {
                             member.roles[0].name.toLowerCase() === 'manager',
                     }"
                 >
-                    {{ member.roles[0].name }}
+                    {{
+                        member.roles[0].name.toLowerCase() === 'manager'
+                            ? 'Staff'
+                            : member.roles[0].name
+                    }}
                 </span>
                 <p
                     class="text-xs font-bold tracking-wide text-indigo-600 uppercase"
