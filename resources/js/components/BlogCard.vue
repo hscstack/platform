@@ -9,14 +9,14 @@ const props = defineProps({
 
 const formattedDate = computed(() => {
     if (!props.blog.created_at) {
-return '';
-}
+        return '';
+    }
 
     const date = new Date(props.blog.created_at);
 
     if (isNaN(date.getTime())) {
-return '';
-}
+        return '';
+    }
 
     return new Intl.DateTimeFormat('en-US', {
         month: 'short',
@@ -28,41 +28,42 @@ return '';
 
 <template>
     <div
-        class="group border-slate-150 flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+        class="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
     >
+        <!-- Featured Image Container -->
         <Link
             :href="'/blogs/' + blog.slug"
-            class="relative block aspect-video overflow-hidden bg-slate-100"
+            class="relative block aspect-[16/9] overflow-hidden bg-slate-100"
         >
             <img
                 :src="blog.featured_image || 'https://placehold.co/600x400'"
                 :alt="blog.title"
-                class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                class="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                 loading="lazy"
             />
             <div
                 v-if="blog.category"
-                class="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-extrabold tracking-wider text-slate-900 uppercase shadow-sm backdrop-blur-md"
+                class="absolute top-2.5 left-2.5 rounded-md bg-indigo-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs"
             >
                 {{ blog.category }}
             </div>
         </Link>
 
-        <div class="flex flex-1 flex-col p-6">
-            <div class="mb-3 flex items-center gap-2 text-sm text-slate-500">
-                <span>Author : </span>
-
+        <!-- Card Body -->
+        <div class="flex flex-1 flex-col p-4">
+            <!-- News Meta (Author & Date) -->
+            <div
+                class="mb-1.5 flex items-center gap-1.5 text-xs text-slate-500"
+            >
+                <span class="text-slate-400">Author</span>
                 <Link
                     :href="`/about-us#${blog.user?.id}`"
-                    class="font-medium text-indigo-600 transition-colors hover:text-indigo-800 hover:underline"
+                    class="font-medium text-indigo-600 underline transition-colors hover:underline"
                 >
                     {{ blog.user?.name }}
                 </Link>
 
-                <span
-                    v-if="formattedDate"
-                    class="h-1 w-1 rounded-full bg-slate-300"
-                ></span>
+                <span v-if="formattedDate" class="text-slate-300">•</span>
 
                 <time
                     v-if="formattedDate"
@@ -73,28 +74,31 @@ return '';
                 </time>
             </div>
 
+            <!-- Title -->
             <Link :href="'/blogs/' + blog.slug" class="group/title block">
                 <h3
-                    class="line-clamp-2 text-xl leading-snug font-bold text-slate-900 transition duration-150 group-hover/title:text-indigo-600"
+                    class="line-clamp-2 text-base leading-snug font-bold text-slate-900 transition duration-150 group-hover/title:text-indigo-600"
                 >
                     {{ blog.title }}
                 </h3>
             </Link>
 
+            <!-- Excerpt -->
             <p
-                class="mt-3 mb-6 line-clamp-3 text-sm leading-relaxed text-slate-500"
+                class="mt-1.5 mb-3 line-clamp-2 text-xs leading-relaxed text-slate-600"
             >
                 {{ blog.excerpt }}
             </p>
 
-            <div class="mt-auto border-t border-slate-50 pt-4">
+            <!-- Footer Action -->
+            <div class="mt-auto border-t border-slate-100 pt-3">
                 <Link
                     :href="'/blogs/' + blog.slug"
-                    class="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
+                    class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 transition hover:text-indigo-700"
                 >
-                    <span>বিস্তারিত পড়ুন </span>
+                    <span>বিস্তারিত পড়ুন</span>
                     <ArrowRight
-                        class="h-4 w-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                        class="h-3.5 w-3.5 transform transition-transform duration-200 group-hover:translate-x-1"
                     />
                 </Link>
             </div>

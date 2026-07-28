@@ -147,7 +147,7 @@ const copyLink = async () => {
 
                     <Link
                         :href="`/about-us#author-${blog.user?.id}`"
-                        class="mt-1 block text-lg font-semibold text-slate-900 transition hover:text-indigo-600"
+                        class="mt-1 block text-lg font-semibold underline transition text-slate-900"
                     >
                         {{ blog.user?.name }}
                     </Link>
