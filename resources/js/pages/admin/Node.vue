@@ -77,7 +77,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                         {{ parent?.name ? parent.name : subject.name }}
                     </h3>
                     <p class="mt-0.5 text-sm text-gray-500">
-                        Curriculum structure and related resources. bal
+                        Curriculum structure and related resources.
                     </p>
                 </div>
             </div>
