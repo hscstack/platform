@@ -20,7 +20,7 @@ class UpdateSubjectRequest extends FormRequest
     {
         if ($this->exists('name')) {
             $this->merge([
-                'slug' => Str::slug($this->input('name')),
+                'slug' => Str::slug($this->course . '-' . $this->name),
             ]);
         }
     }

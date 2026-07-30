@@ -19,7 +19,7 @@ class StoreSubjectRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'slug' => Str::slug($this->name),
+            'slug' => Str::slug($this->course . '-' . $this->name),
         ]);
     }
 
