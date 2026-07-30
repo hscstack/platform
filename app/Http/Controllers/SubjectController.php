@@ -13,10 +13,11 @@ use Inertia\Inertia;
 
 class SubjectController extends Controller
 {
-    public function index()
+    public function index($course)
     {
-        $homeData = Cache::rememberForever("home_page_data", function () {
+        $homeData = Cache::rememberForever("home_page_data_{$course}", function () use ($course) {
             $subjects = Subject::orderBy('sort_order', 'asc')
+                ->where('course', $course)
                 ->withCount([
                     'nodes' => function ($query) {
                         $query->whereNull('parent_id');
