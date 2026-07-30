@@ -3,7 +3,7 @@
 
 # HSCStack 📚
 
-> A curated resource platform for HSC students of Bangladesh — built by members, for everyone.
+> A curated resource platform for HSC & SSC students of Bangladesh — built by members, for everyone.
 
 HSCStack is a lightweight, structured platform where verified members share academic resources — practicals, notes, PDFs, videos, and questions — organized by subject and chapter, so every HSC student can find what they need in one place.
 
@@ -11,7 +11,7 @@ HSCStack is a lightweight, structured platform where verified members share acad
 
 ## 🌟 What is HSCStack?
 
-HSCStack is built for students preparing for the **Higher Secondary Certificate (HSC)** exams in Bangladesh. It brings together a trusted library of student-made resources, organized neatly by subject and chapter — no more digging through WhatsApp groups or random Facebook posts.
+HSCStack is built for students preparing for the **Higher Secondary Certificate (HSC)** & **Secoondary School Certificate (SSC)** exams in Bangladesh. It brings together a trusted library of student-made resources, organized neatly by subject and chapter — no more digging through WhatsApp groups or random Facebook posts.
 
 Browsing is open to everyone. But to **contribute**, you need to be an HSCStack member first — keeping the content quality high and the community trustworthy.
 
