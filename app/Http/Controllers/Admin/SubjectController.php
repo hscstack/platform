@@ -36,7 +36,6 @@ class SubjectController extends Controller
     public function store(StoreSubjectRequest $request)
     {
         Subject::create($request->validated());
-        Cache::forget('home_page_data');
 
         return redirect()->route('admin.subjects.index');
     }
@@ -44,7 +43,6 @@ class SubjectController extends Controller
     public function update(UpdateSubjectRequest $request, Subject $subject)
     {
         $subject->update($request->validated());
-        Cache::forget('home_page_data');
 
 
         return redirect()->route('admin.subjects.index');
@@ -54,7 +52,6 @@ class SubjectController extends Controller
     public function destroy(Subject $subject)
     {
         $subject->delete();
-        Cache::forget('home_page_data');
 
         return redirect()->back()->with('success', 'Subject deleted successfully.');
     }

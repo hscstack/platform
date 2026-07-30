@@ -7,7 +7,6 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Models\Permission;
@@ -43,7 +42,6 @@ class UserController extends Controller
             $user->syncPermissions([]);
         }
 
-        Cache::forget('about_us_info');
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
@@ -84,7 +82,6 @@ class UserController extends Controller
             }
         }
 
-        Cache::forget('about_us_info');
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User updated successfully.');
@@ -93,7 +90,6 @@ class UserController extends Controller
     function destroy(User $user)
     {
         $user->delete();
-        Cache::forget('about_us_info');
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
