@@ -37,7 +37,7 @@ import { Scale, ArrowLeft, FileText, HelpCircle, AlertCircle, Ban } from 'lucide
                 <div>
                     <h2 class="text-base font-bold text-slate-900">১. সার্ভিসের বর্ণনা</h2>
                     <p class="mt-1.5 text-sm font-medium leading-relaxed text-slate-500">
-                        এই প্ল্যাটফর্ম HSC স্টুডেন্টদের জন্য একটা fast, distraction-free স্টাডি আর্কাইভ হিসেবে কাজ করে। আমরা হোস্ট করি:
+                        এই প্ল্যাটফর্ম HSC & SSC স্টুডেন্টদের জন্য একটা fast, distraction-free স্টাডি আর্কাইভ হিসেবে কাজ করে। আমরা হোস্ট করি:
                     </p>
                     <ul class="list-disc pl-5 mt-2 text-sm font-medium text-slate-500 space-y-1">
                         <li>ব্যক্তিগতভাবে হাতে লেখা নোট, প্র্যাকটিক্যাল রেকর্ড, এবং structural গাইড।</li>
@@ -73,7 +73,7 @@ import { Scale, ArrowLeft, FileText, HelpCircle, AlertCircle, Ban } from 'lucide
                 <div>
                     <h2 class="text-base font-bold text-slate-900">৩. এডুকেশনাল Accuracy সংক্রান্ত Disclaimer</h2>
                     <p class="mt-1.5 text-sm font-medium leading-relaxed text-slate-500">
-                        আমরা clean curation এবং accuracy বজায় রাখার চেষ্টা করলেও, সবকিছু "as-is" ভিত্তিতে শেয়ার করা হয়। আমরা কোনো performance warranty দিই না, এবং সঠিক লার্নিং প্যারামিটার বজায় রাখতে ব্যবহারকারীদের উচিত অফিশিয়াল HSC কলেজ টেক্সটবুকের সাথে ডেটা স্ট্রিম মিলিয়ে দেখা।
+                        আমরা clean curation এবং accuracy বজায় রাখার চেষ্টা করলেও, সবকিছু "as-is" ভিত্তিতে শেয়ার করা হয়। আমরা কোনো performance warranty দিই না, এবং সঠিক লার্নিং প্যারামিটার বজায় রাখতে ব্যবহারকারীদের উচিত অফিশিয়াল টেক্সটবুকের সাথে ডেটা স্ট্রিম মিলিয়ে দেখা।
                     </p>
                 </div>
             </div>
