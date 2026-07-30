@@ -96,7 +96,8 @@ class NodeController extends Controller
 
         $slug = Str::slug($validated['name']);
 
-        $exists = Node::where('parent_id', $parent?->id)
+        $exists = Node::where('subject_id', $subject->id)
+            ->where('parent_id', $parent?->id)
             ->where('slug', $slug)
             ->exists();
 
@@ -149,7 +150,8 @@ class NodeController extends Controller
                 ? $validated['parent_id']
                 : $node->parent_id;
 
-            $exists = Node::where('parent_id', $parentId)
+            $exists = Node::where('subject_id', $subject->id)
+                ->where('parent_id', $parentId)
                 ->where('slug', $slug)
                 ->where('id', '!=', $node->id)
                 ->exists();
