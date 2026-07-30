@@ -7,6 +7,7 @@ import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import RepositoryStas from '@/components/RepositoryStas.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
+import CourseSwitcher from '@/components/CourseSwitcher.vue';
 
 const props = defineProps({
     subjects: Array,
@@ -36,7 +37,7 @@ const filteredSubjects = computed(() => {
 
     <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
         <PwaInstallPrompt variant="banner" class="mb-6" />
-
+        <CourseSwitcher />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SubjectCard
                 v-for="subject in filteredSubjects"

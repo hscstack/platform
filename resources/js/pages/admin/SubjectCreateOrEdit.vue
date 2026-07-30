@@ -31,6 +31,7 @@ const props = defineProps({
 
 const form = useForm({
     name: props.subject?.name || '',
+    course: props.subject?.course || 'hsc',
     tailwind_format: props.subject?.tailwind_format || 'bg-red-50 text-red-600',
     icon: props.subject?.icon || 'BookOpen',
     sort_order: props.subject?.sort_order || 0,
@@ -101,7 +102,7 @@ const submitForm = () => {
 
             <form @submit.prevent="submitForm" class="space-y-8">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <div class="md:col-span-2">
+                    <div>
                         <label
                             for="name"
                             class="mb-1.5 block text-sm font-semibold text-slate-700"
@@ -124,6 +125,33 @@ const submitForm = () => {
                             class="mt-1 text-sm text-rose-600"
                         >
                             {{ form.errors.name }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="course"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Course</label
+                        >
+                        <select
+                            v-model="form.course"
+                            id="course"
+                            class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none"
+                            :class="
+                                form.errors.course
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
+                        >
+                            <option value="hsc">HSC</option>
+                            <option value="ssc">SSC</option>
+                        </select>
+                        <p
+                            v-if="form.errors.course"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.course }}
                         </p>
                     </div>
 

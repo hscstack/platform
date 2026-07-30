@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Helpers\CacheHelper;
 use App\Models\Blog;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,14 +15,14 @@ class BlogObserver
             $blog->getOriginal('is_featured') ||
             $blog->wasChanged('is_published')
         ) {
-            Cache::forget('home_page_data');
+            CacheHelper::clearHomePage();
         }
     }
 
     public function deleted(Blog $blog): void
     {
         if ($blog->is_featured) {
-            Cache::forget('home_page_data');
+            CacheHelper::clearHomePage();
         }
     }
 }

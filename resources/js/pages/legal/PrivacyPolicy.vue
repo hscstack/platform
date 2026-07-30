@@ -41,7 +41,7 @@ import {
             class="space-y-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
         >
             <p class="text-sm leading-relaxed font-medium text-slate-600">
-                আমাদের প্ল্যাটফর্মে স্বাগতম। HSC স্টুডেন্টদের জন্য প্রিমিয়াম,
+                আমাদের প্ল্যাটফর্মে স্বাগতম। HSC & SSC স্টুডেন্টদের জন্য প্রিমিয়াম,
                 কিউরেটেড এবং distraction-free স্টাডি ম্যাটেরিয়াল দেওয়ার
                 ব্যাপারে আমরা নিবেদিত। এই প্রাইভেসি পলিসিতে ব্যাখ্যা করা হয়েছে,
                 আমাদের ওয়েবসাইট ব্যবহার করার সময় আপনার তথ্য আমরা কীভাবে

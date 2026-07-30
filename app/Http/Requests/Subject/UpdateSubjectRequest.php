@@ -20,7 +20,7 @@ class UpdateSubjectRequest extends FormRequest
     {
         if ($this->exists('name')) {
             $this->merge([
-                'slug' => Str::slug($this->input('name')),
+                'slug' => Str::slug($this->course . '-' . $this->name),
             ]);
         }
     }
@@ -39,6 +39,7 @@ class UpdateSubjectRequest extends FormRequest
             'icon'            => ['sometimes', 'string', 'max:50'],
             'sort_order'      => ['sometimes', 'integer'],
             'slug'            => ['sometimes', 'string'],
+            'course' => ['sometimes', 'string', 'in:ssc,hsc'],
         ];
     }
 }

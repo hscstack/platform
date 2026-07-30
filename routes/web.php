@@ -108,7 +108,14 @@
         Route::get('/blogs', [BlogController::class, 'index']);
         Route::get('/blogs/{blog}', [BlogController::class, 'show']);
 
-        Route::get('/', [SubjectController::class, 'index'])->name('index');
+        Route::get('/', [SubjectController::class, 'index'])
+            ->defaults('course', 'hsc')
+            ->name('index');
+
+        Route::get('/ssc', [SubjectController::class, 'index'])
+            ->defaults('course', 'ssc')
+            ->name('ssc.index');
+
         Route::get('/resources/{id}', [ResourceController::class, 'show']);
         Route::get('/{subject:slug}', [SubjectController::class, 'show']);
         Route::get('/{subject:slug}/{path}', [NodeController::class, 'show'])->where('path', '.*');
