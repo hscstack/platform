@@ -36,6 +36,7 @@ class StoreSubjectRequest extends FormRequest
             'tailwind_format' => ['required', 'string', 'max:100'],
             'icon' => ['required', 'string', 'max:50'],
             'sort_order' => ['required', 'integer'],
+            'course' => ['required', 'string', 'in:ssc,hsc'],
         ];
     }
 }

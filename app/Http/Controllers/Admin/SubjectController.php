@@ -13,7 +13,7 @@ class SubjectController extends Controller
 {
     function index()
     {
-        $subjects = Subject::orderBy('sort_order', 'asc')->withCount('nodes')->get();
+        $subjects = Subject::orderBy('course','desc')->withCount('nodes')->get();
 
         return Inertia::render('admin/Index', [
             'subjects' => $subjects,

@@ -39,6 +39,7 @@ class UpdateSubjectRequest extends FormRequest
             'icon'            => ['sometimes', 'string', 'max:50'],
             'sort_order'      => ['sometimes', 'integer'],
             'slug'            => ['sometimes', 'string'],
+            'course' => ['sometimes', 'string', 'in:ssc,hsc'],
         ];
     }
 }

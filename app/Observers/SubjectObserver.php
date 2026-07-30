@@ -10,7 +10,7 @@ class SubjectObserver
 {
     public function saved(Subject $subject): void
     {
-        CacheHelper::clearHomePage($subject->course);
+        CacheHelper::clearHomePage();
     }
 
     public function deleted(Subject $subject): void
