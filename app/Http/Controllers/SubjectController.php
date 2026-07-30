@@ -16,8 +16,15 @@ class SubjectController extends Controller
     public function index()
     {
         $homeData = Cache::rememberForever("home_page_data", function () {
-            $subjects = Subject::orderBy('sort_order', 'asc')->withCount('nodes')->get();
+            $subjects = Subject::orderBy('sort_order', 'asc')
+                ->withCount([
+                    'nodes' => function ($query) {
+                        $query->whereNull('parent_id');
+                    }
+                ])
+                ->get();
 
+                
             return  [
                 'subjects' => $subjects->toArray(),
                 'featured_blogs' => Blog::where('is_featured', true)
