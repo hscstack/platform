@@ -8,7 +8,6 @@ use App\Http\Requests\Node\UpdateNodeRequest;
 use App\Models\Node;
 use App\Models\Subject;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -117,7 +116,6 @@ class NodeController extends Controller
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
 
-        if ($parent == null) Cache::forget('home_page_data');
 
 
         $redirect = $validated['redirect'] ? $validated['redirect'] : explode('/create', url()->previous())[0];
@@ -178,7 +176,6 @@ class NodeController extends Controller
 
     public function destroy(Node $node)
     {
-        if ($node->parent_id == null) Cache::forget('home_page_data');
         $node->delete();
 
 

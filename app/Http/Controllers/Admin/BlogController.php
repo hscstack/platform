@@ -51,7 +51,6 @@ class BlogController extends Controller
 
         Blog::create($data);
 
-        if ($request->is_featured) Cache::forget('home_page_data');
 
         return redirect()->route('admin.blogs.index');
     }
@@ -79,9 +78,7 @@ class BlogController extends Controller
             // Keep existing image
             unset($data['featured_image']);
         }
-        if ($blog->is_featured || $request->is_featured) {
-            Cache::forget('home_page_data');
-        }
+
         $blog->update($data);
 
 
@@ -98,9 +95,7 @@ class BlogController extends Controller
             Storage::disk('public')->delete($path);
         }
 
-        if ($blog->is_featured) {
-            Cache::forget('home_page_data');
-        }
+
         $blog->delete();
 
 

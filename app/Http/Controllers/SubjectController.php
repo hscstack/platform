@@ -24,10 +24,11 @@ class SubjectController extends Controller
                 ])
                 ->get();
 
-                
+
             return  [
                 'subjects' => $subjects->toArray(),
                 'featured_blogs' => Blog::where('is_featured', true)
+                    ->where('is_published', true)
                     ->with('user:id,name')
                     ->latest()
                     ->limit(3)

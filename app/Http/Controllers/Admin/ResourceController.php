@@ -11,7 +11,6 @@ use App\Models\Node;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -55,8 +54,6 @@ class ResourceController extends Controller
         }
 
         $resource = Resource::create($validated);
-        Cache::forget("node_resources_{$resource->node_id}");
-        $this->clearResourcePageCache($resource->node_id);
 
         $redirect = $validated['redirect'] ?? explode('/resources', url()->previous())[0];
 
@@ -82,8 +79,6 @@ class ResourceController extends Controller
         }
 
         $resource->update($validated);
-        Cache::forget("resource_{$resource->id}");
-        Cache::forget("node_resources_{$resource->node_id}");
 
         $redirect = $validated['redirect'] ?? "/admin/subjects";
 
@@ -98,20 +93,10 @@ class ResourceController extends Controller
         }
 
         $resource->delete();
-        $this->clearResourcePageCache($resource->node_id);
-        Cache::forget("resource_{$resource->id}");
-        Cache::forget("node_resources_{$resource->node_id}");
 
         return redirect()->back()->with('success', 'Resource deleted successfully.');
     }
-    private function clearResourcePageCache(int $nodeId): void
-    {
-        $ids = Resource::where('node_id', $nodeId)->pluck('id')->toArray();
 
-        foreach ($ids as $id) {
-            Cache::forget("resource_{$id}");
-        }
-    }
     function createBulkImages(Request $request)
     {
         $redirect = $request->input('redirect', url()->previous());
@@ -140,8 +125,6 @@ class ResourceController extends Controller
             }
         });
 
-        Cache::forget("node_resources_{$validated['node_id']}");
-        $this->clearResourcePageCache($validated['node_id']);
 
         return redirect($validated['redirect'])->with('success', 'Bulk images uploaded successfully.');
     }
