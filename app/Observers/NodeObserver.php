@@ -10,13 +10,29 @@ class NodeObserver
 {
     public function created(Node $node): void
     {
-        if ($node->parent_id === null) {
-            CacheHelper::clearHomePage();
-        }
+        $this->clearNodeCache($node);
+    }
+
+    public function updated(Node $node): void
+    {
+        $this->clearNodeCache($node);
     }
 
     public function deleted(Node $node): void
     {
+        $this->clearNodeCache($node);
+    }
+
+    private function clearNodeCache(Node $node): void
+    {
+        Cache::forget("node_children_{$node->id}");
+        Cache::forget("node_resources_{$node->id}");
+        Cache::forget("node_breadcrumb_{$node->id}");
+
+        if ($node->parent_id) {
+            Cache::forget("node_children_{$node->parent_id}");
+        }
+
         if ($node->parent_id === null) {
             CacheHelper::clearHomePage();
         }
