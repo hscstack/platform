@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Folder } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const { node } = defineProps({
     node: Object,
+});
+const href = computed(() => {
+    const path = new URL(window.location.href).pathname.replace(/\/$/, '');
+    return `${path}/${node.slug}`;
 });
 </script>
 
 <template>
     <Link
-        :href="`${$page.url}/${node.slug}`"
+        :href="href"
         class="group relative flex cursor-pointer touch-manipulation items-center justify-between bg-white px-5 py-4.5 transition-all duration-200 hover:bg-slate-50/40 active:scale-[0.995] sm:px-6 sm:active:scale-100"
     >
         <div class="flex min-w-0 items-center gap-4">
