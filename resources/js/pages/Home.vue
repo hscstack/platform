@@ -6,14 +6,11 @@ import CourseSwitcher from '@/components/CourseSwitcher.vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
-import RepositoryStas from '@/components/RepositoryStas.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
+import FAQSection from '@/components/FAQSection.vue';
 
 const props = defineProps({
     subjects: Array,
-    subjectCount: Number,
-    resourceCount: Number,
-    contributorCount: Number,
     notice: Object,
     featured_blogs: Array,
 });
@@ -98,10 +95,12 @@ const filteredSubjects = computed(() => {
             </div>
         </div>
     </main>
-
+<!--
     <RepositoryStas
         :total-subjects="subjectCount"
         :total-resources="resourceCount"
         :total-users="contributorCount"
-    />
+    /> -->
+
+    <FAQSection />
 </template>

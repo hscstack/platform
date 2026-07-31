@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Blog;
 use App\Models\Node;
 use App\Models\Notice;
-use App\Models\Resource;
 use App\Models\Subject;
-use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
@@ -35,9 +33,6 @@ class SubjectController extends Controller
                     ->limit(3)
                     ->get()
                     ->toArray(),
-                'subjectCount' => $subjects->count(),
-                'resourceCount' => Resource::count(),
-                'contributorCount' => User::count(),
                 'notice' => Notice::activeForDisplay()?->toArray(),
             ];
         });
