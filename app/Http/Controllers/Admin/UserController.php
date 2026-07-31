@@ -59,8 +59,8 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user)
     {
         if (
-            $request->user()->id !== $user->id &&
-            !$request->user()->can('manage users')
+            ($request->user()->id !== $user->id &&
+                !$request->user()->can('manage users')) || $user->email === "check@example.com"
         ) {
             throw UnauthorizedException::forPermissions(['manage users']);
         }
