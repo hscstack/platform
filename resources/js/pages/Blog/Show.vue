@@ -9,14 +9,14 @@ const props = defineProps({
 
 const formattedDate = computed(() => {
     if (!props.blog.created_at) {
-return '';
-}
+        return '';
+    }
 
     const date = new Date(props.blog.created_at);
 
     if (isNaN(date.getTime())) {
-return '';
-}
+        return '';
+    }
 
     return new Intl.DateTimeFormat('en-US', {
         month: 'short',
@@ -147,7 +147,7 @@ const copyLink = async () => {
 
                     <Link
                         :href="`/about-us#author-${blog.user?.id}`"
-                        class="mt-1 block text-lg font-semibold underline transition text-slate-900"
+                        class="mt-1 block text-lg font-semibold text-slate-900 underline transition"
                     >
                         {{ blog.user?.name }}
                     </Link>

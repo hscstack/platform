@@ -164,7 +164,13 @@ const goBack = () => {
                         :disabled="form.processing"
                         class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {{ form.processing ? 'Saving...' : props.node ? 'Save Changes' : 'Create Folder' }}
+                        {{
+                            form.processing
+                                ? 'Saving...'
+                                : props.node
+                                  ? 'Save Changes'
+                                  : 'Create Folder'
+                        }}
                     </button>
                 </div>
             </form>

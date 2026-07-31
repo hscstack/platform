@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { LayoutGrid, Sparkles, Users, Eye, Share2, BookOpen, ArrowRight } from 'lucide-vue-next';
+import {
+    LayoutGrid,
+    Sparkles,
+    Users,
+    Eye,
+    Share2,
+    BookOpen,
+    ArrowRight,
+} from 'lucide-vue-next';
 
 defineProps({
     stats: Object,
@@ -58,7 +66,8 @@ defineProps({
                             New to the Contributor Workspace?
                         </h2>
                         <p class="mt-0.5 text-xs text-slate-600 sm:text-sm">
-                            Learn how to manage subjects, upload resources, create blogs, and navigate panel permissions.
+                            Learn how to manage subjects, upload resources,
+                            create blogs, and navigate panel permissions.
                         </p>
                     </div>
                 </div>

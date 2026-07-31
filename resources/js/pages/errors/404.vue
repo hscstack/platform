@@ -54,14 +54,15 @@ const goBack = () => {
             </h1>
 
             <h2 class="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-                Page Lost in Space
+                পৃষ্ঠাটি খুঁজে পাওয়া যায়নি
             </h2>
 
             <p
                 class="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-slate-500"
             >
-                We couldn't find the page you were looking for. It might have
-                been moved, deleted, or never existed in the first place.
+                আপনি যে পৃষ্ঠাটি খুঁজছেন, সেটি পাওয়া যায়নি। এটি হয়তো সরিয়ে
+                ফেলা হয়েছে, ঠিকানা পরিবর্তন হয়েছে, ডিলেট করা হয়েছে অথবা এমন
+                কোনো পৃষ্ঠা নেই।
             </p>
 
             <!-- Navigation Buttons -->
@@ -73,7 +74,7 @@ const goBack = () => {
                     class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-200 active:scale-95 sm:w-auto"
                 >
                     <ArrowLeft class="h-4 w-4" />
-                    Go Back
+                    আগের পৃষ্ঠায় ফিরুন
                 </button>
 
                 <Link
@@ -81,7 +82,7 @@ const goBack = () => {
                     class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-100 transition-all duration-150 hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-200/60 active:scale-[0.98] sm:w-auto"
                 >
                     <Home class="h-4 w-4" />
-                    Go Home
+                    হোমপেজে যান
                 </Link>
             </div>
 
@@ -93,7 +94,7 @@ const goBack = () => {
                 <h3
                     class="text-xs font-bold tracking-wider text-slate-400 uppercase"
                 >
-                    Quick Links
+                    অন্যান্য লিংকসমূহ
                 </h3>
 
                 <div class="mt-3 grid grid-cols-1 gap-2.5">

@@ -24,7 +24,9 @@ const form = useForm({
     password: '',
     role: props.user?.roles?.[0]?.name || 'manager',
     // Maps existing user permissions down to an array of names, or starts empty
-    permissions: props.user?.permissions?.map((p: any) => p.name) || ['view admin'],
+    permissions: props.user?.permissions?.map((p: any) => p.name) || [
+        'view admin',
+    ],
 
     image: props.user?.image || '',
     about: props.user?.about || '',
@@ -37,13 +39,16 @@ const form = useForm({
 
 // Clear permissions array if they switch away from editor,
 // ensuring 'view admin' remains standard for editors.
-watch(() => form.role, (newRole) => {
-    if (newRole !== 'editor') {
-        form.permissions = [];
-    } else if (!form.permissions.includes('view admin')) {
-        form.permissions.push('view admin');
-    }
-});
+watch(
+    () => form.role,
+    (newRole) => {
+        if (newRole !== 'editor') {
+            form.permissions = [];
+        } else if (!form.permissions.includes('view admin')) {
+            form.permissions.push('view admin');
+        }
+    },
+);
 
 const goBack = () => {
     window.history.back();
@@ -90,7 +95,11 @@ const submitForm = () => {
                 <!-- Base fields section (Name, Email) -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <label for="name" class="mb-1.5 block text-sm font-semibold text-slate-700">Full Name</label>
+                        <label
+                            for="name"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Full Name</label
+                        >
                         <input
                             v-model="form.name"
                             type="text"
@@ -98,13 +107,26 @@ const submitForm = () => {
                             placeholder="John Doe"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.name ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.name
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.name" class="mt-1 text-sm text-rose-600">{{ form.errors.name }}</p>
+                        <p
+                            v-if="form.errors.name"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.name }}
+                        </p>
                     </div>
 
                     <div>
-                        <label for="email" class="mb-1.5 block text-sm font-semibold text-slate-700">Email Address</label>
+                        <label
+                            for="email"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Email Address</label
+                        >
                         <input
                             v-model="form.email"
                             type="email"
@@ -112,18 +134,34 @@ const submitForm = () => {
                             placeholder="johndoe@example.com"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.email ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.email
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.email" class="mt-1 text-sm text-rose-600">{{ form.errors.email }}</p>
+                        <p
+                            v-if="form.errors.email"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.email }}
+                        </p>
                     </div>
                 </div>
 
                 <!-- Password and Role Selection -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <label for="password" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label
+                            for="password"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        >
                             Password
-                            <span v-if="props.user" class="text-xs font-normal text-slate-400">(Leave blank to keep current)</span>
+                            <span
+                                v-if="props.user"
+                                class="text-xs font-normal text-slate-400"
+                                >(Leave blank to keep current)</span
+                            >
                         </label>
                         <input
                             v-model="form.password"
@@ -133,39 +171,72 @@ const submitForm = () => {
                             :required="!props.user"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.password ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.password
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.password" class="mt-1 text-sm text-rose-600">{{ form.errors.password }}</p>
+                        <p
+                            v-if="form.errors.password"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.password }}
+                        </p>
                     </div>
 
                     <div v-if="!shouldHideOptions">
-                        <label for="role" class="mb-1.5 block text-sm font-semibold text-slate-700">System Role</label>
+                        <label
+                            for="role"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >System Role</label
+                        >
                         <select
                             id="role"
                             v-model="form.role"
                             :disabled="form.processing"
                             class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.role ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.role
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         >
-                            <option v-for="role in roles" :key="role.value" :value="role.value">
+                            <option
+                                v-for="role in roles"
+                                :key="role.value"
+                                :value="role.value"
+                            >
                                 {{ role.label }}
                             </option>
                         </select>
-                        <p v-if="form.errors.role" class="mt-1 text-sm text-rose-600">{{ form.errors.role }}</p>
+                        <p
+                            v-if="form.errors.role"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.role }}
+                        </p>
                     </div>
                 </div>
 
                 <!-- DYNAMIC EDITOR PERMISSIONS SECTION -->
                 <div
                     v-if="form.role === 'editor' && !shouldHideOptions"
-                    class="space-y-3 rounded-xl border border-blue-200 bg-blue-50/30 p-5 transition-all animate-fadeIn"
+                    class="animate-fadeIn space-y-3 rounded-xl border border-blue-200 bg-blue-50/30 p-5 transition-all"
                 >
                     <div>
-                        <h3 class="text-sm font-semibold text-slate-900">Editor Permissions</h3>
-                        <p class="text-xs text-slate-500">Select the features this editor is authorized to modify.</p>
+                        <h3 class="text-sm font-semibold text-slate-900">
+                            Editor Permissions
+                        </h3>
+                        <p class="text-xs text-slate-500">
+                            Select the features this editor is authorized to
+                            modify.
+                        </p>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 pt-2">
+                    <div
+                        class="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2 md:grid-cols-3"
+                    >
                         <div
                             v-for="permission in availablePermissions"
                             :key="permission.name"
@@ -176,26 +247,45 @@ const submitForm = () => {
                                 :id="`perm-${permission.name}`"
                                 :value="permission.name"
                                 v-model="form.permissions"
-                                :disabled="form.processing || permission.name === 'view admin'"
+                                :disabled="
+                                    form.processing ||
+                                    permission.name === 'view admin'
+                                "
                                 class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60"
                             />
                             <label
                                 :for="`perm-${permission.name}`"
-                                class="text-xs font-medium text-slate-700 select-none cursor-pointer disabled:cursor-not-allowed"
-                                :class="{ 'text-slate-400': permission.name === 'view admin' }"
+                                class="cursor-pointer text-xs font-medium text-slate-700 select-none disabled:cursor-not-allowed"
+                                :class="{
+                                    'text-slate-400':
+                                        permission.name === 'view admin',
+                                }"
                             >
                                 {{ permission.name }}
-                                <span v-if="permission.name === 'view admin'" class="block text-[10px] text-slate-400 font-normal">(Required)</span>
+                                <span
+                                    v-if="permission.name === 'view admin'"
+                                    class="block text-[10px] font-normal text-slate-400"
+                                    >(Required)</span
+                                >
                             </label>
                         </div>
                     </div>
-                    <p v-if="form.errors.permissions" class="mt-1 text-sm text-rose-600">{{ form.errors.permissions }}</p>
+                    <p
+                        v-if="form.errors.permissions"
+                        class="mt-1 text-sm text-rose-600"
+                    >
+                        {{ form.errors.permissions }}
+                    </p>
                 </div>
 
                 <!-- Profile Meta details section -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">Profile Image URL</label>
+                        <label
+                            for="image"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Profile Image URL</label
+                        >
                         <input
                             v-model="form.image"
                             type="text"
@@ -203,13 +293,26 @@ const submitForm = () => {
                             placeholder="https://example.com/image.jpg"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.image ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.image
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.image" class="mt-1 text-sm text-rose-600">{{ form.errors.image }}</p>
+                        <p
+                            v-if="form.errors.image"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.image }}
+                        </p>
                     </div>
 
                     <div>
-                        <label for="title" class="mb-1.5 block text-sm font-semibold text-slate-700">Title</label>
+                        <label
+                            for="title"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Title</label
+                        >
                         <input
                             v-model="form.title"
                             type="text"
@@ -217,15 +320,28 @@ const submitForm = () => {
                             placeholder="e.g. Lead Developer, Professor"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.title ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.title
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.title" class="mt-1 text-sm text-rose-600">{{ form.errors.title }}</p>
+                        <p
+                            v-if="form.errors.title"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.title }}
+                        </p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <label for="institution" class="mb-1.5 block text-sm font-semibold text-slate-700">Institution</label>
+                        <label
+                            for="institution"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Institution</label
+                        >
                         <input
                             v-model="form.institution"
                             type="text"
@@ -233,13 +349,26 @@ const submitForm = () => {
                             placeholder="University / Company"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.institution ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.institution
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.institution" class="mt-1 text-sm text-rose-600">{{ form.errors.institution }}</p>
+                        <p
+                            v-if="form.errors.institution"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.institution }}
+                        </p>
                     </div>
 
                     <div>
-                        <label for="facebook" class="mb-1.5 block text-sm font-semibold text-slate-700">Facebook</label>
+                        <label
+                            for="facebook"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Facebook</label
+                        >
                         <input
                             v-model="form.facebook"
                             type="text"
@@ -247,15 +376,28 @@ const submitForm = () => {
                             placeholder="Facebook profile URL"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.facebook ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.facebook
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.facebook" class="mt-1 text-sm text-rose-600">{{ form.errors.facebook }}</p>
+                        <p
+                            v-if="form.errors.facebook"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.facebook }}
+                        </p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <label for="github" class="mb-1.5 block text-sm font-semibold text-slate-700">GitHub</label>
+                        <label
+                            for="github"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >GitHub</label
+                        >
                         <input
                             v-model="form.github"
                             type="text"
@@ -263,13 +405,26 @@ const submitForm = () => {
                             placeholder="GitHub profile URL"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.github ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.github
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.github" class="mt-1 text-sm text-rose-600">{{ form.errors.github }}</p>
+                        <p
+                            v-if="form.errors.github"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.github }}
+                        </p>
                     </div>
 
                     <div>
-                        <label for="instagram" class="mb-1.5 block text-sm font-semibold text-slate-700">Instagram</label>
+                        <label
+                            for="instagram"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            >Instagram</label
+                        >
                         <input
                             v-model="form.instagram"
                             type="text"
@@ -277,14 +432,27 @@ const submitForm = () => {
                             placeholder="Instagram profile URL"
                             :disabled="form.processing"
                             class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                            :class="form.errors.instagram ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                            :class="
+                                form.errors.instagram
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                            "
                         />
-                        <p v-if="form.errors.instagram" class="mt-1 text-sm text-rose-600">{{ form.errors.instagram }}</p>
+                        <p
+                            v-if="form.errors.instagram"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.instagram }}
+                        </p>
                     </div>
                 </div>
 
                 <div>
-                    <label for="about" class="mb-1.5 block text-sm font-semibold text-slate-700">About</label>
+                    <label
+                        for="about"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        >About</label
+                    >
                     <textarea
                         v-model="form.about"
                         id="about"
@@ -292,31 +460,65 @@ const submitForm = () => {
                         placeholder="Short bio..."
                         :disabled="form.processing"
                         class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
-                        :class="form.errors.about ? 'border-rose-500 focus:ring-rose-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                        :class="
+                            form.errors.about
+                                ? 'border-rose-500 focus:ring-rose-500/20'
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                        "
                     ></textarea>
-                    <p v-if="form.errors.about" class="mt-1 text-sm text-rose-600">{{ form.errors.about }}</p>
+                    <p
+                        v-if="form.errors.about"
+                        class="mt-1 text-sm text-rose-600"
+                    >
+                        {{ form.errors.about }}
+                    </p>
                 </div>
 
                 <!-- Role Permissions Reference Card -->
-                <div class="space-y-3.5 rounded-xl border border-gray-300 bg-slate-50/50 p-4.5">
-                    <h4 class="text-xs font-bold tracking-wider text-slate-500 uppercase">Role Permissions Reference</h4>
+                <div
+                    class="space-y-3.5 rounded-xl border border-gray-300 bg-slate-50/50 p-4.5"
+                >
+                    <h4
+                        class="text-xs font-bold tracking-wider text-slate-500 uppercase"
+                    >
+                        Role Permissions Reference
+                    </h4>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div class="space-y-1 border-l-2 border-red-500 pl-3">
-                            <div class="text-xs font-bold text-red-700">Admin</div>
-                            <div class="text-xs leading-relaxed text-slate-600">Superuser control. Automatically has all permissions system-wide.</div>
+                            <div class="text-xs font-bold text-red-700">
+                                Admin
+                            </div>
+                            <div class="text-xs leading-relaxed text-slate-600">
+                                Superuser control. Automatically has all
+                                permissions system-wide.
+                            </div>
                         </div>
-                        <div class="space-y-1 border-l-2 border-purple-500 pl-3">
-                            <div class="text-xs font-bold text-purple-700">Editor</div>
-                            <div class="text-xs leading-relaxed text-slate-600">Customizable access. Permissions can be checked/unchecked explicitly above.</div>
+                        <div
+                            class="space-y-1 border-l-2 border-purple-500 pl-3"
+                        >
+                            <div class="text-xs font-bold text-purple-700">
+                                Editor
+                            </div>
+                            <div class="text-xs leading-relaxed text-slate-600">
+                                Customizable access. Permissions can be
+                                checked/unchecked explicitly above.
+                            </div>
                         </div>
                         <div class="space-y-1 border-l-2 border-amber-500 pl-3">
-                            <div class="text-xs font-bold text-amber-700">Manager</div>
-                            <div class="text-xs leading-relaxed text-slate-600">Dashboard view. Basic view access with no modification capabilities.</div>
+                            <div class="text-xs font-bold text-amber-700">
+                                Manager
+                            </div>
+                            <div class="text-xs leading-relaxed text-slate-600">
+                                Dashboard view. Basic view access with no
+                                modification capabilities.
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex justify-end space-x-3 border-t border-gray-300 pt-6">
+                <div
+                    class="flex justify-end space-x-3 border-t border-gray-300 pt-6"
+                >
                     <button
                         type="button"
                         @click="goBack"
@@ -329,12 +531,21 @@ const submitForm = () => {
                         :disabled="form.processing"
                         class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        <Loader2 v-if="form.processing" class="h-4 w-4 animate-spin" />
+                        <Loader2
+                            v-if="form.processing"
+                            class="h-4 w-4 animate-spin"
+                        />
                         <template v-else>
                             <Save v-if="props.user" class="h-4 w-4" />
                             <UserPlus v-else class="h-4 w-4" />
                         </template>
-                        {{ form.processing ? 'Saving...' : props.user ? 'Update User' : 'Save User' }}
+                        {{
+                            form.processing
+                                ? 'Saving...'
+                                : props.user
+                                  ? 'Update User'
+                                  : 'Save User'
+                        }}
                     </button>
                 </div>
             </form>

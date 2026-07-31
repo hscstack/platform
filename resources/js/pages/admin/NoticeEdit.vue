@@ -32,22 +32,32 @@ const submitForm = () => {
 };
 </script>
 <template>
-    <div class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-4 lg:p-10">
-        <div class="w-full rounded-3xl bg-white p-6 shadow-xs md:p-10 ring-1 ring-slate-900/5">
+    <div
+        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-4 lg:p-10"
+    >
+        <div
+            class="w-full rounded-3xl bg-white p-6 shadow-xs ring-1 ring-slate-900/5 md:p-10"
+        >
             <div class="mb-10 border-b border-slate-100 pb-6">
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900">
                     Site Notice
                 </h1>
                 <p class="mt-1 text-sm text-slate-500">
-                    Configure the announcement dialog shown on the home page. Only one notice is displayed at a time.
+                    Configure the announcement dialog shown on the home page.
+                    Only one notice is displayed at a time.
                 </p>
             </div>
 
-            <form @submit.prevent="submitForm" class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                
-                <div class="lg:col-span-2 space-y-6">
+            <form
+                @submit.prevent="submitForm"
+                class="grid grid-cols-1 gap-8 lg:grid-cols-3"
+            >
+                <div class="space-y-6 lg:col-span-2">
                     <div>
-                        <label for="title" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <label
+                            for="title"
+                            class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase"
+                        >
                             Title
                         </label>
                         <input
@@ -56,20 +66,26 @@ const submitForm = () => {
                             id="title"
                             placeholder="Important announcement"
                             :disabled="form.processing"
-                            class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none disabled:bg-slate-50 disabled:text-slate-400 focus:ring-4"
+                            class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400"
                             :class="
                                 form.errors.title
                                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
                                     : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5'
                             "
                         />
-                        <p v-if="form.errors.title" class="mt-1.5 text-xs font-medium text-rose-600">
+                        <p
+                            v-if="form.errors.title"
+                            class="mt-1.5 text-xs font-medium text-rose-600"
+                        >
                             {{ form.errors.title }}
                         </p>
                     </div>
 
                     <div>
-                        <label for="message" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <label
+                            for="message"
+                            class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase"
+                        >
                             Message
                         </label>
                         <textarea
@@ -78,19 +94,24 @@ const submitForm = () => {
                             rows="6"
                             placeholder="Write the notice message for visitors..."
                             :disabled="form.processing"
-                            class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none disabled:bg-slate-50 disabled:text-slate-400 focus:ring-4"
+                            class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400"
                             :class="
                                 form.errors.message
                                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
                                     : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5'
                             "
                         ></textarea>
-                        <p v-if="form.errors.message" class="mt-1.5 text-xs font-medium text-rose-600">
+                        <p
+                            v-if="form.errors.message"
+                            class="mt-1.5 text-xs font-medium text-rose-600"
+                        >
                             {{ form.errors.message }}
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-900/5 space-y-5">
+                    <div
+                        class="space-y-5 rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-900/5"
+                    >
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-semibold text-slate-900">
@@ -100,7 +121,9 @@ const submitForm = () => {
                                     Optional call-to-action link in the dialog.
                                 </p>
                             </div>
-                            <label class="relative inline-flex cursor-pointer items-center">
+                            <label
+                                class="relative inline-flex cursor-pointer items-center"
+                            >
                                 <input
                                     v-model="form.show_button"
                                     type="checkbox"
@@ -108,14 +131,20 @@ const submitForm = () => {
                                     :disabled="form.processing"
                                 />
                                 <span
-                                    class="peer h-6 w-11 rounded-full bg-slate-200 transition peer-checked:bg-slate-900 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5 shadow-xs"
+                                    class="peer h-6 w-11 rounded-full bg-slate-200 shadow-xs transition peer-checked:bg-slate-900 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5"
                                 ></span>
                             </label>
                         </div>
 
-                        <div v-if="form.show_button" class="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
+                        <div
+                            v-if="form.show_button"
+                            class="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2"
+                        >
                             <div>
-                                <label for="button_title" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                <label
+                                    for="button_title"
+                                    class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase"
+                                >
                                     Button title
                                 </label>
                                 <input
@@ -131,13 +160,19 @@ const submitForm = () => {
                                             : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5'
                                     "
                                 />
-                                <p v-if="form.errors.button_title" class="mt-1.5 text-xs font-medium text-rose-600">
+                                <p
+                                    v-if="form.errors.button_title"
+                                    class="mt-1.5 text-xs font-medium text-rose-600"
+                                >
                                     {{ form.errors.button_title }}
                                 </p>
                             </div>
 
                             <div>
-                                <label for="button_link" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                <label
+                                    for="button_link"
+                                    class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase"
+                                >
                                     Button link
                                 </label>
                                 <input
@@ -153,7 +188,10 @@ const submitForm = () => {
                                             : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5'
                                     "
                                 />
-                                <p v-if="form.errors.button_link" class="mt-1.5 text-xs font-medium text-rose-600">
+                                <p
+                                    v-if="form.errors.button_link"
+                                    class="mt-1.5 text-xs font-medium text-rose-600"
+                                >
                                     {{ form.errors.button_link }}
                                 </p>
                             </div>
@@ -162,12 +200,16 @@ const submitForm = () => {
                 </div>
 
                 <div class="space-y-6">
-                    <div class="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-900/5">
+                    <div
+                        class="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-900/5"
+                    >
                         <div class="flex items-center justify-between">
                             <p class="text-sm font-semibold text-slate-900">
                                 Show Notice
                             </p>
-                            <label class="relative inline-flex cursor-pointer items-center">
+                            <label
+                                class="relative inline-flex cursor-pointer items-center"
+                            >
                                 <input
                                     v-model="form.is_active"
                                     type="checkbox"
@@ -175,23 +217,28 @@ const submitForm = () => {
                                     :disabled="form.processing"
                                 />
                                 <span
-                                    class="peer h-6 w-11 rounded-full bg-slate-200 transition peer-checked:bg-slate-900 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5 shadow-xs"
+                                    class="peer h-6 w-11 rounded-full bg-slate-200 shadow-xs transition peer-checked:bg-slate-900 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5"
                                 ></span>
                             </label>
                         </div>
-                        
                     </div>
 
                     <div
                         v-if="form.is_active && !hasContent"
                         class="rounded-2xl bg-amber-50 p-4 text-xs font-medium text-amber-800 ring-1 ring-amber-900/5"
                     >
-                        Please add a title or message body before switching this notice alive.
+                        Please add a title or message body before switching this
+                        notice alive.
                     </div>
 
-                    <div class="rounded-2xl border border-slate-100 p-5 ring-1 ring-slate-900/5 space-y-4">
+                    <div
+                        class="space-y-4 rounded-2xl border border-slate-100 p-5 ring-1 ring-slate-900/5"
+                    >
                         <div>
-                            <label for="image" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                            <label
+                                for="image"
+                                class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase"
+                            >
                                 Cover Image URL
                             </label>
                             <input
@@ -200,19 +247,25 @@ const submitForm = () => {
                                 id="image"
                                 placeholder="https://example.com/banner.jpg"
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border px-4 py-2.5 text-sm transition outline-none disabled:bg-slate-50 disabled:text-slate-400 focus:ring-4"
+                                class="w-full rounded-xl border px-4 py-2.5 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400"
                                 :class="
                                     form.errors.image
                                         ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
                                         : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5'
                                 "
                             />
-                            <p v-if="form.errors.image" class="mt-1.5 text-xs font-medium text-rose-600">
+                            <p
+                                v-if="form.errors.image"
+                                class="mt-1.5 text-xs font-medium text-rose-600"
+                            >
                                 {{ form.errors.image }}
                             </p>
                         </div>
-                        
-                        <div v-if="form.image" class="overflow-hidden rounded-xl ring-1 ring-slate-900/10">
+
+                        <div
+                            v-if="form.image"
+                            class="overflow-hidden rounded-xl ring-1 ring-slate-900/10"
+                        >
                             <img
                                 :src="form.image"
                                 alt="Notice preview"
@@ -222,7 +275,9 @@ const submitForm = () => {
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-3 border-t border-slate-100 pt-6 lg:col-span-3">
+                <div
+                    class="flex justify-end gap-3 border-t border-slate-100 pt-6 lg:col-span-3"
+                >
                     <button
                         type="button"
                         @click="goBack"
@@ -235,7 +290,10 @@ const submitForm = () => {
                         :disabled="form.processing"
                         class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        <Loader2 v-if="form.processing" class="h-4 w-4 animate-spin" />
+                        <Loader2
+                            v-if="form.processing"
+                            class="h-4 w-4 animate-spin"
+                        />
                         <Save v-else class="h-4 w-4" />
                         {{ form.processing ? 'Saving...' : 'Save Notice' }}
                     </button>

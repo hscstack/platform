@@ -43,7 +43,6 @@ defineProps({
                     <Plus class="h-3.5 w-3.5" :stroke-width="2.5" />
                     Create Subject
                 </Link>
-                
             </div>
         </div>
 
@@ -60,7 +59,7 @@ defineProps({
                 />
             </div>
 
-            <EmptyState v-else/>
+            <EmptyState v-else />
         </div>
     </div>
 </template>

@@ -20,7 +20,9 @@ const searchQuery = defineModel();
             <p
                 class="mx-auto mb-10 max-w-xl text-base leading-relaxed font-medium text-slate-700/90 sm:text-lg"
             >
-                HSC & SSC স্টুডেন্টদের জন্য একদম ক্লিন ও ফাস্ট রিসোর্স রিপোজিটরি। সাবজেক্ট এবং চ্যাপ্টার অনুযায়ী খুঁজে নিন প্রয়োজনীয় ক্লাস, নোটস এবং প্র্যাক্টিক্যাল ।
+                HSC & SSC স্টুডেন্টদের জন্য একদম ক্লিন ও ফাস্ট রিসোর্স
+                রিপোজিটরি। সাবজেক্ট এবং চ্যাপ্টার অনুযায়ী খুঁজে নিন প্রয়োজনীয়
+                ক্লাস, নোটস এবং প্র্যাক্টিক্যাল ।
             </p>
 
             <div class="group relative mx-auto max-w-lg">

@@ -48,10 +48,7 @@ defineProps({
         </div>
 
         <div class="flex flex-1 flex-col">
-            <div
-                v-if="blogs.length > 0"
-                class="flex flex-col gap-3"
-            >
+            <div v-if="blogs.length > 0" class="flex flex-col gap-3">
                 <BlogRow
                     v-for="blog in blogs"
                     :key="blog.id || blog.slug"

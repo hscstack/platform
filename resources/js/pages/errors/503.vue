@@ -33,9 +33,7 @@ import {
                 <div
                     class="animate-float flex items-center justify-center text-slate-700"
                 >
-                    <Wrench
-                        class="h-12 w-12 stroke-[1.5] text-indigo-600"
-                    />
+                    <Wrench class="h-12 w-12 stroke-[1.5] text-indigo-600" />
                 </div>
             </div>
 
@@ -47,14 +45,15 @@ import {
             </h1>
 
             <h2 class="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-                Under Maintenance
+                রক্ষণাবেক্ষণের কাজ চলছে
             </h2>
 
             <p
                 class="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-slate-500"
             >
-                We are currently upgrading our systems to improve your experience.
-                We will be back online shortly. Thank you for your patience!
+                আপনার অভিজ্ঞতা আরও উন্নত করতে আমরা সিস্টেমের আধুনিকায়নের কাজ
+                করছি। খুব শীঘ্রই আমরা পুনরায় অনলাইনে ফিরব। আপনার ধৈর্যের জন্য
+                অসংখ্য ধন্যবাদ!
             </p>
 
             <!-- Navigation Buttons -->
@@ -66,7 +65,7 @@ import {
                     class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-100 transition-all duration-150 hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-200/60 active:scale-[0.98] sm:w-auto"
                 >
                     <Home class="h-4 w-4" />
-                    Refresh Page
+                    পেজটি রিফ্রেশ করুন
                 </Link>
             </div>
 
