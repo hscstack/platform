@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
 import { ChevronDown, HelpCircle, Plus, Minus } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
 
 // Single active accordion index
 const openIndex = ref(0);
@@ -64,11 +64,13 @@ const faqs = [
         type: 'text',
     },
     {
-        question: 'ডেভেলপমেন্টে সাহায্য করতে বা কোড কন্ট্রিবিউট করতে চাইলে করণীয় কী?',
+        question:
+            'ডেভেলপমেন্টে সাহায্য করতে বা কোড কন্ট্রিবিউট করতে চাইলে করণীয় কী?',
         answer: 'HSCStack-এর ওপেন ডেভেলপমেন্ট টিমে যোগ দিতে আমাদের ',
         linkText: 'আবেদন ফর্মে',
         linkUrl: '/join',
-        answerAfter: ' অ্যাপ্লাই করতে পারো। আবেদন গৃহীত হলে কোর ডেভেলপার হিসেবে কোডবেসে কাজ করার সুযোগ মিলবে।',
+        answerAfter:
+            ' অ্যাপ্লাই করতে পারো। আবেদন গৃহীত হলে কোর ডেভেলপার হিসেবে কোডবেসে কাজ করার সুযোগ মিলবে।',
         type: 'link',
     },
 ];
@@ -79,6 +81,7 @@ const visibleFaqs = computed(() => {
 
 const toggleExpand = () => {
     isExpanded.value = !isExpanded.value;
+
     if (!isExpanded.value && openIndex.value >= INITIAL_COUNT) {
         openIndex.value = null;
     }
@@ -95,14 +98,21 @@ const isOpen = (index) => openIndex.value === index;
     <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
         <!-- Section Header -->
         <div class="mb-8 text-center sm:mb-10">
-            <div class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-500/10">
+            <div
+                class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-500/10"
+            >
                 <HelpCircle class="h-5 w-5" />
             </div>
-            <h2 class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            <h2
+                class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+            >
                 সাধারণ জিজ্ঞাসা
             </h2>
-            <p class="mx-auto mt-2 max-w-md text-xs font-medium leading-relaxed text-slate-500 sm:text-sm">
-                HSCStack এবং রিসোর্স সম্পর্কিত আপনার বিভিন্ন প্রশ্নের উত্তর এক নজরে দেখে নিন।
+            <p
+                class="mx-auto mt-2 max-w-md text-xs leading-relaxed font-medium text-slate-500 sm:text-sm"
+            >
+                HSCStack এবং রিসোর্স সম্পর্কিত আপনার বিভিন্ন প্রশ্নের উত্তর এক
+                নজরে দেখে নিন।
             </p>
         </div>
 
@@ -122,29 +132,33 @@ const isOpen = (index) => openIndex.value === index;
                     class="group overflow-hidden rounded-2xl border transition-all duration-300"
                     :class="[
                         isOpen(index)
-                            ? 'border-indigo-200 bg-white shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-500/10'
-                            : 'border-slate-200/80 bg-white/80 hover:border-slate-300 hover:bg-white'
+                            ? 'border-indigo-200 bg-white shadow-lg ring-1 shadow-indigo-500/5 ring-indigo-500/10'
+                            : 'border-slate-200/80 bg-white/80 hover:border-slate-300 hover:bg-white',
                     ]"
                 >
                     <!-- Header / Trigger Button -->
                     <button
                         type="button"
                         @click="toggleFaq(index)"
-                        class="flex w-full items-center justify-between gap-3 p-4 text-left sm:p-5 focus:outline-none"
+                        class="flex w-full items-center justify-between gap-3 p-4 text-left focus:outline-none sm:p-5"
                     >
                         <span
-                            class="text-xs font-bold leading-snug sm:text-sm lg:text-base transition-colors duration-200"
-                            :class="isOpen(index) ? 'text-indigo-600' : 'text-slate-800 group-hover:text-slate-900'"
+                            class="text-xs leading-snug font-bold transition-colors duration-200 sm:text-sm lg:text-base"
+                            :class="
+                                isOpen(index)
+                                    ? 'text-indigo-600'
+                                    : 'text-slate-800 group-hover:text-slate-900'
+                            "
                         >
                             {{ faq.question }}
                         </span>
 
                         <div
-                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) sm:h-8 sm:w-8"
+                            class="cubic-bezier(0.34, 1.56, 0.64, 1) flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-500 sm:h-8 sm:w-8"
                             :class="[
                                 isOpen(index)
                                     ? 'rotate-180 bg-indigo-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'
+                                    : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600',
                             ]"
                         >
                             <ChevronDown class="h-4 w-4 stroke-[2.5]" />
@@ -153,18 +167,20 @@ const isOpen = (index) => openIndex.value === index;
 
                     <!-- Ultra-Smooth Accordion Body (CSS Grid Rows Trick) -->
                     <div
-                        class="grid transition-[grid-template-rows,opacity] duration-500 cubic-bezier(0.16, 1, 0.3, 1)"
+                        class="cubic-bezier(0.16, 1, 0.3, 1) grid transition-[grid-template-rows,opacity] duration-500"
                         :class="[
                             isOpen(index)
                                 ? 'grid-rows-[1fr] opacity-100'
-                                : 'grid-rows-[0fr] opacity-0'
+                                : 'grid-rows-[0fr] opacity-0',
                         ]"
                     >
                         <div class="overflow-hidden">
                             <div
-                                class="border-t border-slate-100 px-4 pb-4 pt-3 text-xs leading-relaxed font-medium text-slate-600 transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) sm:px-5 sm:pb-5 sm:text-sm"
+                                class="cubic-bezier(0.16, 1, 0.3, 1) border-t border-slate-100 px-4 pt-3 pb-4 text-xs leading-relaxed font-medium text-slate-600 transition-transform duration-500 sm:px-5 sm:pb-5 sm:text-sm"
                                 :class="[
-                                    isOpen(index) ? 'translate-y-0' : '-translate-y-2'
+                                    isOpen(index)
+                                        ? 'translate-y-0'
+                                        : '-translate-y-2',
                                 ]"
                             >
                                 <!-- Internal Link -->
@@ -180,7 +196,9 @@ const isOpen = (index) => openIndex.value === index;
                                 </template>
 
                                 <!-- External Link -->
-                                <template v-else-if="faq.type === 'externalLink'">
+                                <template
+                                    v-else-if="faq.type === 'externalLink'"
+                                >
                                     {{ faq.answer }}
                                     <a
                                         :href="faq.linkUrl"
@@ -208,11 +226,15 @@ const isOpen = (index) => openIndex.value === index;
                 <button
                     type="button"
                     @click="toggleExpand"
-                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 active:scale-95 focus:outline-none sm:text-sm"
+                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 focus:outline-none active:scale-95 sm:text-sm"
                 >
                     <template v-if="!isExpanded">
                         <Plus class="h-4 w-4 stroke-[2.5]" />
-                        <span>আরও প্রশ্ন দেখুন ({{ faqs.length - INITIAL_COUNT }})</span>
+                        <span
+                            >আরও প্রশ্ন দেখুন ({{
+                                faqs.length - INITIAL_COUNT
+                            }})</span
+                        >
                     </template>
                     <template v-else>
                         <Minus class="h-4 w-4 stroke-[2.5]" />

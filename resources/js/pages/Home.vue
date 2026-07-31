@@ -3,11 +3,11 @@ import { Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
+import FAQSection from '@/components/FAQSection.vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
-import FAQSection from '@/components/FAQSection.vue';
 
 const props = defineProps({
     subjects: Array,
@@ -95,7 +95,7 @@ const filteredSubjects = computed(() => {
             </div>
         </div>
     </main>
-<!--
+    <!--
     <RepositoryStas
         :total-subjects="subjectCount"
         :total-resources="resourceCount"
