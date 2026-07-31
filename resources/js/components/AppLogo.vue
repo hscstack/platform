@@ -20,12 +20,15 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
 
         <div class="flex items-center gap-1.5">
             <span class="text-lg font-extrabold tracking-tight text-slate-900">
-                HSC <span :class="isSsc ? 'text-emerald-600' : 'text-indigo-600'">Stack</span>
+                HSC
+                <span :class="isSsc ? 'text-emerald-600' : 'text-indigo-600'"
+                    >Stack</span
+                >
             </span>
 
             <span
                 v-if="isSsc"
-                class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-700 border border-emerald-200"
+                class="rounded border border-emerald-200 bg-emerald-100 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-emerald-700 uppercase"
             >
                 SSC
             </span>
