@@ -16,14 +16,6 @@ class UpdateSubjectRequest extends FormRequest
     {
         return true;
     }
-    protected function prepareForValidation(): void
-    {
-        if ($this->exists('name')) {
-            $this->merge([
-                'slug' => Str::slug($this->course . '-' . $this->name),
-            ]);
-        }
-    }
     /**
      * Get the validation rules that apply to the request.
      *
