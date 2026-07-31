@@ -40,6 +40,7 @@ const processedTitles = computed(() => {
 
         if (form.naming_strategy === 'suffix') {
             const prefix = form.naming_suffix.trim();
+
             return prefix ? `${prefix} ${paddedNum}` : paddedNum;
         }
 
@@ -64,6 +65,7 @@ const addFiles = (files) => {
 
 const handleFileSelect = (event) => {
     const input = event.target;
+
     if (input.files?.length) {
         addFiles(input.files);
         input.value = ''; // Reset input to allow selecting same files again if needed
@@ -72,6 +74,7 @@ const handleFileSelect = (event) => {
 
 const handleDrop = (event) => {
     isDragging.value = false;
+
     if (event.dataTransfer?.files?.length) {
         addFiles(event.dataTransfer.files);
     }
@@ -95,7 +98,9 @@ onUnmounted(() => {
 });
 
 const submitForm = () => {
-    if (selectedFiles.value.length === 0) return;
+    if (selectedFiles.value.length === 0) {
+        return;
+    }
 
     form.files = selectedFiles.value.map((item) => item.file);
     form.custom_titles = processedTitles.value;

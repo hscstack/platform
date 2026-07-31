@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Github, Facebook, Instagram } from 'lucide-vue-next';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 defineProps({
     member: Object,

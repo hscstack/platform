@@ -34,7 +34,7 @@ const icons = {
         :href="subject.slug"
         class="group relative flex touch-manipulation items-center justify-between overflow-hidden rounded-xl border border-slate-200 bg-white px-5 py-4.5 transition-all duration-200 hover:border-indigo-300 hover:shadow-sm active:scale-[0.99]"
     >
-        <div class="flex items-center gap-4 min-w-0">
+        <div class="flex min-w-0 items-center gap-4">
             <!-- Balanced Icon Wrapper -->
             <div
                 :class="[
@@ -55,7 +55,7 @@ const icons = {
                 >
                     {{ subject.name }}
                 </h3>
-                <p class="text-xs font-semibold text-slate-400 mt-0.5">
+                <p class="mt-0.5 text-xs font-semibold text-slate-400">
                     {{ subject.nodes_count }} Chapters
                 </p>
             </div>

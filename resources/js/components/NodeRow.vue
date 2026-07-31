@@ -8,7 +8,6 @@ const { node } = defineProps({
 </script>
 
 <template>
-
     <Link
         :href="`${$page.url}/${node.slug}`"
         class="group relative flex cursor-pointer touch-manipulation items-center justify-between bg-white px-5 py-4.5 transition-all duration-200 hover:bg-slate-50/40 active:scale-[0.995] sm:px-6 sm:active:scale-100"

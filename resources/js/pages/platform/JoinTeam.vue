@@ -203,7 +203,11 @@ const whatsappLink = computed(() => {
                                 আমাদের অনুমোদিত প্রমোটর, কিউরেটর, মডারেটর,
                                 রাইটার এবং ডেভেলপারদের অবদানকে সম্মান জানাতে
                                 আমাদের অফিশিয়াল
-                                <strong class="text-blue-800 underline"><Link href="/about-us">About Us</Link></strong>
+                                <strong class="text-blue-800 underline"
+                                    ><Link href="/about-us"
+                                        >About Us</Link
+                                    ></strong
+                                >
                                 পেজে একটি ডেডিকেটেড প্রোফাইল কার্ড স্থায়ীভাবে
                                 যুক্ত করা হবে।
                             </p>

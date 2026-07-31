@@ -62,4 +62,3 @@ const breadcrumbs = computed(() => {
         </template>
     </nav>
 </template>
-

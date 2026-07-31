@@ -9,29 +9,29 @@ const props = defineProps({
 const isVisible = ref(false);
 
 const getStorageKey = () => {
-    return props.notice?.updated_at 
-        ? `session_notice_${props.notice.updated_at}` 
+    return props.notice?.updated_at
+        ? `session_notice_${props.notice.updated_at}`
         : 'session_notice_dismissed';
 };
 
 const checkVisibility = () => {
     if (!props.notice) {
-return false;
-}
-    
-    
+        return false;
+    }
+
     return sessionStorage.getItem(getStorageKey()) !== 'true';
 };
-
 
 onMounted(() => {
     isVisible.value = checkVisibility();
 });
 
-
-watch(() => props.notice, () => {
-    isVisible.value = checkVisibility();
-});
+watch(
+    () => props.notice,
+    () => {
+        isVisible.value = checkVisibility();
+    },
+);
 
 const close = () => {
     if (props.notice) {
@@ -67,7 +67,7 @@ const close = () => {
                 >
                     <button
                         @click="close"
-                        class="absolute top-4 right-4 z-10 rounded-full p-2 transition bg-slate-100 text-slate-600"
+                        class="absolute top-4 right-4 z-10 rounded-full bg-slate-100 p-2 text-slate-600 transition"
                         aria-label="Close notice"
                     >
                         <X class="h-5 w-5" />
@@ -81,10 +81,16 @@ const close = () => {
                     />
 
                     <div class="p-6">
-                        <h2 v-if="notice.title" class="text-lg font-semibold text-slate-900">
+                        <h2
+                            v-if="notice.title"
+                            class="text-lg font-semibold text-slate-900"
+                        >
                             {{ notice.title }}
                         </h2>
-                        <p v-if="notice.message" class="mt-2 text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                        <p
+                            v-if="notice.message"
+                            class="mt-2 text-sm leading-relaxed whitespace-pre-line text-slate-600"
+                        >
                             {{ notice.message }}
                         </p>
 
@@ -98,7 +104,6 @@ const close = () => {
                             >
                                 {{ notice.button_title || 'Learn more' }}
                             </a>
-                            
                         </div>
                     </div>
                 </div>

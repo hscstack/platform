@@ -22,12 +22,12 @@ import {
             <ArrowLeft
                 class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
             />
-            হোমে ফিরে যান
+            Back to Home
         </Link>
         <h1
             class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl"
         >
-            প্রাইভেসি <span class="text-indigo-600">পলিসি</span>
+            Privacy <span class="text-indigo-600">Policy</span>
         </h1>
         <p
             class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase"
@@ -41,11 +41,11 @@ import {
             class="space-y-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
         >
             <p class="text-sm leading-relaxed font-medium text-slate-600">
-                আমাদের প্ল্যাটফর্মে স্বাগতম। HSC & SSC স্টুডেন্টদের জন্য প্রিমিয়াম,
-                কিউরেটেড এবং distraction-free স্টাডি ম্যাটেরিয়াল দেওয়ার
-                ব্যাপারে আমরা নিবেদিত। এই প্রাইভেসি পলিসিতে ব্যাখ্যা করা হয়েছে,
-                আমাদের ওয়েবসাইট ব্যবহার করার সময় আপনার তথ্য আমরা কীভাবে
-                সংগ্রহ, ব্যবহার এবং সুরক্ষিত করি।
+                আমাদের প্ল্যাটফর্মে স্বাগতম। HSC & SSC স্টুডেন্টদের জন্য
+                প্রিমিয়াম, কিউরেটেড এবং distraction-free স্টাডি ম্যাটেরিয়াল
+                দেওয়ার ব্যাপারে আমরা নিবেদিত। এই প্রাইভেসি পলিসিতে ব্যাখ্যা করা
+                হয়েছে, আমাদের ওয়েবসাইট ব্যবহার করার সময় আপনার তথ্য আমরা
+                কীভাবে সংগ্রহ, ব্যবহার এবং সুরক্ষিত করি।
             </p>
 
             <hr class="border-slate-100" />

@@ -34,6 +34,7 @@ const handleBack = () => {
     // At /admin/subjects/{subject}/nodes
     if (nodesIndex === segments.length - 1) {
         window.location.href = '/admin/subjects';
+
         return;
     }
 

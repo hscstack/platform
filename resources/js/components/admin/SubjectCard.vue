@@ -73,7 +73,8 @@ const handleDelete = () => {
             <div class="mb-3.5 flex w-full items-start justify-between">
                 <div
                     :class="[
-                        subject.tailwind_format || 'bg-slate-100 text-slate-600',
+                        subject.tailwind_format ||
+                            'bg-slate-100 text-slate-600',
                         'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-black/5 shadow-inner transition-transform duration-200 group-hover:scale-105',
                     ]"
                 >
@@ -90,9 +91,9 @@ const handleDelete = () => {
                         subject.course.toUpperCase() === 'SSC'
                             ? 'bg-amber-50 text-amber-700 ring-amber-600/20'
                             : subject.course.toUpperCase() === 'HSC'
-                            ? 'bg-indigo-50 text-indigo-700 ring-indigo-700/10'
-                            : 'bg-slate-100 text-slate-600 ring-slate-500/10',
-                        'hidden sm:inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ring-1 ring-inset',
+                              ? 'bg-indigo-50 text-indigo-700 ring-indigo-700/10'
+                              : 'bg-slate-100 text-slate-600 ring-slate-500/10',
+                        'hidden items-center rounded-md px-2 py-0.5 text-[10px] font-extrabold tracking-wider uppercase ring-1 ring-inset sm:inline-flex',
                     ]"
                 >
                     {{ subject.course }}
@@ -120,9 +121,9 @@ const handleDelete = () => {
                 subject.course.toUpperCase() === 'SSC'
                     ? 'bg-amber-50 text-amber-700 ring-amber-600/20'
                     : subject.course.toUpperCase() === 'HSC'
-                    ? 'bg-indigo-50 text-indigo-700 ring-indigo-700/10'
-                    : 'bg-slate-100 text-slate-600 ring-slate-500/10',
-                'absolute bottom-3 right-3 sm:hidden inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ring-1 ring-inset',
+                      ? 'bg-indigo-50 text-indigo-700 ring-indigo-700/10'
+                      : 'bg-slate-100 text-slate-600 ring-slate-500/10',
+                'absolute right-3 bottom-3 inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-extrabold tracking-wider uppercase ring-1 ring-inset sm:hidden',
             ]"
         >
             {{ subject.course }}

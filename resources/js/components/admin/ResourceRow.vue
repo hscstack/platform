@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { Book, File, FileArchive, FileImage, FileVideo, Pencil, Trash2 } from 'lucide-vue-next';
+import {
+    Book,
+    File,
+    FileArchive,
+    FileImage,
+    FileVideo,
+    Pencil,
+    Trash2,
+} from 'lucide-vue-next';
 
 const { resource } = defineProps({
     resource: Object,
@@ -75,4 +83,3 @@ const handleDelete = () => {
         </div>
     </div>
 </template>
-

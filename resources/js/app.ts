@@ -7,7 +7,6 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 registerSW({ immediate: true });
 
-
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {

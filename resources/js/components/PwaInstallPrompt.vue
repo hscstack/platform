@@ -95,10 +95,11 @@ const handleDismiss = () => {
                         </div>
                         <div>
                             <h3 class="text-base font-bold text-slate-900">
-                                Install Native App
+                                Install Our App
                             </h3>
                             <p class="text-xs text-slate-500">
-                                Get fast, offline access right from your home screen.
+                                Get fast, offline access right from your home
+                                screen.
                             </p>
                         </div>
                     </div>
@@ -134,8 +135,10 @@ const handleDismiss = () => {
                     📱
                 </div>
                 <div class="min-w-0">
-                    <h3 class="truncate text-xs font-bold text-slate-900 sm:text-sm">
-                        Install Native App
+                    <h3
+                        class="truncate text-xs font-bold text-slate-900 sm:text-sm"
+                    >
+                        Install Our App
                     </h3>
                     <p class="truncate text-[11px] text-slate-500 sm:text-xs">
                         Fast, offline home screen access.

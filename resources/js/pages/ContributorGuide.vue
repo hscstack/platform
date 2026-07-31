@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import {
     ArrowLeft,
@@ -10,6 +9,7 @@ import {
     MessageCircle,
     Layers,
 } from 'lucide-vue-next';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const quickLinks = [
     { num: '01', id: 'getting-started', label: 'Start Here' },
@@ -29,6 +29,7 @@ let clickTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const centerNavPill = (id: string) => {
     const pill = document.getElementById(`nav-pill-${id}`);
+
     if (pill) {
         pill.scrollIntoView({
             behavior: 'smooth',
@@ -44,11 +45,15 @@ const scrollToSection = (id: string) => {
     centerNavPill(id);
 
     const element = document.getElementById(id);
+
     if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    if (clickTimeout) clearTimeout(clickTimeout);
+    if (clickTimeout) {
+        clearTimeout(clickTimeout);
+    }
+
     clickTimeout = setTimeout(() => {
         isManualClick = false;
     }, 800);
@@ -57,7 +62,9 @@ const scrollToSection = (id: string) => {
 onMounted(() => {
     observer = new IntersectionObserver(
         (entries) => {
-            if (isManualClick) return;
+            if (isManualClick) {
+                return;
+            }
 
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
@@ -75,13 +82,21 @@ onMounted(() => {
 
     quickLinks.forEach((link) => {
         const el = document.getElementById(link.id);
-        if (el && observer) observer.observe(el);
+
+        if (el && observer) {
+            observer.observe(el);
+        }
     });
 });
 
 onUnmounted(() => {
-    if (observer) observer.disconnect();
-    if (clickTimeout) clearTimeout(clickTimeout);
+    if (observer) {
+        observer.disconnect();
+    }
+
+    if (clickTimeout) {
+        clearTimeout(clickTimeout);
+    }
 });
 </script>
 
@@ -341,7 +356,10 @@ onUnmounted(() => {
                                 এক্ষেত্রে Folder-কে
                                 <strong>Chapter</strong> হিসেবে ভাবতে পারেন
                                 (উদাহরণ:
-                                <em>Bangla 1st Paper → বই পড়া প্রবন্ধ Folder</em>)।
+                                <em
+                                    >Bangla 1st Paper → বই পড়া প্রবন্ধ
+                                    Folder</em
+                                >)।
                             </p>
                             <p
                                 class="text-xs leading-relaxed font-normal text-slate-600 sm:text-sm"
