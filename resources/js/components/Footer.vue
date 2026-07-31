@@ -101,15 +101,13 @@ import AppLogo from './AppLogo.vue';
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="https://supportkori.com/hscstack"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <Link
+                                    href="/support"
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600"
                                 >
                                     <Heart class="h-4 w-4 text-indigo-500" />
-                                    <span>Support HSCStack</span>
-                                </a>
+                                    <span>Support HSC Stack</span>
+                                </Link>
                             </li>
                             <li>
                                 <a
