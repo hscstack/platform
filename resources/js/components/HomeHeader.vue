@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
 import { Search } from 'lucide-vue-next';
+import { computed } from 'vue';
 const searchQuery = defineModel();
+const page = usePage();
+const isSsc = computed(() => page.url.startsWith('/ssc'));
 </script>
 
 <template>
@@ -11,7 +15,12 @@ const searchQuery = defineModel();
             >
                 Your knowledge, <br />
                 <span
-                    class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent"
+                    class="bg-gradient-to-r bg-clip-text text-transparent"
+                    :class="
+                        isSsc
+                            ? 'from-emerald-600 via-teal-600 to-cyan-600'
+                            : 'from-indigo-600 via-violet-600 to-fuchsia-600'
+                    "
                 >
                     perfectly organized.
                 </span>
