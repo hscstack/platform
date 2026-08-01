@@ -22,7 +22,7 @@ import AppLogo from './AppLogo.vue';
         ></div>
         <!-- subtle web-dot pattern accent -->
         <div
-            class="pointer-events-none absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,black_1px,transparent_1px)] [background-size:18px_18px]"
+            class="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle_at_1px_1px,black_1px,transparent_1px)] [background-size:18px_18px] opacity-[0.05]"
         ></div>
         <!-- top accent stripe -->
         <div
@@ -40,7 +40,9 @@ import AppLogo from './AppLogo.vue';
         >
             <ellipse cx="12" cy="13" rx="3.2" ry="4.2" />
             <circle cx="12" cy="7" r="1.8" />
-            <path d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20" />
+            <path
+                d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20"
+            />
         </svg>
         <svg
             class="pointer-events-none absolute top-20 right-[14%] h-6 w-6 text-blue-700/40 sm:h-8 sm:w-8"
@@ -52,7 +54,9 @@ import AppLogo from './AppLogo.vue';
         >
             <ellipse cx="12" cy="13" rx="3.2" ry="4.2" />
             <circle cx="12" cy="7" r="1.8" />
-            <path d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20" />
+            <path
+                d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20"
+            />
         </svg>
         <svg
             class="pointer-events-none absolute bottom-32 left-[24%] h-6 w-6 text-red-700/30 sm:h-8 sm:w-8"
@@ -64,7 +68,9 @@ import AppLogo from './AppLogo.vue';
         >
             <ellipse cx="12" cy="13" rx="3.2" ry="4.2" />
             <circle cx="12" cy="7" r="1.8" />
-            <path d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20" />
+            <path
+                d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20"
+            />
         </svg>
         <svg
             class="pointer-events-none absolute right-[8%] bottom-36 h-7 w-7 text-blue-700/30 sm:h-9 sm:w-9"
@@ -76,7 +82,9 @@ import AppLogo from './AppLogo.vue';
         >
             <ellipse cx="12" cy="13" rx="3.2" ry="4.2" />
             <circle cx="12" cy="7" r="1.8" />
-            <path d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20" />
+            <path
+                d="M9 10 L4 7 M9 10 L3 11 M9 10 L4 15 M15 10 L20 7 M15 10 L21 11 M15 10 L20 15 M10.5 16 L7 20 M13.5 16 L17 20"
+            />
         </svg>
 
         <!-- big web-net graphic, bottom-left corner (soft radial fan) -->
@@ -88,41 +96,191 @@ import AppLogo from './AppLogo.vue';
             xmlns="http://www.w3.org/2000/svg"
         >
             <!-- spokes fanning from the corner -->
-            <line x1="0" y1="100" x2="100" y2="100" stroke="currentColor" stroke-width="1" opacity="0.5" />
-            <line x1="0" y1="100" x2="96.6" y2="74.1" stroke="currentColor" stroke-width="1" opacity="0.7" />
-            <line x1="0" y1="100" x2="86.6" y2="50" stroke="currentColor" stroke-width="1" opacity="0.8" />
-            <line x1="0" y1="100" x2="70.7" y2="29.3" stroke="currentColor" stroke-width="1" />
-            <line x1="0" y1="100" x2="50" y2="13.4" stroke="currentColor" stroke-width="1" opacity="0.8" />
-            <line x1="0" y1="100" x2="25.9" y2="3.4" stroke="currentColor" stroke-width="1" opacity="0.7" />
-            <line x1="0" y1="100" x2="0" y2="0" stroke="currentColor" stroke-width="1" opacity="0.5" />
+            <line
+                x1="0"
+                y1="100"
+                x2="100"
+                y2="100"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.5"
+            />
+            <line
+                x1="0"
+                y1="100"
+                x2="96.6"
+                y2="74.1"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.7"
+            />
+            <line
+                x1="0"
+                y1="100"
+                x2="86.6"
+                y2="50"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.8"
+            />
+            <line
+                x1="0"
+                y1="100"
+                x2="70.7"
+                y2="29.3"
+                stroke="currentColor"
+                stroke-width="1"
+            />
+            <line
+                x1="0"
+                y1="100"
+                x2="50"
+                y2="13.4"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.8"
+            />
+            <line
+                x1="0"
+                y1="100"
+                x2="25.9"
+                y2="3.4"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.7"
+            />
+            <line
+                x1="0"
+                y1="100"
+                x2="0"
+                y2="0"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.5"
+            />
             <!-- concentric rounded arcs -->
-            <path d="M15,100 A15,15 0 0,1 0,85" stroke="currentColor" stroke-width="0.9" />
-            <path d="M30,100 A30,30 0 0,1 0,70" stroke="currentColor" stroke-width="0.9" />
-            <path d="M46,100 A46,46 0 0,1 0,54" stroke="currentColor" stroke-width="0.9" />
-            <path d="M64,100 A64,64 0 0,1 0,36" stroke="currentColor" stroke-width="0.8" />
-            <path d="M84,100 A84,84 0 0,1 0,16" stroke="currentColor" stroke-width="0.8" />
+            <path
+                d="M15,100 A15,15 0 0,1 0,85"
+                stroke="currentColor"
+                stroke-width="0.9"
+            />
+            <path
+                d="M30,100 A30,30 0 0,1 0,70"
+                stroke="currentColor"
+                stroke-width="0.9"
+            />
+            <path
+                d="M46,100 A46,46 0 0,1 0,54"
+                stroke="currentColor"
+                stroke-width="0.9"
+            />
+            <path
+                d="M64,100 A64,64 0 0,1 0,36"
+                stroke="currentColor"
+                stroke-width="0.8"
+            />
+            <path
+                d="M84,100 A84,84 0 0,1 0,16"
+                stroke="currentColor"
+                stroke-width="0.8"
+            />
         </svg>
 
         <!-- big web-net graphic, bottom-right corner (soft radial fan) -->
         <svg
-            class="pointer-events-none absolute -bottom-4 -right-4 h-28 w-28 text-blue-700/30 sm:h-32 sm:w-32"
+            class="pointer-events-none absolute -right-4 -bottom-4 h-28 w-28 text-blue-700/30 sm:h-32 sm:w-32"
             viewBox="0 0 100 100"
             fill="none"
             stroke-linecap="round"
             xmlns="http://www.w3.org/2000/svg"
         >
-            <line x1="100" y1="100" x2="0" y2="100" stroke="currentColor" stroke-width="1" opacity="0.5" />
-            <line x1="100" y1="100" x2="3.4" y2="74.1" stroke="currentColor" stroke-width="1" opacity="0.7" />
-            <line x1="100" y1="100" x2="13.4" y2="50" stroke="currentColor" stroke-width="1" opacity="0.8" />
-            <line x1="100" y1="100" x2="29.3" y2="29.3" stroke="currentColor" stroke-width="1" />
-            <line x1="100" y1="100" x2="50" y2="13.4" stroke="currentColor" stroke-width="1" opacity="0.8" />
-            <line x1="100" y1="100" x2="74.1" y2="3.4" stroke="currentColor" stroke-width="1" opacity="0.7" />
-            <line x1="100" y1="100" x2="100" y2="0" stroke="currentColor" stroke-width="1" opacity="0.5" />
-            <path d="M85,100 A15,15 0 0,0 100,85" stroke="currentColor" stroke-width="0.9" />
-            <path d="M70,100 A30,30 0 0,0 100,70" stroke="currentColor" stroke-width="0.9" />
-            <path d="M54,100 A46,46 0 0,0 100,54" stroke="currentColor" stroke-width="0.9" />
-            <path d="M36,100 A64,64 0 0,0 100,36" stroke="currentColor" stroke-width="0.8" />
-            <path d="M16,100 A84,84 0 0,0 100,16" stroke="currentColor" stroke-width="0.8" />
+            <line
+                x1="100"
+                y1="100"
+                x2="0"
+                y2="100"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.5"
+            />
+            <line
+                x1="100"
+                y1="100"
+                x2="3.4"
+                y2="74.1"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.7"
+            />
+            <line
+                x1="100"
+                y1="100"
+                x2="13.4"
+                y2="50"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.8"
+            />
+            <line
+                x1="100"
+                y1="100"
+                x2="29.3"
+                y2="29.3"
+                stroke="currentColor"
+                stroke-width="1"
+            />
+            <line
+                x1="100"
+                y1="100"
+                x2="50"
+                y2="13.4"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.8"
+            />
+            <line
+                x1="100"
+                y1="100"
+                x2="74.1"
+                y2="3.4"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.7"
+            />
+            <line
+                x1="100"
+                y1="100"
+                x2="100"
+                y2="0"
+                stroke="currentColor"
+                stroke-width="1"
+                opacity="0.5"
+            />
+            <path
+                d="M85,100 A15,15 0 0,0 100,85"
+                stroke="currentColor"
+                stroke-width="0.9"
+            />
+            <path
+                d="M70,100 A30,30 0 0,0 100,70"
+                stroke="currentColor"
+                stroke-width="0.9"
+            />
+            <path
+                d="M54,100 A46,46 0 0,0 100,54"
+                stroke="currentColor"
+                stroke-width="0.9"
+            />
+            <path
+                d="M36,100 A64,64 0 0,0 100,36"
+                stroke="currentColor"
+                stroke-width="0.8"
+            />
+            <path
+                d="M16,100 A84,84 0 0,0 100,16"
+                stroke="currentColor"
+                stroke-width="0.8"
+            />
         </svg>
 
         <!-- tiny web-net fragment, top-left corner -->
@@ -132,13 +290,53 @@ import AppLogo from './AppLogo.vue';
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
         >
-            <line x1="0" y1="0" x2="100" y2="0" stroke="currentColor" stroke-width="1.5" />
-            <line x1="0" y1="0" x2="0" y2="100" stroke="currentColor" stroke-width="1.5" />
-            <line x1="0" y1="0" x2="100" y2="60" stroke="currentColor" stroke-width="1" />
-            <line x1="0" y1="0" x2="60" y2="100" stroke="currentColor" stroke-width="1" />
-            <path d="M14,0 A14,14 0 0,1 0,14" stroke="currentColor" stroke-width="1" />
-            <path d="M32,0 A32,32 0 0,1 0,32" stroke="currentColor" stroke-width="1" />
-            <path d="M55,0 A55,55 0 0,1 0,55" stroke="currentColor" stroke-width="1" />
+            <line
+                x1="0"
+                y1="0"
+                x2="100"
+                y2="0"
+                stroke="currentColor"
+                stroke-width="1.5"
+            />
+            <line
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="100"
+                stroke="currentColor"
+                stroke-width="1.5"
+            />
+            <line
+                x1="0"
+                y1="0"
+                x2="100"
+                y2="60"
+                stroke="currentColor"
+                stroke-width="1"
+            />
+            <line
+                x1="0"
+                y1="0"
+                x2="60"
+                y2="100"
+                stroke="currentColor"
+                stroke-width="1"
+            />
+            <path
+                d="M14,0 A14,14 0 0,1 0,14"
+                stroke="currentColor"
+                stroke-width="1"
+            />
+            <path
+                d="M32,0 A32,32 0 0,1 0,32"
+                stroke="currentColor"
+                stroke-width="1"
+            />
+            <path
+                d="M55,0 A55,55 0 0,1 0,55"
+                stroke="currentColor"
+                stroke-width="1"
+            />
         </svg>
 
         <div class="relative mx-auto max-w-7xl px-4 sm:px-6">
