@@ -18,9 +18,8 @@ class DeleteUnusedImages extends Command
         $files = Storage::disk('public')->allFiles('resources');
 
         // 2. Get all file_url values saved in the database
-        $used = Resource::whereNotNull('file_url')
-            ->pluck('file_url')
-            ->map(fn($url) => ltrim(str_replace('/storage/', '', $url), '/'))
+        $used = Resource::whereNotNull('file_path')
+            ->pluck('file_path')
             ->toArray();
 
         // 3. Compare and delete whatever is not used
