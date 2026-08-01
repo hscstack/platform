@@ -10,7 +10,7 @@ return new class extends Migration
         DB::table('resources')
             ->whereNotNull('file_path')
             ->update([
-                'file_path' => DB::raw("TRIM(LEADING '/' FROM REPLACE(file_path, '/storage/', ''))"),
+                'file_path' => DB::raw("LTRIM(REPLACE(file_path, '/storage/', ''), '/')"),
             ]);
     }
 
@@ -19,7 +19,7 @@ return new class extends Migration
         DB::table('resources')
             ->whereNotNull('file_path')
             ->update([
-                'file_path' => DB::raw("CONCAT('storage/', file_path)"),
+                'file_path' => DB::raw("'storage/' || file_path"),
             ]);
     }
 };
