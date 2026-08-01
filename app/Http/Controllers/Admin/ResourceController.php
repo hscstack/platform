@@ -48,7 +48,7 @@ class ResourceController extends Controller
 
         if ($request->hasFile('file')) {
             $path    = $request->file('file')->store("resources/{$validated['resource_type']}s", 'public');
-            $validated['file_url'] = Storage::url($path);
+            $validated['file_path'] = $path;
         }
 
         Resource::create($validated);
@@ -66,20 +66,14 @@ class ResourceController extends Controller
 
         if ($request->hasFile('file')) {
 
-            if ($resource->file_url && $resource->resource_type == "image") {
-                $oldPath = str_replace(
-                    '/storage/',
-                    '',
-                    parse_url($resource->file_url, PHP_URL_PATH)
-                );
-
-                Storage::disk('public')->delete($oldPath);
+            if ($resource->file_path) {
+                Storage::disk('public')->delete($resource->file_path);
             }
 
             $path = $request->file('file')
                 ->store("resources/{$validated['resource_type']}s", 'public');
 
-            $validated['file_url'] = Storage::url($path);
+            $validated['file_path'] = $path;
         }
 
         $resource->update($validated);
@@ -92,9 +86,8 @@ class ResourceController extends Controller
 
     public function destroy(Resource $resource)
     {
-        if ($resource->file_url) {
-            $oldPath = str_replace('/storage/', '', parse_url($resource->file_url, PHP_URL_PATH));
-            Storage::disk('public')->delete($oldPath);
+        if ($resource->file_path) {
+            Storage::disk('public')->delete($resource->file_path);
         }
 
         $resource->delete();
@@ -122,7 +115,7 @@ class ResourceController extends Controller
             foreach ($request->file('files') as $index => $file) {
 
                 $validated['title'] = $validated['custom_titles'][$index];
-                $validated['file_url'] = Storage::url($file->store('resources/images', 'public'));
+                $validated['file_path'] = $file->store('resources/images', 'public');
                 $validated['user_id'] = Auth::id();
                 $validated['resource_type'] = 'image';
 
@@ -232,7 +225,7 @@ class ResourceController extends Controller
                     'node_id' => $validated['node_id'],
                     'title' => $video['title'],
                     'resource_type' => 'video',
-                    'file_url' => $finalUrl,
+                    'external_url' => $finalUrl,
                 ]);
             }
         });

@@ -39,7 +39,7 @@ class StoreResourceRequest extends FormRequest
                 Rule::requiredIf($this->resource_type === 'image'),
             ],
 
-            'file_url' => [
+            'external_url' => [
                 'nullable',
 
                 'url',

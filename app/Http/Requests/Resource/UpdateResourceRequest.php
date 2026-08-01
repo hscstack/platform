@@ -18,7 +18,7 @@ class UpdateResourceRequest extends FormRequest
         return [
             'redirect'      => ['nullable', 'string'],
             'node_id'       => ['required', 'integer', 'exists:nodes,id'],
-            'resource_type' => ['required', 'in:note,question,pdf,image,video'],
+            'resource_type' => ['required', 'in:note,pdf,image,video'],
             'title'         => ['required', 'string', 'max:100', 'min:2'],
             'content'       => ['nullable', 'string'],
 
@@ -29,11 +29,11 @@ class UpdateResourceRequest extends FormRequest
                 'mimes:jpg,jpeg,png',
                 Rule::requiredIf(
                     $this->resource_type === 'image'
-                        && !$this->route('resource')->file_url
+                        && !$this->route('resource')->file_path
                 ),
             ],
 
-            'file_url' => [
+            'external_url' => [
                 'nullable',
                 'url',
                 'max:2048',

@@ -21,7 +21,7 @@ const form = useForm({
     resource_type: props.resource?.resource_type || 'image',
     title: props.resource?.title || '',
     content: props.resource?.content || '',
-    file_url: props.resource?.file_url || '',
+    external_url: props.resource?.external_url || '',
     file: null,
     node_id: props.node.id,
 });
@@ -67,7 +67,7 @@ const submitForm = () => {
     }
 
     if (!requiresLink.value) {
-        form.file_url = '';
+        form.external_url = '';
     }
 
     if (props.resource) {
@@ -173,15 +173,15 @@ const submitForm = () => {
 
                 <!-- 4. File URL (Only for Video and PDF) -->
                 <div v-if="requiresLink">
-                    <label for="file_url" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                    <label for="external_url" class="mb-1.5 block text-sm font-semibold text-slate-700">
                         {{ form.resource_type === 'pdf' ? 'PDF Resource URL' : 'Video Link / URL' }}
                     </label>
                     <div class="relative flex items-center">
                         <LinkIcon class="pointer-events-none absolute left-4 h-4 w-4 text-slate-400" />
                         <input
-                            v-model="form.file_url"
+                            v-model="form.external_url"
                             type="url"
-                            id="file_url"
+                            id="external_url"
                             :placeholder="
                                 form.resource_type === 'pdf'
                                     ? 'e.g. https://example.com/document.pdf'
@@ -189,14 +189,14 @@ const submitForm = () => {
                             "
                             class="w-full rounded-lg border py-2.5 pr-4 pl-11 transition outline-none"
                             :class="
-                                form.errors.file_url
+                                form.errors.external_url
                                     ? 'border-rose-500 focus:ring-rose-500/20'
                                     : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
                             "
                         />
                     </div>
-                    <p v-if="form.errors.file_url" class="mt-1 text-sm text-rose-600">
-                        {{ form.errors.file_url }}
+                    <p v-if="form.errors.external_url" class="mt-1 text-sm text-rose-600">
+                        {{ form.errors.external_url }}
                     </p>
                 </div>
 
