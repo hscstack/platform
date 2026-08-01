@@ -9,17 +9,34 @@ return new class extends Migration
     {
         DB::table('resources')
             ->whereNotNull('file_path')
-            ->update([
-                'file_path' => DB::raw("LTRIM(REPLACE(file_path, '/storage/', ''), '/')"),
-            ]);
+            ->orderBy('id')
+            ->chunkById(100, function ($resources) {
+                foreach ($resources as $resource) {
+                    DB::table('resources')
+                        ->where('id', $resource->id)
+                        ->update([
+                            'file_path' => ltrim(
+                                str_replace('/storage/', '', $resource->file_path),
+                                '/'
+                            ),
+                        ]);
+                }
+            });
     }
 
     public function down(): void
     {
         DB::table('resources')
             ->whereNotNull('file_path')
-            ->update([
-                'file_path' => DB::raw("'storage/' || file_path"),
-            ]);
+            ->orderBy('id')
+            ->chunkById(100, function ($resources) {
+                foreach ($resources as $resource) {
+                    DB::table('resources')
+                        ->where('id', $resource->id)
+                        ->update([
+                            'file_path' => 'storage/' . ltrim($resource->file_path, '/'),
+                        ]);
+                }
+            });
     }
 };
