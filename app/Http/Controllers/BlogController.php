@@ -17,7 +17,7 @@ class BlogController extends Controller
                 'title',
                 'slug',
                 'excerpt',
-                'featured_image',
+                'featured_image_path',
                 'is_featured',
                 'views',
                 'created_at',

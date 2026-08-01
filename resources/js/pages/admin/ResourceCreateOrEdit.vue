@@ -21,6 +21,7 @@ const form = useForm({
     resource_type: props.resource?.resource_type || 'image',
     title: props.resource?.title || '',
     content: props.resource?.content || '',
+    external_url: props.resource?.external_url || '',
     file: null,
     node_id: props.node.id,
 });
@@ -32,7 +33,6 @@ const resourceTypes = [
         icon: ImageIcon,
         color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
     },
-
     {
         id: 'pdf',
         name: 'PDF Document',
@@ -53,10 +53,8 @@ const resourceTypes = [
     },
 ];
 
-const requiresFile = computed(() => ['image'].includes(form.resource_type));
-const requiresContent = computed(() =>
-    ['note', 'question', 'image'].includes(form.resource_type),
-);
+// Structural visibility logic
+const requiresFile = computed(() => form.resource_type === 'image');
 const requiresLink = computed(() =>
     ['video', 'pdf'].includes(form.resource_type),
 );
@@ -66,9 +64,12 @@ const handleFileSelect = (event) => {
 };
 
 const submitForm = () => {
-    // If switching from file to link, make sure old file references are cleared out
-    if (requiresLink.value) {
+    if (!requiresFile.value) {
         form.file = null;
+    }
+
+    if (!requiresLink.value) {
+        form.external_url = '';
     }
 
     if (props.resource) {
@@ -105,13 +106,15 @@ const submitForm = () => {
             </div>
 
             <form @submit.prevent="submitForm" class="space-y-6">
+                <!-- 1. Resource Type Selector -->
                 <div>
                     <label
                         class="mb-3 block text-sm font-semibold text-slate-700"
-                        >Resource Type</label
                     >
+                        Resource Type
+                    </label>
                     <div
-                        class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5"
+                        class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4"
                     >
                         <button
                             type="button"
@@ -144,12 +147,14 @@ const submitForm = () => {
                     </p>
                 </div>
 
+                <!-- 2. Resource Title (Required for ALL) -->
                 <div>
                     <label
                         for="title"
                         class="mb-1.5 block text-sm font-semibold text-slate-700"
-                        >Resource Title</label
                     >
+                        Resource Title
+                    </label>
                     <input
                         v-model="form.title"
                         type="text"
@@ -171,17 +176,19 @@ const submitForm = () => {
                     </p>
                 </div>
 
-                <div v-if="requiresContent">
+                <!-- 3. Content Body (Present for ALL types) -->
+                <div>
                     <label
                         for="content"
                         class="mb-1.5 block text-sm font-semibold text-slate-700"
-                        >Content Body</label
                     >
+                        Content Body
+                    </label>
                     <textarea
                         v-model="form.content"
                         id="content"
-                        rows="2"
-                        placeholder="Type your notes or questions details right here..."
+                        rows="3"
+                        placeholder="Type notes, descriptions, or body text..."
                         class="w-full rounded-lg border px-4 py-2.5 font-sans transition outline-none"
                         :class="
                             form.errors.content
@@ -197,15 +204,16 @@ const submitForm = () => {
                     </p>
                 </div>
 
+                <!-- 4. File URL (Only for Video and PDF) -->
                 <div v-if="requiresLink">
                     <label
-                        for="content_link"
+                        for="external_url"
                         class="mb-1.5 block text-sm font-semibold text-slate-700"
                     >
                         {{
                             form.resource_type === 'pdf'
-                                ? 'Resource Link / URL'
-                                : 'Video URL / Link'
+                                ? 'PDF Resource URL'
+                                : 'Video Link / URL'
                         }}
                     </label>
                     <div class="relative flex items-center">
@@ -213,9 +221,9 @@ const submitForm = () => {
                             class="pointer-events-none absolute left-4 h-4 w-4 text-slate-400"
                         />
                         <input
-                            v-model="form.content"
+                            v-model="form.external_url"
                             type="url"
-                            id="content_link"
+                            id="external_url"
                             :placeholder="
                                 form.resource_type === 'pdf'
                                     ? 'e.g. https://example.com/document.pdf'
@@ -223,25 +231,27 @@ const submitForm = () => {
                             "
                             class="w-full rounded-lg border py-2.5 pr-4 pl-11 transition outline-none"
                             :class="
-                                form.errors.content
+                                form.errors.external_url
                                     ? 'border-rose-500 focus:ring-rose-500/20'
                                     : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
                             "
                         />
                     </div>
                     <p
-                        v-if="form.errors.content"
+                        v-if="form.errors.external_url"
                         class="mt-1 text-sm text-rose-600"
                     >
-                        {{ form.errors.content }}
+                        {{ form.errors.external_url }}
                     </p>
                 </div>
 
+                <!-- 5. File Upload (Only for Image) -->
                 <div v-if="requiresFile">
                     <label
                         class="mb-1.5 block text-sm font-semibold text-slate-700"
-                        >Attach File</label
                     >
+                        Attach Image File
+                    </label>
                     <div
                         class="rounded-xl border-2 border-dashed bg-slate-50/50 p-6 text-center transition"
                         :class="
@@ -255,11 +265,7 @@ const submitForm = () => {
                             id="file-upload"
                             class="hidden"
                             @change="handleFileSelect"
-                            :accept="
-                                form.resource_type === 'pdf'
-                                    ? '.pdf'
-                                    : 'image/*'
-                            "
+                            accept="image/jpeg,image/png,image/jpg"
                         />
                         <label
                             for="file-upload"
@@ -278,8 +284,7 @@ const submitForm = () => {
                                 }}
                             </span>
                             <span class="mt-1 text-xs text-slate-400">
-                                Max file size: 10MB (Supports
-                                {{ form.resource_type.toUpperCase() }})
+                                Max size: 10MB (JPG, JPEG, PNG)
                             </span>
                         </label>
                     </div>
@@ -291,6 +296,7 @@ const submitForm = () => {
                     </p>
                 </div>
 
+                <!-- Form Actions -->
                 <div
                     class="flex justify-end space-x-3 border-t border-slate-100 pt-6"
                 >

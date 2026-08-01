@@ -44,9 +44,9 @@ class BlogController extends Controller
 
         if ($request->hasFile('featured_image')) {
             $path = $request->file('featured_image')
-                ->store('blogs', 'public');
+                ->store('blogs');
 
-            $data['featured_image'] = Storage::url($path);
+            $data['featured_image_path'] = $path;
         }
 
         Blog::create($data);
@@ -63,20 +63,16 @@ class BlogController extends Controller
         if ($request->hasFile('featured_image')) {
 
             // Delete old image
-            if ($blog->featured_image && str_starts_with($blog->featured_image, '/storage/')) {
+            if ($blog->featured_image_path) {
 
-                $oldPath = str_replace('/storage/', '', $blog->featured_image);
-                Storage::disk('public')->delete($oldPath);
+                Storage::delete($blog->featured_image_path);
             }
 
             // Store new image
             $path = $request->file('featured_image')
-                ->store('blogs', 'public');
+                ->store('blogs');
 
-            $data['featured_image'] = Storage::url($path);
-        } else {
-            // Keep existing image
-            unset($data['featured_image']);
+            $data['featured_image_path'] = $path;
         }
 
         $blog->update($data);
@@ -89,10 +85,9 @@ class BlogController extends Controller
 
     public function destroy(Blog $blog)
     {
-        if ($blog->featured_image && str_starts_with($blog->featured_image, '/storage/')) {
+        if ($blog->featured_image_path) {
 
-            $path = str_replace('/storage/', '', $blog->featured_image);
-            Storage::disk('public')->delete($path);
+            Storage::delete($blog->featured_image_path);
         }
 
 

@@ -15,12 +15,11 @@ class DeleteUnusedImages extends Command
     public function handle(): void
     {
         // 1. Get all image files currently on disk
-        $files = Storage::disk('public')->allFiles('resources');
+        $files = Storage::allFiles('resources');
 
         // 2. Get all file_url values saved in the database
-        $used = Resource::whereNotNull('file_url')
-            ->pluck('file_url')
-            ->map(fn($url) => ltrim(str_replace('/storage/', '', $url), '/'))
+        $used = Resource::whereNotNull('file_path')
+            ->pluck('file_path')
             ->toArray();
 
         // 3. Compare and delete whatever is not used
@@ -29,7 +28,7 @@ class DeleteUnusedImages extends Command
                 $this->line("Unused: {$file}");
 
                 if (!$this->option('dry-run')) {
-                    Storage::disk('public')->delete($file);
+                    Storage::delete($file);
                 }
             }
         }
