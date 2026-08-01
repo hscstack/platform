@@ -45,17 +45,16 @@ class ResourceController extends Controller
     {
         $validated = $request->validated();
         $validated['user_id'] = Auth::id();
-        $fileUrl = null;
 
         if ($request->hasFile('file')) {
             $path    = $request->file('file')->store("resources/{$validated['resource_type']}s", 'public');
-            $fileUrl = Storage::url($path);
-            $validated['file_url'] = $fileUrl;
+            $validated['file_url'] = Storage::url($path);
         }
 
-        $resource = Resource::create($validated);
+        Resource::create($validated);
 
         $redirect = $validated['redirect'] ?? explode('/resources', url()->previous())[0];
+
 
         return redirect($redirect)->with('success', 'Resource created successfully.');
     }
@@ -63,26 +62,32 @@ class ResourceController extends Controller
 
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
-
         $validated = $request->validated();
 
         if ($request->hasFile('file')) {
-            // Delete old file if exists
-            if ($resource->file_url) {
-                $oldPath = str_replace('/storage/', '', parse_url($resource->file_url, PHP_URL_PATH));
+
+            if ($resource->file_url && $resource->resource_type == "image") {
+                $oldPath = str_replace(
+                    '/storage/',
+                    '',
+                    parse_url($resource->file_url, PHP_URL_PATH)
+                );
+
                 Storage::disk('public')->delete($oldPath);
             }
 
-            $type    = $validated['resource_type'] ?? $resource->resource_type;
-            $path    = $request->file('file')->store("resources/{$type}s", 'public');
+            $path = $request->file('file')
+                ->store("resources/{$validated['resource_type']}s", 'public');
+
             $validated['file_url'] = Storage::url($path);
         }
 
         $resource->update($validated);
 
-        $redirect = $validated['redirect'] ?? "/admin/subjects";
+        $redirect = $validated['redirect'] ?? '/admin/subjects';
 
-        return redirect($redirect)->with('success', 'Resource updated successfully.');
+        return redirect($redirect)
+            ->with('success', 'Resource updated successfully.');
     }
 
     public function destroy(Resource $resource)
@@ -228,7 +233,6 @@ class ResourceController extends Controller
                     'title' => $video['title'],
                     'resource_type' => 'video',
                     'file_url' => $finalUrl,
-                    'content' => $finalUrl,
                 ]);
             }
         });
