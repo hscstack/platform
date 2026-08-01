@@ -8,18 +8,19 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 
 class BackupToDrive extends Command
 {
     protected $signature = 'backup:drive';
 
-    protected $description = 'Backup the database and storage, archive them, and upload the archive to Google Drive';
+    protected $description = 'Backup the database and S3 storage, archive them, and upload the archive to Google Drive';
 
     protected string $backupDir;
 
     protected string $databaseDumpPath;
 
-    protected string $storageTarPath;
+    protected string $s3TarPath;
 
     protected string $finalArchivePath;
 
@@ -31,7 +32,7 @@ class BackupToDrive extends Command
 
         $this->backupDir = storage_path('app/backups');
         $this->databaseDumpPath = $this->backupDir . '/database.sql.gz';
-        $this->storageTarPath = $this->backupDir . '/storage.tar';
+        $this->s3TarPath = $this->backupDir . '/s3.tar';
         $this->finalArchivePath = $this->backupDir . "/hsc-stack-backup-{$timestamp}.tar.gz";
     }
 
@@ -43,7 +44,7 @@ class BackupToDrive extends Command
             $this->info('Step 1/4: Dumping database…');
             $this->backupDatabase();
 
-            $this->info('Step 2/4: Archiving storage/app/public…');
+            $this->info('Step 2/4: Archiving S3 storage…');
             $this->backupStorage();
 
             $this->info('Step 3/4: Building final archive…');
@@ -55,26 +56,26 @@ class BackupToDrive extends Command
             $this->cleanupLocalArchive();
 
             $this->info("Backup complete. Google Drive file ID: {$fileId}");
-            Log::info('backup:drive completed successfully.', ['drive_file_id' => $fileId]);
+
+            Log::info('backup:drive completed successfully.', [
+                'drive_file_id' => $fileId,
+            ]);
 
             return self::SUCCESS;
         } catch (Exception $e) {
             $this->error('Backup failed: ' . $e->getMessage());
+
             Log::error('backup:drive failed.', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            // Leave temp files in place on failure so the run can be inspected/retried.
             return self::FAILURE;
         }
     }
 
     /**
-     * Dump the database with mysqldump, then gzip it.
-     * Credentials come from Laravel's own database config — never hardcoded,
-     * and the password is passed via the MYSQL_PWD env var, not argv,
-     * so it never shows up in `ps` output or shell history.
+     * Dump MySQL database and gzip it.
      */
     protected function backupDatabase(): void
     {
@@ -82,7 +83,9 @@ class BackupToDrive extends Command
         $connection = config("database.connections.{$connectionName}");
 
         if (! $connection || ($connection['driver'] ?? null) !== 'mysql') {
-            throw new Exception('backup:drive currently supports MySQL connections only.');
+            throw new Exception(
+                'backup:drive currently supports MySQL connections only.'
+            );
         }
 
         $plainSqlPath = $this->backupDir . '/database.sql';
@@ -98,66 +101,100 @@ class BackupToDrive extends Command
             $connection['database'],
         ];
 
-        $result = Process::env(['MYSQL_PWD' => $connection['password']])
+        $result = Process::env([
+            'MYSQL_PWD' => $connection['password'],
+        ])
             ->timeout(600)
             ->run($command);
 
         if ($result->failed()) {
-            throw new Exception('mysqldump failed: ' . $result->errorOutput());
+            throw new Exception(
+                'mysqldump failed: ' . $result->errorOutput()
+            );
         }
 
-        // Compress with PHP's zlib rather than shelling out to gzip —
-        // one less external dependency and no shell interpolation involved.
-        $this->gzipFile($plainSqlPath, $this->databaseDumpPath);
+        $this->gzipFile(
+            $plainSqlPath,
+            $this->databaseDumpPath
+        );
+
         File::delete($plainSqlPath);
     }
 
     /**
-     * Tar up storage/app/public. No compression here — the outer archive
-     * (hsc-stack-backup.tar.gz) compresses everything together at the end.
+     * Download S3/R2 files temporarily and create archive.
      */
     protected function backupStorage(): void
     {
-        $publicStoragePath = storage_path('app/public');
+        $tempStoragePath = $this->backupDir . '/s3';
 
-        if (! File::isDirectory($publicStoragePath)) {
-            throw new Exception("Storage path not found: {$publicStoragePath}");
+        File::ensureDirectoryExists($tempStoragePath);
+
+        $disk = Storage::disk('s3');
+
+        foreach ($disk->allFiles() as $file) {
+            $localFile = $tempStoragePath . '/' . $file;
+
+            File::ensureDirectoryExists(
+                dirname($localFile)
+            );
+
+            File::put(
+                $localFile,
+                $disk->get($file)
+            );
         }
 
-        $result = Process::timeout(600)
-            ->run(['tar', '-cf', $this->storageTarPath, '-C', storage_path('app'), 'public']);
+        $result = Process::timeout(3600)
+            ->run([
+                'tar',
+                '-cf',
+                $this->s3TarPath,
+                '-C',
+                $this->backupDir,
+                's3',
+            ]);
 
         if ($result->failed()) {
-            throw new Exception('Storage archive failed: ' . $result->errorOutput());
+            throw new Exception(
+                'S3 archive failed: ' . $result->errorOutput()
+            );
         }
+
+        // Remove temporary downloaded S3 files
+        File::deleteDirectory($tempStoragePath);
     }
 
     /**
-     * Bundle database.sql.gz + storage.tar into the final archive,
-     * then remove the two temporary files — only the final archive remains.
+     * Create final backup archive.
      */
     protected function createFinalArchive(): void
     {
         $result = Process::path($this->backupDir)
-            ->timeout(600)
+            ->timeout(3600)
             ->run([
                 'tar',
                 '-czf',
                 $this->finalArchivePath,
                 basename($this->databaseDumpPath),
-                basename($this->storageTarPath),
+                basename($this->s3TarPath),
             ]);
 
         if ($result->failed()) {
-            throw new Exception('Final archive creation failed: ' . $result->errorOutput());
+            throw new Exception(
+                'Final archive creation failed: ' . $result->errorOutput()
+            );
         }
 
-        File::delete([$this->databaseDumpPath, $this->storageTarPath]);
+        File::delete([
+            $this->databaseDumpPath,
+            $this->s3TarPath,
+        ]);
     }
 
     protected function cleanupLocalArchive(): void
     {
-        File::delete($this->finalArchivePath);
+        File::deleteDirectory($this->backupDir);
     }
 
     protected function gzipFile(string $source, string $destination): void
@@ -166,11 +203,16 @@ class BackupToDrive extends Command
         $destHandle = gzopen($destination, 'wb9');
 
         if ($sourceHandle === false || $destHandle === false) {
-            throw new Exception('Unable to open files for gzip compression.');
+            throw new Exception(
+                'Unable to open files for gzip compression.'
+            );
         }
 
         while (! feof($sourceHandle)) {
-            gzwrite($destHandle, fread($sourceHandle, 1024 * 512));
+            gzwrite(
+                $destHandle,
+                fread($sourceHandle, 1024 * 512)
+            );
         }
 
         fclose($sourceHandle);
