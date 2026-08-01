@@ -342,7 +342,7 @@ const parseYoutubeUrl = (url) => {
                         class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm"
                     >
                         <iframe
-                            :src="parseYoutubeUrl(resource.content)"
+                            :src="parseYoutubeUrl(resource.file_url)"
                             :title="resource.title"
                             class="absolute inset-0 h-full w-full"
                             allow="
