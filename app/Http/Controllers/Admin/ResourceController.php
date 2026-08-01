@@ -47,7 +47,7 @@ class ResourceController extends Controller
         $validated['user_id'] = Auth::id();
 
         if ($request->hasFile('file')) {
-            $path    = $request->file('file')->store("resources/{$validated['resource_type']}s", 'public');
+            $path    = $request->file('file')->store("resources/{$validated['resource_type']}s");
             $validated['file_path'] = $path;
         }
 
@@ -67,11 +67,11 @@ class ResourceController extends Controller
         if ($request->hasFile('file')) {
 
             if ($resource->file_path) {
-                Storage::disk('public')->delete($resource->file_path);
+                Storage::delete($resource->file_path);
             }
 
             $path = $request->file('file')
-                ->store("resources/{$validated['resource_type']}s", 'public');
+                ->store("resources/{$validated['resource_type']}s");
 
             $validated['file_path'] = $path;
         }
@@ -87,7 +87,7 @@ class ResourceController extends Controller
     public function destroy(Resource $resource)
     {
         if ($resource->file_path) {
-            Storage::disk('public')->delete($resource->file_path);
+            Storage::delete($resource->file_path);
         }
 
         $resource->delete();
@@ -115,7 +115,7 @@ class ResourceController extends Controller
             foreach ($request->file('files') as $index => $file) {
 
                 $validated['title'] = $validated['custom_titles'][$index];
-                $validated['file_path'] = $file->store('resources/images', 'public');
+                $validated['file_path'] = $file->store('resources/images');
                 $validated['user_id'] = Auth::id();
                 $validated['resource_type'] = 'image';
 

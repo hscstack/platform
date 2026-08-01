@@ -44,7 +44,7 @@ class BlogController extends Controller
 
         if ($request->hasFile('featured_image')) {
             $path = $request->file('featured_image')
-                ->store('blogs', 'public');
+                ->store('blogs');
 
             $data['featured_image_path'] = $path;
         }
@@ -65,12 +65,12 @@ class BlogController extends Controller
             // Delete old image
             if ($blog->featured_image_path) {
 
-                Storage::disk('public')->delete($blog->featured_image_path);
+                Storage::delete($blog->featured_image_path);
             }
 
             // Store new image
             $path = $request->file('featured_image')
-                ->store('blogs', 'public');
+                ->store('blogs');
 
             $data['featured_image_path'] = $path;
         }
@@ -87,7 +87,7 @@ class BlogController extends Controller
     {
         if ($blog->featured_image_path) {
 
-            Storage::disk('public')->delete($blog->featured_image_path);
+            Storage::delete($blog->featured_image_path);
         }
 
 
