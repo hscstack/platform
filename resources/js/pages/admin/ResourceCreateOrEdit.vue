@@ -55,7 +55,9 @@ const resourceTypes = [
 
 // Structural visibility logic
 const requiresFile = computed(() => form.resource_type === 'image');
-const requiresLink = computed(() => ['video', 'pdf'].includes(form.resource_type));
+const requiresLink = computed(() =>
+    ['video', 'pdf'].includes(form.resource_type),
+);
 
 const handleFileSelect = (event) => {
     form.file = event.target.files[0];
@@ -83,15 +85,22 @@ const submitForm = () => {
 </script>
 
 <template>
-    <div class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10">
-        <div class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10">
-            <div class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center">
+    <div
+        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10"
+    >
+        <div
+            class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10"
+        >
+            <div
+                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center"
+            >
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">
                         {{ props.resource ? 'Edit' : 'Add New' }} Resource
                     </h1>
                     <p class="mt-1 text-sm text-slate-500">
-                        Upload assets or link content for the curriculum structure.
+                        Upload assets or link content for the curriculum
+                        structure.
                     </p>
                 </div>
             </div>
@@ -99,10 +108,14 @@ const submitForm = () => {
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- 1. Resource Type Selector -->
                 <div>
-                    <label class="mb-3 block text-sm font-semibold text-slate-700">
+                    <label
+                        class="mb-3 block text-sm font-semibold text-slate-700"
+                    >
                         Resource Type
                     </label>
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                    <div
+                        class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4"
+                    >
                         <button
                             type="button"
                             v-for="type in resourceTypes"
@@ -116,19 +129,30 @@ const submitForm = () => {
                             "
                         >
                             <div class="rounded-lg p-2" :class="type.color">
-                                <component :is="type.icon" class="h-5 w-5 shrink-0" />
+                                <component
+                                    :is="type.icon"
+                                    class="h-5 w-5 shrink-0"
+                                />
                             </div>
-                            <span class="text-xs tracking-tight">{{ type.name }}</span>
+                            <span class="text-xs tracking-tight">{{
+                                type.name
+                            }}</span>
                         </button>
                     </div>
-                    <p v-if="form.errors.resource_type" class="mt-1 text-sm text-rose-600">
+                    <p
+                        v-if="form.errors.resource_type"
+                        class="mt-1 text-sm text-rose-600"
+                    >
                         {{ form.errors.resource_type }}
                     </p>
                 </div>
 
                 <!-- 2. Resource Title (Required for ALL) -->
                 <div>
-                    <label for="title" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                    <label
+                        for="title"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                    >
                         Resource Title
                     </label>
                     <input
@@ -144,14 +168,20 @@ const submitForm = () => {
                                 : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
                         "
                     />
-                    <p v-if="form.errors.title" class="mt-1 text-sm text-rose-600">
+                    <p
+                        v-if="form.errors.title"
+                        class="mt-1 text-sm text-rose-600"
+                    >
                         {{ form.errors.title }}
                     </p>
                 </div>
 
                 <!-- 3. Content Body (Present for ALL types) -->
                 <div>
-                    <label for="content" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                    <label
+                        for="content"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                    >
                         Content Body
                     </label>
                     <textarea
@@ -166,18 +196,30 @@ const submitForm = () => {
                                 : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
                         "
                     ></textarea>
-                    <p v-if="form.errors.content" class="mt-1 text-sm text-rose-600">
+                    <p
+                        v-if="form.errors.content"
+                        class="mt-1 text-sm text-rose-600"
+                    >
                         {{ form.errors.content }}
                     </p>
                 </div>
 
                 <!-- 4. File URL (Only for Video and PDF) -->
                 <div v-if="requiresLink">
-                    <label for="external_url" class="mb-1.5 block text-sm font-semibold text-slate-700">
-                        {{ form.resource_type === 'pdf' ? 'PDF Resource URL' : 'Video Link / URL' }}
+                    <label
+                        for="external_url"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                    >
+                        {{
+                            form.resource_type === 'pdf'
+                                ? 'PDF Resource URL'
+                                : 'Video Link / URL'
+                        }}
                     </label>
                     <div class="relative flex items-center">
-                        <LinkIcon class="pointer-events-none absolute left-4 h-4 w-4 text-slate-400" />
+                        <LinkIcon
+                            class="pointer-events-none absolute left-4 h-4 w-4 text-slate-400"
+                        />
                         <input
                             v-model="form.external_url"
                             type="url"
@@ -195,14 +237,19 @@ const submitForm = () => {
                             "
                         />
                     </div>
-                    <p v-if="form.errors.external_url" class="mt-1 text-sm text-rose-600">
+                    <p
+                        v-if="form.errors.external_url"
+                        class="mt-1 text-sm text-rose-600"
+                    >
                         {{ form.errors.external_url }}
                     </p>
                 </div>
 
                 <!-- 5. File Upload (Only for Image) -->
                 <div v-if="requiresFile">
-                    <label class="mb-1.5 block text-sm font-semibold text-slate-700">
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                    >
                         Attach Image File
                     </label>
                     <div
@@ -224,24 +271,35 @@ const submitForm = () => {
                             for="file-upload"
                             class="flex cursor-pointer flex-col items-center justify-center"
                         >
-                            <div class="mb-2 rounded-full border border-slate-100 bg-white p-3 text-slate-400 shadow-sm">
+                            <div
+                                class="mb-2 rounded-full border border-slate-100 bg-white p-3 text-slate-400 shadow-sm"
+                            >
                                 <Upload class="h-5 w-5" />
                             </div>
                             <span class="text-sm font-medium text-red-700">
-                                {{ form.file ? form.file.name : 'Click to upload or drag & drop' }}
+                                {{
+                                    form.file
+                                        ? form.file.name
+                                        : 'Click to upload or drag & drop'
+                                }}
                             </span>
                             <span class="mt-1 text-xs text-slate-400">
                                 Max size: 10MB (JPG, JPEG, PNG)
                             </span>
                         </label>
                     </div>
-                    <p v-if="form.errors.file" class="mt-1 text-sm text-rose-600">
+                    <p
+                        v-if="form.errors.file"
+                        class="mt-1 text-sm text-rose-600"
+                    >
                         {{ form.errors.file }}
                     </p>
                 </div>
 
                 <!-- Form Actions -->
-                <div class="flex justify-end space-x-3 border-t border-slate-100 pt-6">
+                <div
+                    class="flex justify-end space-x-3 border-t border-slate-100 pt-6"
+                >
                     <Link
                         :href="redirect"
                         type="button"
