@@ -39,11 +39,14 @@ class Blog extends Model
 
     public function getFeaturedImageAttribute(): ?string
     {
-        return $this->featured_image_path
-            ? Storage::url($this->featured_image_path)
-            : null;
-    }
+        if (! $this->featured_image_path) {
+            return null;
+        }
 
+        return str($this->featured_image_path)->startsWith(['http://', 'https://'])
+            ? $this->featured_image_path
+            : Storage::url($this->featured_image_path);
+    }
 
     public function user(): BelongsTo
     {
