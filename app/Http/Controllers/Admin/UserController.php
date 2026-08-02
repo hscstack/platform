@@ -7,6 +7,7 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Models\Permission;
@@ -28,7 +29,13 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request)
     {
+
         $validated = $request->validated();
+
+        if ($request->hasFile('file')) {
+            $path = $request->file('file')->store('users/profile-images');
+            $validated['image_path'] = $path;
+        }
 
         $user = User::create($validated);
         $role = $validated['role'];
@@ -66,6 +73,18 @@ class UserController extends Controller
         }
 
         $validated = $request->validated();
+
+        if ($request->hasFile('file')) {
+            $path = $request->file('file')->store('users/profile-images');
+
+            if ($user->image_path) {
+                Storage::delete($user->image_path);
+            }
+
+            $validated['image_path'] = $path;
+        }
+
+
         $user->update($validated);
 
         if (isset($validated['role'])) {

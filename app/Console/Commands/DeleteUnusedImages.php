@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Resource;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,21 +11,33 @@ class DeleteUnusedImages extends Command
 {
     protected $signature = 'resources:clean-unused-images {--dry-run}';
 
-    protected $description = 'Delete images in storage/resources that no resource points to';
+    protected $description = 'Delete unused uploaded images';
 
     public function handle(): void
     {
-        // 1. Get all image files currently on disk
-        $files = Storage::allFiles('resources');
+        $this->cleanDirectory(
+            'resources',
+            Resource::whereNotNull('file_path')
+                ->pluck('file_path')
+                ->toArray()
+        );
 
-        // 2. Get all file_url values saved in the database
-        $used = Resource::whereNotNull('file_path')
-            ->pluck('file_path')
-            ->toArray();
+        $this->cleanDirectory(
+            'users',
+            User::whereNotNull('image_path')
+                ->pluck('image_path')
+                ->toArray()
+        );
 
-        // 3. Compare and delete whatever is not used
+        $this->info('Done.');
+    }
+
+    protected function cleanDirectory(string $directory, array $usedFiles): void
+    {
+        $files = Storage::allFiles($directory);
+
         foreach ($files as $file) {
-            if (!in_array($file, $used)) {
+            if (!in_array($file, $usedFiles, true)) {
                 $this->line("Unused: {$file}");
 
                 if (!$this->option('dry-run')) {
@@ -32,7 +45,5 @@ class DeleteUnusedImages extends Command
                 }
             }
         }
-
-        $this->info('Done.');
     }
 }
