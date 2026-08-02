@@ -17,7 +17,8 @@
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
         "league/flysystem-aws-s3-v3": "^3.35",
-        "spatie/laravel-permission": "^8.0"
+        "spatie/laravel-permission": "^8.0",
+        "spatie/laravel-sitemap": "^8.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.4",
