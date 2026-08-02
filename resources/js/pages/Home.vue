@@ -8,6 +8,7 @@ import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
+import AIBanner from '@/components/AIBanner.vue';
 
 const props = defineProps({
     subjects: Array,
@@ -34,6 +35,7 @@ const filteredSubjects = computed(() => {
 
     <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
         <PwaInstallPrompt variant="banner" class="mb-6" />
+        <AIBanner />
         <CourseSwitcher />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SubjectCard
