@@ -8,6 +8,7 @@ const { node } = defineProps({
 });
 const href = computed(() => {
     const path = new URL(window.location.href).pathname.replace(/\/$/, '');
+
     return `${path}/${node.slug}`;
 });
 </script>

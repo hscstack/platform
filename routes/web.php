@@ -100,6 +100,7 @@
         Route::inertia('/support', 'Support');
         Route::inertia('/join', 'platform/JoinTeam');
         Route::inertia('/guide', 'ContributorGuide');
+        Route::inertia('/ai', 'ai/Index');
 
         Route::get('/about-us', [AboutUsController::class, 'index']);
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import AIBanner from '@/components/AIBanner.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
 import FAQSection from '@/components/FAQSection.vue';
@@ -34,6 +35,7 @@ const filteredSubjects = computed(() => {
 
     <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
         <PwaInstallPrompt variant="banner" class="mb-6" />
+        <AIBanner />
         <CourseSwitcher />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SubjectCard
