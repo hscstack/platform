@@ -37,8 +37,8 @@ export default defineConfig({
                 enabled: true,
             },
             manifest: {
-                name: 'HSC Stack',
-                short_name: 'HSC Stack',
+                name: 'HSCStack',
+                short_name: 'HSCStack',
                 start_url: '/',
                 display: 'standalone',
                 background_color: '#ffffff',
