@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { UserPlus, Loader2, Save } from 'lucide-vue-next';
 import { watch } from 'vue';
@@ -23,9 +23,7 @@ const form = useForm({
     email: props.user?.email || '',
     password: '',
     role: props.user?.roles?.[0]?.name || 'manager',
-    permissions: props.user?.permissions?.map((p) => p.name) || [
-        'view admin',
-    ],
+    permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
 
     file: null,
     about: props.user?.about || '',
