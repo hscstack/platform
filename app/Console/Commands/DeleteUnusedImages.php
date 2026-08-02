@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Blog;
 use App\Models\Resource;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -28,6 +29,15 @@ class DeleteUnusedImages extends Command
                 ->pluck('image_path')
                 ->toArray()
         );
+
+        $this->cleanDirectory(
+            'blogs',
+            Blog::whereNotNull('featured_image_path')
+                ->pluck('featured_image_path')
+                ->toArray()
+        );
+
+
 
         $this->info('Done.');
     }
