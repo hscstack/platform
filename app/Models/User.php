@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -40,7 +41,7 @@ class User extends Authenticatable
         'email',
         'password',
         'email_verified_at',
-        'image',
+        'image_path',
         'about',
         'title',
         'institution',
@@ -48,6 +49,20 @@ class User extends Authenticatable
         'instagram',
         'github',
     ];
+
+    protected $appends = [
+        'image_url',
+    ];
+
+    public function getImageUrlAttribute()
+    {
+        if (! $this->image_path) {
+            return null;
+        }
+
+        return Storage::url($this->image_path);
+    }
+
     protected function casts(): array
     {
         return [

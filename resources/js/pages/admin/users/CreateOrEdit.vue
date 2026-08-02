@@ -15,20 +15,17 @@ const roles = [
     { value: 'manager', label: 'Manager' },
 ];
 
-// The full list of permissions from your Laravel seeder
 const availablePermissions = props.permissions;
 
 const form = useForm({
+    _method: props.user ? 'PATCH' : 'POST',
     name: props.user?.name || '',
     email: props.user?.email || '',
     password: '',
     role: props.user?.roles?.[0]?.name || 'manager',
-    // Maps existing user permissions down to an array of names, or starts empty
-    permissions: props.user?.permissions?.map((p: any) => p.name) || [
-        'view admin',
-    ],
+    permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
 
-    image: props.user?.image || '',
+    file: null,
     about: props.user?.about || '',
     title: props.user?.title || '',
     institution: props.user?.institution || '',
@@ -37,8 +34,6 @@ const form = useForm({
     instagram: props.user?.instagram || '',
 });
 
-// Clear permissions array if they switch away from editor,
-// ensuring 'view admin' remains standard for editors.
 watch(
     () => form.role,
     (newRole) => {
@@ -56,7 +51,7 @@ const goBack = () => {
 
 const submitForm = () => {
     if (props.user) {
-        form.patch(`/admin/users/${props.user.id}`, {
+        form.post(`/admin/users/${props.user.id}`, {
             preserveScroll: true,
         });
     } else {
@@ -282,28 +277,28 @@ const submitForm = () => {
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <label
-                            for="image"
+                            for="file"
                             class="mb-1.5 block text-sm font-semibold text-slate-700"
-                            >Profile Image URL</label
+                            >Profile Image</label
                         >
                         <input
-                            v-model="form.image"
-                            type="text"
-                            id="image"
-                            placeholder="https://example.com/image.jpg"
+                            type="file"
+                            id="file"
+                            accept="image/*"
+                            @change="form.file = $event.target.files[0]"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-500 transition outline-none file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 file:transition hover:file:bg-slate-200 disabled:bg-slate-50 disabled:text-slate-500"
                             :class="
-                                form.errors.image
+                                form.errors.file
                                     ? 'border-rose-500 focus:ring-rose-500/20'
                                     : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
                             "
                         />
                         <p
-                            v-if="form.errors.image"
+                            v-if="form.errors.file"
                             class="mt-1 text-sm text-rose-600"
                         >
-                            {{ form.errors.image }}
+                            {{ form.errors.file }}
                         </p>
                     </div>
 

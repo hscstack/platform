@@ -35,8 +35,8 @@ onBeforeUnmount(() => {
         <div class="flex flex-col items-center">
             <div class="mb-6">
                 <img
-                    v-if="member.image"
-                    :src="member.image"
+                    v-if="member.image_url"
+                    :src="member.image_url"
                     :alt="member.name"
                     class="h-28 w-28 rounded-3xl border border-slate-100 object-cover shadow-sm transition-transform duration-300 group-hover:scale-[1.03]"
                 />

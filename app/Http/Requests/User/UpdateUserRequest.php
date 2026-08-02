@@ -35,7 +35,7 @@ class UpdateUserRequest extends FormRequest
             'name'        => ['sometimes', 'string', 'max:255'],
             'email'       => ['sometimes', 'email', 'unique:users,email,' . $user->id],
             'password'    => ['sometimes', 'nullable', 'string', 'min:6'],
-            'image'       => ['sometimes', 'nullable', 'string', 'max:255'],
+            'file'        => ['sometimes', 'image', 'max:2048'],
             'about'       => ['sometimes', 'nullable', 'string'],
             'title'       => ['sometimes', 'nullable', 'string'],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255'],
@@ -52,6 +52,4 @@ class UpdateUserRequest extends FormRequest
 
         return $rules;
     }
-
-    
 }
