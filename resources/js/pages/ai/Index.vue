@@ -108,8 +108,6 @@ const handleMockSubmit = (question?: string) => {
     <Head title="HSCStack AI - Coming Soon" />
 
     <main class="mx-auto max-w-7xl px-4 pt-10 pb-20 sm:px-6">
-
-
         <!-- Hero Header -->
         <div class="mx-auto max-w-3xl text-center">
             <!-- Launching Badge -->
