@@ -431,7 +431,7 @@ import AppLogo from './AppLogo.vue';
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-red-700"
                                 >
                                     <Heart class="h-4 w-4 text-red-600" />
-                                    <span>Support HSC Stack</span>
+                                    <span>Support HSCStack</span>
                                 </Link>
                             </li>
                             <li>
