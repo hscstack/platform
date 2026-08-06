@@ -5,7 +5,7 @@
 
 > A curated resource platform for HSC & SSC students of Bangladesh — built by members, for everyone.
 
-HSCStack is a lightweight, structured platform where verified members share academic resources — practicals, notes, PDFs, videos, and questions — organized by subject and chapter, so every HSC student can find what they need in one place.
+HSCStack is a lightweight, structured platform where verified members share academic resources — practicals, notes, PDFs, videos, and questions — organized by subject and chapter, so every SSC & HSC student can find what they need in one place.
 
 ---
 
@@ -145,7 +145,7 @@ Have a question, found a bug, or want to get involved?
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [Apache 2.0 License](LICENSE).
 
 ---
 
