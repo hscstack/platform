@@ -37,6 +37,7 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
         <!-- Prominent Switch Action Button -->
         <Link
             :href="isSsc ? '/' : '/ssc'"
+            preserve-scroll
             :class="[
                 'group inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-xs transition-all active:scale-[0.98] sm:w-auto',
                 isSsc
