@@ -8,6 +8,7 @@ import {
     UserPlus,
     ExternalLink,
     Heart,
+    Instagram,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 </script>
@@ -39,13 +40,22 @@ import AppLogo from './AppLogo.vue';
                         </a>
 
                         <a
-                            href="https://www.facebook.com/hscstackbd"
+                            href="https://facebook.com/hscstackbd"
                             rel="noopener noreferrer"
                             target="_blank"
                             class="text-slate-400 transition-colors duration-150 hover:text-blue-600"
                             aria-label="Facebook Page"
                         >
                             <Facebook class="h-5 w-5" />
+                        </a>
+                        <a
+                            href="https://instagram.com/hscstack"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            class="text-slate-400 transition-colors duration-150 hover:text-blue-600"
+                            aria-label="Facebook Page"
+                        >
+                            <Instagram class="h-5 w-5" />
                         </a>
                     </div>
 
