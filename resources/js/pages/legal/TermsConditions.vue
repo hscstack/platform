@@ -14,7 +14,7 @@ import {
     <header class="mx-auto max-w-3xl px-4 pt-12 pb-8 text-center sm:pt-16">
         <Link
             href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600"
+            class="group mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
         >
             <ArrowLeft
                 class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
@@ -22,12 +22,12 @@ import {
             Back to Home
         </Link>
         <h1
-            class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl"
+            class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
             Terms & <span class="text-indigo-600">Conditions</span>
         </h1>
         <p
-            class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase"
+            class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
         >
             সর্বশেষ আপডেট: জুলাই ২০২৬
         </p>
@@ -35,37 +35,41 @@ import {
 
     <main class="mx-auto max-w-3xl px-4 pb-20 sm:px-6">
         <div
-            class="space-y-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+            class="space-y-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-700 dark:bg-gray-900"
         >
-            <p class="text-sm leading-relaxed font-medium text-slate-600">
+            <p
+                class="text-sm leading-relaxed font-medium text-slate-600 dark:text-gray-400"
+            >
                 এই আর্কাইভ অ্যাক্সেস বা ব্রাউজ করার মাধ্যমে, আপনি নিচের Terms &
                 Conditions মেনে চলতে এবং এতে বাউন্ড থাকতে সম্মত হচ্ছেন। এই
                 নিয়মের কোনো অংশের সাথে আপনি একমত না হলে, আমাদের educational
                 directory ব্যবহার থেকে বিরত থাকুন।
             </p>
 
-            <hr class="border-slate-100" />
+            <hr class="border-slate-100 dark:border-gray-800" />
 
             <!-- Section 1 -->
             <div class="flex items-start gap-4">
                 <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
                     <FileText class="h-4 w-4 stroke-[2.2]" />
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
                         ১. সার্ভিসের বর্ণনা
                     </h2>
                     <p
-                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500"
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
                         এই প্ল্যাটফর্ম HSC & SSC স্টুডেন্টদের জন্য একটা fast,
                         distraction-free স্টাডি আর্কাইভ হিসেবে কাজ করে। আমরা
                         হোস্ট করি:
                     </p>
                     <ul
-                        class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500"
+                        class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
                         <li>
                             ব্যক্তিগতভাবে হাতে লেখা নোট, প্র্যাকটিক্যাল রেকর্ড,
@@ -83,16 +87,18 @@ import {
             <!-- Section 2 -->
             <div class="flex items-start gap-4">
                 <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
                     <Scale class="h-4 w-4 stroke-[2.2]" />
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
                         ২. Intellectual Property ও Fair Use
                     </h2>
                     <p
-                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500"
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
                         আমাদের original টেক্সট লেআউট, সিস্টেম স্ক্রিপ্ট, এবং
                         আমাদের নিজস্বভাবে লেখা নোটের মালিকানা আমাদের।
@@ -102,13 +108,15 @@ import {
                         লাইসেন্স প্রদান করেন, যেমনটি আমাদের
                         <Link
                             href="/content-policy"
-                            class="text-indigo-600 underline"
+                            class="text-indigo-600 underline dark:text-indigo-400"
                             >Content Policy</Link
                         >-তে বিস্তারিত ব্যাখ্যা করা হয়েছে। স্টুডেন্টদের
                         প্রাইভেট স্টাডি ব্যবহারের জন্য অ্যাক্সেস দেওয়া হয়।
                         অফিশিয়াল state board evaluation প্রশ্ন বা public
                         question structure সম্পূর্ণভাবে
-                        <strong class="text-slate-700">Fair Use নীতির</strong>
+                        <strong class="text-slate-700 dark:text-gray-300"
+                            >Fair Use নীতির</strong
+                        >
                         আওতায় শেয়ার করা হয়, স্পষ্ট educational backup হিসেবে।
                         অফিশিয়াল বোর্ড আইটেমের ওপর আমরা কোনো dynamic entity
                         right দাবি করি না। প্ল্যাটফর্মের ডেটা বাল্ক scrape করা
@@ -120,16 +128,18 @@ import {
             <!-- Section 3 -->
             <div class="flex items-start gap-4">
                 <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
                     <HelpCircle class="h-4 w-4 stroke-[2.2]" />
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
                         ৩. এডুকেশনাল Accuracy সংক্রান্ত Disclaimer
                     </h2>
                     <p
-                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500"
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
                         আমরা clean curation এবং accuracy বজায় রাখার চেষ্টা
                         করলেও, সবকিছু "as-is" ভিত্তিতে শেয়ার করা হয়। আমরা কোনো
@@ -143,16 +153,18 @@ import {
             <!-- Section 4 -->
             <div class="flex items-start gap-4">
                 <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
                     <AlertCircle class="h-4 w-4 stroke-[2.2]" />
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
                         ৪. দায়বদ্ধতার সীমাবদ্ধতা
                     </h2>
                     <p
-                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500"
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
                         আর্কাইভাল কনটেন্ট ব্যবহারের কারণে সরাসরি বা পরোক্ষভাবে
                         ঘটা কোনো internal data outage, গ্রেডিং ডিসক্রেপ্যান্সি,
@@ -166,21 +178,23 @@ import {
             <!-- Section 5 (NEW) -->
             <div class="flex items-start gap-4">
                 <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
                     <Ban class="h-4 w-4 stroke-[2.2]" />
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
                         ৫. অ্যাকাউন্ট স্থগিতকরণ ও বাতিলকরণ
                     </h2>
                     <p
-                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500"
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
                         HSCStack এই Terms & Conditions, আমাদের
                         <Link
                             href="/content-policy"
-                            class="text-indigo-600 underline"
+                            class="text-indigo-600 underline dark:text-indigo-400"
                             >Content Policy</Link
                         >, অথবা প্ল্যাটফর্মের জন্য নিরাপত্তাঝুঁকি তৈরি করে এমন
                         যেকোনো অ্যাকাউন্ট (কনট্রিবিউটর বা ব্যবহারকারী) সীমিত,

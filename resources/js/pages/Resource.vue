@@ -175,7 +175,7 @@ const parseYoutubeUrl = (url) => {
         <div class="mb-2">
             <button
                 @click="handleBack"
-                class="group inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600"
+                class="group inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
             >
                 <ArrowLeft
                     class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -185,15 +185,17 @@ const parseYoutubeUrl = (url) => {
         </div>
 
         <div
-            class="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+            class="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
         >
-            <div class="border-b border-slate-100 bg-slate-50/50 p-5 sm:p-6">
+            <div
+                class="border-b border-slate-100 bg-slate-50/50 p-5 sm:p-6 dark:border-gray-800 dark:bg-gray-800/50"
+            >
                 <div
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div class="min-w-0">
                         <span
-                            class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-xs font-bold tracking-wider text-slate-600 uppercase"
+                            class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-xs font-bold tracking-wider text-slate-600 uppercase dark:bg-gray-800 dark:text-gray-400"
                         >
                             <FileText
                                 v-if="resource.resource_type === 'note'"
@@ -213,7 +215,7 @@ const parseYoutubeUrl = (url) => {
                         </span>
 
                         <h1
-                            class="mt-2 text-xl font-black tracking-tight text-slate-950 sm:text-2xl"
+                            class="mt-2 text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
                         >
                             {{ resource.title }}
                         </h1>
@@ -221,15 +223,15 @@ const parseYoutubeUrl = (url) => {
                         <Link
                             v-if="resource.user?.name"
                             :href="`/about-us#${resource.user.id}`"
-                            class="group mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 transition-all hover:bg-indigo-50 hover:text-indigo-700"
+                            class="group mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 transition-all hover:bg-indigo-50 hover:text-indigo-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
                         >
                             <User
-                                class="h-3.5 w-3.5 stroke-[2.2] text-slate-500 group-hover:text-indigo-600"
+                                class="h-3.5 w-3.5 stroke-[2.2] text-slate-500 group-hover:text-indigo-600 dark:text-gray-400 dark:group-hover:text-indigo-400"
                             />
                             <span>
                                 Shared by
                                 <span
-                                    class="font-bold text-indigo-600 group-hover:underline"
+                                    class="font-bold text-indigo-600 group-hover:underline dark:text-indigo-400"
                                 >
                                     {{ resource.user.name }}
                                 </span>
@@ -246,7 +248,7 @@ const parseYoutubeUrl = (url) => {
                             :href="resource.file_url"
                             download
                             target="_blank"
-                            class="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.98]"
+                            class="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.98] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                         >
                             <Download class="h-4 w-4 stroke-[2.2]" />
                             Download
@@ -266,15 +268,15 @@ const parseYoutubeUrl = (url) => {
 
             <div v-if="resource.resource_type === 'note'" class="p-6 sm:p-8">
                 <div
-                    class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base"
+                    class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
                 >
                     <h3
-                        class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase"
+                        class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
                     >
                         Note:
                     </h3>
                     <p
-                        class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900"
+                        class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
                     >
                         {{ resource.content }}
                     </p>
@@ -284,27 +286,29 @@ const parseYoutubeUrl = (url) => {
             <div v-else-if="resource.resource_type === 'image'">
                 <div
                     v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-6 sm:p-8"
+                    class="border-b border-slate-100 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div
-                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base"
+                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
                     >
                         <h3
-                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase"
+                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
                         >
                             Note:
                         </h3>
                         <p
-                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900"
+                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
                         >
                             {{ resource.content }}
                         </p>
                     </div>
                 </div>
 
-                <div class="flex justify-center bg-slate-950/5 p-4 sm:p-8">
+                <div
+                    class="flex justify-center bg-slate-950/5 p-4 sm:p-8 dark:bg-white/10"
+                >
                     <div
-                        class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+                        class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
                     >
                         <img
                             :src="resource.file_url"
@@ -317,18 +321,18 @@ const parseYoutubeUrl = (url) => {
             <div v-else-if="resource.resource_type === 'video'">
                 <div
                     v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-6 sm:p-8"
+                    class="border-b border-slate-100 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div
-                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base"
+                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
                     >
                         <h3
-                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase"
+                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
                         >
                             Note:
                         </h3>
                         <p
-                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900"
+                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
                         >
                             This content is hosted on YouTube by the original
                             creator. We have embedded it here for educational
@@ -337,9 +341,9 @@ const parseYoutubeUrl = (url) => {
                     </div>
                 </div>
 
-                <div class="bg-slate-950/5 p-4 sm:p-8">
+                <div class="bg-slate-950/5 p-4 sm:p-8 dark:bg-white/10">
                     <div
-                        class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm"
+                        class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm dark:border-gray-700"
                     >
                         <iframe
                             :src="parseYoutubeUrl(resource.file_url)"
@@ -361,19 +365,22 @@ const parseYoutubeUrl = (url) => {
             </div>
             <div v-else class="p-6 text-center sm:p-10">
                 <div
-                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600"
+                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
                 >
                     <AlertCircle class="h-6 w-6 stroke-[2.2]" />
                 </div>
 
-                <h3 class="mt-4 text-base font-bold text-slate-900">
+                <h3
+                    class="mt-4 text-base font-bold text-slate-900 dark:text-gray-100"
+                >
                     Unsupported Preview:
-                    <span class="text-indigo-600 capitalize">{{
-                        resource.resource_type
-                    }}</span>
+                    <span
+                        class="text-indigo-600 capitalize dark:text-indigo-400"
+                        >{{ resource.resource_type }}</span
+                    >
                 </h3>
                 <p
-                    class="mx-auto mt-2 max-w-sm text-xs font-medium text-slate-500 sm:text-sm"
+                    class="mx-auto mt-2 max-w-sm text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400"
                 >
                     The file can't be shown here. Please download.
                 </p>
@@ -391,7 +398,7 @@ const parseYoutubeUrl = (url) => {
                     </a>
                     <div
                         v-else
-                        class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-400"
+                        class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
                     >
                         No download target generated for this asset.
                     </div>
@@ -406,14 +413,14 @@ const parseYoutubeUrl = (url) => {
     >
         <div class="pointer-events-auto mx-auto max-w-4xl px-4 sm:px-6">
             <div
-                class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-md"
+                class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90"
             >
                 <div>
                     <Link
                         v-if="previousResourceId"
                         :href="`/resources/${previousResourceId}`"
                         replace
-                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97]"
+                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                     >
                         <ArrowLeft
                             class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -423,13 +430,13 @@ const parseYoutubeUrl = (url) => {
                     </Link>
                     <span
                         v-else
-                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none"
+                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"
                         >First Page</span
                     >
                 </div>
 
                 <div
-                    class="hidden text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none sm:block"
+                    class="hidden text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none sm:block dark:text-gray-500"
                 >
                     Quick Navigation
                 </div>
@@ -439,7 +446,7 @@ const parseYoutubeUrl = (url) => {
                         v-if="nextResourceId"
                         :href="`/resources/${nextResourceId}`"
                         replace
-                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97]"
+                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                     >
                         <span class="xs:inline hidden">Next Page</span>
                         <span class="xs:hidden">Next Page</span>
@@ -449,7 +456,7 @@ const parseYoutubeUrl = (url) => {
                     </Link>
                     <span
                         v-else
-                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none"
+                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"
                         >Last Page</span
                     >
                 </div>
@@ -472,7 +479,7 @@ const parseYoutubeUrl = (url) => {
         >
             <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
                 <div
-                    class="hidden items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium text-slate-300 backdrop-blur-md sm:flex"
+                    class="hidden items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium text-slate-300 backdrop-blur-md sm:flex dark:bg-gray-900/10"
                 >
                     <span>Pinch / Scroll to Zoom</span>
                     <span class="text-slate-500">•</span>
@@ -482,7 +489,7 @@ const parseYoutubeUrl = (url) => {
                 <button
                     v-if="scale > 1"
                     @click="resetZoom"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95"
+                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Reset Zoom"
                 >
                     <RotateCcw class="h-5 w-5" />
@@ -490,7 +497,7 @@ const parseYoutubeUrl = (url) => {
 
                 <button
                     @click="toggleFullscreen"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95"
+                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Exit Fullscreen"
                 >
                     <Minimize2 class="h-5 w-5" />

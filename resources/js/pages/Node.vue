@@ -27,33 +27,35 @@ const totalItemsCount = computed(
 
 <template>
     <div
-        class="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-4xl flex-col px-4 py-8 font-sans text-slate-700 selection:bg-indigo-50 sm:px-6 md:py-12"
+        class="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-4xl flex-col px-4 py-8 font-sans text-slate-700 selection:bg-indigo-50 sm:px-6 md:py-12 dark:text-gray-300 dark:selection:bg-indigo-500/30"
     >
         <BreadcrumbNav :subject="subject" :breadcrumb="breadcrumb" />
 
         <header class="mb-8">
             <h1
-                class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl"
+                class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-gray-100"
             >
                 {{ currentTitle }}
             </h1>
-            <p class="mt-1.5 text-sm font-semibold text-slate-400">
+            <p
+                class="mt-1.5 text-sm font-semibold text-slate-400 dark:text-gray-500"
+            >
                 <span v-if="crumbs.length">{{ parentTitle }} · </span>
                 {{ totalItemsCount }} Items Total
             </p>
         </header>
 
         <div
-            class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+            class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
         >
             <div
-                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-3.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6"
+                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-3.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
             >
                 <span>Name</span>
                 <span class="hidden sm:inline">Type</span>
             </div>
 
-            <div class="flex-1 divide-y divide-slate-100">
+            <div class="flex-1 divide-y divide-slate-100 dark:divide-gray-800">
                 <template v-if="totalItemsCount > 0">
                     <NodeRow
                         v-for="node in nodes"

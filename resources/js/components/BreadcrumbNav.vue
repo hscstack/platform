@@ -25,22 +25,22 @@ const breadcrumbs = computed(() => {
 
 <template>
     <nav
-        class="no-scrollbar mb-6 flex items-center space-x-2 overflow-x-auto text-xs font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase"
+        class="no-scrollbar mb-6 flex items-center space-x-2 overflow-x-auto text-xs font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase dark:text-gray-500"
     >
         <Link
             href="/"
-            class="mr-0.5 flex items-center rounded-lg p-1 transition-colors hover:bg-slate-100/80 hover:text-indigo-600"
+            class="mr-0.5 flex items-center rounded-lg p-1 transition-colors hover:bg-slate-100/80 hover:text-indigo-600 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
         >
             <Home class="h-4 w-4 stroke-[2.2]" />
         </Link>
 
         <ChevronRight
-            class="h-3.5 w-3.5 shrink-0 stroke-[2.5] text-slate-300"
+            class="h-3.5 w-3.5 shrink-0 stroke-[2.5] text-slate-300 dark:text-gray-600"
         />
 
         <Link
             :href="`/${props.subject?.slug || ''}`"
-            class="px-1 whitespace-nowrap transition-colors hover:text-indigo-600"
+            class="px-1 whitespace-nowrap transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
         >
             {{ props.subject?.name }}
         </Link>
@@ -50,12 +50,12 @@ const breadcrumbs = computed(() => {
             :key="`${crumb.name}-${index}`"
         >
             <ChevronRight
-                class="h-3.5 w-3.5 shrink-0 stroke-[2.5] text-slate-300"
+                class="h-3.5 w-3.5 shrink-0 stroke-[2.5] text-slate-300 dark:text-gray-600"
             />
 
             <Link
                 :href="crumb.link"
-                class="px-1 whitespace-nowrap transition-colors hover:text-indigo-600"
+                class="px-1 whitespace-nowrap transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
             >
                 {{ crumb.name }}
             </Link>

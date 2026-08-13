@@ -310,19 +310,19 @@ const toolbarGroups: ToolbarButton[][] = [
 
 <template>
     <div
-        class="overflow-hidden rounded-lg border bg-white transition-shadow"
+        class="overflow-hidden rounded-lg border bg-white transition-shadow dark:bg-gray-900"
         :class="[
             error
                 ? 'border-rose-500'
                 : isFocused
                   ? 'border-blue-500'
-                  : 'border-slate-300',
+                  : 'border-slate-300 dark:border-gray-600',
             isFocused && !error ? 'ring-2 ring-blue-500/20' : '',
         ]"
     >
         <!-- Toolbar -->
         <div
-            class="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 p-2 select-none"
+            class="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 p-2 select-none dark:border-gray-700 dark:bg-gray-950"
         >
             <template v-for="(group, gi) in toolbarGroups" :key="gi">
                 <div class="flex items-center gap-0.5">
@@ -336,8 +336,8 @@ const toolbarGroups: ToolbarButton[][] = [
                         class="rounded p-1.5 transition"
                         :class="
                             (activeStates as any)[btn.key]
-                                ? 'bg-blue-100 text-blue-600'
-                                : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                                ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
+                                : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-100'
                         "
                     >
                         <component :is="btn.icon" class="h-4 w-4" />
@@ -345,7 +345,7 @@ const toolbarGroups: ToolbarButton[][] = [
                 </div>
                 <div
                     v-if="gi < toolbarGroups.length - 1"
-                    class="mx-1 h-4 w-[1px] bg-slate-200"
+                    class="mx-1 h-4 w-[1px] bg-slate-200 dark:bg-gray-700"
                 ></div>
             </template>
         </div>
@@ -364,14 +364,14 @@ const toolbarGroups: ToolbarButton[][] = [
             @mouseup="updateActiveStates"
             @keydown="handleKeydown"
             @paste="handlePaste"
-            class="wysiwyg-content max-h-[600px] min-h-[350px] overflow-y-auto p-4 font-sans text-base leading-relaxed text-slate-800 outline-none"
+            class="wysiwyg-content max-h-[600px] min-h-[350px] overflow-y-auto p-4 font-sans text-base leading-relaxed text-slate-800 outline-none dark:text-gray-200"
             :placeholder="placeholder"
         ></div>
 
         <!-- Error message -->
         <p
             v-if="error"
-            class="border-t border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600"
+            class="border-t border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400"
         >
             {{ error }}
         </p>
@@ -379,10 +379,13 @@ const toolbarGroups: ToolbarButton[][] = [
 </template>
 
 <style scoped>
-.wysiwyg-content:empty:before {
+:deep(.wysiwyg-content:empty:before) {
     content: attr(placeholder);
     color: #94a3b8;
     cursor: text;
+}
+:deep(.dark .wysiwyg-content:empty:before) {
+    color: #6b7280;
 }
 :deep(.wysiwyg-content h1) {
     font-size: 1.875rem;
@@ -421,6 +424,10 @@ const toolbarGroups: ToolbarButton[][] = [
     color: #475569;
     font-style: italic;
     margin: 0.75rem 0;
+}
+:deep(.dark .wysiwyg-content blockquote) {
+    border-left-color: #4b5563;
+    color: #9ca3af;
 }
 :deep(.wysiwyg-content a) {
     color: #2563eb;

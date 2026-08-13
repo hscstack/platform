@@ -16,14 +16,14 @@ const deleteBlog = () => {
 
 <template>
     <div
-        class="group relative flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white p-3.5 transition-colors duration-150 hover:border-blue-200"
+        class="group relative flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white p-3.5 transition-colors duration-150 hover:border-blue-200 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-500/30"
     >
         <Link
             :href="`/admin/blogs/edit/${blog.slug}`"
             class="flex min-w-0 flex-1 items-center gap-3 active:scale-[0.99]"
         >
             <div
-                class="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50"
+                class="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
             >
                 <img
                     v-if="blog.featured_image"
@@ -33,34 +33,36 @@ const deleteBlog = () => {
                 />
                 <div
                     v-else
-                    class="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400 uppercase"
+                    class="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400 uppercase dark:text-gray-500"
                 >
                     TXT
                 </div>
             </div>
 
             <div class="min-w-0 flex-1">
-                <h4 class="truncate text-sm font-semibold text-gray-900">
+                <h4
+                    class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100"
+                >
                     {{ blog.title }}
                 </h4>
 
                 <div
-                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500"
+                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 dark:text-gray-400"
                 >
                     <span>{{ blog.views }} views</span>
                     <span>•</span>
                     <span
                         :class="
                             blog.is_published
-                                ? 'text-green-600'
-                                : 'text-gray-400'
+                                ? 'text-green-600 dark:text-green-400'
+                                : 'text-gray-400 dark:text-gray-500'
                         "
                     >
                         {{ blog.is_published ? 'Published' : 'Draft' }}
                     </span>
                     <span
                         v-if="blog.is_featured"
-                        class="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-amber-700 uppercase"
+                        class="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-amber-700 uppercase dark:bg-amber-500/10 dark:text-amber-400"
                     >
                         Featured
                     </span>
@@ -72,7 +74,7 @@ const deleteBlog = () => {
             <button
                 @click.stop.prevent="deleteBlog"
                 type="button"
-                class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                 title="Delete blog"
             >
                 <svg
@@ -91,7 +93,7 @@ const deleteBlog = () => {
                 </svg>
             </button>
 
-            <span class="text-lg text-gray-300">→</span>
+            <span class="text-lg text-gray-300 dark:text-gray-600">→</span>
         </div>
     </div>
 </template>

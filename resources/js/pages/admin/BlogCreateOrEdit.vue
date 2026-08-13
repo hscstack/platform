@@ -40,19 +40,21 @@ const submitForm = () => {
 
 <template>
     <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10"
+        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >
         <div
-            class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10"
+            class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
         >
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center"
+                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">
+                    <h1
+                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    >
                         {{ props.blog ? 'Edit' : 'Create' }} Blog Post
                     </h1>
-                    <p class="mt-1 text-sm text-slate-500">
+                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Compose and manage article content for your web
                         application audience.
                     </p>
@@ -63,7 +65,7 @@ const submitForm = () => {
                 <div>
                     <label
                         for="title"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >Blog Title</label
                     >
                     <input
@@ -75,7 +77,7 @@ const submitForm = () => {
                         :class="
                             form.errors.title
                                 ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                         "
                     />
                     <p
@@ -88,15 +90,15 @@ const submitForm = () => {
 
                 <div>
                     <label
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >Featured Image</label
                     >
                     <div
-                        class="rounded-xl border-2 border-dashed bg-slate-50/50 p-6 text-center transition"
+                        class="rounded-xl border-2 border-dashed bg-slate-50/50 p-6 text-center transition dark:bg-gray-800/50"
                         :class="
                             form.errors.featured_image
-                                ? 'border-rose-300 bg-rose-50/20'
-                                : 'border-slate-200 hover:bg-slate-50'
+                                ? 'border-rose-300 bg-rose-50/20 dark:border-rose-500/30 dark:bg-rose-500/10'
+                                : 'border-slate-200 dark:border-gray-700 dark:hover:bg-gray-800'
                         "
                     >
                         <input
@@ -111,19 +113,21 @@ const submitForm = () => {
                             class="flex cursor-pointer flex-col items-center justify-center"
                         >
                             <div
-                                class="mb-2 rounded-full border border-slate-100 bg-white p-3 text-slate-400 shadow-sm"
+                                class="mb-2 rounded-full border border-slate-100 bg-white p-3 text-slate-400 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500"
                             >
                                 <Upload class="h-5 w-5" />
                             </div>
                             <span
-                                class="text-center text-sm font-medium break-all text-blue-700"
+                                class="text-center text-sm font-medium break-all text-blue-700 dark:text-blue-400"
                             >
                                 {{
                                     form.featured_image?.name ||
                                     'Click to upload or drag & drop image'
                                 }}
                             </span>
-                            <span class="mt-1 text-xs text-slate-400">
+                            <span
+                                class="mt-1 text-xs text-slate-400 dark:text-gray-500"
+                            >
                                 Supports PNG, JPG or WEBP
                             </span>
                         </label>
@@ -139,7 +143,7 @@ const submitForm = () => {
                 <div>
                     <label
                         for="seo_tags"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >SEO Tags (Comma separated)</label
                     >
                     <input
@@ -151,7 +155,7 @@ const submitForm = () => {
                         :class="
                             form.errors.seo_tags
                                 ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                         "
                     />
                     <p
@@ -163,20 +167,21 @@ const submitForm = () => {
                 </div>
 
                 <div
-                    class="flex flex-wrap gap-6 rounded-xl border border-slate-100 bg-slate-50/50 p-4"
+                    class="flex flex-wrap gap-6 rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/50"
                 >
                     <label class="flex cursor-pointer items-center gap-2.5">
                         <input
                             v-model="form.is_published"
                             type="checkbox"
-                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
+                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 dark:border-gray-600"
                         />
                         <div>
                             <span
-                                class="block text-xs font-bold text-slate-700 uppercase"
+                                class="block text-xs font-bold text-slate-700 uppercase dark:text-gray-300"
                                 >Publish immediately</span
                             >
-                            <span class="text-[11px] text-slate-500"
+                            <span
+                                class="text-[11px] text-slate-500 dark:text-gray-400"
                                 >Make this blog post visible right away.</span
                             >
                         </div>
@@ -186,14 +191,15 @@ const submitForm = () => {
                         <input
                             v-model="form.is_featured"
                             type="checkbox"
-                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
+                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 dark:border-gray-600"
                         />
                         <div>
                             <span
-                                class="block text-xs font-bold text-slate-700 uppercase"
+                                class="block text-xs font-bold text-slate-700 uppercase dark:text-gray-300"
                                 >Feature Post</span
                             >
-                            <span class="text-[11px] text-slate-500"
+                            <span
+                                class="text-[11px] text-slate-500 dark:text-gray-400"
                                 >Pin to the top of your blog home screen.</span
                             >
                         </div>
@@ -202,7 +208,7 @@ const submitForm = () => {
 
                 <div>
                     <label
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >Blog Content</label
                     >
 
@@ -221,11 +227,11 @@ const submitForm = () => {
                 </div>
 
                 <div
-                    class="flex justify-end space-x-3 border-t border-slate-100 pt-6"
+                    class="flex justify-end space-x-3 border-t border-slate-100 pt-6 dark:border-gray-800"
                 >
                     <Link
                         href="/admin/blogs"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         Cancel
                     </Link>

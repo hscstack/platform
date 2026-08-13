@@ -47,14 +47,14 @@ const filteredSubjects = computed(() => {
 
         <div
             v-if="filteredSubjects.length === 0"
-            class="rounded-xl border border-dashed border-slate-200 bg-white/50 py-12 text-center"
+            class="rounded-xl border border-dashed border-slate-200 bg-white/50 py-12 text-center dark:border-gray-700 dark:bg-gray-900/50"
         >
-            <p class="text-sm font-semibold text-slate-400">
+            <p class="text-sm font-semibold text-slate-400 dark:text-gray-500">
                 No subjects found matching "{{ searchQuery }}"
             </p>
             <button
                 @click="searchQuery = ''"
-                class="mt-2 text-xs font-bold text-indigo-600 hover:underline"
+                class="mt-2 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
             >
                 Show all subjects
             </button>
@@ -62,22 +62,22 @@ const filteredSubjects = computed(() => {
 
         <div
             v-if="featured_blogs?.length"
-            class="mt-16 border-t border-slate-100 pt-12"
+            class="mt-16 border-t border-slate-100 pt-12 dark:border-gray-800"
         >
             <div class="mb-6 flex items-center justify-between">
                 <div>
                     <h2
-                        class="text-2xl font-bold tracking-tight text-slate-900"
+                        class="text-2xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
                     >
                         Featured Blogs
                     </h2>
-                    <p class="text-sm text-slate-500">
+                    <p class="text-sm text-slate-500 dark:text-gray-400">
                         Read our latest articles and updates
                     </p>
                 </div>
                 <Link
                     href="/blogs"
-                    class="group inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
+                    class="group inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                     See all articles
                     <span

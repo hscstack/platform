@@ -25,15 +25,15 @@ const clearSearch = () => {
 <template>
     <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div
-            class="mb-10 flex flex-col gap-6 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between"
+            class="mb-10 flex flex-col gap-6 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800"
         >
             <div>
                 <h1
-                    class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl"
+                    class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-gray-100"
                 >
                     Our Journal
                 </h1>
-                <p class="mt-2 text-sm text-slate-500">
+                <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
                     পড়াশোনার টিপস, শিক্ষাসংক্রান্ত খবর এবং অন্যান্য
                     গুরুত্বপূর্ণ তথ্য পড়ুন।
                 </p>
@@ -43,7 +43,7 @@ const clearSearch = () => {
                 <div class="flex flex-col gap-2.5 sm:flex-row">
                     <div class="relative flex-1">
                         <div
-                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400"
+                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
                         >
                             <Search class="h-5 w-5" />
                         </div>
@@ -53,14 +53,14 @@ const clearSearch = () => {
                             type="text"
                             placeholder="আর্টিকেল খুঁজুন..."
                             @keyup.enter="handleSearch"
-                            class="w-full rounded-xl border border-slate-200 py-3 pr-10 pl-11 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                            class="w-full rounded-xl border border-slate-200 py-3 pr-10 pl-11 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                         />
 
                         <button
                             v-if="searchQuery"
                             @click="clearSearch"
                             type="button"
-                            class="absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                            class="absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-400"
                             aria-label="Clear search"
                         >
                             <X class="h-4 w-4" />
@@ -88,15 +88,17 @@ const clearSearch = () => {
 
         <div
             v-else
-            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-16 text-center"
+            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-16 text-center dark:border-gray-700 dark:bg-gray-950"
         >
-            <div class="mb-4 rounded-xl bg-white p-3 text-slate-400 shadow-sm">
+            <div
+                class="mb-4 rounded-xl bg-white p-3 text-slate-400 shadow-sm dark:bg-gray-900 dark:text-gray-500"
+            >
                 <AlertTriangle class="h-8 w-8" />
             </div>
-            <h3 class="text-lg font-bold text-slate-900">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-gray-100">
                 আপনার অনুসন্ধানের সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি।
             </h3>
-            <p class="mt-1 max-w-sm text-sm text-slate-500">
+            <p class="mt-1 max-w-sm text-sm text-slate-500 dark:text-gray-400">
                 "{{ searchQuery }}"-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া
                 যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।
             </p>
@@ -110,7 +112,7 @@ const clearSearch = () => {
 
         <div
             v-if="blogs.links && blogs.links.length > 3"
-            class="mt-16 border-t border-slate-100 pt-6"
+            class="mt-16 border-t border-slate-100 pt-6 dark:border-gray-800"
         >
             <div class="hidden sm:flex sm:flex-wrap sm:justify-center sm:gap-2">
                 <div
@@ -124,9 +126,9 @@ const clearSearch = () => {
                         class="rounded-xl px-4 py-2 text-sm font-medium transition"
                         :class="{
                             'bg-indigo-600 text-white shadow-sm': link.active,
-                            'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50':
+                            'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800':
                                 !link.active && link.url,
-                            'cursor-not-allowed border border-slate-100 bg-slate-50/50 text-slate-300':
+                            'cursor-not-allowed border border-slate-100 bg-slate-50/50 text-slate-300 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-600':
                                 !link.url,
                         }"
                     >
@@ -142,13 +144,15 @@ const clearSearch = () => {
                     class="flex-1 rounded-xl border px-4 py-3 text-center text-sm font-semibold transition"
                     :class="
                         blogs.links[0].url
-                            ? 'border-slate-200 bg-white text-slate-700 active:bg-slate-50'
-                            : 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300'
+                            ? 'border-slate-200 bg-white text-slate-700 active:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:active:bg-gray-800'
+                            : 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-600'
                     "
                 >
                     &larr; Previous
                 </component>
-                <div class="px-4 text-xs font-semibold text-slate-500">
+                <div
+                    class="px-4 text-xs font-semibold text-slate-500 dark:text-gray-400"
+                >
                     Page {{ blogs.current_page }}
                 </div>
                 <component
@@ -159,8 +163,8 @@ const clearSearch = () => {
                     class="flex-1 rounded-xl border px-4 py-3 text-center text-sm font-semibold transition"
                     :class="
                         blogs.links[blogs.links.length - 1].url
-                            ? 'border-slate-200 bg-white text-slate-700 active:bg-slate-50'
-                            : 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300'
+                            ? 'border-slate-200 bg-white text-slate-700 active:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:active:bg-gray-800'
+                            : 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-600'
                     "
                 >
                     Next &rarr;

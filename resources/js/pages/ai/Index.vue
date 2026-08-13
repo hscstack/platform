@@ -112,14 +112,16 @@ const handleMockSubmit = (question?: string) => {
         <div class="mx-auto max-w-3xl text-center">
             <!-- Launching Badge -->
             <div
-                class="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1.5 text-xs font-bold text-indigo-700 shadow-xs backdrop-blur-md"
+                class="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1.5 text-xs font-bold text-indigo-700 shadow-xs backdrop-blur-md dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
             >
-                <Sparkles class="h-3.5 w-3.5 animate-pulse text-indigo-600" />
+                <Sparkles
+                    class="h-3.5 w-3.5 animate-pulse text-indigo-600 dark:text-indigo-400"
+                />
                 <span>HSCStack AI • Coming Soon</span>
             </div>
 
             <h1
-                class="mb-4 text-3xl font-black tracking-tight text-slate-900 sm:text-5xl lg:leading-[1.15]"
+                class="mb-4 text-3xl font-black tracking-tight text-slate-900 sm:text-5xl lg:leading-[1.15] dark:text-gray-100"
             >
                 তোমার বিষয় ও টপিক অনুযায়ী <br />
                 <span
@@ -130,7 +132,7 @@ const handleMockSubmit = (question?: string) => {
             </h1>
 
             <p
-                class="mx-auto mb-8 max-w-xl text-sm leading-relaxed font-medium text-slate-600 sm:text-base"
+                class="mx-auto mb-8 max-w-xl text-sm leading-relaxed font-medium text-slate-600 sm:text-base dark:text-gray-400"
             >
                 পছন্দের বিষয় ও অধ্যায় সিলেক্ট করে সরাসরি প্রশ্ন করুন। NCTB
                 কারিকুলাম অনুযায়ী প্রতিটি জটিল কনসেপ্ট সহজ ভাষায় বুঝিয়ে দেবে
@@ -140,7 +142,7 @@ const handleMockSubmit = (question?: string) => {
 
         <!-- Funding Banner / Callout -->
         <div
-            class="relative mx-auto mb-10 max-w-3xl overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/90 via-white to-violet-50/50 p-5 shadow-xs sm:p-6"
+            class="relative mx-auto mb-10 max-w-3xl overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/90 via-white to-violet-50/50 p-5 shadow-xs sm:p-6 dark:border-indigo-500/30 dark:from-indigo-500/5 dark:via-gray-900 dark:to-violet-500/5"
         >
             <div
                 class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
@@ -153,12 +155,12 @@ const handleMockSubmit = (question?: string) => {
                     </div>
                     <div>
                         <h3
-                            class="text-sm font-bold text-slate-900 sm:text-base"
+                            class="text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
                         >
                             এই সার্ভিসটি চালু করতে আমাদের ফান্ডিং প্রয়োজন!
                         </h3>
                         <p
-                            class="mt-0.5 text-xs leading-relaxed font-medium text-slate-600"
+                            class="mt-0.5 text-xs leading-relaxed font-medium text-slate-600 dark:text-gray-400"
                         >
                             HSCStack একটি অলাভজনক উদ্যোগ। AI সার্ভিস সম্পূর্ণ
                             ফ্রিতে দিতে এবং সার্ভার ও API কস্ট বহন করতে আমাদের
@@ -179,29 +181,35 @@ const handleMockSubmit = (question?: string) => {
 
         <!-- AI Mockup Flow Container -->
         <div
-            class="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50"
+            class="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-gray-700 dark:bg-gray-900 dark:shadow-gray-900/50"
         >
             <!-- Top Bar / Breadcrumb Flow -->
             <div
-                class="border-b border-slate-100 bg-slate-50/80 px-5 py-3.5 backdrop-blur-md"
+                class="border-b border-slate-100 bg-slate-50/80 px-5 py-3.5 backdrop-blur-md dark:border-gray-800 dark:bg-gray-800"
             >
                 <div
-                    class="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500"
+                    class="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500 dark:text-gray-400"
                 >
-                    <span class="flex items-center gap-1.5 text-slate-700">
+                    <span
+                        class="flex items-center gap-1.5 text-slate-700 dark:text-gray-300"
+                    >
                         <component
                             :is="selectedSubject.icon"
-                            class="h-4 w-4 stroke-[2.2] text-indigo-600"
+                            class="h-4 w-4 stroke-[2.2] text-indigo-600 dark:text-indigo-400"
                         />
                         {{ selectedSubject.name }}
                     </span>
-                    <ChevronRight class="h-3.5 w-3.5 text-slate-300" />
-                    <span class="flex items-center gap-1 text-indigo-600">
+                    <ChevronRight
+                        class="h-3.5 w-3.5 text-slate-300 dark:text-gray-600"
+                    />
+                    <span
+                        class="flex items-center gap-1 text-indigo-600 dark:text-indigo-400"
+                    >
                         <Layers class="h-3.5 w-3.5" />
                         {{ selectedTopic }}
                     </span>
                     <span
-                        class="ml-auto inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700"
+                        class="ml-auto inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
                     >
                         <Lock class="h-3 w-3" /> Coming Soon
                     </span>
@@ -212,10 +220,10 @@ const handleMockSubmit = (question?: string) => {
                 <!-- STEP 1: Select Subject -->
                 <div>
                     <label
-                        class="mb-2.5 flex items-center gap-1.5 text-xs font-extrabold tracking-wider text-slate-400 uppercase"
+                        class="mb-2.5 flex items-center gap-1.5 text-xs font-extrabold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                     >
                         <span
-                            class="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-100 text-[10px] text-indigo-600"
+                            class="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-100 text-[10px] text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400"
                             >1</span
                         >
                         বিষয় সিলেক্ট করুন:
@@ -229,8 +237,8 @@ const handleMockSubmit = (question?: string) => {
                             :class="[
                                 'inline-flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-xs font-bold transition-all duration-200 active:scale-95',
                                 selectedSubject.id === sub.id
-                                    ? 'border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-xs ring-2 ring-indigo-600/10'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                                    ? 'border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-xs ring-2 ring-indigo-600/10 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800',
                             ]"
                         >
                             <div class="flex items-center gap-2.5">
@@ -239,7 +247,7 @@ const handleMockSubmit = (question?: string) => {
                                         'flex h-7 w-7 items-center justify-center rounded-lg transition-colors',
                                         selectedSubject.id === sub.id
                                             ? 'bg-indigo-600 text-white'
-                                            : 'bg-slate-100 text-slate-500',
+                                            : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400',
                                     ]"
                                 >
                                     <component
@@ -251,7 +259,7 @@ const handleMockSubmit = (question?: string) => {
                             </div>
                             <CheckCircle2
                                 v-if="selectedSubject.id === sub.id"
-                                class="h-4 w-4 text-indigo-600"
+                                class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
                             />
                         </button>
                     </div>
@@ -260,10 +268,10 @@ const handleMockSubmit = (question?: string) => {
                 <!-- STEP 2: Select Topic / Chapter -->
                 <div>
                     <label
-                        class="mb-2.5 flex items-center gap-1.5 text-xs font-extrabold tracking-wider text-slate-400 uppercase"
+                        class="mb-2.5 flex items-center gap-1.5 text-xs font-extrabold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                     >
                         <span
-                            class="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-100 text-[10px] text-indigo-600"
+                            class="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-100 text-[10px] text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400"
                             >2</span
                         >
                         টপিক / অধ্যায় পছন্দ করুন:
@@ -278,7 +286,7 @@ const handleMockSubmit = (question?: string) => {
                                 'rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95',
                                 selectedTopic === topic
                                     ? 'border-indigo-500 bg-indigo-600 text-white shadow-xs'
-                                    : 'border-slate-200 bg-slate-50/80 text-slate-600 hover:border-slate-300 hover:bg-white',
+                                    : 'border-slate-200 bg-slate-50/80 text-slate-600 hover:border-slate-300 hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-900',
                             ]"
                         >
                             {{ topic }}
@@ -288,7 +296,7 @@ const handleMockSubmit = (question?: string) => {
 
                 <!-- Chat Box Screen Simulation -->
                 <div
-                    class="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4"
+                    class="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
                 >
                     <!-- AI Greeting Message -->
                     <div class="flex gap-3">
@@ -298,7 +306,7 @@ const handleMockSubmit = (question?: string) => {
                             <Bot class="h-4 w-4" />
                         </div>
                         <div
-                            class="max-w-xl rounded-2xl rounded-tl-xs border border-slate-200/60 bg-white p-3.5 text-xs leading-relaxed font-medium text-slate-700 shadow-xs sm:text-sm"
+                            class="max-w-xl rounded-2xl rounded-tl-xs border border-slate-200/60 bg-white p-3.5 text-xs leading-relaxed font-medium text-slate-700 shadow-xs sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                         >
                             তুমি
                             <strong>{{ selectedSubject.name }}</strong> বিষয়ের
@@ -311,7 +319,7 @@ const handleMockSubmit = (question?: string) => {
                     <!-- Suggested Prompts for this topic -->
                     <div>
                         <p
-                            class="mb-2 flex items-center gap-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase"
+                            class="mb-2 flex items-center gap-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                         >
                             <MessageSquareText class="h-3 w-3" />
                             নমুনা প্রশ্নসমূহ (Sample Queries):
@@ -322,15 +330,15 @@ const handleMockSubmit = (question?: string) => {
                                 :key="idx"
                                 @click="handleMockSubmit(q)"
                                 type="button"
-                                class="group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-2.5 text-left transition-all duration-200 hover:border-indigo-300 hover:shadow-xs active:scale-[0.99]"
+                                class="group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-2.5 text-left transition-all duration-200 hover:border-indigo-300 hover:shadow-xs active:scale-[0.99] dark:border-gray-700 dark:bg-gray-900 dark:hover:border-indigo-500/50"
                             >
                                 <span
-                                    class="text-xs font-semibold text-slate-700 group-hover:text-indigo-600"
+                                    class="text-xs font-semibold text-slate-700 group-hover:text-indigo-600 dark:text-gray-300 dark:group-hover:text-indigo-400"
                                 >
                                     "{{ q }}"
                                 </span>
                                 <Zap
-                                    class="h-3.5 w-3.5 shrink-0 text-slate-300 group-hover:text-indigo-500"
+                                    class="h-3.5 w-3.5 shrink-0 text-slate-300 group-hover:text-indigo-500 dark:text-gray-600 dark:group-hover:text-indigo-400"
                                 />
                             </button>
                         </div>
@@ -339,20 +347,22 @@ const handleMockSubmit = (question?: string) => {
             </div>
 
             <!-- Lock Overlay Footer -->
-            <div class="relative border-t border-slate-100 bg-slate-50/80 p-4">
+            <div
+                class="relative border-t border-slate-100 bg-slate-50/80 p-4 dark:border-gray-800 dark:bg-gray-800"
+            >
                 <!-- Disabled Lock Screen Overlay -->
                 <div
-                    class="absolute inset-0 z-10 flex items-center justify-center bg-white/85 backdrop-blur-[2px]"
+                    class="absolute inset-0 z-10 flex items-center justify-center bg-white/85 backdrop-blur-[2px] dark:bg-gray-900/85"
                 >
                     <div
-                        class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 shadow-xs"
+                        class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
                     >
                         <Lock class="h-3.5 w-3.5 text-amber-500" />
                         <span
                             >AI চালু করতে সাহায্য করুন 👉
                             <Link
                                 href="/support"
-                                class="text-indigo-600 hover:underline"
+                                class="text-indigo-600 hover:underline dark:text-indigo-400"
                                 >Support Page</Link
                             ></span
                         >
@@ -368,7 +378,7 @@ const handleMockSubmit = (question?: string) => {
                         type="text"
                         disabled
                         :placeholder="`${selectedTopic} নিয়ে প্রশ্নটি লিখুন...`"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-700"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                     />
                     <button
                         type="button"

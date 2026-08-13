@@ -10,13 +10,13 @@ const userId = page.props.auth.user.id;
 const getRoleBadgeStyles = (role: string) => {
     switch (role) {
         case 'admin':
-            return 'bg-red-50 text-red-700 border-red-100';
+            return 'bg-red-50 text-red-700 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30';
         case 'manager':
-            return 'bg-amber-50 text-amber-700 border-amber-100';
+            return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30';
         case 'editor':
-            return 'bg-purple-50 text-purple-700 border-purple-100';
+            return 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30';
         default:
-            return 'bg-gray-50 text-gray-700 border-gray-100';
+            return 'bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
     }
 };
 
@@ -28,37 +28,37 @@ const deleteUser = (id: number) => {
 </script>
 <template>
     <tr
-        class="block border-b border-gray-100 p-5 transition-colors duration-200 last:border-b-0 md:table-row md:border-b md:border-gray-200/60 md:p-0"
+        class="block border-b border-gray-100 p-5 transition-colors duration-200 last:border-b-0 md:table-row md:border-b md:border-gray-200/60 md:p-0 dark:border-gray-800 dark:md:border-gray-600"
         :class="[
             user.id === userId
-                ? 'bg-blue-50/50 md:bg-blue-50/30 md:hover:bg-blue-50/50'
-                : 'bg-white md:hover:bg-gray-50/50',
+                ? 'bg-blue-50/50 md:bg-blue-50/30 md:hover:bg-blue-50/50 dark:bg-blue-500/10 dark:md:bg-blue-500/10 dark:md:hover:bg-blue-500/20'
+                : 'bg-white md:hover:bg-gray-50/50 dark:bg-gray-900 dark:md:hover:bg-gray-800',
         ]"
     >
         <td
-            class="block py-1.5 font-medium text-gray-900 md:table-cell md:px-6 md:py-4.5"
+            class="block py-1.5 font-medium text-gray-900 md:table-cell md:px-6 md:py-4.5 dark:text-gray-100"
         >
             <div class="flex items-center gap-3.5">
                 <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold tracking-wider text-slate-700 uppercase shadow-xs ring-1 ring-black/5"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold tracking-wider text-slate-700 uppercase shadow-xs ring-1 ring-black/5 dark:bg-gray-800 dark:text-gray-300"
                 >
                     {{ user.name.charAt(0) }}
                 </div>
                 <div class="flex min-w-0 flex-col">
                     <div class="flex items-center gap-1.5">
                         <span
-                            class="truncate text-sm font-semibold text-gray-900"
+                            class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100"
                             >{{ user.name }}</span
                         >
                         <span
                             v-if="user.id === userId"
-                            class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700"
+                            class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
                         >
                             You
                         </span>
                     </div>
                     <span
-                        class="mt-0.5 truncate text-xs text-gray-400 md:hidden"
+                        class="mt-0.5 truncate text-xs text-gray-400 md:hidden dark:text-gray-500"
                     >
                         {{ user.email }}
                     </span>
@@ -67,14 +67,16 @@ const deleteUser = (id: number) => {
         </td>
 
         <td
-            class="hidden text-sm font-normal text-gray-600 md:table-cell md:px-6 md:py-4.5"
+            class="hidden text-sm font-normal text-gray-600 md:table-cell md:px-6 md:py-4.5 dark:text-gray-400"
         >
             {{ user.email }}
         </td>
 
         <td class="mt-1 block py-1.5 md:mt-0 md:table-cell md:px-6 md:py-4.5">
             <div class="flex items-center gap-2 md:block">
-                <span class="w-12 text-xs font-medium text-gray-400 md:hidden">
+                <span
+                    class="w-12 text-xs font-medium text-gray-400 md:hidden dark:text-gray-500"
+                >
                     Role:
                 </span>
                 <span
@@ -87,19 +89,19 @@ const deleteUser = (id: number) => {
         </td>
 
         <td
-            class="mt-3 block border-t border-gray-100 py-2 pt-3 md:mt-0 md:table-cell md:border-t-0 md:px-6 md:py-4.5 md:pt-0 md:text-right"
+            class="mt-3 block border-t border-gray-100 py-2 pt-3 md:mt-0 md:table-cell md:border-t-0 md:px-6 md:py-4.5 md:pt-0 md:text-right dark:border-gray-800"
         >
             <div class="flex items-center justify-start gap-3.5 md:justify-end">
                 <Link
                     :href="`/admin/users/edit/${user.id}`"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-2xs transition-all hover:bg-gray-50 hover:text-blue-600 md:border-0 md:bg-transparent md:p-0 md:text-blue-600 md:shadow-none md:hover:text-blue-700 md:hover:underline"
+                    class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-2xs transition-all hover:bg-gray-50 hover:text-blue-600 md:border-0 md:bg-transparent md:p-0 md:text-blue-600 md:shadow-none md:hover:text-blue-700 md:hover:underline dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:md:bg-transparent dark:md:text-blue-400 dark:md:hover:text-blue-400"
                 >
                     Edit
                 </Link>
 
                 <button
                     @click="deleteUser(user.id)"
-                    class="inline-flex items-center justify-center gap-1 rounded-lg border border-red-100 bg-red-50/40 px-3 py-1.5 text-xs font-medium text-red-600 shadow-2xs transition-all hover:bg-red-50 hover:text-red-700 md:border-0 md:bg-transparent md:p-0 md:text-red-500 md:shadow-none md:hover:text-red-700"
+                    class="inline-flex items-center justify-center gap-1 rounded-lg border border-red-100 bg-red-50/40 px-3 py-1.5 text-xs font-medium text-red-600 shadow-2xs transition-all hover:bg-red-50 hover:text-red-700 md:border-0 md:bg-transparent md:p-0 md:text-red-500 md:shadow-none md:hover:text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:md:bg-transparent dark:md:text-red-400 dark:md:hover:text-red-400"
                 >
                     <Trash2 class="h-3.5 w-3.5" />
                     <span class="md:hidden">Delete</span>

@@ -64,19 +64,21 @@ const submitForm = () => {
 
 <template>
     <div
-        class="mobile-deep-border:p-4 flex min-h-full w-full flex-col justify-start bg-slate-50 p-4 lg:p-10"
+        class="mobile-deep-border:p-4 flex min-h-full w-full flex-col justify-start bg-slate-50 p-4 lg:p-10 dark:bg-gray-950"
     >
         <div
-            class="w-full rounded-2xl border border-gray-300 bg-white p-5 shadow-xs md:p-10"
+            class="w-full rounded-2xl border border-gray-300 bg-white p-5 shadow-xs md:p-10 dark:border-gray-600 dark:bg-gray-900"
         >
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-gray-300 pb-6 sm:flex-row sm:items-center"
+                class="mb-8 flex flex-col justify-between gap-4 border-b border-gray-300 pb-6 sm:flex-row sm:items-center dark:border-gray-600"
             >
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">
+                    <h1
+                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    >
                         {{ props.user ? 'Edit' : 'Create New' }} User
                     </h1>
-                    <p class="mt-1 text-sm text-slate-500">
+                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         {{
                             props.user
                                 ? 'Update team member details and system access rules.'
@@ -92,7 +94,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="name"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Full Name</label
                         >
                         <input
@@ -101,11 +103,11 @@ const submitForm = () => {
                             id="name"
                             placeholder="John Doe"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.name
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -119,7 +121,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="email"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Email Address</label
                         >
                         <input
@@ -128,11 +130,11 @@ const submitForm = () => {
                             id="email"
                             placeholder="johndoe@example.com"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.email
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -149,12 +151,12 @@ const submitForm = () => {
                     <div>
                         <label
                             for="password"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >
                             Password
                             <span
                                 v-if="props.user"
-                                class="text-xs font-normal text-slate-400"
+                                class="text-xs font-normal text-slate-400 dark:text-gray-500"
                                 >(Leave blank to keep current)</span
                             >
                         </label>
@@ -165,11 +167,11 @@ const submitForm = () => {
                             placeholder="••••••••"
                             :required="!props.user"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.password
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -183,18 +185,18 @@ const submitForm = () => {
                     <div v-if="!shouldHideOptions">
                         <label
                             for="role"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >System Role</label
                         >
                         <select
                             id="role"
                             v-model="form.role"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.role
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         >
                             <option
@@ -217,13 +219,15 @@ const submitForm = () => {
                 <!-- DYNAMIC EDITOR PERMISSIONS SECTION -->
                 <div
                     v-if="form.role === 'editor' && !shouldHideOptions"
-                    class="animate-fadeIn space-y-3 rounded-xl border border-blue-200 bg-blue-50/30 p-5 transition-all"
+                    class="animate-fadeIn space-y-3 rounded-xl border border-blue-200 bg-blue-50/30 p-5 transition-all dark:border-blue-500/30 dark:bg-blue-500/10"
                 >
                     <div>
-                        <h3 class="text-sm font-semibold text-slate-900">
+                        <h3
+                            class="text-sm font-semibold text-slate-900 dark:text-gray-100"
+                        >
                             Editor Permissions
                         </h3>
-                        <p class="text-xs text-slate-500">
+                        <p class="text-xs text-slate-500 dark:text-gray-400">
                             Select the features this editor is authorized to
                             modify.
                         </p>
@@ -235,7 +239,7 @@ const submitForm = () => {
                         <div
                             v-for="permission in availablePermissions"
                             :key="permission.name"
-                            class="flex items-start gap-2.5 rounded-lg border border-gray-200 bg-white p-3 shadow-xs"
+                            class="flex items-start gap-2.5 rounded-lg border border-gray-200 bg-white p-3 shadow-xs dark:border-gray-700 dark:bg-gray-900"
                         >
                             <input
                                 type="checkbox"
@@ -246,20 +250,20 @@ const submitForm = () => {
                                     form.processing ||
                                     permission.name === 'view admin'
                                 "
-                                class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60"
+                                class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60 dark:border-gray-600"
                             />
                             <label
                                 :for="`perm-${permission.name}`"
-                                class="cursor-pointer text-xs font-medium text-slate-700 select-none disabled:cursor-not-allowed"
+                                class="cursor-pointer text-xs font-medium text-slate-700 select-none disabled:cursor-not-allowed dark:text-gray-300"
                                 :class="{
-                                    'text-slate-400':
+                                    'text-slate-400 dark:text-gray-500':
                                         permission.name === 'view admin',
                                 }"
                             >
                                 {{ permission.name }}
                                 <span
                                     v-if="permission.name === 'view admin'"
-                                    class="block text-[10px] font-normal text-slate-400"
+                                    class="block text-[10px] font-normal text-slate-400 dark:text-gray-500"
                                     >(Required)</span
                                 >
                             </label>
@@ -278,7 +282,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="file"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Profile Image</label
                         >
                         <input
@@ -287,11 +291,11 @@ const submitForm = () => {
                             accept="image/*"
                             @change="form.file = $event.target.files[0]"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-500 transition outline-none file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 file:transition hover:file:bg-slate-200 disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-500 transition outline-none file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 file:transition hover:file:bg-slate-200 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-400 dark:file:bg-gray-800 dark:file:text-gray-300 dark:hover:file:bg-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.file
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -305,7 +309,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="title"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Title</label
                         >
                         <input
@@ -314,11 +318,11 @@ const submitForm = () => {
                             id="title"
                             placeholder="e.g. Lead Developer, Professor"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.title
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -334,7 +338,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="institution"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Institution</label
                         >
                         <input
@@ -343,11 +347,11 @@ const submitForm = () => {
                             id="institution"
                             placeholder="University / Company"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.institution
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -361,7 +365,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="facebook"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Facebook</label
                         >
                         <input
@@ -370,11 +374,11 @@ const submitForm = () => {
                             id="facebook"
                             placeholder="Facebook profile URL"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.facebook
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -390,7 +394,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="github"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >GitHub</label
                         >
                         <input
@@ -399,11 +403,11 @@ const submitForm = () => {
                             id="github"
                             placeholder="GitHub profile URL"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.github
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -417,7 +421,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="instagram"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Instagram</label
                         >
                         <input
@@ -426,11 +430,11 @@ const submitForm = () => {
                             id="instagram"
                             placeholder="Instagram profile URL"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.instagram
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -445,7 +449,7 @@ const submitForm = () => {
                 <div>
                     <label
                         for="about"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >About</label
                     >
                     <textarea
@@ -454,11 +458,11 @@ const submitForm = () => {
                         rows="4"
                         placeholder="Short bio..."
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.about
                                 ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                         "
                     ></textarea>
                     <p
@@ -471,10 +475,10 @@ const submitForm = () => {
 
                 <!-- Role Permissions Reference Card -->
                 <div
-                    class="space-y-3.5 rounded-xl border border-gray-300 bg-slate-50/50 p-4.5"
+                    class="space-y-3.5 rounded-xl border border-gray-300 bg-slate-50/50 p-4.5 dark:border-gray-600 dark:bg-gray-800/50"
                 >
                     <h4
-                        class="text-xs font-bold tracking-wider text-slate-500 uppercase"
+                        class="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
                     >
                         Role Permissions Reference
                     </h4>
@@ -483,7 +487,9 @@ const submitForm = () => {
                             <div class="text-xs font-bold text-red-700">
                                 Admin
                             </div>
-                            <div class="text-xs leading-relaxed text-slate-600">
+                            <div
+                                class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
                                 Superuser control. Automatically has all
                                 permissions system-wide.
                             </div>
@@ -494,7 +500,9 @@ const submitForm = () => {
                             <div class="text-xs font-bold text-purple-700">
                                 Editor
                             </div>
-                            <div class="text-xs leading-relaxed text-slate-600">
+                            <div
+                                class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
                                 Customizable access. Permissions can be
                                 checked/unchecked explicitly above.
                             </div>
@@ -503,7 +511,9 @@ const submitForm = () => {
                             <div class="text-xs font-bold text-amber-700">
                                 Manager
                             </div>
-                            <div class="text-xs leading-relaxed text-slate-600">
+                            <div
+                                class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
                                 Dashboard view. Basic view access with no
                                 modification capabilities.
                             </div>
@@ -512,12 +522,12 @@ const submitForm = () => {
                 </div>
 
                 <div
-                    class="flex justify-end space-x-3 border-t border-gray-300 pt-6"
+                    class="flex justify-end space-x-3 border-t border-gray-300 pt-6 dark:border-gray-600"
                 >
                     <button
                         type="button"
                         @click="goBack"
-                        class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         Cancel
                     </button>

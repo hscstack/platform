@@ -6,11 +6,11 @@ import { Sparkles, ArrowRight } from 'lucide-vue-next';
 <template>
     <Link
         href="/ai"
-        class="group relative mb-6 flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-indigo-100/80 bg-gradient-to-r from-indigo-50/90 via-violet-50/40 to-fuchsia-50/30 p-3.5 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:shadow-md sm:p-4"
+        class="group relative mb-6 flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-indigo-100/80 bg-gradient-to-r from-indigo-50/90 via-violet-50/40 to-fuchsia-50/30 p-3.5 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:shadow-md sm:p-4 dark:border-indigo-500/20 dark:from-indigo-500/5 dark:via-violet-500/5 dark:to-fuchsia-500/5 dark:hover:border-indigo-500/40"
     >
         <!-- Background Ambient Glow -->
         <div
-            class="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full bg-indigo-500/10 blur-xl transition-all duration-300 group-hover:scale-125 sm:-top-10 sm:-right-10 sm:h-32 sm:w-32 sm:blur-2xl"
+            class="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full bg-indigo-500/10 blur-xl transition-all duration-300 group-hover:scale-125 sm:-top-10 sm:-right-10 sm:h-32 sm:w-32 sm:blur-2xl dark:bg-indigo-500/5"
         ></div>
 
         <!-- Left Content Section -->
@@ -26,12 +26,12 @@ import { Sparkles, ArrowRight } from 'lucide-vue-next';
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span
-                        class="text-sm leading-tight font-extrabold text-slate-900"
+                        class="text-sm leading-tight font-extrabold text-slate-900 dark:text-gray-100"
                         >HSCStack AI</span
                     >
                 </div>
                 <p
-                    class="mt-0.5 truncate text-[11px] font-medium text-slate-600 sm:text-xs sm:whitespace-normal"
+                    class="mt-0.5 truncate text-[11px] font-medium text-slate-600 sm:text-xs sm:whitespace-normal dark:text-gray-400"
                 >
                     বিষয় ও অধ্যায় সিলেক্ট করে সরাসরি প্রশ্ন ও গাণিতিক সমস্যা
                     সলভ করুন।
@@ -41,7 +41,7 @@ import { Sparkles, ArrowRight } from 'lucide-vue-next';
 
         <!-- Right Action Arrow (Visible on Mobile & Desktop) -->
         <div
-            class="relative z-10 flex shrink-0 items-center gap-1 text-xs font-bold text-indigo-600"
+            class="relative z-10 flex shrink-0 items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400"
         >
             <span class="hidden sm:inline">এক্সপ্লোর করুন</span>
             <ArrowRight
