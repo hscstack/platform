@@ -71,19 +71,21 @@ const submitForm = () => {
 
 <template>
     <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10"
+        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >
         <div
-            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10"
+            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
         >
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center"
+                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">
+                    <h1
+                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    >
                         {{ props.subject ? 'Edit' : 'Create' }} New Subject
                     </h1>
-                    <p class="mt-1 text-sm text-slate-500">
+                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         {{
                             props.subject
                                 ? 'Update the subject details below.'
@@ -94,7 +96,7 @@ const submitForm = () => {
                 <button
                     type="button"
                     @click="goBack"
-                    class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center"
+                    class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
                 >
                     &larr; Back
                 </button>
@@ -105,7 +107,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="name"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Subject Name</label
                         >
                         <input
@@ -117,7 +119,7 @@ const submitForm = () => {
                             :class="
                                 form.errors.name
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -131,17 +133,17 @@ const submitForm = () => {
                     <div>
                         <label
                             for="course"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Course</label
                         >
                         <select
                             v-model="form.course"
                             id="course"
-                            class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none"
+                            class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none dark:bg-gray-900"
                             :class="
                                 form.errors.course
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         >
                             <option value="hsc">HSC</option>
@@ -158,7 +160,7 @@ const submitForm = () => {
                     <div>
                         <label
                             for="sort_order"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Sort Order</label
                         >
                         <input
@@ -169,7 +171,7 @@ const submitForm = () => {
                             :class="
                                 form.errors.sort_order
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'
+                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
@@ -183,7 +185,7 @@ const submitForm = () => {
 
                 <div>
                     <label
-                        class="mb-3 block text-sm font-semibold text-slate-700"
+                        class="mb-3 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >Visual Theme Style</label
                     >
                     <div class="flex flex-wrap gap-3">
@@ -200,7 +202,7 @@ const submitForm = () => {
                                     : preset +
                                       ' border-transparent hover:scale-105' +
                                       (preset.includes('100')
-                                          ? 'border-slate-200'
+                                          ? 'border-slate-200 dark:border-gray-700'
                                           : 'border-slate-150'),
                             ]"
                         >
@@ -220,7 +222,7 @@ const submitForm = () => {
 
                 <div>
                     <label
-                        class="mb-2.5 block text-sm font-semibold text-slate-700"
+                        class="mb-2.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >Subject Icon</label
                     >
                     <div
@@ -234,8 +236,8 @@ const submitForm = () => {
                             class="flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3.5 transition-all"
                             :class="
                                 form.icon === iconKey
-                                    ? 'border-blue-600 bg-blue-50 text-blue-600 ring-2 ring-blue-600/10'
-                                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    ? 'border-blue-600 bg-blue-50 text-blue-600 ring-2 ring-blue-600/10 dark:bg-blue-500/10 dark:text-blue-400'
+                                    : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
                             "
                         >
                             <component
@@ -256,17 +258,17 @@ const submitForm = () => {
                     </p>
                 </div>
 
-                <hr class="my-4 border-slate-100" />
+                <hr class="my-4 border-slate-100 dark:border-gray-800" />
 
                 <div
-                    class="rounded-xl border border-slate-200/60 bg-slate-50 p-5"
+                    class="rounded-xl border border-slate-200/60 bg-slate-50 p-5 dark:border-gray-700 dark:bg-gray-800"
                 >
                     <span
-                        class="mb-3.5 block text-xs font-bold tracking-wider text-slate-400 uppercase"
+                        class="mb-3.5 block text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                         >Live Dashboard Card Preview</span
                     >
                     <div
-                        class="flex max-w-sm items-center space-x-4 rounded-lg border border-slate-100 bg-white p-4 shadow-sm"
+                        class="flex max-w-sm items-center space-x-4 rounded-lg border border-slate-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900"
                     >
                         <div
                             :class="form.tailwind_format"
@@ -278,10 +280,14 @@ const submitForm = () => {
                             />
                         </div>
                         <div class="overflow-hidden">
-                            <h4 class="truncate font-bold text-slate-800">
+                            <h4
+                                class="truncate font-bold text-slate-800 dark:text-gray-200"
+                            >
                                 {{ form.name || 'Untitled Subject' }}
                             </h4>
-                            <p class="text-xs text-slate-500">
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
                                 {{ props.subject?.children_count ?? 0 }}
                                 Chapters
                             </p>
@@ -290,12 +296,12 @@ const submitForm = () => {
                 </div>
 
                 <div
-                    class="flex justify-end space-x-3 border-t border-slate-100 pt-4"
+                    class="flex justify-end space-x-3 border-t border-slate-100 pt-4 dark:border-gray-800"
                 >
                     <button
                         type="button"
                         @click="goBack"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         Cancel
                     </button>

@@ -9,7 +9,7 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
 
 <template>
     <div
-        class="mb-6 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-5"
+        class="mb-6 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-5 dark:border-gray-700 dark:bg-gray-900"
     >
         <!-- Large Browsing Indicator -->
         <div class="flex items-center gap-3">
@@ -21,12 +21,12 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
             </span>
             <div class="flex min-w-0 flex-col">
                 <span
-                    class="text-[11px] font-bold tracking-wider text-slate-400 uppercase sm:text-xs"
+                    class="text-[11px] font-bold tracking-wider text-slate-400 uppercase sm:text-xs dark:text-gray-500"
                 >
                     Active Repository
                 </span>
                 <p
-                    class="text-sm leading-snug font-extrabold text-slate-900 sm:text-base"
+                    class="text-sm leading-snug font-extrabold text-slate-900 sm:text-base dark:text-gray-100"
                 >
                     আপনি <span>{{ isSsc ? 'SSC' : 'HSC' }}</span> এর
                     কন্টেন্টগুলো দেখছেন
@@ -41,8 +41,8 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
             :class="[
                 'group inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-xs transition-all active:scale-[0.98] sm:w-auto',
                 isSsc
-                    ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white active:bg-indigo-700'
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white active:bg-emerald-700',
+                    ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white active:bg-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500 dark:hover:text-white'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white active:bg-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500 dark:hover:text-white',
             ]"
         >
             <span>

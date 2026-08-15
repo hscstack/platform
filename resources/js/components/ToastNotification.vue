@@ -52,8 +52,8 @@ watch(
                 class="pointer-events-auto flex w-full items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-[1.01]"
                 :class="
                     toast.type === 'success'
-                        ? 'border-emerald-500/25 bg-emerald-50/95 text-emerald-950 shadow-emerald-100/30'
-                        : 'border-rose-500/25 bg-rose-50/95 text-rose-950 shadow-rose-100/30'
+                        ? 'border-emerald-500/25 bg-emerald-50/95 text-emerald-950 shadow-emerald-100/30 dark:border-emerald-500/20 dark:bg-emerald-950/90 dark:text-emerald-100 dark:shadow-emerald-900/30'
+                        : 'border-rose-500/25 bg-rose-50/95 text-rose-950 shadow-rose-100/30 dark:border-rose-500/20 dark:bg-rose-950/90 dark:text-rose-100 dark:shadow-rose-900/30'
                 "
             >
                 <!-- Icon -->
@@ -64,8 +64,8 @@ watch(
                     class="h-5 w-5 shrink-0"
                     :class="
                         toast.type === 'success'
-                            ? 'text-emerald-600'
-                            : 'text-rose-600'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400'
                     "
                 />
 
@@ -77,7 +77,7 @@ watch(
                 <!-- Close Button -->
                 <button
                     @click="removeToast(toast.id)"
-                    class="cursor-pointer rounded-lg p-0.5 text-slate-400 transition-colors hover:bg-black/5 hover:text-slate-700"
+                    class="cursor-pointer rounded-lg p-0.5 text-slate-400 transition-colors hover:bg-black/5 hover:text-slate-700 dark:text-gray-500 dark:hover:bg-white/10 dark:hover:text-gray-300"
                 >
                     <X class="h-4 w-4" />
                 </button>

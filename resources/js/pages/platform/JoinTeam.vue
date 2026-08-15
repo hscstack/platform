@@ -19,7 +19,8 @@ const roles = [
         description:
             'আমাদের এই উদ্যোগকে একদম রুট-লেভেলে পৌঁছে দিতে সাহায্য করুন। বিভিন্ন স্টুডেন্ট গ্রুপে কমিউনিটি অ্যাওয়ারনেস তৈরি করা, নতুন আর্কাইভ আপডেট শেয়ার করা এবং আপনার কলেজে আমাদের রিপ্রেজেন্ট করাই হবে আপনার কাজ।',
         icon: Megaphone,
-        iconContainer: 'bg-emerald-50 text-emerald-600',
+        iconContainer:
+            'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
     },
     {
         id: 'curator',
@@ -27,7 +28,8 @@ const roles = [
         description:
             'হাই-কোয়ালিটি এবং কাজের পড়াশোনার ম্যাটেরিয়াল সংগ্রহ ও গুছিয়ে রাখা আপনার কাজ। একদম নিখুঁত বোর্ড কোশ্চেন সেট, প্র্যাক্টিক্যাল রেকর্ডস কালেক্ট করা এবং চ্যাপ্টার ওয়াইজ ডেটা টেমপ্লেট সাজাতে সাহায্য করবেন।',
         icon: FolderHeart,
-        iconContainer: 'bg-amber-50 text-amber-700',
+        iconContainer:
+            'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
     },
     {
         id: 'moderator',
@@ -35,7 +37,8 @@ const roles = [
         description:
             'আমাদের ফেসবুক পেজ, গ্রুপ এবং ইনস্টাগ্রাম হ্যান্ডেল অ্যাক্টিভ ও এনগেজিং রাখা আপনার কাজ। স্টুডেন্টদের কমেন্টের ইনস্ট্যান্ট রিপ্লাই দেওয়া, কন্টেন্ট শিডিউল করা এবং মডারেশন গাইডলাইন মেইনটেইন করবেন।',
         icon: MessageSquare,
-        iconContainer: 'bg-blue-50 text-blue-600',
+        iconContainer:
+            'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
     },
     {
         id: 'writer',
@@ -43,7 +46,8 @@ const roles = [
         description:
             'আমাদের অফিশিয়াল ব্লগ সেকশনে রেগুলার এডুকেশনাল টিপস, গাইডলাইন, নিউজ এবং স্টুডেন্টদের ইনস্পায়ার করার মতো কন্টেন্ট লিখবেন। কোয়ালিটি রাইটিংয়ের মাধ্যমে স্টুডেন্ট কমিউনিটির সাথে নলেজ শেয়ার করাই হবে মূল কাজ।',
         icon: PenTool,
-        iconContainer: 'bg-rose-50 text-rose-600',
+        iconContainer:
+            'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
     },
     {
         id: 'developer',
@@ -51,7 +55,8 @@ const roles = [
         description:
             'আমাদের প্ল্যাটফর্ম আর্কিটেকচার আরও অপ্টিমাইজ করুন। একদম হাইপার-ক্লিন ফ্রন্টএন্ড কম্পোনেন্ট ডিজাইন করা, লেআউট আই-কমফর্ট রিফাইন করা এবং নতুন রেপোজিটরি ফিচার নিয়ে কাজ করবেন।',
         icon: Code2,
-        iconContainer: 'bg-purple-50 text-purple-600',
+        iconContainer:
+            'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400',
     },
 ];
 
@@ -79,7 +84,7 @@ const whatsappLink = computed(() => {
     <header class="mx-auto max-w-3xl px-4 pt-12 pb-10 text-center sm:pt-16">
         <Link
             href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600"
+            class="group mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
         >
             <ArrowLeft
                 class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
@@ -87,13 +92,13 @@ const whatsappLink = computed(() => {
             Back to Home
         </Link>
         <h1
-            class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl"
+            class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
             Build the ultimate archive, <br />
             <span class="text-indigo-600">together.</span>
         </h1>
         <p
-            class="mx-auto mb-4 max-w-md text-sm font-medium text-slate-800 sm:text-base"
+            class="mx-auto mb-4 max-w-md text-sm font-medium text-slate-800 sm:text-base dark:text-gray-200"
         >
             সারাদেশের HSC & SSC স্টুডেন্টদের কাছে প্রিমিয়াম ও ডিস্ট্রাকশন-ফ্রি
             লার্নিং এক্সপেরিয়েন্স পৌঁছে দিতে আমাদের সাহায্য করুন। নিচের যেকোনো
@@ -106,7 +111,7 @@ const whatsappLink = computed(() => {
             <!-- Roles Selector Grid Left -->
             <div class="space-y-4 lg:col-span-3">
                 <h2
-                    class="mb-2 text-xs font-bold tracking-wider text-slate-400 uppercase"
+                    class="mb-2 text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                 >
                     Open Roles
                 </h2>
@@ -117,8 +122,8 @@ const whatsappLink = computed(() => {
                     @click="selectedRole = role.id"
                     :class="[
                         selectedRole === role.id
-                            ? 'border-indigo-500 bg-indigo-50/10 ring-4 ring-indigo-500/5'
-                            : 'border-slate-200 bg-white hover:border-slate-300',
+                            ? 'border-indigo-500 bg-indigo-50/10 ring-4 ring-indigo-500/5 dark:border-indigo-500 dark:bg-indigo-500/10 dark:ring-indigo-500/10'
+                            : 'border-slate-200 bg-white hover:border-slate-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600',
                         'relative flex cursor-pointer touch-manipulation gap-4 rounded-xl border p-5 transition-all duration-200 active:scale-[0.99] sm:active:scale-100',
                     ]"
                 >
@@ -136,24 +141,26 @@ const whatsappLink = computed(() => {
 
                     <div class="min-w-0 pr-4">
                         <div class="flex flex-wrap items-center gap-2">
-                            <h3 class="text-base font-bold text-slate-900">
+                            <h3
+                                class="text-base font-bold text-slate-900 dark:text-gray-100"
+                            >
                                 {{ role.title }}
                             </h3>
                             <span
                                 v-if="selectedRole === role.id"
-                                class="inline-flex items-center rounded-md border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-indigo-700 uppercase"
+                                class="inline-flex items-center rounded-md border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
                             >
                                 Selected
                             </span>
                         </div>
                         <p
-                            class="mt-1 text-sm leading-relaxed font-medium text-slate-700"
+                            class="mt-1 text-sm leading-relaxed font-medium text-slate-700 dark:text-gray-300"
                         >
                             <template v-if="role.id === 'writer'">
                                 আমাদের অফিশিয়াল
                                 <Link
                                     href="/blogs"
-                                    class="font-bold text-indigo-600 underline decoration-indigo-200 underline-offset-2 hover:text-indigo-700"
+                                    class="font-bold text-indigo-600 underline decoration-indigo-200 underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:decoration-indigo-500/50 dark:hover:text-indigo-300"
                                     >blog</Link
                                 >
                                 সেকশনে রেগুলার এডুকেশনাল টিপস, গাইডলাইন, নিউজ
@@ -172,13 +179,17 @@ const whatsappLink = computed(() => {
             <!-- Contextual CTA Right Panel -->
             <div class="lg:col-span-2">
                 <div
-                    class="sticky top-6 space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+                    class="sticky top-6 space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-900"
                 >
                     <div>
-                        <h2 class="mb-1 text-base font-bold text-slate-900">
+                        <h2
+                            class="mb-1 text-base font-bold text-slate-900 dark:text-gray-100"
+                        >
                             How to Apply
                         </h2>
-                        <p class="text-xs font-medium text-slate-900">
+                        <p
+                            class="text-xs font-medium text-slate-900 dark:text-gray-100"
+                        >
                             আপনার ব্যাকগ্রাউন্ড বা আগ্রহের কথা জানিয়ে সরাসরি
                             আমাদের মেসেজ দিন।
                         </p>
@@ -186,24 +197,27 @@ const whatsappLink = computed(() => {
 
                     <!-- Recognition Benefit Box -->
                     <div
-                        class="flex items-start gap-3.5 rounded-xl border border-indigo-100 bg-indigo-50/30 p-4"
+                        class="flex items-start gap-3.5 rounded-xl border border-indigo-100 bg-indigo-50/30 p-4 dark:border-indigo-500/30 dark:bg-indigo-500/10"
                     >
                         <div
-                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600"
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400"
                         >
                             <Award class="h-4 w-4 stroke-[2.2]" />
                         </div>
                         <div>
-                            <h4 class="text-xs font-bold text-slate-900">
+                            <h4
+                                class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                            >
                                 About Us Recognition
                             </h4>
                             <p
-                                class="mt-1 text-xs leading-relaxed font-medium text-slate-800"
+                                class="mt-1 text-xs leading-relaxed font-medium text-slate-800 dark:text-gray-200"
                             >
                                 আমাদের অনুমোদিত প্রমোটর, কিউরেটর, মডারেটর,
                                 রাইটার এবং ডেভেলপারদের অবদানকে সম্মান জানাতে
                                 আমাদের অফিশিয়াল
-                                <strong class="text-blue-800 underline"
+                                <strong
+                                    class="text-blue-800 underline dark:text-blue-300"
                                     ><Link href="/about-us"
                                         >About Us</Link
                                     ></strong
@@ -214,8 +228,12 @@ const whatsappLink = computed(() => {
                         </div>
                     </div>
 
-                    <div class="border-t border-slate-100 pt-2">
-                        <p class="mb-3 text-xs font-semibold text-slate-400">
+                    <div
+                        class="border-t border-slate-100 pt-2 dark:border-gray-800"
+                    >
+                        <p
+                            class="mb-3 text-xs font-semibold text-slate-400 dark:text-gray-500"
+                        >
                             Ready to pitch for
                             <span class="font-bold text-indigo-600">{{
                                 currentRoleTitle

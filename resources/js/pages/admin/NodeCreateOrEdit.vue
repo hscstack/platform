@@ -19,7 +19,7 @@ const form = useForm({
 function getInputClass(hasError) {
     return hasError
         ? 'border-rose-500 focus:ring-rose-500/20'
-        : 'border-slate-300 focus:ring-blue-500/20 focus:border-blue-500';
+        : 'border-slate-300 dark:border-gray-600 focus:ring-blue-500/20 focus:border-blue-500';
 }
 
 const submitForm = () => {
@@ -44,55 +44,65 @@ const goBack = () => {
 
 <template>
     <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10"
+        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >
         <div
-            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10"
+            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
         >
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center"
+                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">
+                    <h1
+                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    >
                         {{ props.node ? 'Edit Folder' : 'Create Folder' }}
                     </h1>
-                    <p class="mt-1 text-sm text-slate-500">
+                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Subject:
-                        <span class="font-semibold text-slate-700">{{
-                            props.subject?.name
-                        }}</span>
+                        <span
+                            class="font-semibold text-slate-700 dark:text-gray-300"
+                            >{{ props.subject?.name }}</span
+                        >
                     </p>
                 </div>
             </div>
 
             <form @submit.prevent="submitForm" class="space-y-8">
                 <div
-                    class="flex items-start space-x-3 rounded-xl border border-slate-200/60 bg-slate-50 p-5"
+                    class="flex items-start space-x-3 rounded-xl border border-slate-200/60 bg-slate-50 p-5 dark:border-gray-700 dark:bg-gray-800"
                 >
-                    <FolderOpen class="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                    <FolderOpen
+                        class="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400"
+                    />
                     <div>
                         <span
-                            class="mb-1 block text-xs font-bold tracking-wider text-blue-600 uppercase"
+                            class="mb-1 block text-xs font-bold tracking-wider text-blue-600 uppercase dark:text-blue-400"
                             >Location</span
                         >
                         <p
                             v-if="props.parent?.id"
-                            class="text-sm text-slate-700"
+                            class="text-sm text-slate-700 dark:text-gray-300"
                         >
                             You are {{ props.node ? 'editing' : 'creating' }} a
-                            <span class="font-semibold text-blue-700"
+                            <span
+                                class="font-semibold text-blue-700 dark:text-blue-400"
                                 >sub-folder</span
                             >
                             inside:
                             <span
-                                class="ml-1 rounded bg-blue-100 px-1.5 py-0.5 font-sans text-xs font-bold text-slate-900"
+                                class="ml-1 rounded bg-blue-100 px-1.5 py-0.5 font-sans text-xs font-bold text-slate-900 dark:bg-blue-500/10 dark:text-gray-100"
                             >
                                 {{ props.parent.name }}
                             </span>
                         </p>
-                        <p v-else class="text-sm text-slate-700">
+                        <p
+                            v-else
+                            class="text-sm text-slate-700 dark:text-gray-300"
+                        >
                             You are {{ props.node ? 'editing' : 'creating' }} a
-                            <span class="font-semibold text-blue-700"
+                            <span
+                                class="font-semibold text-blue-700 dark:text-blue-400"
                                 >top-level folder</span
                             >
                             directly under this subject.
@@ -104,7 +114,7 @@ const goBack = () => {
                     <div class="md:col-span-2">
                         <label
                             for="name"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Folder Name</label
                         >
                         <input
@@ -127,7 +137,7 @@ const goBack = () => {
                     <div>
                         <label
                             for="sort_order"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Order Priority</label
                         >
                         <input
@@ -144,18 +154,20 @@ const goBack = () => {
                         >
                             {{ form.errors.sort_order }}
                         </p>
-                        <p class="mt-1.5 text-xs text-slate-400">
+                        <p
+                            class="mt-1.5 text-xs text-slate-400 dark:text-gray-500"
+                        >
                             Lower numbers will appear first in the list.
                         </p>
                     </div>
                 </div>
 
                 <div
-                    class="flex justify-end space-x-3 border-t border-slate-100 pt-4"
+                    class="flex justify-end space-x-3 border-t border-slate-100 pt-4 dark:border-gray-800"
                 >
                     <button
                         @click="goBack"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         Cancel
                     </button>

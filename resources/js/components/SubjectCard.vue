@@ -32,7 +32,7 @@ const icons = {
 <template>
     <Link
         :href="subject.slug"
-        class="group relative flex touch-manipulation items-center justify-between overflow-hidden rounded-xl border border-slate-200 bg-white px-5 py-4.5 transition-all duration-200 hover:border-indigo-300 hover:shadow-sm active:scale-[0.99]"
+        class="group relative flex touch-manipulation items-center justify-between overflow-hidden rounded-xl border border-slate-200 bg-white px-5 py-4.5 transition-all duration-200 hover:border-indigo-300 hover:shadow-sm active:scale-[0.99] dark:border-gray-700 dark:bg-gray-900 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-500/5"
     >
         <div class="flex min-w-0 items-center gap-4">
             <!-- Balanced Icon Wrapper -->
@@ -51,11 +51,13 @@ const icons = {
             <!-- Content Area -->
             <div class="min-w-0">
                 <h3
-                    class="truncate text-base font-bold text-slate-800 transition-colors group-hover:text-indigo-600"
+                    class="truncate text-base font-bold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-gray-200 dark:group-hover:text-indigo-400"
                 >
                     {{ subject.name }}
                 </h3>
-                <p class="mt-0.5 text-xs font-semibold text-slate-400">
+                <p
+                    class="mt-0.5 text-xs font-semibold text-slate-400 dark:text-gray-500"
+                >
                     {{ subject.nodes_count }} Chapters
                 </p>
             </div>
@@ -65,7 +67,7 @@ const icons = {
         <div class="flex items-center pl-4">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 text-slate-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-indigo-500"
+                class="h-5 w-5 text-slate-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-indigo-500 dark:text-gray-600 dark:group-hover:text-indigo-400"
                 viewBox="0 0 20 20"
                 fill="currentColor"
             >
