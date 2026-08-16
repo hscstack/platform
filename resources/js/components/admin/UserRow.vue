@@ -112,13 +112,10 @@ const confirmDelete = () => {
                     Edit
                 </Link>
 
-                <button
-                    @click="showDeleteDialog(user.id)"
-                    class="inline-flex items-center justify-center gap-1 rounded-lg border border-red-100 bg-red-50/40 px-3 py-1.5 text-xs font-medium text-red-600 shadow-2xs transition-all hover:bg-red-50 hover:text-red-700 md:border-0 md:bg-transparent md:p-0 md:text-red-500 md:shadow-none md:hover:text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:md:bg-transparent dark:md:text-red-400 dark:md:hover:text-red-400"
-                >
+                <k-button clear small @click="showDeleteDialog(user.id)">
                     <Trash2 class="h-3.5 w-3.5" />
                     <span class="md:hidden">Delete</span>
-                </button>
+                </k-button>
             </div>
         </td>
     </tr>

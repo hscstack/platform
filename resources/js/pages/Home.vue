@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { kButton } from 'konsta/vue';
+import {} from '@inertiajs/vue3';
+import { kButton, kBlock } from 'konsta/vue';
 import { ref, computed } from 'vue';
 import AIBanner from '@/components/AIBanner.vue';
 import BlogCard from '@/components/BlogCard.vue';
@@ -46,15 +46,12 @@ const filteredSubjects = computed(() => {
             />
         </div>
 
-        <div
-            v-if="filteredSubjects.length === 0"
-            class="rounded-xl border border-dashed border-slate-200 bg-white/50 py-12 text-center dark:border-gray-700 dark:bg-gray-900/50"
-        >
+        <k-block v-if="filteredSubjects.length === 0" strong inset>
             <p class="text-sm font-semibold text-slate-400 dark:text-gray-500">
                 No subjects found matching "{{ searchQuery }}"
             </p>
             <k-button @click="searchQuery = ''"> Show all subjects </k-button>
-        </div>
+        </k-block>
 
         <div
             v-if="featured_blogs?.length"
@@ -71,17 +68,9 @@ const filteredSubjects = computed(() => {
                         Read our latest articles and updates
                     </p>
                 </div>
-                <Link
-                    href="/blogs"
-                    class="group inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                >
-                    See all articles
-                    <span
-                        class="transition-transform duration-200 group-hover:translate-x-1"
-                    >
-                        →
-                    </span>
-                </Link>
+                <k-button outline rounded href="/blogs">
+                    See all articles →
+                </k-button>
             </div>
 
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

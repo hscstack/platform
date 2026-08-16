@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { kBlockTitle, kBlock } from 'konsta/vue';
+import { kBlockTitle, kBlock, kButton } from 'konsta/vue';
 import { HelpCircle, Plus, Minus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
@@ -179,11 +179,7 @@ const toggleExpand = () => {
             </div>
 
             <div v-if="faqs.length > INITIAL_COUNT" class="pt-4 text-center">
-                <button
-                    type="button"
-                    @click="toggleExpand"
-                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 focus:outline-none active:scale-95 sm:text-sm"
-                >
+                <k-button outline rounded @click="toggleExpand">
                     <template v-if="!isExpanded">
                         <Plus class="h-4 w-4 stroke-[2.5]" />
                         <span
@@ -196,7 +192,7 @@ const toggleExpand = () => {
                         <Minus class="h-4 w-4 stroke-[2.5]" />
                         <span>কম প্রশ্ন দেখুন</span>
                     </template>
-                </button>
+                </k-button>
             </div>
         </div>
     </kBlock>

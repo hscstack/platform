@@ -49,8 +49,8 @@ onMounted(() => {
 
     setTimeout(() => {
         if (deferredPrompt.value) {
-return;
-}
+            return;
+        }
 
         if (!sessionStorage.getItem('pwa_prompt_dismissed')) {
             if (isSafari.value && isIOS.value) {
@@ -98,7 +98,7 @@ const handleDismiss = () => {
 
 <template>
     <Teleport v-if="isVisible" to="body">
-        <kDialog :opened="true" @opened:change="handleDismiss">
+        <kDialog :opened="true">
             <div class="flex flex-col items-center px-4 py-6 text-center">
                 <div
                     class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-3xl dark:bg-indigo-500/10"

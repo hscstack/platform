@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { kDialog } from 'konsta/vue';
+import { kDialog, kButton } from 'konsta/vue';
 import { X } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 
@@ -49,13 +49,15 @@ const close = () => {
             <div
                 class="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-900/5 dark:bg-gray-900 dark:ring-gray-700/50"
             >
-                <button
+                <k-button
+                    clear
+                    small
                     @click="close"
-                    class="absolute top-4 right-4 z-10 rounded-full bg-slate-100 p-2 text-slate-600 transition dark:bg-gray-800 dark:text-gray-400"
+                    class="absolute top-4 right-4 z-10"
                     aria-label="Close notice"
                 >
                     <X class="h-5 w-5" />
-                </button>
+                </k-button>
 
                 <img
                     v-if="notice.image"
@@ -79,15 +81,18 @@ const close = () => {
                     </p>
 
                     <div class="mt-6 flex gap-3">
-                        <a
+                        <k-button
                             v-if="notice.show_button && notice.button_link"
+                            fill
+                            rounded
+                            large
                             :href="notice.button_link"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex-1 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+                            class="flex-1"
                         >
                             {{ notice.button_title || 'Learn more' }}
-                        </a>
+                        </k-button>
                     </div>
                 </div>
             </div>

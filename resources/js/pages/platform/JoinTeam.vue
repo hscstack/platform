@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { kBadge } from 'konsta/vue';
+import { kBadge, kButton } from 'konsta/vue';
 import {
     ArrowLeft,
     Megaphone,
@@ -239,15 +239,18 @@ const whatsappLink = computed(() => {
                             >?
                         </p>
 
-                        <a
+                        <k-button
+                            fill
+                            rounded
                             :href="whatsappLink"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="k-button inline-flex w-full items-center justify-center gap-2 !rounded-lg !bg-emerald-600 !px-4 !py-3 !text-sm !font-bold !text-white shadow-sm transition-all hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none active:scale-[0.98]"
+                            class="w-full"
+                            style="background-color: #16a34a; color: white"
                         >
                             <MessageSquareShare class="h-4 w-4" />
                             Message on WhatsApp
-                        </a>
+                        </k-button>
                     </div>
                 </div>
             </div>

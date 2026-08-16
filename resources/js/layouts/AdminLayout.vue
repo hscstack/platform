@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { kPage } from 'konsta/vue';
+import { kPage, kNavbar, kButton } from 'konsta/vue';
 import {
     LayoutDashboard,
     Users,
@@ -58,20 +58,14 @@ const closeMobileSidebar = () => {
             <kPage>
                 <NavBar :is-admin="true" />
 
-                <div
-                    class="flex items-center gap-3 border-b border-slate-200/80 bg-white/60 px-4 py-3 backdrop-blur-md lg:hidden dark:border-gray-700/80 dark:bg-gray-900/60"
-                >
-                    <button
-                        @click="openMobileSidebar"
-                        class="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                    >
-                        ☰
-                    </button>
-                    <span
-                        class="text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >Dashboard Menu</span
-                    >
-                </div>
+                <k-navbar class="lg:hidden">
+                    <template #left>
+                        <k-button clear small @click="openMobileSidebar"
+                            >☰</k-button
+                        >
+                    </template>
+                    <template #title>Dashboard Menu</template>
+                </k-navbar>
 
                 <div class="flex flex-1 gap-6 p-4 lg:p-6">
                     <aside

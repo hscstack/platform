@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { kButton, kBadge } from 'konsta/vue';
+import { kButton, kBadge, kCard } from 'konsta/vue';
 import {
     Sparkles,
     Bot,
@@ -142,9 +142,7 @@ const handleMockSubmit = (question?: string) => {
         </div>
 
         <!-- Funding Banner / Callout -->
-        <div
-            class="relative mx-auto mb-10 max-w-3xl overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/90 via-white to-violet-50/50 p-5 shadow-xs sm:p-6 dark:border-indigo-500/30 dark:from-indigo-500/5 dark:via-gray-900 dark:to-violet-500/5"
-        >
+        <k-card outline class="mx-auto mb-10 max-w-3xl">
             <div
                 class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
             >
@@ -170,12 +168,12 @@ const handleMockSubmit = (question?: string) => {
                     </div>
                 </div>
 
-                <Link href="/support">
+                <k-button fill rounded href="/support">
                     <span>ফান্ডিং এ সাহায্য করুন</span>
                     <ArrowRight class="h-3.5 w-3.5" />
-                </Link>
+                </k-button>
             </div>
-        </div>
+        </k-card>
 
         <!-- AI Mockup Flow Container -->
         <div

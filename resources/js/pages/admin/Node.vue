@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import {} from '@inertiajs/vue3';
 import {
     kBlock,
     kBlockTitle,
@@ -61,12 +61,9 @@ const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
             class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
         >
             <div class="flex items-center gap-3">
-                <button
-                    @click="handleBack"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white p-2 text-gray-500 shadow-sm transition-colors duration-150 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-                >
+                <k-button clear small @click="handleBack">
                     <ArrowLeft class="h-4 w-4" :stroke-width="2.5" />
-                </button>
+                </k-button>
 
                 <div>
                     <kBlockTitle>
@@ -87,20 +84,18 @@ const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
                     </span>
                 </kBadge>
 
-                <Link
+                <k-button
+                    fill
+                    rounded
                     :href="
                         parent
                             ? `/admin/subjects/${subject.slug}/nodes/create?parent_id=${parent.id}`
                             : `/admin/subjects/${subject.slug}/nodes/create`
                     "
-                    class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-colors duration-150 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
-                    <FolderPlus
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400"
-                        :stroke-width="2"
-                    />
+                    <FolderPlus class="h-3.5 w-3.5" :stroke-width="2" />
                     Add Folder
-                </Link>
+                </k-button>
 
                 <!-- Add Resource Dropdown -->
                 <k-popover

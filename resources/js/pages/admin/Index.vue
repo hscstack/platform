@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
+import {} from '@inertiajs/vue3';
+import { kBlock, kBlockTitle, kBadge, kButton } from 'konsta/vue';
 import { Plus } from 'lucide-vue-next';
 import SubjectCard from '@/components/admin/SubjectCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -34,13 +34,10 @@ defineProps({
                     </span>
                 </kBadge>
 
-                <Link
-                    href="/admin/subjects/create"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700"
-                >
+                <k-button fill rounded href="/admin/subjects/create">
                     <Plus class="h-3.5 w-3.5" :stroke-width="2.5" />
                     Create Subject
-                </Link>
+                </k-button>
             </div>
         </div>
 

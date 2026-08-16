@@ -16,8 +16,8 @@ let timeout: ReturnType<typeof setTimeout> | undefined;
 
 const showToast = (message: string, type: 'success' | 'error') => {
     if (timeout) {
-clearTimeout(timeout);
-}
+        clearTimeout(timeout);
+    }
 
     toastData.value = { message, type };
     isOpened.value = true;

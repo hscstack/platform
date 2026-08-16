@@ -50,15 +50,15 @@ const confirmDelete = () => {
                 <span>Edit</span>
             </Link>
 
-            <button
-                type="button"
+            <k-button
+                clear
+                small
                 @click="showDeleteDialog"
-                class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                 title="Delete Resource"
             >
                 <Trash2 class="h-2.5 w-2.5" :stroke-width="2.2" />
                 <span>Delete</span>
-            </button>
+            </k-button>
         </div>
 
         <div

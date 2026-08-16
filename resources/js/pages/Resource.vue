@@ -183,15 +183,12 @@ const parseYoutubeUrl = (url) => {
             class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-4 pt-4 pb-20 sm:px-6 sm:pt-4"
         >
             <div class="mb-2">
-                <button
-                    @click="handleBack"
-                    class="group inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                >
+                <k-button clear small @click="handleBack" class="group">
                     <ArrowLeft
                         class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
                     />
                     Back
-                </button>
+                </k-button>
             </div>
 
             <div
@@ -255,16 +252,17 @@ const parseYoutubeUrl = (url) => {
                             v-if="resource.resource_type === 'image'"
                             class="flex items-center gap-2 self-start sm:self-center"
                         >
-                            <a
+                            <k-button
                                 v-if="resource.file_url"
+                                fill
+                                rounded
                                 :href="resource.file_url"
                                 download
                                 target="_blank"
-                                class="k-button inline-flex h-9 items-center gap-2 !rounded-xl !border !border-slate-200 !bg-white !px-4 !text-xs !font-bold !text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.98] dark:!border-gray-700 dark:!bg-gray-900 dark:!text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                             >
                                 <Download class="h-4 w-4 stroke-[2.2]" />
                                 Download
-                            </a>
+                            </k-button>
 
                             <k-button
                                 @click="toggleFullscreen"
@@ -400,16 +398,17 @@ const parseYoutubeUrl = (url) => {
                     </p>
 
                     <div class="mt-6 flex justify-center">
-                        <a
+                        <k-button
                             v-if="resource.file_url"
+                            fill
+                            rounded
                             :href="resource.file_url"
                             download
                             target="_blank"
-                            class="k-button inline-flex touch-manipulation items-center gap-2 !rounded-xl !bg-indigo-600 !px-5 !py-3 !text-xs !font-bold !text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98]"
                         >
                             <Download class="h-4 w-4 stroke-[2.5]" />
                             Download
-                        </a>
+                        </k-button>
                         <div
                             v-else
                             class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
@@ -430,18 +429,18 @@ const parseYoutubeUrl = (url) => {
                     class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90"
                 >
                     <div>
-                        <Link
+                        <k-button
                             v-if="previousResourceId"
+                            outline
+                            rounded
                             :href="`/resources/${previousResourceId}`"
-                            replace
-                            class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                         >
                             <ArrowLeft
                                 class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
                             />
                             <span class="xs:inline hidden">Previous Page</span>
                             <span class="xs:hidden">Prev Page</span>
-                        </Link>
+                        </k-button>
                         <span
                             v-else
                             class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"
@@ -456,18 +455,18 @@ const parseYoutubeUrl = (url) => {
                     </div>
 
                     <div>
-                        <Link
+                        <k-button
                             v-if="nextResourceId"
+                            outline
+                            rounded
                             :href="`/resources/${nextResourceId}`"
-                            replace
-                            class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                         >
                             <span class="xs:inline hidden">Next Page</span>
                             <span class="xs:hidden">Next Page</span>
                             <ArrowRight
                                 class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
                             />
-                        </Link>
+                        </k-button>
                         <span
                             v-else
                             class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"

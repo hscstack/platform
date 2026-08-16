@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { kList, kListItem } from 'konsta/vue';
 import { computed } from 'vue';
 
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
@@ -48,12 +49,14 @@ const totalItemsCount = computed(
         <div
             class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
         >
-            <div
-                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-3.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
-            >
-                <span>Name</span>
-                <span class="hidden sm:inline">Type</span>
-            </div>
+            <k-list class="m-0">
+                <k-list-item
+                    class="border-b border-slate-100 bg-slate-50 text-xs font-bold tracking-wider text-slate-400 uppercase dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
+                >
+                    <span>Name</span>
+                    <span class="hidden sm:inline">Type</span>
+                </k-list-item>
+            </k-list>
 
             <div class="flex-1 divide-y divide-slate-100 dark:divide-gray-800">
                 <template v-if="totalItemsCount > 0">

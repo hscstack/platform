@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
+import {} from '@inertiajs/vue3';
+import { kBlock, kBlockTitle, kBadge, kButton } from 'konsta/vue';
 import {
     LayoutGrid,
     Sparkles,
@@ -71,15 +71,10 @@ defineProps({
                     </div>
                 </div>
 
-                <Link
-                    href="/guide"
-                    class="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95"
-                >
+                <k-button fill rounded href="/guide">
                     <span>Take a Tour</span>
-                    <ArrowRight
-                        class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                    />
-                </Link>
+                    <ArrowRight class="h-4 w-4" />
+                </k-button>
             </div>
         </kBlock>
 
