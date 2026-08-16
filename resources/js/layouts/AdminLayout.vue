@@ -59,7 +59,7 @@ const closeMobileSidebar = () => {
                 <NavBar :is-admin="true" />
 
                 <div
-                    class="flex items-center gap-3 border-b border-slate-200/80 bg-white/60 px-4 py-3 backdrop-blur-md md:hidden dark:border-gray-700/80 dark:bg-gray-900/60"
+                    class="flex items-center gap-3 border-b border-slate-200/80 bg-white/60 px-4 py-3 backdrop-blur-md lg:hidden dark:border-gray-700/80 dark:bg-gray-900/60"
                 >
                     <button
                         @click="openMobileSidebar"
@@ -73,15 +73,11 @@ const closeMobileSidebar = () => {
                     >
                 </div>
 
-                <div class="flex flex-1">
+                <div class="flex flex-1 gap-6 p-4 lg:p-6">
                     <aside
-                        class="hidden w-64 border-r border-slate-200/80 bg-white/40 backdrop-blur-md md:block dark:border-gray-700/80 dark:bg-gray-900/40"
+                        class="sticky top-20 hidden h-[calc(100vh-5rem)] w-64 shrink-0 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-lg shadow-slate-200/50 backdrop-blur-xl lg:block dark:border-gray-700/60 dark:bg-gray-900/70 dark:shadow-none dark:ring-1 dark:ring-white/5"
                     >
-                        <div
-                            class="sticky top-16 flex h-[calc(100vh-4rem)] flex-col justify-between p-4"
-                        >
-                            <DesktopSidebar :navigation="navigation" />
-                        </div>
+                        <DesktopSidebar :navigation="navigation" />
                     </aside>
 
                     <MobileSideBar
@@ -90,9 +86,7 @@ const closeMobileSidebar = () => {
                         @close="closeMobileSidebar"
                     />
 
-                    <main
-                        class="flex flex-1 flex-col overflow-x-hidden p-6 lg:p-8"
-                    >
+                    <main class="flex flex-1 flex-col overflow-x-hidden">
                         <slot />
                     </main>
                 </div>
