@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { FolderPlus, ArrowLeft } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
+import {
+    kBlock,
+    kBlockTitle,
+    kBadge,
+    kPopover,
+    kList,
+    kListItem,
+    kButton,
+} from 'konsta/vue';
 
 const props = defineProps({
     subject: Object,
@@ -14,8 +22,7 @@ const props = defineProps({
     parent: Object,
 });
 
-const isDropdownOpen = ref(false);
-const dropdownRef = ref(null);
+const showBulkActions = ref(false);
 
 const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
@@ -46,15 +53,6 @@ const handleBack = () => {
 };
 
 const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-
-const closeDropdown = (e) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
-        isDropdownOpen.value = false;
-    }
-};
-
-onMounted(() => document.addEventListener('click', closeDropdown));
-onUnmounted(() => document.removeEventListener('click', closeDropdown));
 </script>
 
 <template>
@@ -105,48 +103,37 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                 </Link>
 
                 <!-- Add Resource Dropdown -->
-                <div
+                <k-popover
                     v-if="parent?.id"
-                    ref="dropdownRef"
-                    class="relative inline-block"
+                    :opened="showBulkActions"
+                    @close="showBulkActions = false"
                 >
-                    <button
-                        type="button"
-                        @click="isDropdownOpen = !isDropdownOpen"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700"
-                    >
-                        <Plus class="h-3.5 w-3.5" :stroke-width="2.5" />
-                        Add Resource
-                        <ChevronDown class="h-3.5 w-3.5" />
-                    </button>
-
-                    <div
-                        v-if="isDropdownOpen"
-                        class="absolute right-0 z-10 mt-2 w-44 rounded-lg border border-gray-100 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900"
-                    >
-                        <Link
-                            :href="`/admin/resources/create?node_id=${parent.id}`"
-                            @click="isDropdownOpen = false"
-                            class="block rounded-md px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                    <template #trigger>
+                        <k-button
+                            outline
+                            @click="showBulkActions = !showBulkActions"
                         >
-                            Single File
-                        </Link>
-                        <Link
-                            :href="`/admin/resources/create/bulk/images?node_id=${parent.id}&redirect=${currentUrl}`"
-                            @click="isDropdownOpen = false"
-                            class="block rounded-md px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                        >
-                            Upload Bulk Images
-                        </Link>
-                        <Link
-                            :href="`/admin/resources/create/bulk/videos?node_id=${parent.id}&redirect=${currentUrl}`"
-                            @click="isDropdownOpen = false"
-                            class="block rounded-md px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                        >
-                            Upload Bulk Videos
-                        </Link>
-                    </div>
-                </div>
+                            Add Resource
+                        </k-button>
+                    </template>
+                    <k-list class="m-0">
+                        <k-list-item
+                            title="Single File"
+                            :link="`/admin/resources/create?node_id=${parent.id}`"
+                            @click="showBulkActions = false"
+                        />
+                        <k-list-item
+                            title="Upload Bulk Images"
+                            :link="`/admin/resources/create/bulk/images?node_id=${parent.id}&redirect=${currentUrl}`"
+                            @click="showBulkActions = false"
+                        />
+                        <k-list-item
+                            title="Upload Bulk Videos"
+                            :link="`/admin/resources/create/bulk/videos?node_id=${parent.id}&redirect=${currentUrl}`"
+                            @click="showBulkActions = false"
+                        />
+                    </k-list>
+                </k-popover>
             </div>
         </div>
 

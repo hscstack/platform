@@ -4,15 +4,14 @@ import {
     LogOut,
     LayoutDashboard,
     Home,
-    ChevronDown,
     Moon,
     Sun,
     Monitor,
 } from 'lucide-vue-next';
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { computed, ref } from 'vue';
 import { useDarkMode } from '@/lib/useDarkMode';
 import AppLogo from './AppLogo.vue';
-import { kNavbar, kButton, kList, kListItem } from 'konsta/vue';
+import { kNavbar, kButton, kList, kListItem, kPopover } from 'konsta/vue';
 
 defineProps({
     isAdmin: {
@@ -25,34 +24,11 @@ const { theme, toggle } = useDarkMode();
 
 const user = computed(() => usePage().props.auth?.user);
 
-const dropdownOpen = ref(false);
-const dropdownRef = ref<HTMLElement | null>(null);
-
-const toggleDropdown = () => {
-    dropdownOpen.value = !dropdownOpen.value;
-};
-
-const closeDropdown = () => {
-    dropdownOpen.value = false;
-};
+const showUserMenu = ref(false);
 
 const handleLogout = () => {
     router.post('/logout');
 };
-
-const handleClickOutside = (e: MouseEvent) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
-        closeDropdown();
-    }
-};
-
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-});
-
-onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
 </script>
 
 <template>
@@ -89,94 +65,85 @@ onBeforeUnmount(() => {
                 </Link>
 
                 <!-- Logged in: User dropdown -->
-                <div v-else ref="dropdownRef" class="relative">
-                    <k-button @click="toggleDropdown" clear>
-                        <img
-                            v-if="user.image_url"
-                            :src="user.image_url"
-                            :alt="user.name"
-                            class="h-7 w-7 rounded-full object-cover"
-                        />
-                        <span
-                            v-else
-                            class="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white dark:bg-gray-700"
-                        >
-                            {{ user.name.charAt(0).toUpperCase() }}
-                        </span>
-
-                        <span class="hidden sm:inline">{{ user.name }}</span>
-
-                        <ChevronDown
-                            class="h-3.5 w-3.5 text-slate-400 transition-transform"
-                            :class="{ 'rotate-180': dropdownOpen }"
-                        />
-                    </k-button>
-
-                    <Transition
-                        enter-active-class="transition duration-150 ease-out"
-                        enter-from-class="scale-95 opacity-0"
-                        enter-to-class="scale-100 opacity-100"
-                        leave-active-class="transition duration-100 ease-in"
-                        leave-from-class="scale-100 opacity-100"
-                        leave-to-class="scale-95 opacity-0"
+                <div v-else class="relative">
+                    <k-popover
+                        :opened="showUserMenu"
+                        @close="showUserMenu = false"
                     >
-                        <div
-                            v-if="dropdownOpen"
-                            class="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                class="border-b border-slate-100 px-3 py-2 dark:border-gray-700"
+                        <template #target>
+                            <k-button
+                                @click="showUserMenu = !showUserMenu"
+                                clear
                             >
-                                <p
-                                    class="text-sm font-semibold text-slate-900 dark:text-gray-100"
+                                <img
+                                    v-if="user.image_url"
+                                    :src="user.image_url"
+                                    :alt="user.name"
+                                    class="h-7 w-7 rounded-full object-cover"
+                                />
+                                <span
+                                    v-else
+                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white dark:bg-gray-700"
                                 >
-                                    {{ user.name }}
-                                </p>
-                                <p class="text-xs text-slate-500">
-                                    {{ user.email }}
-                                </p>
-                            </div>
+                                    {{ user.name.charAt(0).toUpperCase() }}
+                                </span>
 
-                            <k-list class="my-0 !outline-none">
-                                <k-list-item
-                                    :component="Link"
-                                    :href="isAdmin ? '/' : '/admin'"
-                                    @click="closeDropdown"
-                                >
-                                    <template #media>
-                                        <component
-                                            :is="
-                                                isAdmin ? Home : LayoutDashboard
-                                            "
-                                            class="h-4 w-4 text-slate-400"
-                                        />
-                                    </template>
-                                    <template #title>
+                                <span class="hidden sm:inline">{{
+                                    user.name
+                                }}</span>
+                            </k-button>
+                        </template>
+
+                        <k-list class="m-0">
+                            <k-list-item
+                                :title="user.name"
+                                :subtitle="user.email"
+                            >
+                                <template #media>
+                                    <div
+                                        class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-gray-700"
+                                    >
                                         <span
-                                            class="text-sm font-medium text-slate-600 dark:text-gray-400"
+                                            class="text-sm font-bold text-slate-700 dark:text-gray-200"
                                         >
                                             {{
-                                                isAdmin ? 'Home' : 'Staff Panel'
+                                                user.name
+                                                    .charAt(0)
+                                                    .toUpperCase()
                                             }}
                                         </span>
-                                    </template>
-                                </k-list-item>
+                                    </div>
+                                </template>
+                            </k-list-item>
 
-                                <k-list-item @click="handleLogout">
-                                    <template #media>
-                                        <LogOut class="h-4 w-4 text-red-500" />
-                                    </template>
-                                    <template #title>
-                                        <span
-                                            class="text-sm font-medium text-red-600"
-                                        >
-                                            Logout
-                                        </span>
-                                    </template>
-                                </k-list-item>
-                            </k-list>
-                        </div>
-                    </Transition>
+                            <k-list-item
+                                :component="Link"
+                                :href="isAdmin ? '/' : '/admin'"
+                                @click="showUserMenu = false"
+                                :title="isAdmin ? 'Home' : 'Staff Panel'"
+                            >
+                                <template #media>
+                                    <component
+                                        :is="isAdmin ? Home : LayoutDashboard"
+                                        class="h-4 w-4 text-slate-400"
+                                    />
+                                </template>
+                            </k-list-item>
+
+                            <k-list-item
+                                link="#"
+                                @click="
+                                    handleLogout();
+                                    showUserMenu = false;
+                                "
+                                title="Logout"
+                            >
+                                <template #media>
+                                    <LogOut class="h-4 w-4 text-red-500" />
+                                </template>
+                            </k-list-item>
+                        </k-list>
+                    </k-popover>
                 </div>
 
                 <!-- Dark mode -->

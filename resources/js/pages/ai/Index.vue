@@ -17,7 +17,7 @@ import {
     Sigma,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import { kButton, kBadge } from 'konsta/vue';
+import { kButton, kBadge, kInput } from 'konsta/vue';
 
 // Mock Data for Pure STEM Subjects (Emojis removed, Lucide Icons added)
 const mockSubjects = [
@@ -356,12 +356,11 @@ const handleMockSubmit = (question?: string) => {
                     @submit.prevent
                     class="flex items-center gap-2 opacity-40"
                 >
-                    <input
-                        v-model="userPrompt"
+                    <k-input
                         type="text"
-                        disabled
                         :placeholder="`${selectedTopic} নিয়ে প্রশ্নটি লিখুন...`"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                        :disabled="true"
+                        outline
                     />
                     <k-button type="button" disabled>
                         <Send class="h-4 w-4" />

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { Search } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { kSearchbar } from 'konsta/vue';
 const searchQuery = defineModel();
 const page = usePage();
 const isSsc = computed(() => page.url.startsWith('/ssc'));
@@ -34,22 +34,14 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
                 ক্লাস, নোটস এবং প্র্যাক্টিক্যাল ।
             </p>
 
-            <div class="group relative mx-auto max-w-lg">
-                <div
-                    class="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 opacity-0 blur-md transition duration-300 group-focus-within:opacity-10"
-                ></div>
-
-                <div class="relative">
-                    <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Search for subjects..."
-                        class="w-full appearance-none rounded-2xl border border-slate-200 bg-white/90 py-4 pr-4 pl-12 text-sm font-semibold shadow-md shadow-slate-100/40 backdrop-blur-md transition-all duration-300 placeholder:text-slate-400/90 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:outline-none dark:border-gray-700 dark:bg-gray-800/90 dark:text-gray-100 dark:shadow-gray-900/60 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800 dark:focus:ring-indigo-500/20"
-                    />
-                    <Search
-                        class="pointer-events-none absolute top-[18px] left-4 h-4.5 w-4.5 text-slate-400 transition-colors duration-300 group-focus-within:text-indigo-600 dark:text-gray-500 dark:group-focus-within:text-indigo-400"
-                    />
-                </div>
+            <div class="mx-auto max-w-lg">
+                <k-searchbar
+                    :value="searchQuery"
+                    @input="searchQuery = $event.target.value"
+                    placeholder="Search subjects, resources..."
+                    :disable-button="false"
+                    @click:clear="searchQuery = ''"
+                />
             </div>
         </div>
     </div>

@@ -272,12 +272,8 @@ const submitForm = () => {
                 <div
                     class="flex justify-end space-x-3 border-t border-slate-100 pt-6 dark:border-gray-800"
                 >
-                    <Link
-                        :href="redirect"
-                        type="button"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
+                    <Link :href="redirect">
+                        <k-button clear>Cancel</k-button>
                     </Link>
                     <k-button type="submit" fill :disabled="form.processing">
                         {{ form.processing ? 'Saving...' : 'Save Resource' }}

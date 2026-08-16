@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-import UserRow from '@/components/admin/UserRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
+import { kBlock, kBlockTitle, kBadge, kList, kListItem } from 'konsta/vue';
 
 defineProps({
     users: Array,
@@ -43,41 +42,21 @@ defineProps({
         </div>
 
         <div class="flex flex-1 flex-col">
-            <div
+            <k-list
+                strong
+                outline
+                dividers
+                class="ios:-mx-4"
                 v-if="users.length > 0"
-                class="overflow-hidden rounded-xl border border-gray-300 md:border-gray-300 dark:border-gray-600"
             >
-                <table
-                    class="block min-w-full divide-y divide-gray-300 text-left text-sm text-gray-500 md:table dark:divide-gray-700 dark:text-gray-400"
-                >
-                    <thead
-                        class="hidden bg-gray-50 text-xs font-semibold tracking-wider text-gray-600 uppercase md:table-header-group dark:bg-gray-800 dark:text-gray-400"
-                    >
-                        <tr>
-                            <th scope="col" class="px-6 py-3.5">Name</th>
-                            <th scope="col" class="px-6 py-3.5">
-                                Email Address
-                            </th>
-                            <th scope="col" class="px-6 py-3.5">Access Role</th>
-                            <th
-                                scope="col"
-                                class="relative px-6 py-3.5 text-right"
-                            >
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody
-                        class="block divide-y divide-gray-300 bg-white md:table-row-group dark:divide-gray-700 dark:bg-gray-900"
-                    >
-                        <UserRow
-                            v-for="user in users"
-                            :key="user.id"
-                            :user="user"
-                        />
-                    </tbody>
-                </table>
-            </div>
+                <k-list-item
+                    v-for="user in users"
+                    :key="user.id"
+                    :title="user.name"
+                    :subtitle="user.email"
+                    :link="`/admin/users/${user.id}/edit`"
+                />
+            </k-list>
 
             <EmptyState v-else />
         </div>

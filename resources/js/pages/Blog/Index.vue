@@ -1,24 +1,22 @@
 <script setup lang="ts">
 import { router, Link } from '@inertiajs/vue3';
-import { Search, X, ArrowRight, AlertTriangle } from 'lucide-vue-next';
+import { ArrowRight, AlertTriangle } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { kButton } from 'konsta/vue';
+import { kButton, kSearchbar } from 'konsta/vue';
 import BlogCard from '@/components/BlogCard.vue';
 
 defineProps({
     blogs: Object,
 });
 
-const searchQuery = ref(
-    new URLSearchParams(window.location.search).get('q') || '',
-);
+const search = ref(new URLSearchParams(window.location.search).get('q') || '');
 
 const handleSearch = () => {
-    router.get('/blogs', { q: searchQuery.value }, { preserveState: true });
+    router.get('/blogs', { q: search.value }, { preserveState: true });
 };
 
 const clearSearch = () => {
-    searchQuery.value = '';
+    search.value = '';
     router.get('/blogs', { q: '' });
 };
 </script>
@@ -41,38 +39,12 @@ const clearSearch = () => {
             </div>
 
             <div class="w-full lg:max-w-md">
-                <div class="flex flex-col gap-2.5 sm:flex-row">
-                    <div class="relative flex-1">
-                        <div
-                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
-                        >
-                            <Search class="h-5 w-5" />
-                        </div>
-
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="আর্টিকেল খুঁজুন..."
-                            @keyup.enter="handleSearch"
-                            class="k-input w-full !rounded-xl !border !border-slate-200 !py-3 !pr-10 !pl-11 !text-sm !text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:!border-gray-700 dark:!bg-gray-900 dark:!text-gray-100 dark:placeholder:text-gray-500"
-                        />
-
-                        <button
-                            v-if="searchQuery"
-                            @click="clearSearch"
-                            type="button"
-                            class="absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-400"
-                            aria-label="Clear search"
-                        >
-                            <X class="h-4 w-4" />
-                        </button>
-                    </div>
-
-                    <k-button @click="handleSearch" type="button">
-                        <span>Search</span>
-                        <ArrowRight class="hidden h-4 w-4 sm:block" />
-                    </k-button>
-                </div>
+                <k-searchbar
+                    v-model="search"
+                    placeholder="Search blogs..."
+                    :disable-button="false"
+                    @click:clear="clearSearch"
+                />
             </div>
         </div>
 
@@ -96,8 +68,8 @@ const clearSearch = () => {
                 আপনার অনুসন্ধানের সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি।
             </h3>
             <p class="mt-1 max-w-sm text-sm text-slate-500 dark:text-gray-400">
-                "{{ searchQuery }}"-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া
-                যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।
+                "{{ search }}"-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি।
+                বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।
             </p>
             <k-button @click="clearSearch"> সব আর্টিকেল দেখুন </k-button>
         </div>

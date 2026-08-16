@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { kBlock, kBlockTitle } from 'konsta/vue';
+import {
+    kBlockTitle,
+    kBlock,
+    kList,
+    kAccordion,
+    kAccordionItem,
+} from 'konsta/vue';
 import { ChevronDown, HelpCircle, Plus, Minus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
@@ -97,17 +103,10 @@ const toggleExpand = () => {
         openIndex.value = null;
     }
 };
-
-const toggleFaq = (index: number) => {
-    openIndex.value = openIndex.value === index ? null : index;
-};
-
-const isOpen = (index: number) => openIndex.value === index;
 </script>
 
 <template>
     <kBlock class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
-        <!-- Section Header -->
         <div class="mb-8 text-center sm:mb-10">
             <div
                 class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-500/10"
@@ -123,72 +122,20 @@ const isOpen = (index: number) => openIndex.value === index;
             </p>
         </div>
 
-        <!-- Accordion Cards Container -->
-        <div class="mx-auto max-w-2xl space-y-3">
-            <TransitionGroup
-                enter-active-class="transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1)"
-                enter-from-class="opacity-0 translate-y-4 scale-95"
-                enter-to-class="opacity-100 translate-y-0 scale-100"
-                leave-active-class="transition-all duration-300 cubic-bezier(0.7, 0, 0.84, 0)"
-                leave-from-class="opacity-100 translate-y-0 scale-100"
-                leave-to-class="opacity-0 translate-y-2 scale-95"
-            >
-                <div
-                    v-for="(faq, index) in visibleFaqs"
-                    :key="faq.question"
-                    class="group overflow-hidden rounded-2xl border transition-all duration-300"
-                    :class="[
-                        isOpen(index)
-                            ? 'border-indigo-200 bg-white shadow-lg ring-1 shadow-indigo-500/5 ring-indigo-500/10'
-                            : 'border-slate-200/80 bg-white/80 hover:border-slate-300 hover:bg-white',
-                    ]"
-                >
-                    <!-- Header / Trigger Button -->
-                    <button
-                        type="button"
-                        @click="toggleFaq(index)"
-                        class="flex w-full items-center justify-between gap-3 p-4 text-left focus:outline-none sm:p-5"
-                    >
-                        <span
-                            class="text-xs leading-snug font-bold transition-colors duration-200 sm:text-sm lg:text-base"
-                            :class="
-                                isOpen(index)
-                                    ? 'text-indigo-600'
-                                    : 'text-slate-800 group-hover:text-slate-900'
-                            "
-                        >
-                            {{ faq.question }}
-                        </span>
-
-                        <div
-                            class="cubic-bezier(0.34, 1.56, 0.64, 1) flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-500 sm:h-8 sm:w-8"
-                            :class="[
-                                isOpen(index)
-                                    ? 'rotate-180 bg-indigo-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600',
-                            ]"
-                        >
-                            <ChevronDown class="h-4 w-4 stroke-[2.5]" />
-                        </div>
-                    </button>
-
-                    <!-- Ultra-Smooth Accordion Body (CSS Grid Rows Trick) -->
-                    <div
-                        class="cubic-bezier(0.16, 1, 0.3, 1) grid transition-[grid-template-rows,opacity] duration-500"
-                        :class="[
-                            isOpen(index)
-                                ? 'grid-rows-[1fr] opacity-100'
-                                : 'grid-rows-[0fr] opacity-0',
-                        ]"
-                    >
-                        <div class="overflow-hidden">
+        <div class="mx-auto max-w-2xl">
+            <k-list strong outline dividers>
+                <k-accordion v-for="faq in visibleFaqs" :key="faq.question">
+                    <k-accordion-item>
+                        <template #header>
                             <div
-                                class="cubic-bezier(0.16, 1, 0.3, 1) border-t border-slate-100 px-4 pt-3 pb-4 text-xs leading-relaxed font-medium text-slate-600 transition-transform duration-500 sm:px-5 sm:pb-5 sm:text-sm"
-                                :class="[
-                                    isOpen(index)
-                                        ? 'translate-y-0'
-                                        : '-translate-y-2',
-                                ]"
+                                class="font-bold text-slate-900 dark:text-slate-100"
+                            >
+                                {{ faq.question }}
+                            </div>
+                        </template>
+                        <template #content>
+                            <div
+                                class="px-4 pb-4 text-slate-600 dark:text-slate-300"
                             >
                                 <!-- Internal Link -->
                                 <template v-if="faq.type === 'link'">
@@ -223,12 +170,11 @@ const isOpen = (index: number) => openIndex.value === index;
                                     {{ faq.answer }}
                                 </template>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </TransitionGroup>
+                        </template>
+                    </k-accordion-item>
+                </k-accordion>
+            </k-list>
 
-            <!-- Toggle Expand / Collapse Button -->
             <div v-if="faqs.length > INITIAL_COUNT" class="pt-4 text-center">
                 <button
                     type="button"

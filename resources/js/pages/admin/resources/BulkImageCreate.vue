@@ -2,7 +2,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import { Upload, X, Trash2, FileSpreadsheet, Hash, Tag } from 'lucide-vue-next';
 import { ref, computed, onUnmounted } from 'vue';
-import { kInput, kButton, kBlockTitle } from 'konsta/vue';
+import { kInput, kButton, kBlockTitle, kRadio } from 'konsta/vue';
 
 const props = defineProps({
     redirect: {
@@ -216,11 +216,12 @@ const submitForm = () => {
                                     : 'border-slate-200 dark:border-gray-700 dark:hover:border-gray-600'
                             "
                         >
-                            <input
-                                type="radio"
+                            <kRadio
+                                :checked="form.naming_strategy === 'original'"
                                 value="original"
-                                v-model="form.naming_strategy"
-                                class="text-blue-600 focus:ring-blue-500 dark:text-blue-400"
+                                @change="
+                                    form.naming_strategy = $event.target.value
+                                "
                             />
                             <div
                                 class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-gray-300"
@@ -241,11 +242,12 @@ const submitForm = () => {
                                     : 'border-slate-200 dark:border-gray-700 dark:hover:border-gray-600'
                             "
                         >
-                            <input
-                                type="radio"
+                            <kRadio
+                                :checked="form.naming_strategy === 'serial'"
                                 value="serial"
-                                v-model="form.naming_strategy"
-                                class="text-blue-600 focus:ring-blue-500 dark:text-blue-400"
+                                @change="
+                                    form.naming_strategy = $event.target.value
+                                "
                             />
                             <div
                                 class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-gray-300"
@@ -266,11 +268,12 @@ const submitForm = () => {
                                     : 'border-slate-200 dark:border-gray-700 dark:hover:border-gray-600'
                             "
                         >
-                            <input
-                                type="radio"
+                            <kRadio
+                                :checked="form.naming_strategy === 'suffix'"
                                 value="suffix"
-                                v-model="form.naming_strategy"
-                                class="text-blue-600 focus:ring-blue-500 dark:text-blue-400"
+                                @change="
+                                    form.naming_strategy = $event.target.value
+                                "
                             />
                             <div
                                 class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-gray-300"
@@ -384,12 +387,8 @@ const submitForm = () => {
                 <div
                     class="flex justify-end space-x-3 border-t border-slate-100 pt-6 dark:border-gray-800"
                 >
-                    <Link
-                        :href="redirect"
-                        type="button"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
+                    <Link :href="redirect">
+                        <k-button clear>Cancel</k-button>
                     </Link>
                     <k-button
                         type="submit"
