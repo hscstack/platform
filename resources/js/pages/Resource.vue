@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
+import { kButton, kBadge, kPage, kNavbar, kNavbarBackLink } from 'konsta/vue';
 import {
     FileText,
     Image as ImageIcon,
@@ -14,7 +15,6 @@ import {
     FilePlay,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { kButton, kBadge, kPage, kNavbar, kNavbarBackLink } from 'konsta/vue';
 
 const props = defineProps({
     resource: {

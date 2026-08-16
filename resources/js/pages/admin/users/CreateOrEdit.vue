@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { kCheckbox, kButton, kBlockTitle } from 'konsta/vue';
 import { UserPlus, Loader2, Save } from 'lucide-vue-next';
 import { watch } from 'vue';
-import {
-    kInput,
-    kSelect,
-    kCheckbox,
-    kTextarea,
-    kButton,
-    kBlockTitle,
-} from 'konsta/vue';
 
 const props = defineProps({
     user: Object,
@@ -98,15 +91,17 @@ const submitForm = () => {
                 <!-- Base fields section (Name, Email) -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <k-input
-                            label="Full Name"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Full Name</label
+                        >
+                        <input
                             type="text"
                             :value="form.name"
                             @input="form.name = $event.target.value"
                             placeholder="John Doe"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.name"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.name"
@@ -117,15 +112,17 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <k-input
-                            label="Email Address"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Email Address</label
+                        >
+                        <input
                             type="email"
                             :value="form.email"
                             @input="form.email = $event.target.value"
                             placeholder="johndoe@example.com"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.email"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.email"
@@ -139,24 +136,24 @@ const submitForm = () => {
                 <!-- Password and Role Selection -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <k-input
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Password
+                            <span
+                                v-if="props.user"
+                                class="text-xs font-normal text-slate-400 dark:text-gray-500"
+                                >(Leave blank to keep current)</span
+                            >
+                        </label>
+                        <input
                             type="password"
                             :value="form.password"
                             @input="form.password = $event.target.value"
                             placeholder="••••••••"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.password"
-                        >
-                            <template #label>
-                                Password
-                                <span
-                                    v-if="props.user"
-                                    class="text-xs font-normal text-slate-400 dark:text-gray-500"
-                                    >(Leave blank to keep current)</span
-                                >
-                            </template>
-                        </k-input>
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
+                        />
                         <p
                             v-if="form.errors.password"
                             class="mt-1 text-sm text-rose-600"
@@ -166,15 +163,24 @@ const submitForm = () => {
                     </div>
 
                     <div v-if="!shouldHideOptions">
-                        <k-select
-                            label="System Role"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >System Role</label
+                        >
+                        <select
                             :value="form.role"
                             @change="form.role = $event.target.value"
-                            :options="roles"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.role"
-                        />
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-400"
+                        >
+                            <option
+                                v-for="role in roles"
+                                :key="role.value"
+                                :value="role.value"
+                            >
+                                {{ role.label }}
+                            </option>
+                        </select>
                         <p
                             v-if="form.errors.role"
                             class="mt-1 text-sm text-rose-600"
@@ -281,15 +287,17 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <k-input
-                            label="Title"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Title</label
+                        >
+                        <input
                             type="text"
                             :value="form.title"
                             @input="form.title = $event.target.value"
                             placeholder="e.g. Lead Developer, Professor"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.title"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.title"
@@ -302,15 +310,17 @@ const submitForm = () => {
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <k-input
-                            label="Institution"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Institution</label
+                        >
+                        <input
                             type="text"
                             :value="form.institution"
                             @input="form.institution = $event.target.value"
                             placeholder="University / Company"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.institution"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.institution"
@@ -321,15 +331,17 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <k-input
-                            label="Facebook"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Facebook</label
+                        >
+                        <input
                             type="text"
                             :value="form.facebook"
                             @input="form.facebook = $event.target.value"
                             placeholder="Facebook profile URL"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.facebook"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.facebook"
@@ -342,15 +354,17 @@ const submitForm = () => {
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <k-input
-                            label="GitHub"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >GitHub</label
+                        >
+                        <input
                             type="text"
                             :value="form.github"
                             @input="form.github = $event.target.value"
                             placeholder="GitHub profile URL"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.github"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.github"
@@ -361,15 +375,17 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <k-input
-                            label="Instagram"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Instagram</label
+                        >
+                        <input
                             type="text"
                             :value="form.instagram"
                             @input="form.instagram = $event.target.value"
                             placeholder="Instagram profile URL"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.instagram"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.instagram"
@@ -381,15 +397,17 @@ const submitForm = () => {
                 </div>
 
                 <div>
-                    <k-textarea
-                        label="About"
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >About</label
+                    >
+                    <textarea
                         :value="form.about"
                         @input="form.about = $event.target.value"
                         placeholder="Short bio..."
-                        outline
                         :disabled="form.processing"
-                        :rows="4"
-                        resizable
+                        rows="4"
+                        class="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.about"

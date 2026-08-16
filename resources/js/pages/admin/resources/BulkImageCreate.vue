@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
+import { kButton, kBlockTitle, kRadio } from 'konsta/vue';
 import { Upload, X, Trash2, FileSpreadsheet, Hash, Tag } from 'lucide-vue-next';
 import { ref, computed, onUnmounted } from 'vue';
-import { kInput, kButton, kBlockTitle, kRadio } from 'konsta/vue';
 
 const props = defineProps({
     redirect: {
@@ -292,21 +292,27 @@ const submitForm = () => {
                         class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2"
                     >
                         <div v-if="form.naming_strategy === 'suffix'">
-                            <k-input
-                                label="Custom Name Prefix"
+                            <label
+                                class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                                >Custom Name Prefix</label
+                            >
+                            <input
                                 type="text"
                                 :value="form.naming_suffix"
                                 @input="
                                     form.naming_suffix = $event.target.value
                                 "
                                 placeholder="e.g. Lecture Slide"
-                                outline
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                             />
                         </div>
 
                         <div>
-                            <k-input
-                                label="Starting Number"
+                            <label
+                                class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                                >Starting Number</label
+                            >
+                            <input
                                 type="number"
                                 :value="form.start_number"
                                 @input="
@@ -315,7 +321,7 @@ const submitForm = () => {
                                     )
                                 "
                                 placeholder="1"
-                                outline
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                             />
                         </div>
                     </div>

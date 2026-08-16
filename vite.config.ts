@@ -53,4 +53,7 @@ export default defineConfig({
             },
         }),
     ],
+    ssr: {
+        noExternal: ['konsta'],
+    },
 });

@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { kToggle, kButton, kBlockTitle } from 'konsta/vue';
 import { Loader2, Save } from 'lucide-vue-next';
 import { computed } from 'vue';
-import {
-    kInput,
-    kTextarea,
-    kCheckbox,
-    kToggle,
-    kButton,
-    kBlockTitle,
-} from 'konsta/vue';
 
 const props = defineProps({
     notice: Object,
@@ -62,15 +55,17 @@ const submitForm = () => {
             >
                 <div class="space-y-6 lg:col-span-2">
                     <div>
-                        <k-input
-                            label="Title"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Title</label
+                        >
+                        <input
                             type="text"
                             :value="form.title"
                             @input="form.title = $event.target.value"
                             placeholder="Important announcement"
-                            outline
                             :disabled="form.processing"
-                            :error="form.errors.title"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.title"
@@ -81,15 +76,17 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <k-textarea
-                            label="Message"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Message</label
+                        >
+                        <textarea
                             :value="form.message"
                             @input="form.message = $event.target.value"
                             placeholder="Write the notice message for visitors..."
-                            outline
                             :disabled="form.processing"
-                            :rows="6"
-                            resizable
+                            rows="6"
+                            class="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.message"
@@ -129,17 +126,19 @@ const submitForm = () => {
                             class="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2"
                         >
                             <div>
-                                <k-input
-                                    label="Button title"
+                                <label
+                                    class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                                    >Button title</label
+                                >
+                                <input
                                     type="text"
                                     :value="form.button_title"
                                     @input="
                                         form.button_title = $event.target.value
                                     "
                                     placeholder="Learn more"
-                                    outline
                                     :disabled="form.processing"
-                                    :error="form.errors.button_title"
+                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                                 />
                                 <p
                                     v-if="form.errors.button_title"
@@ -150,17 +149,19 @@ const submitForm = () => {
                             </div>
 
                             <div>
-                                <k-input
-                                    label="Button link"
+                                <label
+                                    class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                                    >Button link</label
+                                >
+                                <input
                                     type="text"
                                     :value="form.button_link"
                                     @input="
                                         form.button_link = $event.target.value
                                     "
                                     placeholder="https://example.com/details"
-                                    outline
                                     :disabled="form.processing"
-                                    :error="form.errors.button_link"
+                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                                 />
                                 <p
                                     v-if="form.errors.button_link"
@@ -203,15 +204,17 @@ const submitForm = () => {
                         class="space-y-4 rounded-2xl border border-slate-100 p-5 ring-1 ring-slate-900/5 dark:border-gray-800 dark:ring-gray-700"
                     >
                         <div>
-                            <k-input
-                                label="Cover Image URL"
+                            <label
+                                class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                                >Cover Image URL</label
+                            >
+                            <input
                                 type="text"
                                 :value="form.image"
                                 @input="form.image = $event.target.value"
                                 placeholder="https://example.com/banner.jpg"
-                                outline
                                 :disabled="form.processing"
-                                :error="form.errors.image"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                             />
                             <p
                                 v-if="form.errors.image"

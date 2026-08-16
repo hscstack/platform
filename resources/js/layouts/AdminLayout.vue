@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { kPage } from 'konsta/vue';
 import { usePage } from '@inertiajs/vue3';
+import { kPage } from 'konsta/vue';
 import {
     LayoutDashboard,
     Users,

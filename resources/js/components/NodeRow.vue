@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { kList, kListItem } from 'konsta/vue';
 import { Folder } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { kList, kListItem } from 'konsta/vue';
 
 const { node } = defineProps({
     node: Object,

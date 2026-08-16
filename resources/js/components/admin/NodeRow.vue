@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { kDialog, kButton } from 'konsta/vue';
 import { Folder, Pencil, Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const { node } = defineProps({
     node: Object,

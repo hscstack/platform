@@ -10,7 +10,6 @@ import {
     Layers,
 } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted } from 'vue';
-import { kButton } from 'konsta/vue';
 
 const quickLinks = [
     { num: '01', id: 'getting-started', label: 'Start Here' },

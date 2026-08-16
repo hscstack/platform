@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
 import { kApp } from 'konsta/vue';
+import { ref, computed, onMounted } from 'vue';
 import { useDarkMode } from '@/lib/useDarkMode';
 
 const props = withDefaults(

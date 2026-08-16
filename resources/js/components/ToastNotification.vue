@@ -15,7 +15,10 @@ const toastData = ref<Toast>({ message: '', type: 'success' });
 let timeout: ReturnType<typeof setTimeout> | undefined;
 
 const showToast = (message: string, type: 'success' | 'error') => {
-    if (timeout) clearTimeout(timeout);
+    if (timeout) {
+clearTimeout(timeout);
+}
+
     toastData.value = { message, type };
     isOpened.value = true;
     timeout = setTimeout(() => {
@@ -32,6 +35,7 @@ const toastColors = computed(() => {
             textMaterial: 'text-white',
         };
     }
+
     return {
         bgIos: 'bg-red-500/90',
         bgMaterial: 'bg-red-500',
@@ -46,6 +50,7 @@ watch(
         if (flash?.success) {
             showToast(flash.success, 'success');
         }
+
         if (flash?.error) {
             showToast(flash.error, 'error');
         }

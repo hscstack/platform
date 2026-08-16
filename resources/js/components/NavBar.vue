@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
+import { kNavbar, kButton, kList, kListItem, kPopover } from 'konsta/vue';
 import {
     LogOut,
     LayoutDashboard,
@@ -11,7 +12,6 @@ import {
 import { computed, ref } from 'vue';
 import { useDarkMode } from '@/lib/useDarkMode';
 import AppLogo from './AppLogo.vue';
-import { kNavbar, kButton, kList, kListItem, kPopover } from 'konsta/vue';
 
 defineProps({
     isAdmin: {

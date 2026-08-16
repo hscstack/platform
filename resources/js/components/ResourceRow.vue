@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { Book, File, FileArchive, FileImage, FileVideo } from 'lucide-vue-next';
 import { kList, kListItem } from 'konsta/vue';
+import { Book, File, FileArchive, FileImage, FileVideo } from 'lucide-vue-next';
 
 const { resource } = defineProps({
     resource: Object,

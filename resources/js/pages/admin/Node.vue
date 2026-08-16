@@ -1,10 +1,5 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { FolderPlus, ArrowLeft } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
-import NodeRow from '@/components/admin/NodeRow.vue';
-import ResourceRow from '@/components/admin/ResourceRow.vue';
-import EmptyState from '@/components/EmptyState.vue';
 import {
     kBlock,
     kBlockTitle,
@@ -14,6 +9,11 @@ import {
     kListItem,
     kButton,
 } from 'konsta/vue';
+import { FolderPlus, ArrowLeft } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import NodeRow from '@/components/admin/NodeRow.vue';
+import ResourceRow from '@/components/admin/ResourceRow.vue';
+import EmptyState from '@/components/EmptyState.vue';
 
 const props = defineProps({
     subject: Object,

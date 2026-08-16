@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import {
-    kBlockTitle,
-    kBlock,
-    kList,
-    kAccordion,
-    kAccordionItem,
-} from 'konsta/vue';
-import { ChevronDown, HelpCircle, Plus, Minus } from 'lucide-vue-next';
+import { kBlockTitle, kBlock } from 'konsta/vue';
+import { HelpCircle, Plus, Minus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
 const openIndex = ref<number | null>(0);
@@ -123,57 +117,66 @@ const toggleExpand = () => {
         </div>
 
         <div class="mx-auto max-w-2xl">
-            <k-list strong outline dividers>
-                <k-accordion v-for="faq in visibleFaqs" :key="faq.question">
-                    <k-accordion-item>
-                        <template #header>
-                            <div
-                                class="font-bold text-slate-900 dark:text-slate-100"
-                            >
-                                {{ faq.question }}
-                            </div>
-                        </template>
-                        <template #content>
-                            <div
-                                class="px-4 pb-4 text-slate-600 dark:text-slate-300"
-                            >
-                                <!-- Internal Link -->
-                                <template v-if="faq.type === 'link'">
-                                    {{ faq.answer }}
-                                    <Link
-                                        :href="faq.linkUrl"
-                                        class="font-bold text-indigo-600 hover:underline"
-                                    >
-                                        {{ faq.linkText }}
-                                    </Link>
-                                    {{ faq.answerAfter }}
-                                </template>
-
-                                <!-- External Link -->
-                                <template
-                                    v-else-if="faq.type === 'externalLink'"
+            <div class="space-y-2">
+                <div v-for="(faq, index) in visibleFaqs" :key="faq.question">
+                    <div
+                        class="rounded-xl border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-900"
+                    >
+                        <button
+                            type="button"
+                            class="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-left text-sm font-bold text-slate-900 select-none dark:text-slate-100"
+                            @click="
+                                openIndex = openIndex === index ? null : index
+                            "
+                        >
+                            <span>{{ faq.question }}</span>
+                            <Minus
+                                v-if="openIndex === index"
+                                class="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 dark:text-gray-500"
+                            />
+                            <Plus
+                                v-else
+                                class="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 dark:text-gray-500"
+                            />
+                        </button>
+                        <div
+                            v-if="openIndex === index"
+                            class="px-4 pb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300"
+                        >
+                            <!-- Internal Link -->
+                            <template v-if="faq.type === 'link'">
+                                {{ faq.answer }}
+                                <Link
+                                    :href="faq.linkUrl"
+                                    class="font-bold text-indigo-600 hover:underline"
                                 >
-                                    {{ faq.answer }}
-                                    <a
-                                        :href="faq.linkUrl"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-0.5 font-bold text-indigo-600 hover:underline"
-                                    >
-                                        {{ faq.linkText }}
-                                    </a>
-                                    {{ faq.answerAfter }}
-                                </template>
+                                    {{ faq.linkText }}
+                                </Link>
+                                {{ faq.answerAfter }}
+                            </template>
 
-                                <!-- Plain Text -->
-                                <template v-else>
-                                    {{ faq.answer }}
-                                </template>
-                            </div>
-                        </template>
-                    </k-accordion-item>
-                </k-accordion>
-            </k-list>
+                            <!-- External Link -->
+                            <template v-else-if="faq.type === 'externalLink'">
+                                {{ faq.answer }}
+                                <a
+                                    :href="faq.linkUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-0.5 font-bold text-indigo-600 hover:underline"
+                                >
+                                    {{ faq.linkText }}
+                                </a>
+                                {{ faq.answerAfter }}
+                            </template>
+
+                            <!-- Plain Text -->
+                            <template v-else>
+                                {{ faq.answer }}
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div v-if="faqs.length > INITIAL_COUNT" class="pt-4 text-center">
                 <button

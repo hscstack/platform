@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
+import { kCheckbox, kButton, kBlockTitle } from 'konsta/vue';
 import { Upload } from 'lucide-vue-next';
 import HTMLEditor from '@/components/HTMLEditor.vue';
-import { kInput, kCheckbox, kButton, kBlockTitle } from 'konsta/vue';
 
 const props = defineProps({
     blog: {
@@ -62,14 +62,16 @@ const submitForm = () => {
 
             <form @submit.prevent="submitForm" class="space-y-6">
                 <div>
-                    <k-input
-                        label="Blog Title"
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >Blog Title</label
+                    >
+                    <input
                         type="text"
                         :value="form.title"
                         @input="form.title = $event.target.value"
                         placeholder="e.g. 10 Tips for Cracking BUET"
-                        outline
-                        :error="form.errors.title"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.title"
@@ -132,14 +134,16 @@ const submitForm = () => {
                 </div>
 
                 <div>
-                    <k-input
-                        label="SEO Tags (Comma separated)"
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >SEO Tags (Comma separated)</label
+                    >
+                    <input
                         type="text"
                         :value="form.seo_tags"
                         @input="form.seo_tags = $event.target.value"
                         placeholder="e.g. admission, news, tips"
-                        outline
-                        :error="form.errors.seo_tags"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.seo_tags"

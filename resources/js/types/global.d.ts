@@ -133,7 +133,7 @@ declare module 'konsta/vue' {
         Record<string, unknown>,
         unknown
     >;
-    export const kInput: DefineComponent<
+    export const kListInput: DefineComponent<
         {
             type?: string;
             value?: string | number;
@@ -143,29 +143,9 @@ declare module 'konsta/vue' {
             label?: string;
             outline?: boolean;
             disabled?: boolean;
-        },
-        Record<string, unknown>,
-        unknown
-    >;
-    export const kSelect: DefineComponent<
-        {
-            value?: string | number;
-            placeholder?: string;
-            label?: string;
-            outline?: boolean;
-            disabled?: boolean;
-        },
-        Record<string, unknown>,
-        unknown
-    >;
-    export const kTextarea: DefineComponent<
-        {
-            value?: string;
-            placeholder?: string;
-            label?: string;
-            outline?: boolean;
-            disabled?: boolean;
-            resizable?: boolean;
+            media?: string;
+            clear?: boolean;
+            dropdown?: boolean;
         },
         Record<string, unknown>,
         unknown
@@ -264,16 +244,6 @@ declare module 'konsta/vue' {
             medium?: boolean;
             large?: boolean;
         },
-        Record<string, unknown>,
-        unknown
-    >;
-    export const kAccordion: DefineComponent<
-        Record<string, unknown>,
-        Record<string, unknown>,
-        unknown
-    >;
-    export const kAccordionItem: DefineComponent<
-        Record<string, unknown>,
         Record<string, unknown>,
         unknown
     >;

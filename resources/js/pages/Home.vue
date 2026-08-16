@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
 import { kButton } from 'konsta/vue';
+import { ref, computed } from 'vue';
 import AIBanner from '@/components/AIBanner.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';

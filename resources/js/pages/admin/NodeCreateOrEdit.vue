@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { kButton, kBlockTitle } from 'konsta/vue';
 import { FolderOpen } from 'lucide-vue-next';
-import { kInput, kButton, kBlockTitle } from 'konsta/vue';
 
 const props = defineProps({
     subject: Object,
@@ -105,15 +105,17 @@ const goBack = () => {
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div class="md:col-span-2">
-                        <k-input
-                            label="Folder Name"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Folder Name</label
+                        >
+                        <input
                             type="text"
                             :value="form.name"
                             @input="form.name = $event.target.value"
                             placeholder="e.g., Chapter 1: Introduction"
-                            outline
-                            :error="form.errors.name"
                             required
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.name"
@@ -124,16 +126,18 @@ const goBack = () => {
                     </div>
 
                     <div>
-                        <k-input
-                            label="Order Priority"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Order Priority</label
+                        >
+                        <input
                             type="number"
                             :value="form.sort_order"
                             @input="
                                 form.sort_order = Number($event.target.value)
                             "
                             placeholder="0"
-                            outline
-                            :error="form.errors.sort_order"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.sort_order"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import { Youtube, FileSpreadsheet, Hash, Tag, Info } from 'lucide-vue-next';
-import { kInput, kButton, kBlockTitle, kRadio } from 'konsta/vue';
+import { kButton, kBlockTitle, kRadio } from 'konsta/vue';
+import { FileSpreadsheet, Hash, Tag, Info } from 'lucide-vue-next';
 
 const props = defineProps({
     redirect: {
@@ -56,15 +56,17 @@ const submitForm = () => {
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- Playlist URL Input -->
                 <div>
-                    <k-input
-                        label="YouTube Playlist URL"
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >YouTube Playlist URL</label
+                    >
+                    <input
                         type="url"
                         :value="form.playlist_url"
                         @input="form.playlist_url = $event.target.value"
                         placeholder="https://www.youtube.com/playlist?list=PL..."
-                        outline
                         required
-                        :error="form.errors.playlist_url"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
                         Paste the full URL of the public or unlisted YouTube
@@ -203,15 +205,18 @@ const submitForm = () => {
                         class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2"
                     >
                         <div v-if="form.naming_strategy === 'prefix'">
-                            <k-input
-                                label="Prefix String"
+                            <label
+                                class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                                >Prefix String</label
+                            >
+                            <input
                                 type="text"
                                 :value="form.naming_prefix"
                                 @input="
                                     form.naming_prefix = $event.target.value
                                 "
                                 placeholder="e.g. Lecture 01"
-                                outline
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                             />
                             <p
                                 class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
@@ -221,8 +226,11 @@ const submitForm = () => {
                         </div>
 
                         <div>
-                            <k-input
-                                label="Starting Number"
+                            <label
+                                class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                                >Starting Number</label
+                            >
+                            <input
                                 type="number"
                                 :value="form.start_number"
                                 @input="
@@ -231,7 +239,7 @@ const submitForm = () => {
                                     )
                                 "
                                 placeholder="1"
-                                outline
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                             />
                             <p
                                 class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"

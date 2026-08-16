@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link, Head } from '@inertiajs/vue3';
+import { kButton } from 'konsta/vue';
 import { Calendar, User, Eye, ArrowLeft } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { kButton } from 'konsta/vue';
 
 const props = defineProps({
     blog: Object,

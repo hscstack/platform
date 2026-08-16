@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Database, LogOut } from 'lucide-vue-next';
 import { kList, kListItem, kBlock, kDialog, kButton } from 'konsta/vue';
+import { Database, LogOut } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 defineProps({
     navigation: Array,

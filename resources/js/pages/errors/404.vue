@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kButton, kPage } from 'konsta/vue';
 import {
     HelpCircle,
     ArrowLeft,
@@ -9,7 +10,6 @@ import {
     Info,
     ChevronRight,
 } from 'lucide-vue-next';
-import { kButton, kPage, kNavbar, kBlock } from 'konsta/vue';
 
 const goBack = () => {
     if (window.history.length > 1) {

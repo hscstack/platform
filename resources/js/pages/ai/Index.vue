@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { kButton, kBadge } from 'konsta/vue';
 import {
     Sparkles,
     Bot,
@@ -17,7 +18,6 @@ import {
     Sigma,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import { kButton, kBadge, kInput } from 'konsta/vue';
 
 // Mock Data for Pure STEM Subjects (Emojis removed, Lucide Icons added)
 const mockSubjects = [
@@ -356,11 +356,11 @@ const handleMockSubmit = (question?: string) => {
                     @submit.prevent
                     class="flex items-center gap-2 opacity-40"
                 >
-                    <k-input
+                    <input
                         type="text"
                         :placeholder="`${selectedTopic} নিয়ে প্রশ্নটি লিখুন...`"
-                        :disabled="true"
-                        outline
+                        disabled
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <k-button type="button" disabled>
                         <Send class="h-4 w-4" />

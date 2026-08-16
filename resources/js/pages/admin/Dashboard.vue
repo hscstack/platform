@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
 import {
     LayoutGrid,
     Sparkles,
@@ -9,7 +10,6 @@ import {
     BookOpen,
     ArrowRight,
 } from 'lucide-vue-next';
-import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
 
 defineProps({
     stats: Object,

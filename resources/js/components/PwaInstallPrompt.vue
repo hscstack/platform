@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { kDialog, kButton } from 'konsta/vue';
+import { kDialog } from 'konsta/vue';
 import { ref, shallowRef, onMounted, onUnmounted } from 'vue';
 
 defineOptions({

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kButton, kPage } from 'konsta/vue';
 import {
     Wrench,
     Home,
@@ -8,7 +9,6 @@ import {
     Mail,
     ChevronRight,
 } from 'lucide-vue-next';
-import { kButton, kPage, kNavbar, kBlock } from 'konsta/vue';
 </script>
 
 <template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kBadge } from 'konsta/vue';
 import {
     ArrowLeft,
     Megaphone,
@@ -11,7 +12,6 @@ import {
     Award,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import { kBadge } from 'konsta/vue';
 
 const roles = [
     {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm, Link } from '@inertiajs/vue3';
-import { kInput, kButton } from 'konsta/vue';
+import { kButton } from 'konsta/vue';
 
 const form = useForm({
     email: '',
@@ -50,26 +50,32 @@ const submit = () => {
             >
                 <div class="space-y-6">
                     <div>
-                        <k-input
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Email</label
+                        >
+                        <input
                             type="email"
                             :value="form.email"
                             @input="form.email = $event.target.value"
                             required
                             placeholder="admin@example.com"
-                            outline
-                            label="Email"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                     </div>
 
                     <div>
-                        <k-input
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Password</label
+                        >
+                        <input
                             type="password"
                             :value="form.password"
                             @input="form.password = $event.target.value"
                             required
                             placeholder="••••••••"
-                            outline
-                            label="Password"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                     </div>
                 </div>

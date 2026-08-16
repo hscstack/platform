@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
+import { kButton, kBlockTitle } from 'konsta/vue';
 import {
     FileText,
     File,
     Image as ImageIcon,
     Video,
     Upload,
-    Link as LinkIcon,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { kInput, kTextarea, kButton, kBlockTitle } from 'konsta/vue';
 
 const props = defineProps({
     redirect: String,
@@ -150,14 +149,16 @@ const submitForm = () => {
 
                 <!-- 2. Resource Title (Required for ALL) -->
                 <div>
-                    <k-input
-                        label="Resource Title"
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >Resource Title</label
+                    >
+                    <input
                         type="text"
                         :value="form.title"
                         @input="form.title = $event.target.value"
                         placeholder="e.g. Lecture 01 Introduction Notes"
-                        outline
-                        :error="form.errors.title"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.title"
@@ -169,14 +170,16 @@ const submitForm = () => {
 
                 <!-- 3. Content Body (Present for ALL types) -->
                 <div>
-                    <k-textarea
-                        label="Content Body"
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >Content Body</label
+                    >
+                    <textarea
                         :value="form.content"
                         @input="form.content = $event.target.value"
                         placeholder="Type notes, descriptions, or body text..."
-                        outline
-                        :rows="3"
-                        resizable
+                        rows="3"
+                        class="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.content"
@@ -188,12 +191,16 @@ const submitForm = () => {
 
                 <!-- 4. File URL (Only for Video and PDF) -->
                 <div v-if="requiresLink">
-                    <k-input
-                        :label="
+                    <label
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                    >
+                        {{
                             form.resource_type === 'pdf'
                                 ? 'PDF Resource URL'
                                 : 'Video Link / URL'
-                        "
+                        }}
+                    </label>
+                    <input
                         type="url"
                         :value="form.external_url"
                         @input="form.external_url = $event.target.value"
@@ -202,8 +209,7 @@ const submitForm = () => {
                                 ? 'e.g. https://example.com/document.pdf'
                                 : 'e.g. https://www.youtube.com/watch?v=... or Vimeo URL'
                         "
-                        outline
-                        :error="form.errors.external_url"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.external_url"

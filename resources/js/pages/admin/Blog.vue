@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
 import { Plus } from 'lucide-vue-next';
 import BlogRow from '@/components/BlogRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
 
 defineProps({
     blogs: {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { router, Link } from '@inertiajs/vue3';
-import { ArrowRight, AlertTriangle } from 'lucide-vue-next';
-import { ref } from 'vue';
 import { kButton, kSearchbar } from 'konsta/vue';
+import { AlertTriangle } from 'lucide-vue-next';
+import { ref } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
 
 defineProps({
@@ -10,10 +10,6 @@ defineProps({
 });
 
 const search = ref(new URLSearchParams(window.location.search).get('q') || '');
-
-const handleSearch = () => {
-    router.get('/blogs', { q: search.value }, { preserveState: true });
-};
 
 const clearSearch = () => {
     search.value = '';

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import { kBlock, kSegmented, kButton } from 'konsta/vue';
+import { computed } from 'vue';
 
 const page = usePage();
 const isSsc = computed(() => page.url.startsWith('/ssc'));

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { kDialog, kButton } from 'konsta/vue';
+import { kDialog } from 'konsta/vue';
 import { X } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 

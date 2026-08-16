@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { kButton, kBlockTitle } from 'konsta/vue';
 import {
     Atom,
     FlaskConical,
@@ -13,7 +14,6 @@ import {
     Check,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { kInput, kSelect, kButton, kBlockTitle } from 'konsta/vue';
 
 const icons = {
     Atom,
@@ -98,14 +98,16 @@ const submitForm = () => {
             <form @submit.prevent="submitForm" class="space-y-8">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div>
-                        <k-input
-                            label="Subject Name"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Subject Name</label
+                        >
+                        <input
                             type="text"
                             :value="form.name"
                             @input="form.name = $event.target.value"
                             placeholder="e.g. Physics..."
-                            outline
-                            :error="form.errors.name"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.name"
@@ -116,17 +118,18 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <k-select
-                            label="Course"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Course</label
+                        >
+                        <select
                             :value="form.course"
                             @change="form.course = $event.target.value"
-                            :options="[
-                                { value: 'hsc', label: 'HSC' },
-                                { value: 'ssc', label: 'SSC' },
-                            ]"
-                            outline
-                            :error="form.errors.course"
-                        />
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-400"
+                        >
+                            <option value="hsc">HSC</option>
+                            <option value="ssc">SSC</option>
+                        </select>
                         <p
                             v-if="form.errors.course"
                             class="mt-1 text-sm text-rose-600"
@@ -136,15 +139,17 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <k-input
-                            label="Sort Order"
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Sort Order</label
+                        >
+                        <input
                             type="number"
                             :value="form.sort_order"
                             @input="
                                 form.sort_order = Number($event.target.value)
                             "
-                            outline
-                            :error="form.errors.sort_order"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.sort_order"

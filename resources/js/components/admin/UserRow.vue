@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { kDialog, kButton } from 'konsta/vue';
 import { Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
 defineProps({
     user: Object,
 });
@@ -34,6 +34,7 @@ const confirmDelete = () => {
     if (deleteUserId.value) {
         router.delete(`/admin/users/${deleteUserId.value}`);
     }
+
     deleteDialogOpened.value = false;
     deleteUserId.value = null;
 };

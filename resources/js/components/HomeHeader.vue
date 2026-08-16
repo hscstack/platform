@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import { kSearchbar } from 'konsta/vue';
+import { computed } from 'vue';
 const searchQuery = defineModel();
 const page = usePage();
 const isSsc = computed(() => page.url.startsWith('/ssc'));
