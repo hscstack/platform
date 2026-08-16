@@ -298,5 +298,54 @@ declare module 'konsta/vue' {
         unknown
     >;
 
+    export const kIcon: DefineComponent<
+        {
+            badge?: string;
+            badgeColors?: { bg?: string; text?: string };
+            ios?: string;
+            material?: string;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kNavbarBackLink: DefineComponent<
+        {
+            text?: string;
+            showText?: boolean;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kBlockHeader: DefineComponent<
+        Record<string, unknown>,
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kRadio: DefineComponent<
+        {
+            checked?: boolean;
+            name?: string;
+            value?: string | number;
+            disabled?: boolean;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kListButton: DefineComponent<
+        {
+            title?: string;
+            link?: boolean | string;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kSegmentedButton: DefineComponent<
+        {
+            active?: boolean;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+
     export function useTheme(): { value: 'ios' | 'material' };
 }

@@ -195,10 +195,7 @@ const parseYoutubeUrl = (url) => {
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div class="min-w-0">
-                        <k-badge
-                            outline
-                            class="inline-flex items-center gap-1.5 !bg-slate-100 !px-2 !py-1 !text-xs !font-bold !tracking-wider !text-slate-600 uppercase dark:!bg-gray-800 dark:!text-gray-400"
-                        >
+                        <k-badge outline>
                             <FileText
                                 v-if="resource.resource_type === 'note'"
                                 class="h-3 w-3"
@@ -258,7 +255,6 @@ const parseYoutubeUrl = (url) => {
 
                         <k-button
                             @click="toggleFullscreen"
-                            class="inline-flex h-9 !items-center !gap-2 !rounded-xl !bg-indigo-600 !px-4 !text-xs !font-bold !text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
                             title="View Fullscreen"
                         >
                             <Maximize2 class="h-4 w-4 stroke-[2.2]" />
@@ -491,17 +487,12 @@ const parseYoutubeUrl = (url) => {
                 <k-button
                     v-if="scale > 1"
                     @click="resetZoom"
-                    class="!rounded-full !bg-white/10 !p-3 !text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:!bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Reset Zoom"
                 >
                     <RotateCcw class="h-5 w-5" />
                 </k-button>
 
-                <k-button
-                    @click="toggleFullscreen"
-                    class="!rounded-full !bg-white/10 !p-3 !text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:!bg-gray-900/10 dark:hover:bg-gray-900/20"
-                    title="Exit Fullscreen"
-                >
+                <k-button @click="toggleFullscreen" title="Exit Fullscreen">
                     <Minimize2 class="h-5 w-5" />
                 </k-button>
             </div>

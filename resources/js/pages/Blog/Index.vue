@@ -68,11 +68,7 @@ const clearSearch = () => {
                         </button>
                     </div>
 
-                    <k-button
-                        @click="handleSearch"
-                        type="button"
-                        class="k-button inline-flex items-center justify-center gap-2 !rounded-xl !bg-indigo-600 !px-5 !py-3 !text-sm !font-semibold !text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 active:scale-[0.98]"
-                    >
+                    <k-button @click="handleSearch" type="button">
                         <span>Search</span>
                         <ArrowRight class="hidden h-4 w-4 sm:block" />
                     </k-button>
@@ -103,12 +99,7 @@ const clearSearch = () => {
                 "{{ searchQuery }}"-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া
                 যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।
             </p>
-            <k-button
-                @click="clearSearch"
-                class="k-button mt-5 inline-flex items-center justify-center !rounded-xl !bg-indigo-600 !px-4 !py-2.5 !text-sm !font-semibold !text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98]"
-            >
-                সব আর্টিকেল দেখুন
-            </k-button>
+            <k-button @click="clearSearch"> সব আর্টিকেল দেখুন </k-button>
         </div>
 
         <div

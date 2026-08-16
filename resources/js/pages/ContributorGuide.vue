@@ -231,12 +231,7 @@ onUnmounted(() => {
                             </p>
                         </div>
                     </div>
-                    <Link
-                        href="/join"
-                        class="k-button w-full shrink-0 !rounded-xl !bg-indigo-600 !px-5 !py-2.5 !text-center !text-xs !font-bold !text-white shadow-sm transition-colors hover:bg-indigo-500 sm:w-auto sm:text-sm"
-                    >
-                        Apply Here
-                    </Link>
+                    <Link href="/join"> Apply Here </Link>
                 </div>
 
                 <p
@@ -724,7 +719,7 @@ onUnmounted(() => {
                         href="https://wa.me/8801909131512"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="k-button inline-flex w-full items-center justify-center gap-2 !rounded-xl !bg-emerald-500 !px-5 !py-3 !text-xs !font-bold !text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 sm:w-auto sm:text-sm"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 sm:w-auto sm:text-sm"
                     >
                         <MessageCircle class="h-4 w-4" />
                         Chat on WhatsApp

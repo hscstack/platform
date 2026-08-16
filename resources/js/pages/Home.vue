@@ -53,12 +53,7 @@ const filteredSubjects = computed(() => {
             <p class="text-sm font-semibold text-slate-400 dark:text-gray-500">
                 No subjects found matching "{{ searchQuery }}"
             </p>
-            <k-button
-                @click="searchQuery = ''"
-                class="mt-2 !bg-transparent !text-xs !font-bold !text-indigo-600 hover:underline dark:!text-indigo-400"
-            >
-                Show all subjects
-            </k-button>
+            <k-button @click="searchQuery = ''"> Show all subjects </k-button>
         </div>
 
         <div

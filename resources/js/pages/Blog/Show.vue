@@ -174,10 +174,7 @@ const copyLink = async () => {
                 </div>
 
                 <div class="flex gap-3">
-                    <k-button
-                        @click="copyLink"
-                        class="k-button !rounded-lg !border !border-slate-300 !px-4 !py-2 !text-sm !font-medium !text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:!border-gray-600 dark:!text-gray-300 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
-                    >
+                    <k-button @click="copyLink">
                         {{ copied ? 'Copied!' : 'Copy link' }}
                     </k-button>
                 </div>

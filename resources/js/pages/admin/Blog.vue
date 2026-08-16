@@ -14,27 +14,19 @@ defineProps({
 </script>
 
 <template>
-    <kBlock
-        class="!mx-0 flex w-full flex-1 flex-col !rounded-xl border border-gray-100 !bg-white !p-6 shadow-sm dark:border-gray-700 dark:!bg-gray-900"
-    >
+    <kBlock>
         <div
             class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
         >
             <div>
-                <kBlockTitle
-                    class="!text-lg !font-semibold !tracking-tight !text-gray-900 dark:!text-gray-100"
-                >
-                    Manage Blogs
-                </kBlockTitle>
+                <kBlockTitle> Manage Blogs </kBlockTitle>
                 <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                     View, organize, and publish your blog articles.
                 </p>
             </div>
 
             <div class="flex items-center gap-3 self-start sm:self-center">
-                <kBadge
-                    class="!rounded-full !border !border-blue-100 !bg-blue-50 !px-3 !py-1 dark:!border-blue-500/30 dark:!bg-blue-500/10"
-                >
+                <kBadge>
                     <span
                         class="text-xs font-medium text-blue-700 dark:text-blue-400"
                     >

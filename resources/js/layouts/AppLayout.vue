@@ -26,9 +26,7 @@ import ToastNotification from '@/components/ToastNotification.vue';
                 ></div>
             </div>
 
-            <kPage
-                class="relative z-10 flex min-h-screen flex-col justify-between"
-            >
+            <kPage>
                 <div>
                     <NavBar />
                     <slot />

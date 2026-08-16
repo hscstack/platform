@@ -55,7 +55,7 @@ const closeMobileSidebar = () => {
                 ></div>
             </div>
 
-            <kPage class="relative z-10 flex min-h-screen flex-col">
+            <kPage>
                 <NavBar :is-admin="true" />
 
                 <div

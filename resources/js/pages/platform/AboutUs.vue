@@ -58,12 +58,7 @@ const goBack = () => {
                         nationwide.
                     </p>
                 </div>
-                <Link
-                    href="/join"
-                    class="k-button inline-flex w-full items-center justify-center !rounded-xl !bg-slate-950 !px-4 !py-3 !text-xs !font-bold !text-white shadow-sm transition-all hover:bg-slate-900 active:scale-[0.98] dark:!bg-gray-100 dark:!text-gray-900 dark:hover:bg-gray-200"
-                >
-                    Apply for a Role
-                </Link>
+                <Link href="/join"> Apply for a Role </Link>
             </div>
         </div>
     </main>

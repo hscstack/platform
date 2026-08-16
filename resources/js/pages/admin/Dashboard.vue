@@ -19,9 +19,7 @@ defineProps({
 <template>
     <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
         <!-- Main Dashboard Header -->
-        <kBlock
-            class="relative !mx-0 !mt-0 overflow-hidden !rounded-2xl border border-slate-300 !bg-gradient-to-r !from-white !via-slate-50 !to-white !p-6 shadow-sm sm:!p-8 dark:border-gray-700 dark:!from-gray-900 dark:!via-gray-950 dark:!to-gray-900"
-        >
+        <kBlock>
             <div
                 class="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/20"
             ></div>
@@ -35,11 +33,7 @@ defineProps({
                         <Sparkles class="h-5 w-5" />
                     </div>
                     <div>
-                        <kBlockTitle
-                            class="!text-xl !font-bold !tracking-tight !text-slate-900 sm:!text-2xl dark:!text-gray-100"
-                        >
-                            Dashboard
-                        </kBlockTitle>
+                        <kBlockTitle> Dashboard </kBlockTitle>
                         <p
                             class="mt-0.5 text-sm text-slate-600 dark:text-gray-400"
                         >
@@ -52,9 +46,7 @@ defineProps({
         </kBlock>
 
         <!-- Highlighted Guide/Tour Card -->
-        <kBlock
-            class="relative !mx-0 overflow-hidden !rounded-2xl border border-indigo-200 !bg-indigo-50/60 !p-5 shadow-xs transition-colors hover:border-indigo-300 sm:!p-6 dark:border-indigo-500/30 dark:!bg-indigo-500/10"
-        >
+        <kBlock>
             <div
                 class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
             >
@@ -94,9 +86,7 @@ defineProps({
         <!-- Metrics Section -->
         <div class="grid gap-6 md:grid-cols-2">
             <div class="space-y-6">
-                <kBlock
-                    class="relative !mx-0 overflow-hidden !rounded-2xl border border-slate-200 !bg-white !p-6 shadow-sm dark:border-gray-700 dark:!bg-gray-900"
-                >
+                <kBlock>
                     <div class="flex items-center justify-between">
                         <p
                             class="text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-gray-400"
@@ -123,9 +113,7 @@ defineProps({
                     </div>
                 </kBlock>
 
-                <kBlock
-                    class="relative !mx-0 overflow-hidden !rounded-2xl border border-slate-200 !bg-white !p-6 shadow-sm dark:border-gray-700 dark:!bg-gray-900"
-                >
+                <kBlock>
                     <div class="flex items-center justify-between">
                         <p
                             class="text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-gray-400"
@@ -153,9 +141,7 @@ defineProps({
                 </kBlock>
             </div>
 
-            <kBlock
-                class="!mx-0 flex flex-col !rounded-2xl border border-slate-200 !bg-white !p-6 shadow-sm dark:border-gray-700 dark:!bg-gray-900"
-            >
+            <kBlock>
                 <div
                     class="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-gray-800"
                 >
@@ -195,11 +181,7 @@ defineProps({
                                 </p>
                             </div>
                             <div class="flex w-1/3 items-center justify-end">
-                                <kBadge
-                                    class="!bg-slate-100 !px-2.5 !py-0.5 !text-xs !font-semibold !text-slate-800 dark:!bg-gray-800 dark:!text-gray-200"
-                                >
-                                    {{ source.visits }} users
-                                </kBadge>
+                                <kBadge> {{ source.visits }} users </kBadge>
                             </div>
                         </div>
                     </div>

@@ -147,11 +147,7 @@ const whatsappLink = computed(() => {
                             >
                                 {{ role.title }}
                             </h3>
-                            <k-badge
-                                v-if="selectedRole === role.id"
-                                outline
-                                class="inline-flex items-center !rounded-md !border !border-indigo-100 !bg-indigo-50 !px-1.5 !py-0.5 !text-[10px] !font-bold !tracking-wider !text-indigo-700 uppercase dark:!border-indigo-500/30 dark:!bg-indigo-500/10 dark:!text-indigo-300"
-                            >
+                            <k-badge v-if="selectedRole === role.id" outline>
                                 Selected
                             </k-badge>
                         </div>
