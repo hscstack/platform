@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { kCheckbox, kButton, kBlockTitle } from 'konsta/vue';
 import { UserPlus, Loader2, Save } from 'lucide-vue-next';
 import { watch } from 'vue';
 
@@ -73,11 +74,9 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-gray-300 pb-6 sm:flex-row sm:items-center dark:border-gray-600"
             >
                 <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                    >
+                    <kBlockTitle>
                         {{ props.user ? 'Edit' : 'Create New' }} User
-                    </h1>
+                    </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         {{
                             props.user
@@ -93,22 +92,16 @@ const submitForm = () => {
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <label
-                            for="name"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Full Name</label
                         >
                         <input
-                            v-model="form.name"
                             type="text"
-                            id="name"
+                            :value="form.name"
+                            @input="form.name = $event.target.value"
                             placeholder="John Doe"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.name
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.name"
@@ -120,22 +113,16 @@ const submitForm = () => {
 
                     <div>
                         <label
-                            for="email"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Email Address</label
                         >
                         <input
-                            v-model="form.email"
                             type="email"
-                            id="email"
+                            :value="form.email"
+                            @input="form.email = $event.target.value"
                             placeholder="johndoe@example.com"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.email
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.email"
@@ -150,7 +137,6 @@ const submitForm = () => {
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <label
-                            for="password"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >
                             Password
@@ -161,18 +147,12 @@ const submitForm = () => {
                             >
                         </label>
                         <input
-                            v-model="form.password"
                             type="password"
-                            id="password"
+                            :value="form.password"
+                            @input="form.password = $event.target.value"
                             placeholder="••••••••"
-                            :required="!props.user"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.password
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.password"
@@ -184,20 +164,14 @@ const submitForm = () => {
 
                     <div v-if="!shouldHideOptions">
                         <label
-                            for="role"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >System Role</label
                         >
                         <select
-                            id="role"
-                            v-model="form.role"
+                            :value="form.role"
+                            @change="form.role = $event.target.value"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.role
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-400"
                         >
                             <option
                                 v-for="role in roles"
@@ -241,16 +215,22 @@ const submitForm = () => {
                             :key="permission.name"
                             class="flex items-start gap-2.5 rounded-lg border border-gray-200 bg-white p-3 shadow-xs dark:border-gray-700 dark:bg-gray-900"
                         >
-                            <input
-                                type="checkbox"
-                                :id="`perm-${permission.name}`"
-                                :value="permission.name"
-                                v-model="form.permissions"
+                            <k-checkbox
+                                :checked="
+                                    form.permissions.includes(permission.name)
+                                "
+                                @change="
+                                    form.permissions.includes(permission.name)
+                                        ? (form.permissions =
+                                              form.permissions.filter(
+                                                  (p) => p !== permission.name,
+                                              ))
+                                        : form.permissions.push(permission.name)
+                                "
                                 :disabled="
                                     form.processing ||
                                     permission.name === 'view admin'
                                 "
-                                class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60 dark:border-gray-600"
                             />
                             <label
                                 :for="`perm-${permission.name}`"
@@ -308,22 +288,16 @@ const submitForm = () => {
 
                     <div>
                         <label
-                            for="title"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Title</label
                         >
                         <input
-                            v-model="form.title"
                             type="text"
-                            id="title"
+                            :value="form.title"
+                            @input="form.title = $event.target.value"
                             placeholder="e.g. Lead Developer, Professor"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.title
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.title"
@@ -337,22 +311,16 @@ const submitForm = () => {
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <label
-                            for="institution"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Institution</label
                         >
                         <input
-                            v-model="form.institution"
                             type="text"
-                            id="institution"
+                            :value="form.institution"
+                            @input="form.institution = $event.target.value"
                             placeholder="University / Company"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.institution
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.institution"
@@ -364,22 +332,16 @@ const submitForm = () => {
 
                     <div>
                         <label
-                            for="facebook"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Facebook</label
                         >
                         <input
-                            v-model="form.facebook"
                             type="text"
-                            id="facebook"
+                            :value="form.facebook"
+                            @input="form.facebook = $event.target.value"
                             placeholder="Facebook profile URL"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.facebook
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.facebook"
@@ -393,22 +355,16 @@ const submitForm = () => {
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <label
-                            for="github"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >GitHub</label
                         >
                         <input
-                            v-model="form.github"
                             type="text"
-                            id="github"
+                            :value="form.github"
+                            @input="form.github = $event.target.value"
                             placeholder="GitHub profile URL"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.github
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.github"
@@ -420,22 +376,16 @@ const submitForm = () => {
 
                     <div>
                         <label
-                            for="instagram"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Instagram</label
                         >
                         <input
-                            v-model="form.instagram"
                             type="text"
-                            id="instagram"
+                            :value="form.instagram"
+                            @input="form.instagram = $event.target.value"
                             placeholder="Instagram profile URL"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.instagram
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.instagram"
@@ -448,23 +398,17 @@ const submitForm = () => {
 
                 <div>
                     <label
-                        for="about"
                         class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >About</label
                     >
                     <textarea
-                        v-model="form.about"
-                        id="about"
-                        rows="4"
+                        :value="form.about"
+                        @input="form.about = $event.target.value"
                         placeholder="Short bio..."
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                        :class="
-                            form.errors.about
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                        "
-                    ></textarea>
+                        rows="4"
+                        class="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
+                    />
                     <p
                         v-if="form.errors.about"
                         class="mt-1 text-sm text-rose-600"
@@ -524,18 +468,8 @@ const submitForm = () => {
                 <div
                     class="flex justify-end space-x-3 border-t border-gray-300 pt-6 dark:border-gray-600"
                 >
-                    <button
-                        type="button"
-                        @click="goBack"
-                        class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        :disabled="form.processing"
-                        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                    >
+                    <k-button outline @click="goBack"> Cancel </k-button>
+                    <k-button type="submit" fill :disabled="form.processing">
                         <Loader2
                             v-if="form.processing"
                             class="h-4 w-4 animate-spin"
@@ -551,7 +485,7 @@ const submitForm = () => {
                                   ? 'Update User'
                                   : 'Save User'
                         }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

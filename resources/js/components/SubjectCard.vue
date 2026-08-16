@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kCard } from 'konsta/vue';
 import {
     Search,
     Atom,
@@ -30,12 +31,11 @@ const icons = {
 </script>
 
 <template>
-    <Link
-        :href="subject.slug"
-        class="group relative flex touch-manipulation items-center justify-between overflow-hidden rounded-xl border border-slate-200 bg-white px-5 py-4.5 transition-all duration-200 hover:border-indigo-300 hover:shadow-sm active:scale-[0.99] dark:border-gray-700 dark:bg-gray-900 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-500/5"
-    >
-        <div class="flex min-w-0 items-center gap-4">
-            <!-- Balanced Icon Wrapper -->
+    <k-card outline>
+        <Link
+            :href="subject.slug"
+            class="group flex touch-manipulation items-center gap-4 transition-all duration-200 active:scale-[0.99]"
+        >
             <div
                 :class="[
                     subject.tailwind_format,
@@ -48,8 +48,7 @@ const icons = {
                 />
             </div>
 
-            <!-- Content Area -->
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
                 <h3
                     class="truncate text-base font-bold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-gray-200 dark:group-hover:text-indigo-400"
                 >
@@ -61,13 +60,10 @@ const icons = {
                     {{ subject.nodes_count }} Chapters
                 </p>
             </div>
-        </div>
 
-        <!-- Clean, Modern Chevron Indicator -->
-        <div class="flex items-center pl-4">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 text-slate-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-indigo-500 dark:text-gray-600 dark:group-hover:text-indigo-400"
+                class="h-5 w-5 shrink-0 text-slate-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-indigo-500 dark:text-gray-600 dark:group-hover:text-indigo-400"
                 viewBox="0 0 20 20"
                 fill="currentColor"
             >
@@ -77,6 +73,6 @@ const icons = {
                     clip-rule="evenodd"
                 />
             </svg>
-        </div>
-    </Link>
+        </Link>
+    </k-card>
 </template>

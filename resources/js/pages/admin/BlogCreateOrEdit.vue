@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
+import { kCheckbox, kButton, kBlockTitle } from 'konsta/vue';
 import { Upload } from 'lucide-vue-next';
 import HTMLEditor from '@/components/HTMLEditor.vue';
 
@@ -49,11 +50,9 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                    >
+                    <kBlockTitle>
                         {{ props.blog ? 'Edit' : 'Create' }} Blog Post
-                    </h1>
+                    </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Compose and manage article content for your web
                         application audience.
@@ -64,21 +63,15 @@ const submitForm = () => {
             <form @submit.prevent="submitForm" class="space-y-6">
                 <div>
                     <label
-                        for="title"
                         class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >Blog Title</label
                     >
                     <input
-                        v-model="form.title"
                         type="text"
-                        id="title"
+                        :value="form.title"
+                        @input="form.title = $event.target.value"
                         placeholder="e.g. 10 Tips for Cracking BUET"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                        :class="
-                            form.errors.title
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                        "
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.title"
@@ -142,21 +135,15 @@ const submitForm = () => {
 
                 <div>
                     <label
-                        for="seo_tags"
                         class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >SEO Tags (Comma separated)</label
                     >
                     <input
-                        v-model="form.seo_tags"
                         type="text"
-                        id="seo_tags"
+                        :value="form.seo_tags"
+                        @input="form.seo_tags = $event.target.value"
                         placeholder="e.g. admission, news, tips"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                        :class="
-                            form.errors.seo_tags
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                        "
+                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                     />
                     <p
                         v-if="form.errors.seo_tags"
@@ -170,10 +157,9 @@ const submitForm = () => {
                     class="flex flex-wrap gap-6 rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/50"
                 >
                     <label class="flex cursor-pointer items-center gap-2.5">
-                        <input
-                            v-model="form.is_published"
-                            type="checkbox"
-                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 dark:border-gray-600"
+                        <k-checkbox
+                            :checked="form.is_published"
+                            @change="form.is_published = $event.target.checked"
                         />
                         <div>
                             <span
@@ -188,10 +174,9 @@ const submitForm = () => {
                     </label>
 
                     <label class="flex cursor-pointer items-center gap-2.5">
-                        <input
-                            v-model="form.is_featured"
-                            type="checkbox"
-                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 dark:border-gray-600"
+                        <k-checkbox
+                            :checked="form.is_featured"
+                            @change="form.is_featured = $event.target.checked"
                         />
                         <div>
                             <span
@@ -229,19 +214,12 @@ const submitForm = () => {
                 <div
                     class="flex justify-end space-x-3 border-t border-slate-100 pt-6 dark:border-gray-800"
                 >
-                    <Link
-                        href="/admin/blogs"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
+                    <Link href="/admin/blogs">
+                        <k-button clear>Cancel</k-button>
                     </Link>
-                    <button
-                        type="submit"
-                        :disabled="form.processing"
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                    >
+                    <k-button type="submit" fill :disabled="form.processing">
                         {{ form.processing ? 'Saving...' : 'Save Blog' }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

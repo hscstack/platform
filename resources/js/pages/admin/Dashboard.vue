@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import {} from '@inertiajs/vue3';
+import { kBlock, kBlockTitle, kBadge, kButton } from 'konsta/vue';
 import {
     LayoutGrid,
     Sparkles,
@@ -18,9 +19,7 @@ defineProps({
 <template>
     <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
         <!-- Main Dashboard Header -->
-        <div
-            class="relative overflow-hidden rounded-2xl border border-slate-300 bg-gradient-to-r from-white via-slate-50 to-white p-6 shadow-sm sm:p-8 dark:border-gray-700 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
-        >
+        <kBlock>
             <div
                 class="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/20"
             ></div>
@@ -34,11 +33,7 @@ defineProps({
                         <Sparkles class="h-5 w-5" />
                     </div>
                     <div>
-                        <h1
-                            class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
-                        >
-                            Dashboard
-                        </h1>
+                        <kBlockTitle> Dashboard </kBlockTitle>
                         <p
                             class="mt-0.5 text-sm text-slate-600 dark:text-gray-400"
                         >
@@ -48,12 +43,10 @@ defineProps({
                     </div>
                 </div>
             </div>
-        </div>
+        </kBlock>
 
-        <!-- Highlighted Guide/Tour Card (Placed Directly Below Header) -->
-        <div
-            class="relative overflow-hidden rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-xs transition-colors hover:border-indigo-300 sm:p-6 dark:border-indigo-500/30 dark:bg-indigo-500/10"
-        >
+        <!-- Highlighted Guide/Tour Card -->
+        <kBlock>
             <div
                 class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
             >
@@ -78,24 +71,17 @@ defineProps({
                     </div>
                 </div>
 
-                <Link
-                    href="/guide"
-                    class="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95"
-                >
+                <k-button fill rounded href="/guide">
                     <span>Take a Tour</span>
-                    <ArrowRight
-                        class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                    />
-                </Link>
+                    <ArrowRight class="h-4 w-4" />
+                </k-button>
             </div>
-        </div>
+        </kBlock>
 
         <!-- Metrics Section -->
         <div class="grid gap-6 md:grid-cols-2">
             <div class="space-y-6">
-                <div
-                    class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
-                >
+                <kBlock>
                     <div class="flex items-center justify-between">
                         <p
                             class="text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-gray-400"
@@ -120,11 +106,9 @@ defineProps({
                             Cumulative raw platform hits recorded
                         </p>
                     </div>
-                </div>
+                </kBlock>
 
-                <div
-                    class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
-                >
+                <kBlock>
                     <div class="flex items-center justify-between">
                         <p
                             class="text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-gray-400"
@@ -149,12 +133,10 @@ defineProps({
                             Distinct audiences grouped by IP address
                         </p>
                     </div>
-                </div>
+                </kBlock>
             </div>
 
-            <div
-                class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
-            >
+            <kBlock>
                 <div
                     class="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-gray-800"
                 >
@@ -194,11 +176,7 @@ defineProps({
                                 </p>
                             </div>
                             <div class="flex w-1/3 items-center justify-end">
-                                <span
-                                    class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800 dark:bg-gray-800 dark:text-gray-200"
-                                >
-                                    {{ source.visits }} users
-                                </span>
+                                <kBadge> {{ source.visits }} users </kBadge>
                             </div>
                         </div>
                     </div>
@@ -217,7 +195,7 @@ defineProps({
                         </p>
                     </div>
                 </div>
-            </div>
+            </kBlock>
         </div>
     </div>
 </template>

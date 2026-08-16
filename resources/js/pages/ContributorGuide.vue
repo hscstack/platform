@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kButton } from 'konsta/vue';
 import {
     ArrowLeft,
     UserPlus,
@@ -102,15 +103,10 @@ onUnmounted(() => {
 
 <template>
     <header class="mx-auto max-w-4xl px-4 pt-8 pb-4 text-center sm:pt-12">
-        <Link
-            href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-4 w-4 transition-transform group-hover:-translate-x-1"
-            />
+        <k-button clear href="/">
+            <ArrowLeft class="h-4 w-4" />
             Back to Home
-        </Link>
+        </k-button>
         <h1
             class="mb-3 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
@@ -230,12 +226,7 @@ onUnmounted(() => {
                             </p>
                         </div>
                     </div>
-                    <Link
-                        href="/join"
-                        class="w-full shrink-0 rounded-xl bg-indigo-600 px-5 py-2.5 text-center text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-500 sm:w-auto sm:text-sm"
-                    >
-                        Apply Here
-                    </Link>
+                    <Link href="/join"> Apply Here </Link>
                 </div>
 
                 <p
@@ -719,15 +710,18 @@ onUnmounted(() => {
                     permission প্রয়োজন হলে, সরাসরি WhatsApp-এ যোগাযোগ করুন।
                 </p>
                 <div class="pt-2">
-                    <a
+                    <k-button
+                        fill
+                        rounded
                         href="https://wa.me/8801909131512"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 sm:w-auto sm:text-sm"
+                        class="w-full sm:w-auto"
+                        style="background-color: #16a34a; color: white"
                     >
                         <MessageCircle class="h-4 w-4" />
                         Chat on WhatsApp
-                    </a>
+                    </k-button>
                 </div>
             </div>
         </div>

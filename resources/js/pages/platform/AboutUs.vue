@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import {} from '@inertiajs/vue3';
+import { kButton } from 'konsta/vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import UserCard from '@/components/UserCard.vue';
 
@@ -13,15 +14,10 @@ const goBack = () => {
 
 <template>
     <header class="mx-auto max-w-4xl px-4 pt-16 pb-14 text-center sm:pt-20">
-        <button
-            @click="goBack"
-            class="group mb-5 inline-flex items-center gap-2 text-xs font-bold text-slate-400 transition-colors hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
-            />
+        <k-button clear @click="goBack">
+            <ArrowLeft class="h-3.5 w-3.5" />
             Go Back
-        </button>
+        </k-button>
         <h1
             class="text-4xl font-black tracking-tight text-slate-950 sm:text-6xl dark:text-gray-100"
         >
@@ -58,12 +54,9 @@ const goBack = () => {
                         nationwide.
                     </p>
                 </div>
-                <Link
-                    href="/join"
-                    class="inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-xs font-bold text-white shadow-sm transition-all hover:bg-slate-900 active:scale-[0.98] dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
-                >
+                <k-button fill rounded href="/join">
                     Apply for a Role
-                </Link>
+                </k-button>
             </div>
         </div>
     </main>

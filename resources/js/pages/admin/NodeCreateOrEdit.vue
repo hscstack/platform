@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { kButton, kBlockTitle } from 'konsta/vue';
 import { FolderOpen } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -15,12 +16,6 @@ const form = useForm({
     sort_order: props.node?.sort_order ?? 0,
     redirect: props.redirect,
 });
-
-function getInputClass(hasError) {
-    return hasError
-        ? 'border-rose-500 focus:ring-rose-500/20'
-        : 'border-slate-300 dark:border-gray-600 focus:ring-blue-500/20 focus:border-blue-500';
-}
 
 const submitForm = () => {
     if (props.node) {
@@ -53,11 +48,9 @@ const goBack = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                    >
+                    <kBlockTitle>
                         {{ props.node ? 'Edit Folder' : 'Create Folder' }}
-                    </h1>
+                    </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Subject:
                         <span
@@ -113,18 +106,16 @@ const goBack = () => {
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div class="md:col-span-2">
                         <label
-                            for="name"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Folder Name</label
                         >
                         <input
-                            v-model="form.name"
                             type="text"
-                            id="name"
+                            :value="form.name"
+                            @input="form.name = $event.target.value"
                             placeholder="e.g., Chapter 1: Introduction"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                            :class="getInputClass(form.errors.name)"
                             required
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.name"
@@ -136,17 +127,17 @@ const goBack = () => {
 
                     <div>
                         <label
-                            for="sort_order"
                             class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                             >Order Priority</label
                         >
                         <input
-                            v-model.number="form.sort_order"
                             type="number"
-                            id="sort_order"
+                            :value="form.sort_order"
+                            @input="
+                                form.sort_order = Number($event.target.value)
+                            "
                             placeholder="0"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                            :class="getInputClass(form.errors.sort_order)"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-400"
                         />
                         <p
                             v-if="form.errors.sort_order"
@@ -165,17 +156,8 @@ const goBack = () => {
                 <div
                     class="flex justify-end space-x-3 border-t border-slate-100 pt-4 dark:border-gray-800"
                 >
-                    <button
-                        @click="goBack"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        :disabled="form.processing"
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                    >
+                    <k-button outline @click="goBack"> Cancel </k-button>
+                    <k-button type="submit" fill :disabled="form.processing">
                         {{
                             form.processing
                                 ? 'Saving...'
@@ -183,7 +165,7 @@ const goBack = () => {
                                   ? 'Save Changes'
                                   : 'Create Folder'
                         }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

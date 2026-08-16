@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
+import { kDialog, kButton } from 'konsta/vue';
 import {
     Book,
     File,
@@ -9,15 +10,24 @@ import {
     Pencil,
     Trash2,
 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const { resource } = defineProps({
     resource: Object,
 });
 
-const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this Resource?')) {
+const deleteDialogOpened = ref(false);
+const deleteCallback = ref<() => void>(() => {});
+
+const showDeleteDialog = () => {
+    deleteCallback.value = () =>
         router.delete(`/admin/resources/${resource.id}`);
-    }
+    deleteDialogOpened.value = true;
+};
+
+const confirmDelete = () => {
+    deleteDialogOpened.value = false;
+    deleteCallback.value();
 };
 </script>
 
@@ -40,15 +50,15 @@ const handleDelete = () => {
                 <span>Edit</span>
             </Link>
 
-            <button
-                type="button"
-                @click="handleDelete"
-                class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+            <k-button
+                clear
+                small
+                @click="showDeleteDialog"
                 title="Delete Resource"
             >
                 <Trash2 class="h-2.5 w-2.5" :stroke-width="2.2" />
                 <span>Delete</span>
-            </button>
+            </k-button>
         </div>
 
         <div
@@ -82,4 +92,22 @@ const handleDelete = () => {
             </span>
         </div>
     </div>
+
+    <kDialog
+        :opened="deleteDialogOpened"
+        @opened:change="deleteDialogOpened = $event"
+    >
+        <div class="p-4">
+            <p class="text-base font-semibold text-gray-900 dark:text-white">
+                Delete Resource
+            </p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                Are you sure you want to delete this Resource?
+            </p>
+            <div class="mt-4 flex justify-end gap-2">
+                <kButton @click="deleteDialogOpened = false">Cancel</kButton>
+                <kButton @click="confirmDelete">Delete</kButton>
+            </div>
+        </div>
+    </kDialog>
 </template>

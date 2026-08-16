@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import { ref, shallowRef, onMounted, onUnmounted } from 'vue';
-
-defineOptions({
-    inheritAttrs: false,
-});
-
-const props = defineProps({
-    variant: {
-        type: String,
-        default: 'modal',
-    },
-});
+import { kDialog, kButton } from 'konsta/vue';
+import { ref, shallowRef, onMounted, onUnmounted, computed } from 'vue';
 
 const isVisible = ref(false);
 const deferredPrompt = shallowRef(null);
+
+type InstallMethod =
+    | 'native'
+    | 'safari-ios'
+    | 'safari-mac'
+    | 'firefox'
+    | 'manual';
+const installMethod = ref<InstallMethod>('manual');
+
+const isIOS = computed(() => /iPhone|iPad|iPod/.test(navigator.userAgent));
+const isSafari = computed(() =>
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
+);
+const isFirefox = computed(() => /Firefox/i.test(navigator.userAgent));
+const isMac = computed(() => /Macintosh|Mac OS X/.test(navigator.userAgent));
 
 const handleBeforeInstall = (e: Event) => {
     e.preventDefault();
     deferredPrompt.value = e;
 
-    if (props.variant === 'modal') {
-        if (!sessionStorage.getItem('pwa_prompt_dismissed')) {
-            isVisible.value = true;
-        }
-    } else {
+    if (!sessionStorage.getItem('pwa_prompt_dismissed')) {
+        installMethod.value = 'native';
         isVisible.value = true;
     }
 };
@@ -44,6 +46,25 @@ onMounted(() => {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     window.addEventListener('appinstalled', handleAppInstalled);
+
+    setTimeout(() => {
+        if (deferredPrompt.value) {
+            return;
+        }
+
+        if (!sessionStorage.getItem('pwa_prompt_dismissed')) {
+            if (isSafari.value && isIOS.value) {
+                installMethod.value = 'safari-ios';
+                isVisible.value = true;
+            } else if (isSafari.value && isMac.value) {
+                installMethod.value = 'safari-mac';
+                isVisible.value = true;
+            } else if (isFirefox.value) {
+                installMethod.value = 'firefox';
+                isVisible.value = true;
+            }
+        }
+    }, 3000);
 });
 
 onUnmounted(() => {
@@ -52,121 +73,146 @@ onUnmounted(() => {
 });
 
 const handleInstall = async () => {
-    if (!deferredPrompt.value) {
-        return;
-    }
+    if (installMethod.value === 'native' && deferredPrompt.value) {
+        try {
+            await deferredPrompt.value.prompt();
+            const { outcome } = await deferredPrompt.value.userChoice;
 
-    try {
-        await deferredPrompt.value.prompt();
-        const { outcome } = await deferredPrompt.value.userChoice;
-
-        if (outcome === 'accepted') {
-            isVisible.value = false;
-            deferredPrompt.value = null;
+            if (outcome === 'accepted') {
+                isVisible.value = false;
+                deferredPrompt.value = null;
+            }
+        } catch (error) {
+            console.error('PWA install error:', error);
         }
-    } catch (error) {
-        console.error('PWA install error:', error);
+    } else {
+        isVisible.value = false;
     }
 };
 
 const handleDismiss = () => {
     isVisible.value = false;
-
-    if (props.variant === 'modal') {
-        sessionStorage.setItem('pwa_prompt_dismissed', 'true');
-    }
+    sessionStorage.setItem('pwa_prompt_dismissed', 'true');
 };
 </script>
 
 <template>
-    <template v-if="isVisible && deferredPrompt">
-        <Teleport v-if="variant === 'modal'" to="body">
-            <div
-                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm dark:bg-black/60"
-            >
+    <Teleport v-if="isVisible" to="body">
+        <kDialog :opened="true">
+            <div class="flex flex-col items-center px-4 py-6 text-center">
                 <div
-                    class="w-full max-w-sm rounded-2xl border border-slate-100 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900"
-                >
-                    <div class="mb-4 flex items-center gap-3">
-                        <div
-                            class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-xl text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                        >
-                            📱
-                        </div>
-                        <div>
-                            <h3
-                                class="text-base font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                Install Our App
-                            </h3>
-                            <p
-                                class="text-xs text-slate-500 dark:text-gray-400"
-                            >
-                                Get fast, offline access right from your home
-                                screen.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <button
-                            @click="handleInstall"
-                            class="flex-1 rounded-lg bg-indigo-600 py-2 text-xs font-semibold text-white shadow transition hover:bg-indigo-700"
-                        >
-                            Install App
-                        </button>
-                        <button
-                            @click="handleDismiss"
-                            class="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
-                        >
-                            Maybe Later
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
-
-        <!-- Compact Inline Banner (Mobile) / Scaled Up (PC) -->
-        <div
-            v-else
-            v-bind="$attrs"
-            class="flex items-center justify-between gap-2.5 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-slate-50/80 px-3 py-2 shadow-sm backdrop-blur-sm sm:gap-4 sm:px-5 sm:py-3.5 dark:border-indigo-500/20 dark:from-indigo-500/5 dark:to-gray-900/80"
-        >
-            <div class="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
-                <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600/10 text-base sm:h-10 sm:w-10 sm:rounded-xl sm:text-xl dark:bg-indigo-500/20"
+                    class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-3xl dark:bg-indigo-500/10"
                 >
                     📱
                 </div>
-                <div class="min-w-0">
-                    <h3
-                        class="truncate text-xs font-bold text-slate-900 sm:text-sm dark:text-gray-100"
-                    >
-                        Install Our App
-                    </h3>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+                    Install HSCStack
+                </h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Add to your home screen for fast, offline access.
+                </p>
+
+                <div
+                    v-if="installMethod === 'safari-ios'"
+                    class="mt-4 w-full rounded-xl bg-slate-50 p-4 text-left dark:bg-slate-800"
+                >
                     <p
-                        class="truncate text-[11px] text-slate-500 sm:text-xs dark:text-gray-400"
+                        class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
                     >
-                        Fast, offline home screen access.
+                        On iPhone or iPad:
                     </p>
+                    <ol
+                        class="list-decimal space-y-1 pl-4 text-xs text-slate-500 dark:text-slate-400"
+                    >
+                        <li>Tap the <strong>Share</strong> button in Safari</li>
+                        <li>
+                            Scroll down and tap
+                            <strong>Add to Home Screen</strong>
+                        </li>
+                        <li>Tap <strong>Add</strong> to confirm</li>
+                    </ol>
+                </div>
+
+                <div
+                    v-else-if="installMethod === 'safari-mac'"
+                    class="mt-4 w-full rounded-xl bg-slate-50 p-4 text-left dark:bg-slate-800"
+                >
+                    <p
+                        class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
+                    >
+                        On Mac:
+                    </p>
+                    <ol
+                        class="list-decimal space-y-1 pl-4 text-xs text-slate-500 dark:text-slate-400"
+                    >
+                        <li>Click <strong>File</strong> in the menu bar</li>
+                        <li>Click <strong>Add to Dock</strong></li>
+                        <li>Click <strong>Add</strong></li>
+                    </ol>
+                </div>
+
+                <div
+                    v-else-if="installMethod === 'firefox'"
+                    class="mt-4 w-full rounded-xl bg-slate-50 p-4 text-left dark:bg-slate-800"
+                >
+                    <p
+                        class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
+                    >
+                        In Firefox:
+                    </p>
+                    <ol
+                        class="list-decimal space-y-1 pl-4 text-xs text-slate-500 dark:text-slate-400"
+                    >
+                        <li>
+                            Click the <strong>+</strong> icon in the address bar
+                        </li>
+                        <li>Or go to <strong>Menu > Install</strong></li>
+                    </ol>
+                </div>
+
+                <div
+                    v-else-if="installMethod === 'manual'"
+                    class="mt-4 w-full rounded-xl bg-slate-50 p-4 text-left dark:bg-slate-800"
+                >
+                    <p
+                        class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
+                    >
+                        To install:
+                    </p>
+                    <ol
+                        class="list-decimal space-y-1 pl-4 text-xs text-slate-500 dark:text-slate-400"
+                    >
+                        <li>
+                            Open this site in <strong>Chrome</strong> or
+                            <strong>Edge</strong>
+                        </li>
+                        <li>Click the install icon in the address bar</li>
+                        <li>Or use <strong>Menu > Install App</strong></li>
+                    </ol>
+                </div>
+
+                <div class="mt-6 flex w-full gap-3">
+                    <k-button
+                        v-if="installMethod === 'native'"
+                        large
+                        rounded
+                        class="flex-1"
+                        @click="handleInstall"
+                    >
+                        Install
+                    </k-button>
+                    <k-button
+                        large
+                        rounded
+                        :fill="installMethod !== 'native'"
+                        :clear="installMethod === 'native'"
+                        class="flex-1"
+                        @click="handleDismiss"
+                    >
+                        {{ installMethod === 'native' ? 'Later' : 'Got it' }}
+                    </k-button>
                 </div>
             </div>
-
-            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-                <button
-                    @click="handleInstall"
-                    class="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 sm:rounded-lg sm:px-4 sm:py-2 sm:text-xs"
-                >
-                    Install
-                </button>
-                <button
-                    @click="handleDismiss"
-                    class="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-200/50 hover:text-slate-600 sm:h-8 sm:w-8 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-                    title="Dismiss"
-                >
-                    ✕
-                </button>
-            </div>
-        </div>
-    </template>
+        </kDialog>
+    </Teleport>
 </template>

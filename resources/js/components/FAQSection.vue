@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ChevronDown, HelpCircle, Plus, Minus } from 'lucide-vue-next';
+import { kBlockTitle, kBlock, kButton } from 'konsta/vue';
+import { HelpCircle, Plus, Minus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
-// Single active accordion index
-const openIndex = ref(0);
+const openIndex = ref<number | null>(0);
 
-// Two-step expand toggle
 const INITIAL_COUNT = 4;
 const isExpanded = ref(false);
 
@@ -90,152 +89,97 @@ const visibleFaqs = computed(() => {
 const toggleExpand = () => {
     isExpanded.value = !isExpanded.value;
 
-    if (!isExpanded.value && openIndex.value >= INITIAL_COUNT) {
+    if (
+        !isExpanded.value &&
+        openIndex.value !== null &&
+        openIndex.value >= INITIAL_COUNT
+    ) {
         openIndex.value = null;
     }
 };
-
-const toggleFaq = (index) => {
-    openIndex.value = openIndex.value === index ? null : index;
-};
-
-const isOpen = (index) => openIndex.value === index;
 </script>
 
 <template>
-    <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
-        <!-- Section Header -->
+    <kBlock class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
         <div class="mb-8 text-center sm:mb-10">
             <div
-                class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-500/10 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20"
+                class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-500/10"
             >
                 <HelpCircle class="h-5 w-5" />
             </div>
-            <h2
-                class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl lg:text-4xl dark:text-gray-100"
-            >
-                সাধারণ জিজ্ঞাসা
-            </h2>
+            <kBlockTitle> সাধারণ জিজ্ঞাসা </kBlockTitle>
             <p
-                class="mx-auto mt-2 max-w-md text-xs leading-relaxed font-medium text-slate-500 sm:text-sm dark:text-gray-400"
+                class="mx-auto mt-2 max-w-md text-xs leading-relaxed font-medium text-slate-500 sm:text-sm"
             >
                 HSCStack এবং রিসোর্স সম্পর্কিত আপনার বিভিন্ন প্রশ্নের উত্তর এক
                 নজরে দেখে নিন।
             </p>
         </div>
 
-        <!-- Accordion Cards Container -->
-        <div class="mx-auto max-w-2xl space-y-3">
-            <TransitionGroup
-                enter-active-class="transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1)"
-                enter-from-class="opacity-0 translate-y-4 scale-95"
-                enter-to-class="opacity-100 translate-y-0 scale-100"
-                leave-active-class="transition-all duration-300 cubic-bezier(0.7, 0, 0.84, 0)"
-                leave-from-class="opacity-100 translate-y-0 scale-100"
-                leave-to-class="opacity-0 translate-y-2 scale-95"
-            >
-                <div
-                    v-for="(faq, index) in visibleFaqs"
-                    :key="faq.question"
-                    class="group overflow-hidden rounded-2xl border transition-all duration-300"
-                    :class="[
-                        isOpen(index)
-                            ? 'border-indigo-200 bg-white shadow-lg ring-1 shadow-indigo-500/5 ring-indigo-500/10 dark:border-indigo-500/30 dark:bg-gray-900 dark:shadow-indigo-500/5 dark:ring-indigo-500/10'
-                            : 'border-slate-200/80 bg-white/80 hover:border-slate-300 hover:bg-white dark:border-gray-700/80 dark:bg-gray-900/80 dark:hover:border-gray-600 dark:hover:bg-gray-900',
-                    ]"
-                >
-                    <!-- Header / Trigger Button -->
-                    <button
-                        type="button"
-                        @click="toggleFaq(index)"
-                        class="flex w-full items-center justify-between gap-3 p-4 text-left focus:outline-none sm:p-5"
+        <div class="mx-auto max-w-2xl">
+            <div class="space-y-2">
+                <div v-for="(faq, index) in visibleFaqs" :key="faq.question">
+                    <div
+                        class="rounded-xl border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-900"
                     >
-                        <span
-                            class="text-xs leading-snug font-bold transition-colors duration-200 sm:text-sm lg:text-base"
-                            :class="
-                                isOpen(index)
-                                    ? 'text-indigo-600 dark:text-indigo-400'
-                                    : 'text-slate-800 group-hover:text-slate-900 dark:text-gray-200 dark:group-hover:text-gray-100'
+                        <button
+                            type="button"
+                            class="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-left text-sm font-bold text-slate-900 select-none dark:text-slate-100"
+                            @click="
+                                openIndex = openIndex === index ? null : index
                             "
                         >
-                            {{ faq.question }}
-                        </span>
-
+                            <span>{{ faq.question }}</span>
+                            <Minus
+                                v-if="openIndex === index"
+                                class="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 dark:text-gray-500"
+                            />
+                            <Plus
+                                v-else
+                                class="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 dark:text-gray-500"
+                            />
+                        </button>
                         <div
-                            class="cubic-bezier(0.34, 1.56, 0.64, 1) flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-500 sm:h-8 sm:w-8"
-                            :class="[
-                                isOpen(index)
-                                    ? 'rotate-180 bg-indigo-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600 dark:bg-gray-800 dark:text-gray-500 dark:group-hover:bg-gray-700 dark:group-hover:text-gray-300',
-                            ]"
+                            v-if="openIndex === index"
+                            class="px-4 pb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300"
                         >
-                            <ChevronDown class="h-4 w-4 stroke-[2.5]" />
-                        </div>
-                    </button>
-
-                    <!-- Ultra-Smooth Accordion Body (CSS Grid Rows Trick) -->
-                    <div
-                        class="cubic-bezier(0.16, 1, 0.3, 1) grid transition-[grid-template-rows,opacity] duration-500"
-                        :class="[
-                            isOpen(index)
-                                ? 'grid-rows-[1fr] opacity-100'
-                                : 'grid-rows-[0fr] opacity-0',
-                        ]"
-                    >
-                        <div class="overflow-hidden">
-                            <div
-                                class="cubic-bezier(0.16, 1, 0.3, 1) border-t border-slate-100 px-4 pt-3 pb-4 text-xs leading-relaxed font-medium text-slate-600 transition-transform duration-500 sm:px-5 sm:pb-5 sm:text-sm dark:border-gray-800 dark:text-gray-400"
-                                :class="[
-                                    isOpen(index)
-                                        ? 'translate-y-0'
-                                        : '-translate-y-2',
-                                ]"
-                            >
-                                <!-- Internal Link -->
-                                <template v-if="faq.type === 'link'">
-                                    {{ faq.answer }}
-                                    <Link
-                                        :href="faq.linkUrl"
-                                        class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
-                                    >
-                                        {{ faq.linkText }}
-                                    </Link>
-                                    {{ faq.answerAfter }}
-                                </template>
-
-                                <!-- External Link -->
-                                <template
-                                    v-else-if="faq.type === 'externalLink'"
+                            <!-- Internal Link -->
+                            <template v-if="faq.type === 'link'">
+                                {{ faq.answer }}
+                                <Link
+                                    :href="faq.linkUrl"
+                                    class="font-bold text-indigo-600 hover:underline"
                                 >
-                                    {{ faq.answer }}
-                                    <a
-                                        :href="faq.linkUrl"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-0.5 font-bold text-indigo-600 hover:underline dark:text-indigo-400"
-                                    >
-                                        {{ faq.linkText }}
-                                    </a>
-                                    {{ faq.answerAfter }}
-                                </template>
+                                    {{ faq.linkText }}
+                                </Link>
+                                {{ faq.answerAfter }}
+                            </template>
 
-                                <!-- Plain Text -->
-                                <template v-else>
-                                    {{ faq.answer }}
-                                </template>
-                            </div>
+                            <!-- External Link -->
+                            <template v-else-if="faq.type === 'externalLink'">
+                                {{ faq.answer }}
+                                <a
+                                    :href="faq.linkUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-0.5 font-bold text-indigo-600 hover:underline"
+                                >
+                                    {{ faq.linkText }}
+                                </a>
+                                {{ faq.answerAfter }}
+                            </template>
+
+                            <!-- Plain Text -->
+                            <template v-else>
+                                {{ faq.answer }}
+                            </template>
                         </div>
                     </div>
                 </div>
-            </TransitionGroup>
+            </div>
 
-            <!-- Toggle Expand / Collapse Button -->
             <div v-if="faqs.length > INITIAL_COUNT" class="pt-4 text-center">
-                <button
-                    type="button"
-                    @click="toggleExpand"
-                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 focus:outline-none active:scale-95 sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/50 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                >
+                <k-button outline rounded @click="toggleExpand">
                     <template v-if="!isExpanded">
                         <Plus class="h-4 w-4 stroke-[2.5]" />
                         <span
@@ -248,8 +192,8 @@ const isOpen = (index) => openIndex.value === index;
                         <Minus class="h-4 w-4 stroke-[2.5]" />
                         <span>কম প্রশ্ন দেখুন</span>
                     </template>
-                </button>
+                </k-button>
             </div>
         </div>
-    </section>
+    </kBlock>
 </template>

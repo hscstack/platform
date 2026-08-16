@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, Head } from '@inertiajs/vue3';
+import { kButton } from 'konsta/vue';
 import { Calendar, User, Eye, ArrowLeft } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -56,13 +57,10 @@ const copyLink = async () => {
 
     <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="mb-8">
-            <button
-                @click="goBack"
-                class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-            >
+            <k-button clear @click="goBack">
                 <ArrowLeft class="h-4 w-4" />
-                <span>Back to journal</span>
-            </button>
+                Back to journal
+            </k-button>
         </div>
 
         <article>
@@ -138,12 +136,7 @@ const copyLink = async () => {
                     community.
                 </p>
             </div>
-            <Link
-                href="/join"
-                class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-                Join us
-            </Link>
+            <k-button fill rounded href="/join"> Join us </k-button>
         </section>
 
         <footer
@@ -173,12 +166,9 @@ const copyLink = async () => {
                 </div>
 
                 <div class="flex gap-3">
-                    <button
-                        @click="copyLink"
-                        class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-gray-600 dark:text-gray-300 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
-                    >
+                    <k-button @click="copyLink">
                         {{ copied ? 'Copied!' : 'Copy link' }}
-                    </button>
+                    </k-button>
                 </div>
             </div>
         </footer>
