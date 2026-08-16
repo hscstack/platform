@@ -2,7 +2,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import { Upload } from 'lucide-vue-next';
 import HTMLEditor from '@/components/HTMLEditor.vue';
-import { kInput, kCheckbox, kButton } from 'konsta/vue';
+import { kInput, kCheckbox, kButton, kBlockTitle } from 'konsta/vue';
 
 const props = defineProps({
     blog: {
@@ -50,11 +50,11 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    <kBlockTitle
+                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
                     >
                         {{ props.blog ? 'Edit' : 'Create' }} Blog Post
-                    </h1>
+                    </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Compose and manage article content for your web
                         application audience.

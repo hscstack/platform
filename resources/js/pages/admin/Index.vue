@@ -3,6 +3,8 @@ import { Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import SubjectCard from '@/components/admin/SubjectCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import { kBlock, kBlockTitle, kBadge } from 'konsta/vue';
+
 defineProps({
     subjects: {
         type: Array,
@@ -12,33 +14,33 @@ defineProps({
 </script>
 
 <template>
-    <div
-        class="flex w-full flex-1 flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+    <kBlock
+        class="!mx-0 flex w-full flex-1 flex-col !rounded-xl border border-gray-100 !bg-white !p-6 shadow-sm dark:border-gray-700 dark:!bg-gray-900"
     >
         <div
             class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
         >
             <div>
-                <h3
-                    class="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-100"
+                <kBlockTitle
+                    class="!text-lg !font-semibold !tracking-tight !text-gray-900 dark:!text-gray-100"
                 >
                     Manage Subjects
-                </h3>
+                </kBlockTitle>
                 <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                     View, organize, and configure active curriculum subjects.
                 </p>
             </div>
 
             <div class="flex items-center gap-3 self-start sm:self-center">
-                <div
-                    class="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 dark:border-blue-500/30 dark:bg-blue-500/10"
+                <kBadge
+                    class="!rounded-full !border !border-blue-100 !bg-blue-50 !px-3 !py-1 dark:!border-blue-500/30 dark:!bg-blue-500/10"
                 >
                     <span
                         class="text-xs font-medium text-blue-700 dark:text-blue-400"
                     >
                         Total: {{ subjects.length }}
                     </span>
-                </div>
+                </kBadge>
 
                 <Link
                     href="/admin/subjects/create"
@@ -65,5 +67,5 @@ defineProps({
 
             <EmptyState v-else />
         </div>
-    </div>
+    </kBlock>
 </template>

@@ -2,6 +2,7 @@
 import { router, Link } from '@inertiajs/vue3';
 import { Search, X, ArrowRight, AlertTriangle } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { kButton } from 'konsta/vue';
 import BlogCard from '@/components/BlogCard.vue';
 
 defineProps({
@@ -53,7 +54,7 @@ const clearSearch = () => {
                             type="text"
                             placeholder="আর্টিকেল খুঁজুন..."
                             @keyup.enter="handleSearch"
-                            class="w-full rounded-xl border border-slate-200 py-3 pr-10 pl-11 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
+                            class="k-input w-full !rounded-xl !border !border-slate-200 !py-3 !pr-10 !pl-11 !text-sm !text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:!border-gray-700 dark:!bg-gray-900 dark:!text-gray-100 dark:placeholder:text-gray-500"
                         />
 
                         <button
@@ -67,14 +68,14 @@ const clearSearch = () => {
                         </button>
                     </div>
 
-                    <button
+                    <k-button
                         @click="handleSearch"
                         type="button"
-                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 active:scale-[0.98]"
+                        class="k-button inline-flex items-center justify-center gap-2 !rounded-xl !bg-indigo-600 !px-5 !py-3 !text-sm !font-semibold !text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 active:scale-[0.98]"
                     >
                         <span>Search</span>
                         <ArrowRight class="hidden h-4 w-4 sm:block" />
-                    </button>
+                    </k-button>
                 </div>
             </div>
         </div>
@@ -102,12 +103,12 @@ const clearSearch = () => {
                 "{{ searchQuery }}"-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া
                 যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।
             </p>
-            <button
+            <k-button
                 @click="clearSearch"
-                class="mt-5 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98]"
+                class="k-button mt-5 inline-flex items-center justify-center !rounded-xl !bg-indigo-600 !px-4 !py-2.5 !text-sm !font-semibold !text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98]"
             >
                 সব আর্টিকেল দেখুন
-            </button>
+            </k-button>
         </div>
 
         <div

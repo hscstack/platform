@@ -9,6 +9,7 @@ import {
     Info,
     ChevronRight,
 } from 'lucide-vue-next';
+import { kButton } from 'konsta/vue';
 
 const goBack = () => {
     if (window.history.length > 1) {
@@ -71,17 +72,17 @@ const goBack = () => {
             <div
                 class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
             >
-                <button
+                <k-button
                     @click="goBack"
-                    class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-200 active:scale-95 sm:w-auto dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    class="inline-flex w-full cursor-pointer items-center justify-center gap-2 !rounded-xl !bg-slate-100 !px-5 !py-2.5 !text-sm !font-semibold !text-slate-700 transition-all duration-150 hover:bg-slate-200 active:scale-95 sm:w-auto dark:!bg-gray-800 dark:!text-gray-300 dark:hover:bg-gray-700"
                 >
                     <ArrowLeft class="h-4 w-4" />
                     আগের পৃষ্ঠায় ফিরুন
-                </button>
+                </k-button>
 
                 <Link
                     href="/"
-                    class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-100 transition-all duration-150 hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-200/60 active:scale-[0.98] sm:w-auto dark:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30"
+                    class="k-button inline-flex w-full cursor-pointer items-center justify-center gap-2 !rounded-xl !bg-gradient-to-r !from-indigo-600 !to-violet-600 !px-5 !py-2.5 !text-sm !font-semibold !text-white shadow-md shadow-indigo-100 transition-all duration-150 hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-200/60 active:scale-[0.98] sm:w-auto dark:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30"
                 >
                     <Home class="h-4 w-4" />
                     হোমপেজে যান

@@ -71,7 +71,7 @@ const supportUrl = 'https://supportkori.com/hscstack';
                         :href="supportUrl"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-95 dark:shadow-indigo-500/40 dark:hover:shadow-indigo-500/50"
+                        class="k-button mt-6 inline-flex items-center gap-2 !rounded-lg !bg-indigo-600 !px-6 !py-3 !text-sm !font-bold !text-white shadow-md shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-95 dark:shadow-indigo-500/40 dark:hover:shadow-indigo-500/50"
                     >
                         <Heart class="h-4 w-4 stroke-[2.2]" />
                         Support Us on SupportKori
@@ -244,7 +244,7 @@ const supportUrl = 'https://supportkori.com/hscstack';
                         :href="supportUrl"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                        class="k-button inline-flex items-center gap-1.5 !bg-transparent !text-xs !font-bold !text-indigo-600 transition-colors hover:text-indigo-700 hover:underline dark:!text-indigo-400 dark:hover:text-indigo-300"
                     >
                         Go to SupportKori payment page
                         <ExternalLink class="h-3.5 w-3.5" />

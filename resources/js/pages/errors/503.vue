@@ -66,7 +66,7 @@ import {
             >
                 <Link
                     href="/"
-                    class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-100 transition-all duration-150 hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-200/60 active:scale-[0.98] sm:w-auto dark:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30"
+                    class="k-button inline-flex w-full cursor-pointer items-center justify-center gap-2 !rounded-xl !bg-gradient-to-r !from-indigo-600 !to-violet-600 !px-5 !py-2.5 !text-sm !font-semibold !text-white shadow-md shadow-indigo-100 transition-all duration-150 hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-200/60 active:scale-[0.98] sm:w-auto dark:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30"
                 >
                     <Home class="h-4 w-4" />
                     পেজটি রিফ্রেশ করুন

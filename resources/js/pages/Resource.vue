@@ -14,6 +14,7 @@ import {
     FilePlay,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { kButton, kBadge } from 'konsta/vue';
 
 const props = defineProps({
     resource: {
@@ -194,8 +195,9 @@ const parseYoutubeUrl = (url) => {
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div class="min-w-0">
-                        <span
-                            class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-xs font-bold tracking-wider text-slate-600 uppercase dark:bg-gray-800 dark:text-gray-400"
+                        <k-badge
+                            outline
+                            class="inline-flex items-center gap-1.5 !bg-slate-100 !px-2 !py-1 !text-xs !font-bold !tracking-wider !text-slate-600 uppercase dark:!bg-gray-800 dark:!text-gray-400"
                         >
                             <FileText
                                 v-if="resource.resource_type === 'note'"
@@ -212,7 +214,7 @@ const parseYoutubeUrl = (url) => {
 
                             <Download v-else class="h-3 w-3" />
                             {{ resource.resource_type }}
-                        </span>
+                        </k-badge>
 
                         <h1
                             class="mt-2 text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
@@ -248,20 +250,20 @@ const parseYoutubeUrl = (url) => {
                             :href="resource.file_url"
                             download
                             target="_blank"
-                            class="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.98] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                            class="k-button inline-flex h-9 items-center gap-2 !rounded-xl !border !border-slate-200 !bg-white !px-4 !text-xs !font-bold !text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.98] dark:!border-gray-700 dark:!bg-gray-900 dark:!text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                         >
                             <Download class="h-4 w-4 stroke-[2.2]" />
                             Download
                         </a>
 
-                        <button
+                        <k-button
                             @click="toggleFullscreen"
-                            class="inline-flex h-9 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
+                            class="inline-flex h-9 !items-center !gap-2 !rounded-xl !bg-indigo-600 !px-4 !text-xs !font-bold !text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
                             title="View Fullscreen"
                         >
                             <Maximize2 class="h-4 w-4 stroke-[2.2]" />
                             Full Screen
-                        </button>
+                        </k-button>
                     </div>
                 </div>
             </div>
@@ -391,7 +393,7 @@ const parseYoutubeUrl = (url) => {
                         :href="resource.file_url"
                         download
                         target="_blank"
-                        class="inline-flex touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98]"
+                        class="k-button inline-flex touch-manipulation items-center gap-2 !rounded-xl !bg-indigo-600 !px-5 !py-3 !text-xs !font-bold !text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98]"
                     >
                         <Download class="h-4 w-4 stroke-[2.5]" />
                         Download
@@ -486,22 +488,22 @@ const parseYoutubeUrl = (url) => {
                     <span>Drag to Pan</span>
                 </div>
 
-                <button
+                <k-button
                     v-if="scale > 1"
                     @click="resetZoom"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    class="!rounded-full !bg-white/10 !p-3 !text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:!bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Reset Zoom"
                 >
                     <RotateCcw class="h-5 w-5" />
-                </button>
+                </k-button>
 
-                <button
+                <k-button
                     @click="toggleFullscreen"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    class="!rounded-full !bg-white/10 !p-3 !text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:!bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Exit Fullscreen"
                 >
                     <Minimize2 class="h-5 w-5" />
-                </button>
+                </k-button>
             </div>
 
             <img

@@ -2,7 +2,14 @@
 import { useForm } from '@inertiajs/vue3';
 import { UserPlus, Loader2, Save } from 'lucide-vue-next';
 import { watch } from 'vue';
-import { kInput, kSelect, kCheckbox, kTextarea, kButton } from 'konsta/vue';
+import {
+    kInput,
+    kSelect,
+    kCheckbox,
+    kTextarea,
+    kButton,
+    kBlockTitle,
+} from 'konsta/vue';
 
 const props = defineProps({
     user: Object,
@@ -74,11 +81,11 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-gray-300 pb-6 sm:flex-row sm:items-center dark:border-gray-600"
             >
                 <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    <kBlockTitle
+                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
                     >
                         {{ props.user ? 'Edit' : 'Create New' }} User
-                    </h1>
+                    </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         {{
                             props.user

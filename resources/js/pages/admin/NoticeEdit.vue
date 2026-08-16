@@ -2,7 +2,14 @@
 import { useForm } from '@inertiajs/vue3';
 import { Loader2, Save } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { kInput, kTextarea, kCheckbox, kToggle, kButton } from 'konsta/vue';
+import {
+    kInput,
+    kTextarea,
+    kCheckbox,
+    kToggle,
+    kButton,
+    kBlockTitle,
+} from 'konsta/vue';
 
 const props = defineProps({
     notice: Object,
@@ -42,11 +49,11 @@ const submitForm = () => {
             <div
                 class="mb-10 border-b border-slate-100 pb-6 dark:border-gray-800"
             >
-                <h1
-                    class="text-2xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                <kBlockTitle
+                    class="!text-2xl !font-bold !tracking-tight !text-slate-900 dark:!text-gray-100"
                 >
                     Site Notice
-                </h1>
+                </kBlockTitle>
                 <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                     Configure the announcement dialog shown on the home page.
                     Only one notice is displayed at a time.

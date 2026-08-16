@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { kButton } from 'konsta/vue';
 import AIBanner from '@/components/AIBanner.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
@@ -52,12 +53,12 @@ const filteredSubjects = computed(() => {
             <p class="text-sm font-semibold text-slate-400 dark:text-gray-500">
                 No subjects found matching "{{ searchQuery }}"
             </p>
-            <button
+            <k-button
                 @click="searchQuery = ''"
-                class="mt-2 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                class="mt-2 !bg-transparent !text-xs !font-bold !text-indigo-600 hover:underline dark:!text-indigo-400"
             >
                 Show all subjects
-            </button>
+            </k-button>
         </div>
 
         <div

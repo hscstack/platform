@@ -11,6 +11,7 @@ import {
     Award,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import { kBadge } from 'konsta/vue';
 
 const roles = [
     {
@@ -146,12 +147,13 @@ const whatsappLink = computed(() => {
                             >
                                 {{ role.title }}
                             </h3>
-                            <span
+                            <k-badge
                                 v-if="selectedRole === role.id"
-                                class="inline-flex items-center rounded-md border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
+                                outline
+                                class="inline-flex items-center !rounded-md !border !border-indigo-100 !bg-indigo-50 !px-1.5 !py-0.5 !text-[10px] !font-bold !tracking-wider !text-indigo-700 uppercase dark:!border-indigo-500/30 dark:!bg-indigo-500/10 dark:!text-indigo-300"
                             >
                                 Selected
-                            </span>
+                            </k-badge>
                         </div>
                         <p
                             class="mt-1 text-sm leading-relaxed font-medium text-slate-700 dark:text-gray-300"
@@ -245,7 +247,7 @@ const whatsappLink = computed(() => {
                             :href="whatsappLink"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none active:scale-[0.98]"
+                            class="k-button inline-flex w-full items-center justify-center gap-2 !rounded-lg !bg-emerald-600 !px-4 !py-3 !text-sm !font-bold !text-white shadow-sm transition-all hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none active:scale-[0.98]"
                         >
                             <MessageSquareShare class="h-4 w-4" />
                             Message on WhatsApp

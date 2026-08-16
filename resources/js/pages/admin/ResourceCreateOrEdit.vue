@@ -9,7 +9,7 @@ import {
     Link as LinkIcon,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { kInput, kTextarea, kButton } from 'konsta/vue';
+import { kInput, kTextarea, kButton, kBlockTitle } from 'konsta/vue';
 
 const props = defineProps({
     redirect: String,
@@ -96,11 +96,11 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    <kBlockTitle
+                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
                     >
                         {{ props.resource ? 'Edit' : 'Add New' }} Resource
-                    </h1>
+                    </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Upload assets or link content for the curriculum
                         structure.

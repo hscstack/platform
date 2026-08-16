@@ -2,6 +2,7 @@
 import { Link, Head } from '@inertiajs/vue3';
 import { Calendar, User, Eye, ArrowLeft } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { kButton } from 'konsta/vue';
 
 const props = defineProps({
     blog: Object,
@@ -173,12 +174,12 @@ const copyLink = async () => {
                 </div>
 
                 <div class="flex gap-3">
-                    <button
+                    <k-button
                         @click="copyLink"
-                        class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-gray-600 dark:text-gray-300 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
+                        class="k-button !rounded-lg !border !border-slate-300 !px-4 !py-2 !text-sm !font-medium !text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:!border-gray-600 dark:!text-gray-300 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
                     >
                         {{ copied ? 'Copied!' : 'Copy link' }}
-                    </button>
+                    </k-button>
                 </div>
             </div>
         </footer>
