@@ -57,14 +57,8 @@ const submit = () => {
                             required
                             placeholder="admin@example.com"
                             outline
-                        >
-                            <template #label>
-                                <span
-                                    class="!text-[10px] !font-black !tracking-widest !text-slate-400 !uppercase dark:!text-gray-500"
-                                    >Email</span
-                                >
-                            </template>
-                        </k-input>
+                            label="Email"
+                        />
                     </div>
 
                     <div>
@@ -75,14 +69,8 @@ const submit = () => {
                             required
                             placeholder="••••••••"
                             outline
-                        >
-                            <template #label>
-                                <span
-                                    class="!text-[10px] !font-black !tracking-widest !text-slate-400 !uppercase dark:!text-gray-500"
-                                    >Password</span
-                                >
-                            </template>
-                        </k-input>
+                            label="Password"
+                        />
                     </div>
                 </div>
                 <div
@@ -112,12 +100,7 @@ const submit = () => {
                         </p>
                     </div>
                 </div>
-                <k-button
-                    type="submit"
-                    fill
-                    :disabled="form.processing"
-                    class="mt-8 !w-full !rounded-2xl !py-4 !text-xs !font-black !tracking-widest !uppercase"
-                >
+                <k-button type="submit" fill :disabled="form.processing">
                     {{ form.processing ? 'Authenticating...' : 'Enter System' }}
                 </k-button>
 

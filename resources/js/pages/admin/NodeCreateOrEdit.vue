@@ -48,9 +48,7 @@ const goBack = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <kBlockTitle
-                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
-                    >
+                    <kBlockTitle>
                         {{ props.node ? 'Edit Folder' : 'Create Folder' }}
                     </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
@@ -155,12 +153,7 @@ const goBack = () => {
                     class="flex justify-end space-x-3 border-t border-slate-100 pt-4 dark:border-gray-800"
                 >
                     <k-button outline @click="goBack"> Cancel </k-button>
-                    <k-button
-                        type="submit"
-                        fill
-                        :disabled="form.processing"
-                        class="!rounded-lg"
-                    >
+                    <k-button type="submit" fill :disabled="form.processing">
                         {{
                             form.processing
                                 ? 'Saving...'

@@ -45,11 +45,7 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <kBlockTitle
-                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
-                    >
-                        Import YouTube Playlist
-                    </kBlockTitle>
+                    <kBlockTitle> Import YouTube Playlist </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Automatically fetch videos from a YouTube playlist and
                         create resources preserving playlist order.
@@ -275,7 +271,6 @@ const submitForm = () => {
                         type="submit"
                         fill
                         :disabled="form.processing || !form.playlist_url"
-                        class="!rounded-lg"
                     >
                         {{
                             form.processing

@@ -110,17 +110,13 @@ const isOpen = (index: number) => openIndex.value === index;
         <!-- Section Header -->
         <div class="mb-8 text-center sm:mb-10">
             <div
-                class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-500/10 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20"
+                class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-xs ring-1 ring-indigo-500/10"
             >
                 <HelpCircle class="h-5 w-5" />
             </div>
-            <kBlockTitle
-                class="!text-2xl font-black tracking-tight text-slate-900 sm:!text-3xl lg:!text-4xl dark:text-gray-100"
-            >
-                সাধারণ জিজ্ঞাসা
-            </kBlockTitle>
+            <kBlockTitle> সাধারণ জিজ্ঞাসা </kBlockTitle>
             <p
-                class="mx-auto mt-2 max-w-md text-xs leading-relaxed font-medium text-slate-500 sm:text-sm dark:text-gray-400"
+                class="mx-auto mt-2 max-w-md text-xs leading-relaxed font-medium text-slate-500 sm:text-sm"
             >
                 HSCStack এবং রিসোর্স সম্পর্কিত আপনার বিভিন্ন প্রশ্নের উত্তর এক
                 নজরে দেখে নিন।
@@ -143,8 +139,8 @@ const isOpen = (index: number) => openIndex.value === index;
                     class="group overflow-hidden rounded-2xl border transition-all duration-300"
                     :class="[
                         isOpen(index)
-                            ? 'border-indigo-200 bg-white shadow-lg ring-1 shadow-indigo-500/5 ring-indigo-500/10 dark:border-indigo-500/30 dark:bg-gray-900 dark:shadow-indigo-500/5 dark:ring-indigo-500/10'
-                            : 'border-slate-200/80 bg-white/80 hover:border-slate-300 hover:bg-white dark:border-gray-700/80 dark:bg-gray-900/80 dark:hover:border-gray-600 dark:hover:bg-gray-900',
+                            ? 'border-indigo-200 bg-white shadow-lg ring-1 shadow-indigo-500/5 ring-indigo-500/10'
+                            : 'border-slate-200/80 bg-white/80 hover:border-slate-300 hover:bg-white',
                     ]"
                 >
                     <!-- Header / Trigger Button -->
@@ -157,8 +153,8 @@ const isOpen = (index: number) => openIndex.value === index;
                             class="text-xs leading-snug font-bold transition-colors duration-200 sm:text-sm lg:text-base"
                             :class="
                                 isOpen(index)
-                                    ? 'text-indigo-600 dark:text-indigo-400'
-                                    : 'text-slate-800 group-hover:text-slate-900 dark:text-gray-200 dark:group-hover:text-gray-100'
+                                    ? 'text-indigo-600'
+                                    : 'text-slate-800 group-hover:text-slate-900'
                             "
                         >
                             {{ faq.question }}
@@ -169,7 +165,7 @@ const isOpen = (index: number) => openIndex.value === index;
                             :class="[
                                 isOpen(index)
                                     ? 'rotate-180 bg-indigo-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600 dark:bg-gray-800 dark:text-gray-500 dark:group-hover:bg-gray-700 dark:group-hover:text-gray-300',
+                                    : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600',
                             ]"
                         >
                             <ChevronDown class="h-4 w-4 stroke-[2.5]" />
@@ -187,7 +183,7 @@ const isOpen = (index: number) => openIndex.value === index;
                     >
                         <div class="overflow-hidden">
                             <div
-                                class="cubic-bezier(0.16, 1, 0.3, 1) border-t border-slate-100 px-4 pt-3 pb-4 text-xs leading-relaxed font-medium text-slate-600 transition-transform duration-500 sm:px-5 sm:pb-5 sm:text-sm dark:border-gray-800 dark:text-gray-400"
+                                class="cubic-bezier(0.16, 1, 0.3, 1) border-t border-slate-100 px-4 pt-3 pb-4 text-xs leading-relaxed font-medium text-slate-600 transition-transform duration-500 sm:px-5 sm:pb-5 sm:text-sm"
                                 :class="[
                                     isOpen(index)
                                         ? 'translate-y-0'
@@ -199,7 +195,7 @@ const isOpen = (index: number) => openIndex.value === index;
                                     {{ faq.answer }}
                                     <Link
                                         :href="faq.linkUrl"
-                                        class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                                        class="font-bold text-indigo-600 hover:underline"
                                     >
                                         {{ faq.linkText }}
                                     </Link>
@@ -215,7 +211,7 @@ const isOpen = (index: number) => openIndex.value === index;
                                         :href="faq.linkUrl"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-0.5 font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                                        class="inline-flex items-center gap-0.5 font-bold text-indigo-600 hover:underline"
                                     >
                                         {{ faq.linkText }}
                                     </a>
@@ -237,7 +233,7 @@ const isOpen = (index: number) => openIndex.value === index;
                 <button
                     type="button"
                     @click="toggleExpand"
-                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 focus:outline-none active:scale-95 sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/50 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 focus:outline-none active:scale-95 sm:text-sm"
                 >
                     <template v-if="!isExpanded">
                         <Plus class="h-4 w-4 stroke-[2.5]" />

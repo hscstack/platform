@@ -9,12 +9,8 @@ const { resource } = defineProps({
 </script>
 
 <template>
-    <kList class="!my-0">
-        <kListItem
-            :link="true"
-            :href="`/resources/${resource.id}`"
-            class="group relative touch-manipulation !bg-white transition-all duration-200 hover:!bg-slate-50/40 active:scale-[0.995] sm:active:scale-100 dark:!bg-gray-900 dark:hover:!bg-gray-800/50"
-        >
+    <kList>
+        <kListItem :link="true" :href="`/resources/${resource.id}`">
             <template #media>
                 <div
                     class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-amber-200/40 bg-amber-50 text-amber-600 transition-colors duration-200 group-hover:border-amber-200 group-hover:bg-amber-100/70 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400 dark:group-hover:border-amber-500/30 dark:group-hover:bg-amber-500/20"

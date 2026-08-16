@@ -50,9 +50,7 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <kBlockTitle
-                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
-                    >
+                    <kBlockTitle>
                         {{ props.blog ? 'Edit' : 'Create' }} Blog Post
                     </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
@@ -218,12 +216,7 @@ const submitForm = () => {
                     >
                         Cancel
                     </Link>
-                    <k-button
-                        type="submit"
-                        fill
-                        :disabled="form.processing"
-                        class="!rounded-lg"
-                    >
+                    <k-button type="submit" fill :disabled="form.processing">
                         {{ form.processing ? 'Saving...' : 'Save Blog' }}
                     </k-button>
                 </div>

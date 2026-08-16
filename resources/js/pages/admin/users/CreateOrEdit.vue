@@ -81,9 +81,7 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-gray-300 pb-6 sm:flex-row sm:items-center dark:border-gray-600"
             >
                 <div>
-                    <kBlockTitle
-                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
-                    >
+                    <kBlockTitle>
                         {{ props.user ? 'Edit' : 'Create New' }} User
                     </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
@@ -453,12 +451,7 @@ const submitForm = () => {
                     class="flex justify-end space-x-3 border-t border-gray-300 pt-6 dark:border-gray-600"
                 >
                     <k-button outline @click="goBack"> Cancel </k-button>
-                    <k-button
-                        type="submit"
-                        fill
-                        :disabled="form.processing"
-                        class="!inline-flex !items-center !gap-2 !rounded-lg"
-                    >
+                    <k-button type="submit" fill :disabled="form.processing">
                         <Loader2
                             v-if="form.processing"
                             class="h-4 w-4 animate-spin"

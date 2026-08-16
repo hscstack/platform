@@ -127,11 +127,7 @@ const submitForm = () => {
                 class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
             >
                 <div>
-                    <kBlockTitle
-                        class="!text-2xl !font-bold !text-slate-900 dark:!text-gray-100"
-                    >
-                        Bulk Upload Images
-                    </kBlockTitle>
+                    <kBlockTitle> Bulk Upload Images </kBlockTitle>
                     <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                         Upload multiple image resources simultaneously and
                         configure naming conventions.
@@ -401,7 +397,6 @@ const submitForm = () => {
                         :disabled="
                             form.processing || selectedFiles.length === 0
                         "
-                        class="!rounded-lg"
                     >
                         {{
                             form.processing

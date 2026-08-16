@@ -17,12 +17,8 @@ const deleteBlog = () => {
 </script>
 
 <template>
-    <kList class="!my-0">
-        <kListItem
-            :link="true"
-            :href="`/admin/blogs/edit/${blog.slug}`"
-            class="group relative touch-manipulation !rounded-xl !border !border-gray-100 !bg-white !p-3.5 transition-colors duration-150 hover:!border-blue-200 dark:!border-gray-700 dark:!bg-gray-900 dark:hover:!border-blue-500/30"
-        >
+    <kList>
+        <kListItem :link="true" :href="`/admin/blogs/edit/${blog.slug}`">
             <template #media>
                 <div
                     class="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"

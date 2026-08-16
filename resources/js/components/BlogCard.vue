@@ -28,14 +28,11 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-    <kCard
-        outline
-        class="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:shadow-gray-900/50"
-    >
+    <kCard outline raised>
         <template #header>
             <Link
                 :href="'/blogs/' + blog.slug"
-                class="relative block aspect-[16/9] overflow-hidden bg-slate-100 dark:bg-gray-800"
+                class="relative block aspect-[16/9] overflow-hidden"
             >
                 <img
                     :src="blog.featured_image || 'https://placehold.co/600x400'"

@@ -15,12 +15,8 @@ const href = computed(() => {
 </script>
 
 <template>
-    <kList class="!my-0">
-        <kListItem
-            :link="true"
-            :href="href"
-            class="group relative touch-manipulation !bg-white transition-all duration-200 hover:!bg-slate-50/40 active:scale-[0.995] sm:active:scale-100 dark:!bg-gray-900 dark:hover:!bg-gray-800/50"
-        >
+    <kList>
+        <kListItem :link="true" :href="href">
             <template #media>
                 <div
                     class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200/40 bg-slate-100 text-slate-500 transition-colors duration-200 group-hover:border-indigo-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:border-gray-700/40 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:border-indigo-500/30 dark:group-hover:bg-indigo-500/10 dark:group-hover:text-indigo-400"

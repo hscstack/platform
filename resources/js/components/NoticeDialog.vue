@@ -45,11 +45,7 @@ const close = () => {
 
 <template>
     <Teleport to="body">
-        <kDialog
-            :opened="isVisible && !!notice"
-            @opened:change="close"
-            class="z-50"
-        >
+        <kDialog :opened="isVisible && !!notice" @opened:change="close">
             <div
                 class="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-900/5 dark:bg-gray-900 dark:ring-gray-700/50"
             >

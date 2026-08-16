@@ -49,11 +49,7 @@ const submitForm = () => {
             <div
                 class="mb-10 border-b border-slate-100 pb-6 dark:border-gray-800"
             >
-                <kBlockTitle
-                    class="!text-2xl !font-bold !tracking-tight !text-slate-900 dark:!text-gray-100"
-                >
-                    Site Notice
-                </kBlockTitle>
+                <kBlockTitle> Site Notice </kBlockTitle>
                 <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                     Configure the announcement dialog shown on the home page.
                     Only one notice is displayed at a time.
@@ -242,12 +238,7 @@ const submitForm = () => {
                     class="flex justify-end gap-3 border-t border-slate-100 pt-6 lg:col-span-3 dark:border-gray-800"
                 >
                     <k-button outline @click="goBack"> Cancel </k-button>
-                    <k-button
-                        type="submit"
-                        fill
-                        :disabled="form.processing"
-                        class="!inline-flex !items-center !gap-2"
-                    >
+                    <k-button type="submit" fill :disabled="form.processing">
                         <Loader2
                             v-if="form.processing"
                             class="h-4 w-4 animate-spin"

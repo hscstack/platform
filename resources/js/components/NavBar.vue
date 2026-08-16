@@ -56,9 +56,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <k-navbar
-        class="sticky top-0 z-50 !h-14 border-b border-slate-200/60 bg-white/80 backdrop-blur-md dark:border-gray-700/60 dark:bg-gray-900/80"
-    >
+    <k-navbar class="sticky top-0 z-50">
         <template #left>
             <div class="flex items-center gap-2">
                 <AppLogo />
@@ -92,11 +90,7 @@ onBeforeUnmount(() => {
 
                 <!-- Logged in: User dropdown -->
                 <div v-else ref="dropdownRef" class="relative">
-                    <k-button
-                        @click="toggleDropdown"
-                        clear
-                        class="flex items-center gap-2 rounded-full !p-1 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                    >
+                    <k-button @click="toggleDropdown" clear>
                         <img
                             v-if="user.image_url"
                             :src="user.image_url"
@@ -148,7 +142,6 @@ onBeforeUnmount(() => {
                                     :component="Link"
                                     :href="isAdmin ? '/' : '/admin'"
                                     @click="closeDropdown"
-                                    class="!rounded-lg"
                                 >
                                     <template #media>
                                         <component
@@ -169,10 +162,7 @@ onBeforeUnmount(() => {
                                     </template>
                                 </k-list-item>
 
-                                <k-list-item
-                                    @click="handleLogout"
-                                    class="!rounded-lg"
-                                >
+                                <k-list-item @click="handleLogout">
                                     <template #media>
                                         <LogOut class="h-4 w-4 text-red-500" />
                                     </template>
@@ -194,7 +184,6 @@ onBeforeUnmount(() => {
                     @click="toggle"
                     clear
                     icon-only
-                    class="flex !h-8 !w-8 items-center justify-center rounded-lg !p-0 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                     :title="
                         theme === 'system'
                             ? 'System theme (click to cycle)'

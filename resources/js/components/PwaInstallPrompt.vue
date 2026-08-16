@@ -82,7 +82,7 @@ const handleDismiss = () => {
 <template>
     <template v-if="isVisible && deferredPrompt">
         <Teleport v-if="variant === 'modal'" to="body">
-            <kDialog :opened="true">
+            <kDialog :opened="true" @opened:change="handleDismiss">
                 <div
                     class="w-full max-w-sm rounded-2xl border border-slate-100 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900"
                 >

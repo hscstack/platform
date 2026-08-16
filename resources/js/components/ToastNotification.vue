@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { kToast } from 'konsta/vue';
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 interface Toast {
     message: string;
@@ -23,7 +23,23 @@ const showToast = (message: string, type: 'success' | 'error') => {
     }, 4000);
 };
 
-// Watch Inertia page flash props for new messages
+const toastColors = computed(() => {
+    if (toastData.value.type === 'success') {
+        return {
+            bgIos: 'bg-green-500/90',
+            bgMaterial: 'bg-green-500',
+            textIos: 'text-white',
+            textMaterial: 'text-white',
+        };
+    }
+    return {
+        bgIos: 'bg-red-500/90',
+        bgMaterial: 'bg-red-500',
+        textIos: 'text-white',
+        textMaterial: 'text-white',
+    };
+});
+
 watch(
     () => page.props.flash,
     (flash: any) => {
@@ -39,24 +55,9 @@ watch(
 </script>
 
 <template>
-    <kToast
-        :opened="isOpened"
-        position="top-right"
-        :class="
-            toastData.type === 'success' ? 'ktoast-success' : 'ktoast-error'
-        "
-    >
+    <kToast :opened="isOpened" position="center" :colors="toastColors">
         <template #default>
             <span>{{ toastData.message }}</span>
         </template>
     </kToast>
 </template>
-
-<style scoped>
-.ktoast-success {
-    --k-toast-bg-color: rgb(16 185 129 / 0.9);
-}
-.ktoast-error {
-    --k-toast-bg-color: rgb(239 68 68 / 0.9);
-}
-</style>
