@@ -13,6 +13,7 @@ import {
     Check,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { kInput, kSelect, kButton } from 'konsta/vue';
 
 const icons = {
     Atom,
@@ -93,34 +94,26 @@ const submitForm = () => {
                         }}
                     </p>
                 </div>
-                <button
-                    type="button"
+                <k-button
+                    outline
                     @click="goBack"
-                    class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                    class="!self-start sm:!self-center"
                 >
                     &larr; Back
-                </button>
+                </k-button>
             </div>
 
             <form @submit.prevent="submitForm" class="space-y-8">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div>
-                        <label
-                            for="name"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                            >Subject Name</label
-                        >
-                        <input
-                            v-model="form.name"
+                        <k-input
+                            label="Subject Name"
                             type="text"
-                            id="name"
+                            :value="form.name"
+                            @input="form.name = $event.target.value"
                             placeholder="e.g. Physics..."
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                            :class="
-                                form.errors.name
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
+                            outline
+                            :error="form.errors.name"
                         />
                         <p
                             v-if="form.errors.name"
@@ -131,24 +124,17 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <label
-                            for="course"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                            >Course</label
-                        >
-                        <select
-                            v-model="form.course"
-                            id="course"
-                            class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none dark:bg-gray-900"
-                            :class="
-                                form.errors.course
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
-                        >
-                            <option value="hsc">HSC</option>
-                            <option value="ssc">SSC</option>
-                        </select>
+                        <k-select
+                            label="Course"
+                            :value="form.course"
+                            @change="form.course = $event.target.value"
+                            :options="[
+                                { value: 'hsc', label: 'HSC' },
+                                { value: 'ssc', label: 'SSC' },
+                            ]"
+                            outline
+                            :error="form.errors.course"
+                        />
                         <p
                             v-if="form.errors.course"
                             class="mt-1 text-sm text-rose-600"
@@ -158,21 +144,15 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <label
-                            for="sort_order"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                            >Sort Order</label
-                        >
-                        <input
-                            v-model.number="form.sort_order"
+                        <k-input
+                            label="Sort Order"
                             type="number"
-                            id="sort_order"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                            :class="
-                                form.errors.sort_order
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
+                            :value="form.sort_order"
+                            @input="
+                                form.sort_order = Number($event.target.value)
                             "
+                            outline
+                            :error="form.errors.sort_order"
                         />
                         <p
                             v-if="form.errors.sort_order"
@@ -298,20 +278,15 @@ const submitForm = () => {
                 <div
                     class="flex justify-end space-x-3 border-t border-slate-100 pt-4 dark:border-gray-800"
                 >
-                    <button
-                        type="button"
-                        @click="goBack"
-                        class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
-                    </button>
-                    <button
+                    <k-button outline @click="goBack"> Cancel </k-button>
+                    <k-button
                         type="submit"
+                        fill
                         :disabled="form.processing"
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        class="!rounded-lg"
                     >
                         {{ form.processing ? 'Saving...' : 'Save Subject' }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

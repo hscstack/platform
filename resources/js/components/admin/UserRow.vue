@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import { kDialog, kButton } from 'konsta/vue';
 import { Trash2 } from 'lucide-vue-next';
 defineProps({
     user: Object,
@@ -20,10 +22,20 @@ const getRoleBadgeStyles = (role: string) => {
     }
 };
 
-const deleteUser = (id: number) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-        router.delete(`/admin/users/${id}`);
+const deleteDialogOpened = ref(false);
+const deleteUserId = ref<number | null>(null);
+
+const showDeleteDialog = (id: number) => {
+    deleteUserId.value = id;
+    deleteDialogOpened.value = true;
+};
+
+const confirmDelete = () => {
+    if (deleteUserId.value) {
+        router.delete(`/admin/users/${deleteUserId.value}`);
     }
+    deleteDialogOpened.value = false;
+    deleteUserId.value = null;
 };
 </script>
 <template>
@@ -100,7 +112,7 @@ const deleteUser = (id: number) => {
                 </Link>
 
                 <button
-                    @click="deleteUser(user.id)"
+                    @click="showDeleteDialog(user.id)"
                     class="inline-flex items-center justify-center gap-1 rounded-lg border border-red-100 bg-red-50/40 px-3 py-1.5 text-xs font-medium text-red-600 shadow-2xs transition-all hover:bg-red-50 hover:text-red-700 md:border-0 md:bg-transparent md:p-0 md:text-red-500 md:shadow-none md:hover:text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:md:bg-transparent dark:md:text-red-400 dark:md:hover:text-red-400"
                 >
                     <Trash2 class="h-3.5 w-3.5" />
@@ -109,4 +121,22 @@ const deleteUser = (id: number) => {
             </div>
         </td>
     </tr>
+
+    <kDialog
+        :opened="deleteDialogOpened"
+        @opened:change="deleteDialogOpened = $event"
+    >
+        <div class="p-4">
+            <p class="text-base font-semibold text-gray-900 dark:text-white">
+                Delete User
+            </p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                Are you sure you want to delete this user?
+            </p>
+            <div class="mt-4 flex justify-end gap-2">
+                <kButton @click="deleteDialogOpened = false">Cancel</kButton>
+                <kButton @click="confirmDelete">Delete</kButton>
+            </div>
+        </div>
+    </kDialog>
 </template>

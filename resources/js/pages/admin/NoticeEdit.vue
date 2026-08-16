@@ -2,6 +2,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { Loader2, Save } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { kInput, kTextarea, kCheckbox, kToggle, kButton } from 'konsta/vue';
 
 const props = defineProps({
     notice: Object,
@@ -58,24 +59,15 @@ const submitForm = () => {
             >
                 <div class="space-y-6 lg:col-span-2">
                     <div>
-                        <label
-                            for="title"
-                            class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                        >
-                            Title
-                        </label>
-                        <input
-                            v-model="form.title"
+                        <k-input
+                            label="Title"
                             type="text"
-                            id="title"
+                            :value="form.title"
+                            @input="form.title = $event.target.value"
                             placeholder="Important announcement"
+                            outline
                             :disabled="form.processing"
-                            class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
-                            :class="
-                                form.errors.title
-                                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                    : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
-                            "
+                            :error="form.errors.title"
                         />
                         <p
                             v-if="form.errors.title"
@@ -86,25 +78,16 @@ const submitForm = () => {
                     </div>
 
                     <div>
-                        <label
-                            for="message"
-                            class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                        >
-                            Message
-                        </label>
-                        <textarea
-                            v-model="form.message"
-                            id="message"
-                            rows="6"
+                        <k-textarea
+                            label="Message"
+                            :value="form.message"
+                            @input="form.message = $event.target.value"
                             placeholder="Write the notice message for visitors..."
+                            outline
                             :disabled="form.processing"
-                            class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
-                            :class="
-                                form.errors.message
-                                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                    : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
-                            "
-                        ></textarea>
+                            :rows="6"
+                            resizable
+                        />
                         <p
                             v-if="form.errors.message"
                             class="mt-1.5 text-xs font-medium text-rose-600"
@@ -129,19 +112,13 @@ const submitForm = () => {
                                     Optional call-to-action link in the dialog.
                                 </p>
                             </div>
-                            <label
-                                class="relative inline-flex cursor-pointer items-center"
-                            >
-                                <input
-                                    v-model="form.show_button"
-                                    type="checkbox"
-                                    class="peer sr-only"
-                                    :disabled="form.processing"
-                                />
-                                <span
-                                    class="peer h-6 w-11 rounded-full bg-slate-200 shadow-xs transition peer-checked:bg-slate-900 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5 dark:bg-gray-600 dark:peer-checked:bg-gray-200"
-                                ></span>
-                            </label>
+                            <k-toggle
+                                :checked="form.show_button"
+                                @change="
+                                    form.show_button = $event.target.checked
+                                "
+                                :disabled="form.processing"
+                            />
                         </div>
 
                         <div
@@ -149,24 +126,17 @@ const submitForm = () => {
                             class="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2"
                         >
                             <div>
-                                <label
-                                    for="button_title"
-                                    class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                                >
-                                    Button title
-                                </label>
-                                <input
-                                    v-model="form.button_title"
+                                <k-input
+                                    label="Button title"
                                     type="text"
-                                    id="button_title"
-                                    placeholder="Learn more"
-                                    :disabled="form.processing"
-                                    class="w-full rounded-xl border bg-white px-4 py-2.5 text-sm transition outline-none focus:ring-4 dark:bg-gray-900"
-                                    :class="
-                                        form.errors.button_title
-                                            ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                            : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
+                                    :value="form.button_title"
+                                    @input="
+                                        form.button_title = $event.target.value
                                     "
+                                    placeholder="Learn more"
+                                    outline
+                                    :disabled="form.processing"
+                                    :error="form.errors.button_title"
                                 />
                                 <p
                                     v-if="form.errors.button_title"
@@ -177,24 +147,17 @@ const submitForm = () => {
                             </div>
 
                             <div>
-                                <label
-                                    for="button_link"
-                                    class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                                >
-                                    Button link
-                                </label>
-                                <input
-                                    v-model="form.button_link"
+                                <k-input
+                                    label="Button link"
                                     type="text"
-                                    id="button_link"
-                                    placeholder="https://example.com/details"
-                                    :disabled="form.processing"
-                                    class="w-full rounded-xl border bg-white px-4 py-2.5 text-sm transition outline-none focus:ring-4 dark:bg-gray-900"
-                                    :class="
-                                        form.errors.button_link
-                                            ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                            : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
+                                    :value="form.button_link"
+                                    @input="
+                                        form.button_link = $event.target.value
                                     "
+                                    placeholder="https://example.com/details"
+                                    outline
+                                    :disabled="form.processing"
+                                    :error="form.errors.button_link"
                                 />
                                 <p
                                     v-if="form.errors.button_link"
@@ -217,19 +180,11 @@ const submitForm = () => {
                             >
                                 Show Notice
                             </p>
-                            <label
-                                class="relative inline-flex cursor-pointer items-center"
-                            >
-                                <input
-                                    v-model="form.is_active"
-                                    type="checkbox"
-                                    class="peer sr-only"
-                                    :disabled="form.processing"
-                                />
-                                <span
-                                    class="peer h-6 w-11 rounded-full bg-slate-200 shadow-xs transition peer-checked:bg-slate-900 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5 dark:bg-gray-600 dark:peer-checked:bg-gray-200"
-                                ></span>
-                            </label>
+                            <k-toggle
+                                :checked="form.is_active"
+                                @change="form.is_active = $event.target.checked"
+                                :disabled="form.processing"
+                            />
                         </div>
                     </div>
 
@@ -245,24 +200,15 @@ const submitForm = () => {
                         class="space-y-4 rounded-2xl border border-slate-100 p-5 ring-1 ring-slate-900/5 dark:border-gray-800 dark:ring-gray-700"
                     >
                         <div>
-                            <label
-                                for="image"
-                                class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                            >
-                                Cover Image URL
-                            </label>
-                            <input
-                                v-model="form.image"
+                            <k-input
+                                label="Cover Image URL"
                                 type="text"
-                                id="image"
+                                :value="form.image"
+                                @input="form.image = $event.target.value"
                                 placeholder="https://example.com/banner.jpg"
+                                outline
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border px-4 py-2.5 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
-                                :class="
-                                    form.errors.image
-                                        ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                        : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
-                                "
+                                :error="form.errors.image"
                             />
                             <p
                                 v-if="form.errors.image"
@@ -288,17 +234,12 @@ const submitForm = () => {
                 <div
                     class="flex justify-end gap-3 border-t border-slate-100 pt-6 lg:col-span-3 dark:border-gray-800"
                 >
-                    <button
-                        type="button"
-                        @click="goBack"
-                        class="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
-                    </button>
-                    <button
+                    <k-button outline @click="goBack"> Cancel </k-button>
+                    <k-button
                         type="submit"
+                        fill
                         :disabled="form.processing"
-                        class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                        class="!inline-flex !items-center !gap-2"
                     >
                         <Loader2
                             v-if="form.processing"
@@ -306,7 +247,7 @@ const submitForm = () => {
                         />
                         <Save v-else class="h-4 w-4" />
                         {{ form.processing ? 'Saving...' : 'Save Notice' }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

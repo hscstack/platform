@@ -9,6 +9,7 @@ import {
     Link as LinkIcon,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { kInput, kTextarea, kButton } from 'konsta/vue';
 
 const props = defineProps({
     redirect: String,
@@ -151,24 +152,14 @@ const submitForm = () => {
 
                 <!-- 2. Resource Title (Required for ALL) -->
                 <div>
-                    <label
-                        for="title"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        Resource Title
-                    </label>
-                    <input
-                        v-model="form.title"
+                    <k-input
+                        label="Resource Title"
                         type="text"
-                        id="title"
+                        :value="form.title"
+                        @input="form.title = $event.target.value"
                         placeholder="e.g. Lecture 01 Introduction Notes"
-                        maxlength="100"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                        :class="
-                            form.errors.title
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20'
-                        "
+                        outline
+                        :error="form.errors.title"
                     />
                     <p
                         v-if="form.errors.title"
@@ -180,24 +171,15 @@ const submitForm = () => {
 
                 <!-- 3. Content Body (Present for ALL types) -->
                 <div>
-                    <label
-                        for="content"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        Content Body
-                    </label>
-                    <textarea
-                        v-model="form.content"
-                        id="content"
-                        rows="3"
+                    <k-textarea
+                        label="Content Body"
+                        :value="form.content"
+                        @input="form.content = $event.target.value"
                         placeholder="Type notes, descriptions, or body text..."
-                        class="w-full rounded-lg border px-4 py-2.5 font-sans transition outline-none"
-                        :class="
-                            form.errors.content
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20'
-                        "
-                    ></textarea>
+                        outline
+                        :rows="3"
+                        resizable
+                    />
                     <p
                         v-if="form.errors.content"
                         class="mt-1 text-sm text-rose-600 dark:text-rose-400"
@@ -208,37 +190,23 @@ const submitForm = () => {
 
                 <!-- 4. File URL (Only for Video and PDF) -->
                 <div v-if="requiresLink">
-                    <label
-                        for="external_url"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        {{
+                    <k-input
+                        :label="
                             form.resource_type === 'pdf'
                                 ? 'PDF Resource URL'
                                 : 'Video Link / URL'
-                        }}
-                    </label>
-                    <div class="relative flex items-center">
-                        <LinkIcon
-                            class="pointer-events-none absolute left-4 h-4 w-4 text-slate-400 dark:text-gray-500"
-                        />
-                        <input
-                            v-model="form.external_url"
-                            type="url"
-                            id="external_url"
-                            :placeholder="
-                                form.resource_type === 'pdf'
-                                    ? 'e.g. https://example.com/document.pdf'
-                                    : 'e.g. https://www.youtube.com/watch?v=... or Vimeo URL'
-                            "
-                            class="w-full rounded-lg border py-2.5 pr-4 pl-11 transition outline-none"
-                            :class="
-                                form.errors.external_url
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20'
-                            "
-                        />
-                    </div>
+                        "
+                        type="url"
+                        :value="form.external_url"
+                        @input="form.external_url = $event.target.value"
+                        :placeholder="
+                            form.resource_type === 'pdf'
+                                ? 'e.g. https://example.com/document.pdf'
+                                : 'e.g. https://www.youtube.com/watch?v=... or Vimeo URL'
+                        "
+                        outline
+                        :error="form.errors.external_url"
+                    />
                     <p
                         v-if="form.errors.external_url"
                         class="mt-1 text-sm text-rose-600 dark:text-rose-400"
@@ -313,13 +281,14 @@ const submitForm = () => {
                     >
                         Cancel
                     </Link>
-                    <button
+                    <k-button
                         type="submit"
+                        fill
                         :disabled="form.processing"
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        class="!rounded-lg"
                     >
                         {{ form.processing ? 'Saving...' : 'Save Resource' }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

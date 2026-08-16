@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
+import { kDialog, kButton } from 'konsta/vue';
 
 import {
     Search,
@@ -31,10 +33,17 @@ const icons = {
     Search,
 };
 
-const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this Subject?')) {
-        router.delete(`/admin/subjects/${subject.id}`);
-    }
+const deleteDialogOpened = ref(false);
+const deleteCallback = ref<() => void>(() => {});
+
+const showDeleteDialog = () => {
+    deleteCallback.value = () => router.delete(`/admin/subjects/${subject.id}`);
+    deleteDialogOpened.value = true;
+};
+
+const confirmDelete = () => {
+    deleteDialogOpened.value = false;
+    deleteCallback.value();
 };
 </script>
 
@@ -59,7 +68,7 @@ const handleDelete = () => {
 
             <button
                 type="button"
-                @click="handleDelete"
+                @click="showDeleteDialog"
                 class="inline-flex h-6 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                 title="Delete Subject"
             >
@@ -131,4 +140,22 @@ const handleDelete = () => {
             {{ subject.course }}
         </span>
     </div>
+
+    <kDialog
+        :opened="deleteDialogOpened"
+        @opened:change="deleteDialogOpened = $event"
+    >
+        <div class="p-4">
+            <p class="text-base font-semibold text-gray-900 dark:text-white">
+                Delete Subject
+            </p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                Are you sure you want to delete this Subject?
+            </p>
+            <div class="mt-4 flex justify-end gap-2">
+                <kButton @click="deleteDialogOpened = false">Cancel</kButton>
+                <kButton @click="confirmDelete">Delete</kButton>
+            </div>
+        </div>
+    </kDialog>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useForm, Link } from '@inertiajs/vue3';
+import { kInput, kButton } from 'konsta/vue';
 
 const form = useForm({
     email: '',
@@ -49,31 +50,39 @@ const submit = () => {
             >
                 <div class="space-y-6">
                     <div>
-                        <label
-                            class="mb-2 block text-[10px] font-black tracking-widest text-slate-400 uppercase dark:text-gray-500"
-                            >Email</label
-                        >
-                        <input
-                            v-model="form.email"
+                        <k-input
                             type="email"
+                            :value="form.email"
+                            @input="form.email = $event.target.value"
                             required
-                            class="w-full rounded-2xl border-0 bg-slate-50 px-5 py-4 transition-all placeholder:text-slate-300 focus:ring-2 focus:ring-slate-900 dark:bg-gray-800 dark:placeholder:text-gray-600 dark:focus:ring-gray-100"
                             placeholder="admin@example.com"
-                        />
+                            outline
+                        >
+                            <template #label>
+                                <span
+                                    class="!text-[10px] !font-black !tracking-widest !text-slate-400 !uppercase dark:!text-gray-500"
+                                    >Email</span
+                                >
+                            </template>
+                        </k-input>
                     </div>
 
                     <div>
-                        <label
-                            class="mb-2 block text-[10px] font-black tracking-widest text-slate-400 uppercase dark:text-gray-500"
-                            >Password</label
-                        >
-                        <input
-                            v-model="form.password"
+                        <k-input
                             type="password"
+                            :value="form.password"
+                            @input="form.password = $event.target.value"
                             required
-                            class="w-full rounded-2xl border-0 bg-slate-50 px-5 py-4 transition-all placeholder:text-slate-300 focus:ring-2 focus:ring-slate-900 dark:bg-gray-800 dark:placeholder:text-gray-600 dark:focus:ring-gray-100"
                             placeholder="••••••••"
-                        />
+                            outline
+                        >
+                            <template #label>
+                                <span
+                                    class="!text-[10px] !font-black !tracking-widest !text-slate-400 !uppercase dark:!text-gray-500"
+                                    >Password</span
+                                >
+                            </template>
+                        </k-input>
                     </div>
                 </div>
                 <div
@@ -103,12 +112,14 @@ const submit = () => {
                         </p>
                     </div>
                 </div>
-                <button
+                <k-button
+                    type="submit"
+                    fill
                     :disabled="form.processing"
-                    class="mt-8 w-full rounded-2xl bg-slate-900 py-4 text-xs font-black tracking-widest text-white uppercase transition-all hover:scale-[1.02] hover:bg-indigo-600 active:scale-[0.98] dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-indigo-600 dark:hover:text-white"
+                    class="mt-8 !w-full !rounded-2xl !py-4 !text-xs !font-black !tracking-widest !uppercase"
                 >
                     {{ form.processing ? 'Authenticating...' : 'Enter System' }}
-                </button>
+                </k-button>
 
                 <div class="mt-6 text-center">
                     <p

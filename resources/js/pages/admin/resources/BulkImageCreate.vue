@@ -2,6 +2,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import { Upload, X, Trash2, FileSpreadsheet, Hash, Tag } from 'lucide-vue-next';
 import { ref, computed, onUnmounted } from 'vue';
+import { kInput, kButton } from 'konsta/vue';
 
 const props = defineProps({
     redirect: {
@@ -292,31 +293,30 @@ const submitForm = () => {
                         class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2"
                     >
                         <div v-if="form.naming_strategy === 'suffix'">
-                            <label
-                                class="mb-1 block text-xs font-semibold text-slate-600 dark:text-gray-400"
-                            >
-                                Custom Name Prefix
-                            </label>
-                            <input
-                                v-model="form.naming_suffix"
+                            <k-input
+                                label="Custom Name Prefix"
                                 type="text"
+                                :value="form.naming_suffix"
+                                @input="
+                                    form.naming_suffix = $event.target.value
+                                "
                                 placeholder="e.g. Lecture Slide"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900"
+                                outline
                             />
                         </div>
 
                         <div>
-                            <label
-                                class="mb-1 block text-xs font-semibold text-slate-600 dark:text-gray-400"
-                            >
-                                Starting Number
-                            </label>
-                            <input
-                                v-model.number="form.start_number"
+                            <k-input
+                                label="Starting Number"
                                 type="number"
-                                min="1"
+                                :value="form.start_number"
+                                @input="
+                                    form.start_number = Number(
+                                        $event.target.value,
+                                    )
+                                "
                                 placeholder="1"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900"
+                                outline
                             />
                         </div>
                     </div>
@@ -395,19 +395,20 @@ const submitForm = () => {
                     >
                         Cancel
                     </Link>
-                    <button
+                    <k-button
                         type="submit"
+                        fill
                         :disabled="
                             form.processing || selectedFiles.length === 0
                         "
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        class="!rounded-lg"
                     >
                         {{
                             form.processing
                                 ? 'Uploading...'
                                 : `Upload ${selectedFiles.length} Images`
                         }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

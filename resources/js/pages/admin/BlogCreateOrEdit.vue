@@ -2,6 +2,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import { Upload } from 'lucide-vue-next';
 import HTMLEditor from '@/components/HTMLEditor.vue';
+import { kInput, kCheckbox, kButton } from 'konsta/vue';
 
 const props = defineProps({
     blog: {
@@ -63,22 +64,14 @@ const submitForm = () => {
 
             <form @submit.prevent="submitForm" class="space-y-6">
                 <div>
-                    <label
-                        for="title"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                        >Blog Title</label
-                    >
-                    <input
-                        v-model="form.title"
+                    <k-input
+                        label="Blog Title"
                         type="text"
-                        id="title"
+                        :value="form.title"
+                        @input="form.title = $event.target.value"
                         placeholder="e.g. 10 Tips for Cracking BUET"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                        :class="
-                            form.errors.title
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                        "
+                        outline
+                        :error="form.errors.title"
                     />
                     <p
                         v-if="form.errors.title"
@@ -141,22 +134,14 @@ const submitForm = () => {
                 </div>
 
                 <div>
-                    <label
-                        for="seo_tags"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                        >SEO Tags (Comma separated)</label
-                    >
-                    <input
-                        v-model="form.seo_tags"
+                    <k-input
+                        label="SEO Tags (Comma separated)"
                         type="text"
-                        id="seo_tags"
+                        :value="form.seo_tags"
+                        @input="form.seo_tags = $event.target.value"
                         placeholder="e.g. admission, news, tips"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                        :class="
-                            form.errors.seo_tags
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                        "
+                        outline
+                        :error="form.errors.seo_tags"
                     />
                     <p
                         v-if="form.errors.seo_tags"
@@ -170,10 +155,9 @@ const submitForm = () => {
                     class="flex flex-wrap gap-6 rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/50"
                 >
                     <label class="flex cursor-pointer items-center gap-2.5">
-                        <input
-                            v-model="form.is_published"
-                            type="checkbox"
-                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 dark:border-gray-600"
+                        <k-checkbox
+                            :checked="form.is_published"
+                            @change="form.is_published = $event.target.checked"
                         />
                         <div>
                             <span
@@ -188,10 +172,9 @@ const submitForm = () => {
                     </label>
 
                     <label class="flex cursor-pointer items-center gap-2.5">
-                        <input
-                            v-model="form.is_featured"
-                            type="checkbox"
-                            class="h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 dark:border-gray-600"
+                        <k-checkbox
+                            :checked="form.is_featured"
+                            @change="form.is_featured = $event.target.checked"
                         />
                         <div>
                             <span
@@ -235,13 +218,14 @@ const submitForm = () => {
                     >
                         Cancel
                     </Link>
-                    <button
+                    <k-button
                         type="submit"
+                        fill
                         :disabled="form.processing"
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        class="!rounded-lg"
                     >
                         {{ form.processing ? 'Saving...' : 'Save Blog' }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>

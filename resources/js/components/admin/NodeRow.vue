@@ -1,15 +1,24 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
+import { kDialog, kButton } from 'konsta/vue';
 import { Folder, Pencil, Trash2 } from 'lucide-vue-next';
 
 const { node } = defineProps({
     node: Object,
 });
 
-const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this Folder?')) {
-        router.delete(`/admin/nodes/${node.id}`);
-    }
+const deleteDialogOpened = ref(false);
+const deleteCallback = ref<() => void>(() => {});
+
+const showDeleteDialog = () => {
+    deleteCallback.value = () => router.delete(`/admin/nodes/${node.id}`);
+    deleteDialogOpened.value = true;
+};
+
+const confirmDelete = () => {
+    deleteDialogOpened.value = false;
+    deleteCallback.value();
 };
 </script>
 
@@ -33,7 +42,7 @@ const handleDelete = () => {
 
             <button
                 type="button"
-                @click="handleDelete"
+                @click="showDeleteDialog"
                 class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                 title="Delete Node"
             >
@@ -57,4 +66,22 @@ const handleDelete = () => {
             </span>
         </div>
     </div>
+
+    <kDialog
+        :opened="deleteDialogOpened"
+        @opened:change="deleteDialogOpened = $event"
+    >
+        <div class="p-4">
+            <p class="text-base font-semibold text-gray-900 dark:text-white">
+                Delete Folder
+            </p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                Are you sure you want to delete this Folder?
+            </p>
+            <div class="mt-4 flex justify-end gap-2">
+                <kButton @click="deleteDialogOpened = false">Cancel</kButton>
+                <kButton @click="confirmDelete">Delete</kButton>
+            </div>
+        </div>
+    </kDialog>
 </template>

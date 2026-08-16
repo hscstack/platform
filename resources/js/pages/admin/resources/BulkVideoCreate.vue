@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
 import { Youtube, FileSpreadsheet, Hash, Tag, Info } from 'lucide-vue-next';
+import { kInput, kButton } from 'konsta/vue';
 
 const props = defineProps({
     redirect: {
@@ -59,30 +60,16 @@ const submitForm = () => {
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- Playlist URL Input -->
                 <div>
-                    <label
-                        for="playlist_url"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        YouTube Playlist URL
-                    </label>
-                    <div class="relative flex items-center">
-                        <Youtube
-                            class="pointer-events-none absolute left-4 h-5 w-5 text-rose-600"
-                        />
-                        <input
-                            v-model="form.playlist_url"
-                            type="url"
-                            id="playlist_url"
-                            placeholder="https://www.youtube.com/playlist?list=PL..."
-                            required
-                            class="w-full rounded-lg border py-2.5 pr-4 pl-11 text-sm transition outline-none"
-                            :class="
-                                form.errors.playlist_url
-                                    ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
-                        />
-                    </div>
+                    <k-input
+                        label="YouTube Playlist URL"
+                        type="url"
+                        :value="form.playlist_url"
+                        @input="form.playlist_url = $event.target.value"
+                        placeholder="https://www.youtube.com/playlist?list=PL..."
+                        outline
+                        required
+                        :error="form.errors.playlist_url"
+                    />
                     <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
                         Paste the full URL of the public or unlisted YouTube
                         playlist.
@@ -217,16 +204,15 @@ const submitForm = () => {
                         class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2"
                     >
                         <div v-if="form.naming_strategy === 'prefix'">
-                            <label
-                                class="mb-1 block text-xs font-semibold text-slate-600 dark:text-gray-400"
-                            >
-                                Prefix String
-                            </label>
-                            <input
-                                v-model="form.naming_prefix"
+                            <k-input
+                                label="Prefix String"
                                 type="text"
+                                :value="form.naming_prefix"
+                                @input="
+                                    form.naming_prefix = $event.target.value
+                                "
                                 placeholder="e.g. Lecture 01"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900"
+                                outline
                             />
                             <p
                                 class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
@@ -236,17 +222,17 @@ const submitForm = () => {
                         </div>
 
                         <div>
-                            <label
-                                class="mb-1 block text-xs font-semibold text-slate-600 dark:text-gray-400"
-                            >
-                                Starting Number
-                            </label>
-                            <input
-                                v-model.number="form.start_number"
+                            <k-input
+                                label="Starting Number"
                                 type="number"
-                                min="1"
+                                :value="form.start_number"
+                                @input="
+                                    form.start_number = Number(
+                                        $event.target.value,
+                                    )
+                                "
                                 placeholder="1"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900"
+                                outline
                             />
                             <p
                                 class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
@@ -285,17 +271,18 @@ const submitForm = () => {
                     >
                         Cancel
                     </Link>
-                    <button
+                    <k-button
                         type="submit"
+                        fill
                         :disabled="form.processing || !form.playlist_url"
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        class="!rounded-lg"
                     >
                         {{
                             form.processing
                                 ? 'Importing Playlist...'
                                 : 'Import Playlist'
                         }}
-                    </button>
+                    </k-button>
                 </div>
             </form>
         </div>
