@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { kPage } from 'konsta/vue';
 import { usePage } from '@inertiajs/vue3';
 import {
     LayoutDashboard,
@@ -54,7 +55,7 @@ const closeMobileSidebar = () => {
                 ></div>
             </div>
 
-            <div class="relative z-10 flex min-h-screen flex-col">
+            <kPage class="relative z-10 flex min-h-screen flex-col">
                 <NavBar :is-admin="true" />
 
                 <div
@@ -95,7 +96,7 @@ const closeMobileSidebar = () => {
                         <slot />
                     </main>
                 </div>
-            </div>
+            </kPage>
             <ToastNotification />
         </div>
     </KonstaProvider>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { kPage } from 'konsta/vue';
 import Footer from '@/components/Footer.vue';
 import KonstaProvider from '@/components/KonstaProvider.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -25,7 +26,7 @@ import ToastNotification from '@/components/ToastNotification.vue';
                 ></div>
             </div>
 
-            <div
+            <kPage
                 class="relative z-10 flex min-h-screen flex-col justify-between"
             >
                 <div>
@@ -34,7 +35,7 @@ import ToastNotification from '@/components/ToastNotification.vue';
                 </div>
 
                 <Footer />
-            </div>
+            </kPage>
             <ToastNotification />
         </div>
     </KonstaProvider>
