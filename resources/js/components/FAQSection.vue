@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kBlock, kBlockTitle } from 'konsta/vue';
 import { ChevronDown, HelpCircle, Plus, Minus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
-// Single active accordion index
-const openIndex = ref(0);
+const openIndex = ref<number | null>(0);
 
-// Two-step expand toggle
 const INITIAL_COUNT = 4;
 const isExpanded = ref(false);
 
@@ -90,20 +89,24 @@ const visibleFaqs = computed(() => {
 const toggleExpand = () => {
     isExpanded.value = !isExpanded.value;
 
-    if (!isExpanded.value && openIndex.value >= INITIAL_COUNT) {
+    if (
+        !isExpanded.value &&
+        openIndex.value !== null &&
+        openIndex.value >= INITIAL_COUNT
+    ) {
         openIndex.value = null;
     }
 };
 
-const toggleFaq = (index) => {
+const toggleFaq = (index: number) => {
     openIndex.value = openIndex.value === index ? null : index;
 };
 
-const isOpen = (index) => openIndex.value === index;
+const isOpen = (index: number) => openIndex.value === index;
 </script>
 
 <template>
-    <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
+    <kBlock class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
         <!-- Section Header -->
         <div class="mb-8 text-center sm:mb-10">
             <div
@@ -111,11 +114,11 @@ const isOpen = (index) => openIndex.value === index;
             >
                 <HelpCircle class="h-5 w-5" />
             </div>
-            <h2
-                class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl lg:text-4xl dark:text-gray-100"
+            <kBlockTitle
+                class="!text-2xl font-black tracking-tight text-slate-900 sm:!text-3xl lg:!text-4xl dark:text-gray-100"
             >
                 সাধারণ জিজ্ঞাসা
-            </h2>
+            </kBlockTitle>
             <p
                 class="mx-auto mt-2 max-w-md text-xs leading-relaxed font-medium text-slate-500 sm:text-sm dark:text-gray-400"
             >
@@ -251,5 +254,5 @@ const isOpen = (index) => openIndex.value === index;
                 </button>
             </div>
         </div>
-    </section>
+    </kBlock>
 </template>

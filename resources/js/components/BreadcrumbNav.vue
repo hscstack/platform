@@ -25,7 +25,7 @@ const breadcrumbs = computed(() => {
 
 <template>
     <nav
-        class="no-scrollbar mb-6 flex items-center space-x-2 overflow-x-auto text-xs font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase dark:text-gray-500"
+        class="mb-6 no-scrollbar flex items-center space-x-2 overflow-x-auto text-xs font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase dark:text-gray-500"
     >
         <Link
             href="/"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { kCard } from 'konsta/vue';
 import { ArrowRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -27,31 +28,31 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-    <div
+    <kCard
+        outline
         class="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:shadow-gray-900/50"
     >
-        <!-- Featured Image Container -->
-        <Link
-            :href="'/blogs/' + blog.slug"
-            class="relative block aspect-[16/9] overflow-hidden bg-slate-100 dark:bg-gray-800"
-        >
-            <img
-                :src="blog.featured_image || 'https://placehold.co/600x400'"
-                :alt="blog.title"
-                class="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-                loading="lazy"
-            />
-            <div
-                v-if="blog.category"
-                class="absolute top-2.5 left-2.5 rounded-md bg-indigo-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs"
+        <template #header>
+            <Link
+                :href="'/blogs/' + blog.slug"
+                class="relative block aspect-[16/9] overflow-hidden bg-slate-100 dark:bg-gray-800"
             >
-                {{ blog.category }}
-            </div>
-        </Link>
+                <img
+                    :src="blog.featured_image || 'https://placehold.co/600x400'"
+                    :alt="blog.title"
+                    class="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                    loading="lazy"
+                />
+                <div
+                    v-if="blog.category"
+                    class="absolute top-2.5 left-2.5 rounded-md bg-indigo-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs"
+                >
+                    {{ blog.category }}
+                </div>
+            </Link>
+        </template>
 
-        <!-- Card Body -->
         <div class="flex flex-1 flex-col p-4">
-            <!-- News Meta (Author & Date) -->
             <div
                 class="mb-1.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400"
             >
@@ -78,7 +79,6 @@ const formattedDate = computed(() => {
                 </time>
             </div>
 
-            <!-- Title -->
             <Link :href="'/blogs/' + blog.slug" class="group/title block">
                 <h3
                     class="line-clamp-2 text-base leading-snug font-bold text-slate-900 transition duration-150 group-hover/title:text-indigo-600 dark:text-gray-100 dark:group-hover/title:text-indigo-400"
@@ -87,14 +87,14 @@ const formattedDate = computed(() => {
                 </h3>
             </Link>
 
-            <!-- Excerpt -->
             <p
                 class="mt-1.5 mb-3 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-gray-400"
             >
                 {{ blog.excerpt }}
             </p>
+        </div>
 
-            <!-- Footer Action -->
+        <template #footer>
             <div
                 class="mt-auto border-t border-slate-100 pt-3 dark:border-gray-800"
             >
@@ -108,6 +108,6 @@ const formattedDate = computed(() => {
                     />
                 </Link>
             </div>
-        </div>
-    </div>
+        </template>
+    </kCard>
 </template>

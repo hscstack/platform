@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { kDialog, kButton } from 'konsta/vue';
 import { ref, shallowRef, onMounted, onUnmounted } from 'vue';
 
 defineOptions({
@@ -81,9 +82,7 @@ const handleDismiss = () => {
 <template>
     <template v-if="isVisible && deferredPrompt">
         <Teleport v-if="variant === 'modal'" to="body">
-            <div
-                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm dark:bg-black/60"
-            >
+            <kDialog :opened="true">
                 <div
                     class="w-full max-w-sm rounded-2xl border border-slate-100 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900"
                 >
@@ -123,7 +122,7 @@ const handleDismiss = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+            </kDialog>
         </Teleport>
 
         <!-- Compact Inline Banner (Mobile) / Scaled Up (PC) -->

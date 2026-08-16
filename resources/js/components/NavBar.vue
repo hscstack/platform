@@ -12,6 +12,7 @@ import {
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useDarkMode } from '@/lib/useDarkMode';
 import AppLogo from './AppLogo.vue';
+import { kNavbar, kButton, kList, kListItem } from 'konsta/vue';
 
 defineProps({
     isAdmin: {
@@ -55,12 +56,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <nav
-        class="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur-md dark:border-gray-700/60 dark:bg-gray-900/80"
+    <k-navbar
+        class="sticky top-0 z-50 !h-14 border-b border-slate-200/60 bg-white/80 backdrop-blur-md dark:border-gray-700/60 dark:bg-gray-900/80"
     >
-        <div
-            class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6"
-        >
+        <template #left>
             <div class="flex items-center gap-2">
                 <AppLogo />
 
@@ -71,7 +70,9 @@ onBeforeUnmount(() => {
                     Admin
                 </span>
             </div>
+        </template>
 
+        <template #right>
             <div class="flex items-center gap-4">
                 <Link
                     href="/blogs"
@@ -91,9 +92,10 @@ onBeforeUnmount(() => {
 
                 <!-- Logged in: User dropdown -->
                 <div v-else ref="dropdownRef" class="relative">
-                    <button
+                    <k-button
                         @click="toggleDropdown"
-                        class="flex items-center gap-2 rounded-full py-1 pr-1 pl-1 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                        clear
+                        class="flex items-center gap-2 rounded-full !p-1 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                     >
                         <img
                             v-if="user.image_url"
@@ -114,7 +116,7 @@ onBeforeUnmount(() => {
                             class="h-3.5 w-3.5 text-slate-400 transition-transform"
                             :class="{ 'rotate-180': dropdownOpen }"
                         />
-                    </button>
+                    </k-button>
 
                     <Transition
                         enter-active-class="transition duration-150 ease-out"
@@ -141,33 +143,58 @@ onBeforeUnmount(() => {
                                 </p>
                             </div>
 
-                            <Link
-                                :href="isAdmin ? '/' : '/admin'"
-                                class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                                @click="closeDropdown"
-                            >
-                                <component
-                                    :is="isAdmin ? Home : LayoutDashboard"
-                                    class="h-4 w-4 text-slate-400"
-                                />
-                                {{ isAdmin ? 'Home' : 'Staff Panel' }}
-                            </Link>
+                            <k-list class="my-0 !outline-none">
+                                <k-list-item
+                                    :component="Link"
+                                    :href="isAdmin ? '/' : '/admin'"
+                                    @click="closeDropdown"
+                                    class="!rounded-lg"
+                                >
+                                    <template #media>
+                                        <component
+                                            :is="
+                                                isAdmin ? Home : LayoutDashboard
+                                            "
+                                            class="h-4 w-4 text-slate-400"
+                                        />
+                                    </template>
+                                    <template #title>
+                                        <span
+                                            class="text-sm font-medium text-slate-600 dark:text-gray-400"
+                                        >
+                                            {{
+                                                isAdmin ? 'Home' : 'Staff Panel'
+                                            }}
+                                        </span>
+                                    </template>
+                                </k-list-item>
 
-                            <button
-                                @click="handleLogout"
-                                class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
-                            >
-                                <LogOut class="h-4 w-4" />
-                                Logout
-                            </button>
+                                <k-list-item
+                                    @click="handleLogout"
+                                    class="!rounded-lg"
+                                >
+                                    <template #media>
+                                        <LogOut class="h-4 w-4 text-red-500" />
+                                    </template>
+                                    <template #title>
+                                        <span
+                                            class="text-sm font-medium text-red-600"
+                                        >
+                                            Logout
+                                        </span>
+                                    </template>
+                                </k-list-item>
+                            </k-list>
                         </div>
                     </Transition>
                 </div>
 
                 <!-- Dark mode -->
-                <button
+                <k-button
                     @click="toggle"
-                    class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    clear
+                    icon-only
+                    class="flex !h-8 !w-8 items-center justify-center rounded-lg !p-0 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                     :title="
                         theme === 'system'
                             ? 'System theme (click to cycle)'
@@ -179,8 +206,8 @@ onBeforeUnmount(() => {
                     <Monitor v-if="theme === 'system'" class="h-4 w-4" />
                     <Sun v-else-if="theme === 'light'" class="h-4 w-4" />
                     <Moon v-else class="h-4 w-4" />
-                </button>
+                </k-button>
             </div>
-        </div>
-    </nav>
+        </template>
+    </k-navbar>
 </template>
