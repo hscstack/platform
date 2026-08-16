@@ -267,6 +267,16 @@ declare module 'konsta/vue' {
         Record<string, unknown>,
         unknown
     >;
+    export const kAccordion: DefineComponent<
+        Record<string, unknown>,
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kAccordionItem: DefineComponent<
+        Record<string, unknown>,
+        Record<string, unknown>,
+        unknown
+    >;
     export const kSegmented: DefineComponent<
         {
             strong?: boolean;
@@ -342,6 +352,37 @@ declare module 'konsta/vue' {
     export const kSegmentedButton: DefineComponent<
         {
             active?: boolean;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+
+    export const kToolbar: DefineComponent<
+        {
+            position?: 'top' | 'bottom';
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kProgressbar: DefineComponent<
+        {
+            progress?: number;
+            infinite?: boolean;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kSheet: DefineComponent<
+        {
+            opened?: boolean;
+        },
+        Record<string, unknown>,
+        unknown
+    >;
+    export const kPhotoBrowser: DefineComponent<
+        {
+            photos?: Array<{ url?: string; caption?: string }>;
+            opened?: boolean;
         },
         Record<string, unknown>,
         unknown
