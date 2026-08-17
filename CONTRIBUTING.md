@@ -6,7 +6,7 @@ Thanks for your interest in HSCStack! This project is built by and for HSC stude
 
 HSCStack's codebase is **not open for general, unsolicited pull requests**. To contribute code, you first need to be onboarded as a core developer:
 
-1. Apply at [hscstack.mvp.bd/join](https://hscstack.mvp.bd/join)
+1. Apply at [hscstack.site/join](https://hscstack.site/join)
 2. Once your application is reviewed and accepted, you'll be onboarded to the codebase.
 3. After that, you're free to open issues, pick up tasks, and submit PRs following the workflow below.
 
@@ -119,7 +119,7 @@ hscstack/
 
 If you want to contribute academic resources (notes, PDFs, questions, etc.) rather than code, you don't need to touch this repository at all. Instead:
 
-1. Become a member at [hscstack.mvp.bd/join](https://hscstack.mvp.bd/join)
+1. Become a member at [hscstack.site/join](https://hscstack.site/join)
 2. Log in to the platform and upload your resource under the relevant subject and chapter.
 3. Your submission goes live after a quick admin review.
 
