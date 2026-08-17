@@ -75,7 +75,7 @@ const copyLink = async () => {
                     <User class="h-4 w-4 text-slate-400 dark:text-gray-500" />
                     <span>By</span>
                     <Link
-                        :href="`/about-us#author-${blog.user?.id}`"
+                        :href="`/about-us#${blog.user?.id}`"
                         class="font-medium text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                         {{ blog.user?.name }}
