@@ -10,8 +10,8 @@
         <link rel="apple-touch-icon" href="/favicon.png">
         <meta property="og:title" content="HSCStack - Open source repository">
         <meta property="og:description" content="A curated resource platform for HSC & SSC students of Bangladesh — built by members, for everyone.">
-        <meta property="og:image" content="https://hscstack.tajimz.xyz/feature.png">
-        <meta property="og:url" content="https://hscstack.tajimz.xyz">
+        <meta property="og:image" content="{{ url('/feature.png') }}">
+        <meta property="og:url" content="{{ url('/') }}">
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="HSCStack">
         @fonts
