@@ -74,6 +74,13 @@ onBeforeUnmount(() => {
 
             <div class="flex items-center gap-4">
                 <Link
+                    href="/projects"
+                    class="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
+                    Projects
+                </Link>
+
+                <Link
                     href="/blogs"
                     class="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100"
                 >

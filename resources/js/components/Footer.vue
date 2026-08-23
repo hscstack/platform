@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import {
     Github,
     Facebook,
-    BookOpen,
+    Layers,
     Users,
     UserPlus,
     ExternalLink,
@@ -64,14 +64,7 @@ import AppLogo from './AppLogo.vue';
                     <p
                         class="mt-4 hidden text-xs font-medium text-slate-400 md:block dark:text-gray-500"
                     >
-                        A concern of
-                        <a
-                            href="https://tajimz.xyz"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="text-slate-600 underline transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
-                            >Tajim</a
-                        >
+                        A concern of HSCStack
                     </p>
                 </div>
 
@@ -87,13 +80,13 @@ import AppLogo from './AppLogo.vue';
                         <ul class="mt-5 space-y-3.5">
                             <li>
                                 <Link
-                                    href="/guide"
+                                    href="/"
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
-                                    <BookOpen
+                                    <Layers
                                         class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
                                     />
-                                    <span>Documentation</span>
+                                    <span>Main Platform</span>
                                 </Link>
                             </li>
                             <li>
@@ -130,17 +123,15 @@ import AppLogo from './AppLogo.vue';
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="https://tajimz.xyz/projects"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <Link
+                                    href="/projects"
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     <ExternalLink
                                         class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
                                     />
                                     <span>More From Us</span>
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -168,15 +159,6 @@ import AppLogo from './AppLogo.vue';
                                     Terms of Service
                                 </Link>
                             </li>
-
-                            <li>
-                                <Link
-                                    href="/content-policy"
-                                    class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                                >
-                                    Content Policy
-                                </Link>
-                            </li>
                         </ul>
                     </div>
                 </div>
@@ -188,14 +170,7 @@ import AppLogo from './AppLogo.vue';
                 <p
                     class="text-center text-xs font-medium text-slate-400 md:hidden dark:text-gray-500"
                 >
-                    A concern of
-                    <a
-                        href="https://tajimz.xyz"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-slate-600 underline transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
-                        >Tajim</a
-                    >
+                    A concern of HSCStack
                 </p>
 
                 <p

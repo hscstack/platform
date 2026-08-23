@@ -6,14 +6,16 @@ import AppLayout from './layouts/AppLayout.vue';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 // Apply dark mode before paint to prevent flash
-const stored = localStorage.getItem('theme');
+if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    const stored = localStorage.getItem('theme');
 
-if (
-    stored === 'dark' ||
-    (stored !== 'light' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-) {
-    document.documentElement.classList.add('dark');
+    if (
+        stored === 'dark' ||
+        (stored !== 'light' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+        document.documentElement.classList.add('dark');
+    }
 }
 
 registerSW({ immediate: true });
