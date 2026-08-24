@@ -62,14 +62,15 @@ test('authenticated user can view their profile', function () {
     $response->assertStatus(200);
 });
 
-test('authenticated user can update their profile', function () {
+test('authenticated user can update their profile without changing email', function () {
     $user = User::factory()->create([
         'name' => 'Old Name',
+        'email' => 'original@example.com',
     ]);
 
     $response = $this->actingAs($user)->put('/profile', [
         'name' => 'New Name',
-        'email' => $user->email,
+        'email' => 'changed@example.com',
         'title' => 'Engineer',
         'institution' => 'Tech Corp',
         'facebook' => 'https://facebook.com/new',
@@ -81,7 +82,8 @@ test('authenticated user can update their profile', function () {
     $response->assertRedirect(route('profile.edit'));
     $response->assertSessionHas('success', 'Profile updated successfully.');
     expect($user->fresh()->name)->toBe('New Name')
-        ->and($user->fresh()->title)->toBe('Engineer');
+        ->and($user->fresh()->title)->toBe('Engineer')
+        ->and($user->fresh()->email)->toBe('original@example.com');
 });
 
 test('non-manage-users cannot access admin user edit route', function () {

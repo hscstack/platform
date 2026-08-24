@@ -33,7 +33,6 @@ class UpdateProfileRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,'.$userId],
             'password' => ['sometimes', 'nullable', 'string', 'min:6'],
             'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
             'about' => ['sometimes', 'nullable', 'string'],
