@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
-import {
-    LayoutDashboard,
-    Users,
-    BookOpen,
-    Bell,
-    Book,
-    User,
-} from 'lucide-vue-next';
+import { LayoutDashboard, Users, BookOpen, Bell, Book } from 'lucide-vue-next';
 import { ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
 import MobileSideBar from '@/components/admin/MobileSideBar.vue';

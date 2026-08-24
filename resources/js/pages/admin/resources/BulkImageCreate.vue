@@ -55,12 +55,15 @@ const addFiles = (files) => {
     );
 
     const availableSlots = MAX_IMAGES - selectedFiles.value.length;
+
     if (availableSlots <= 0) {
         fileLimitError.value = `You can only upload a maximum of ${MAX_IMAGES} images at once.`;
+
         return;
     }
 
     const filesToAdd = imageFiles.slice(0, availableSlots);
+
     if (imageFiles.length > availableSlots) {
         fileLimitError.value = `Only the first ${availableSlots} image(s) were added. Maximum limit is ${MAX_IMAGES} images.`;
     }
