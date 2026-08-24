@@ -8,6 +8,7 @@ import {
     Moon,
     Sun,
     Monitor,
+    User,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useDarkMode } from '@/lib/useDarkMode';
@@ -23,6 +24,7 @@ defineProps({
 const { theme, toggle } = useDarkMode();
 
 const user = computed(() => usePage().props.auth?.user);
+const canAccessAdmin = computed(() => usePage().props.auth?.can_access_admin);
 
 const dropdownOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
@@ -149,6 +151,16 @@ onBeforeUnmount(() => {
                             </div>
 
                             <Link
+                                href="/profile"
+                                class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                                @click="closeDropdown"
+                            >
+                                <User class="h-4 w-4 text-slate-400" />
+                                Profile
+                            </Link>
+
+                            <Link
+                                v-if="canAccessAdmin"
                                 :href="isAdmin ? '/' : '/admin'"
                                 class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                                 @click="closeDropdown"

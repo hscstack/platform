@@ -40,6 +40,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+                'can_access_admin' => $request->user()?->can('view admin') ?? false,
             ],
             'flash' => [
                 'success' => fn() => $request->session()->get('success'), 

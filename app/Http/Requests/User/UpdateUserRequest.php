@@ -42,13 +42,10 @@ class UpdateUserRequest extends FormRequest
             'facebook'    => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram'   => ['sometimes', 'nullable', 'string', 'max:255'],
             'github'      => ['sometimes', 'nullable', 'string', 'max:255'],
+            'role'        => ['sometimes', 'string'],
+            'permissions' => ['sometimes', 'array'],
+            'permissions.*' => ['string', 'exists:permissions,name'],
         ];
-
-        if ($this->user()->can('manage users')) {
-            $rules['role'] = ['sometimes', 'string'];
-            $rules['permissions'] = ['sometimes', 'array'];
-            $rules['permissions.*'] = ['string', 'exists:permissions,name'];
-        }
 
         return $rules;
     }
