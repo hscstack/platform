@@ -21,7 +21,7 @@ const fileLimitError = ref('');
 
 const form = useForm({
     node_id: props.node?.id ?? null,
-    naming_strategy: 'original', // 'original' | 'serial'
+    naming_strategy: 'serial', // 'serial' | 'original'
     naming_prefix: 'image',
     start_number: 1,
     files: [],
