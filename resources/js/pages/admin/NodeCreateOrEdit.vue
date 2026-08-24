@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { FolderOpen } from 'lucide-vue-next';
+import { FolderOpen, ChevronDown, ChevronRight } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const props = defineProps({
     subject: Object,
@@ -9,8 +10,11 @@ const props = defineProps({
     node: Object,
 });
 
+const showSlug = ref(false);
+
 const form = useForm({
     name: props.node?.name || '',
+    slug: props.node?.slug || '',
     parent_id: props.node?.parent_id || props.parent?.id || null,
     sort_order: props.node?.sort_order ?? 0,
     redirect: props.redirect,
@@ -18,8 +22,8 @@ const form = useForm({
 
 function getInputClass(hasError) {
     return hasError
-        ? 'border-rose-500 focus:ring-rose-500/20'
-        : 'border-slate-300 dark:border-gray-600 focus:ring-blue-500/20 focus:border-blue-500';
+        ? 'border-rose-500 focus:ring-rose-500/20 bg-white dark:bg-gray-900 text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500'
+        : 'border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:ring-blue-500/20 focus:border-blue-500';
 }
 
 const submitForm = () => {
@@ -159,6 +163,66 @@ const goBack = () => {
                         >
                             Lower numbers will appear first in the list.
                         </p>
+                    </div>
+
+                    <div class="pt-1 md:col-span-3">
+                        <button
+                            type="button"
+                            @click="showSlug = !showSlug"
+                            class="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                        >
+                            <component
+                                :is="
+                                    showSlug || form.errors.slug
+                                        ? ChevronDown
+                                        : ChevronRight
+                                "
+                                class="h-3.5 w-3.5"
+                            />
+                            <span
+                                >Change slug?
+                                <span
+                                    class="font-normal text-slate-400 dark:text-gray-500"
+                                    >(advanced)</span
+                                ></span
+                            >
+                        </button>
+
+                        <div
+                            v-if="showSlug || form.errors.slug"
+                            class="mt-3 space-y-1.5 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
+                        >
+                            <label
+                                for="slug"
+                                class="block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                Custom URL Slug
+                                <span
+                                    class="text-[11px] font-normal text-slate-400 dark:text-gray-500"
+                                    >(Optional)</span
+                                >
+                            </label>
+                            <input
+                                v-model="form.slug"
+                                type="text"
+                                id="slug"
+                                placeholder="e.g., chapter-1-intro (leave blank to auto-generate from name)"
+                                class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
+                                :class="getInputClass(form.errors.slug)"
+                            />
+                            <p
+                                v-if="form.errors.slug"
+                                class="mt-1 text-xs text-rose-600"
+                            >
+                                {{ form.errors.slug }}
+                            </p>
+                            <p
+                                class="text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Leave empty to automatically generate from the
+                                folder name.
+                            </p>
+                        </div>
                     </div>
                 </div>
 

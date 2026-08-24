@@ -24,6 +24,7 @@ class StoreNodeRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:200', 'min:2'],
+            'slug' => ['nullable', 'string', 'max:200'],
             'parent_id' => ['nullable', 'integer'],
             'sort_order' => ['sometimes', 'integer'],
             'redirect' => ['nullable', 'string'],

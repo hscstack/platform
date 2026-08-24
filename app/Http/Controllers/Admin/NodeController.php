@@ -94,7 +94,9 @@ class NodeController extends Controller
                 ->firstOrFail();
         }
 
-        $slug = Str::slug($validated['name']);
+        $slug = !empty($validated['slug'])
+            ? Str::slug($validated['slug'])
+            : Str::slug($validated['name']);
 
         $exists = Node::where('subject_id', $subject->id)
             ->where('parent_id', $parent?->id)
@@ -104,7 +106,7 @@ class NodeController extends Controller
         if ($exists) {
             return back()
                 ->withErrors([
-                    'name' => 'Folder already exists in this location.',
+                    'slug' => 'Folder with this slug already exists in this location.',
                 ])
                 ->withInput();
         }
@@ -143,8 +145,14 @@ class NodeController extends Controller
 
         if (array_key_exists('name', $validated)) {
             $node->name = $validated['name'];
+        }
 
-            $slug = Str::slug($validated['name']);
+        if (array_key_exists('name', $validated) || array_key_exists('slug', $validated) || array_key_exists('parent_id', $validated)) {
+            $rawSlug = !empty($validated['slug'])
+                ? $validated['slug']
+                : ($validated['name'] ?? $node->name);
+
+            $slug = Str::slug($rawSlug);
 
             $parentId = array_key_exists('parent_id', $validated)
                 ? $validated['parent_id']
@@ -158,7 +166,7 @@ class NodeController extends Controller
 
             if ($exists) {
                 return back()->withErrors([
-                    'name' => 'Folder already exists in this location.',
+                    'slug' => 'Folder with this slug already exists in this location.',
                 ])->withInput();
             }
 
