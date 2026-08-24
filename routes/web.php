@@ -21,6 +21,13 @@
 
 
 
+    use App\Http\Controllers\ProfileController;
+
+    Route::middleware(['throttle:60,1', 'auth'])->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    });
+
     Route::prefix('admin')->middleware(['throttle:45,1', 'auth', 'verified', 'permission:view admin'])->name('admin.')->group(function () {
 
         Route::get('/', [DashboardController::class, 'index'])->name('index');
@@ -40,10 +47,6 @@
         Route::get('/resources/create/bulk/images', [AdminResourceController::class, 'createBulkImages']);
         Route::get('/resources/create/bulk/videos', [AdminResourceController::class, 'createBulkVideos']);
         Route::get('/resources/edit/{resource}', [AdminResourceController::class, 'edit']);
-
-        Route::get('/users', [AdminUserController::class, 'index'])->name("users.index");
-        Route::get('/users/create', [AdminUserController::class, 'create']);
-        Route::get('/users/edit/{user}', [AdminUserController::class, 'edit']);
 
         Route::get('/notice', [AdminNoticeController::class, 'edit'])->name('notice.edit');
         Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
@@ -75,10 +78,13 @@
         Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middleware("permission:delete nodes");
 
         Route::middleware('permission:manage users')->group(function () {
-            Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
+            Route::get('/users', [AdminUserController::class, 'index'])->name("users.index");
+            Route::get('/users/create', [AdminUserController::class, 'create'])->name("users.create");
+            Route::get('/users/edit/{user}', [AdminUserController::class, 'edit'])->name("users.edit");
             Route::post('/users', [AdminUserController::class, 'store'])->name("users.store");
+            Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name("users.update");
+            Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name("users.destroy");
         });
-        Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name("users.update");
     });
 
     Route::post('/login', [AuthController::class, 'login'])

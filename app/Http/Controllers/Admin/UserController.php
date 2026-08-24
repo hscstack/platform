@@ -59,16 +59,13 @@ class UserController extends Controller
         return Inertia::render('admin/users/CreateOrEdit', [
             'user' => $user->load(['roles', 'permissions']),
             'permissions' => Permission::select('name')->get(),
-            'shouldHideOptions' => (Auth::id() === $user->id && !Auth::user()->can('manage users')), //hide options when showing own profile && don't have manage user permission.
+            'shouldHideOptions' => false,
         ]);
     }
 
     public function update(UpdateUserRequest $request, User $user)
     {
-        if (
-            ($request->user()->id !== $user->id &&
-                !$request->user()->can('manage users')) || $user->email === "check@example.com"
-        ) {
+        if (!$request->user()->can('manage users') || $user->email === "check@example.com") {
             throw UnauthorizedException::forPermissions(['manage users']);
         }
 
