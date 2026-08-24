@@ -59,7 +59,6 @@ class UserController extends Controller
         return Inertia::render('admin/users/CreateOrEdit', [
             'user' => $user->load(['roles', 'permissions']),
             'permissions' => Permission::select('name')->get(),
-            'shouldHideOptions' => false,
         ]);
     }
 
