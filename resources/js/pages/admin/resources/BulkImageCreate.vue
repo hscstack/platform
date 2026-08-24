@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import { Upload, X, Trash2, FileSpreadsheet, Hash, Tag } from 'lucide-vue-next';
+import { Upload, X, Trash2, FileSpreadsheet, Hash } from 'lucide-vue-next';
 import { ref, computed, onUnmounted } from 'vue';
 
 const props = defineProps({
@@ -17,11 +17,12 @@ const props = defineProps({
 
 const selectedFiles = ref([]);
 const isDragging = ref(false);
+const fileLimitError = ref('');
 
 const form = useForm({
     node_id: props.node?.id ?? null,
-    naming_strategy: 'original', // 'original' | 'serial' | 'suffix'
-    naming_suffix: '',
+    naming_strategy: 'original', // 'original' | 'serial'
+    naming_prefix: 'image',
     start_number: 1,
     files: [],
     custom_titles: [],
@@ -35,11 +36,7 @@ const processedTitles = computed(() => {
         const paddedNum = String(num).padStart(2, '0');
 
         if (form.naming_strategy === 'serial') {
-            return paddedNum;
-        }
-
-        if (form.naming_strategy === 'suffix') {
-            const prefix = form.naming_suffix.trim();
+            const prefix = form.naming_prefix.trim();
 
             return prefix ? `${prefix} ${paddedNum}` : paddedNum;
         }
@@ -49,12 +46,26 @@ const processedTitles = computed(() => {
     });
 });
 
+const MAX_IMAGES = 20;
+
 const addFiles = (files) => {
+    fileLimitError.value = '';
     const imageFiles = Array.from(files).filter((file) =>
         file.type.startsWith('image/'),
     );
 
-    imageFiles.forEach((file) => {
+    const availableSlots = MAX_IMAGES - selectedFiles.value.length;
+    if (availableSlots <= 0) {
+        fileLimitError.value = `You can only upload a maximum of ${MAX_IMAGES} images at once.`;
+        return;
+    }
+
+    const filesToAdd = imageFiles.slice(0, availableSlots);
+    if (imageFiles.length > availableSlots) {
+        fileLimitError.value = `Only the first ${availableSlots} image(s) were added. Maximum limit is ${MAX_IMAGES} images.`;
+    }
+
+    filesToAdd.forEach((file) => {
         selectedFiles.value.push({
             id: `${file.name}-${Date.now()}-${Math.random()}`,
             file,
@@ -84,12 +95,14 @@ const removeFile = (index) => {
     if (selectedFiles.value[index]) {
         URL.revokeObjectURL(selectedFiles.value[index].previewUrl);
         selectedFiles.value.splice(index, 1);
+        fileLimitError.value = '';
     }
 };
 
 const clearAll = () => {
     selectedFiles.value.forEach((item) => URL.revokeObjectURL(item.previewUrl));
     selectedFiles.value = [];
+    fileLimitError.value = '';
 };
 
 // Memory cleanup on component destruction
@@ -141,11 +154,23 @@ const submitForm = () => {
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- Dropzone Section -->
                 <div>
-                    <label
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        Select Images
-                    </label>
+                    <div class="mb-2 flex items-center justify-between">
+                        <label
+                            class="block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Select Images
+                        </label>
+                        <span
+                            class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                        >
+                            <span>Max Limit:</span>
+                            <strong
+                                class="font-extrabold text-blue-800 dark:text-blue-200"
+                                >20 images / batch</strong
+                            >
+                        </span>
+                    </div>
+
                     <div
                         @dragover.prevent="isDragging = true"
                         @dragleave.prevent="isDragging = false"
@@ -182,13 +207,29 @@ const submitForm = () => {
                             >
                                 Click to upload or drag & drop images
                             </span>
-                            <span
-                                class="mt-1 text-xs text-slate-400 dark:text-gray-500"
+
+                            <div
+                                class="mt-2.5 flex flex-wrap items-center justify-center gap-2"
                             >
-                                PNG, JPG, WEBP, or GIF (Multiple selection
-                                supported)
-                            </span>
+                                <span
+                                    class="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                                >
+                                    ⚡ Maximum 20 images allowed
+                                </span>
+                                <span
+                                    class="text-xs text-slate-400 dark:text-gray-500"
+                                >
+                                    PNG, JPG, WEBP, or GIF
+                                </span>
+                            </div>
                         </label>
+                    </div>
+                    <div
+                        v-if="fileLimitError"
+                        class="mt-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-xs font-semibold text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300"
+                    >
+                        <span class="text-base leading-none">⚠️</span>
+                        <span>{{ fileLimitError }}</span>
                     </div>
                     <p
                         v-if="form.errors.files"
@@ -209,7 +250,7 @@ const submitForm = () => {
                         File Naming Settings
                     </h3>
 
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <!-- Option 1: Original -->
                         <label
                             class="flex cursor-pointer items-center gap-3 rounded-lg border bg-white p-3 transition dark:bg-gray-900"
@@ -256,53 +297,34 @@ const submitForm = () => {
                                 <Hash
                                     class="h-4 w-4 text-slate-400 dark:text-gray-500"
                                 />
-                                Serial Numbers (01, 02)
-                            </div>
-                        </label>
-
-                        <!-- Option 3: Suffix -->
-                        <label
-                            class="flex cursor-pointer items-center gap-3 rounded-lg border bg-white p-3 transition dark:bg-gray-900"
-                            :class="
-                                form.naming_strategy === 'suffix'
-                                    ? 'border-blue-600 ring-2 ring-blue-600/10'
-                                    : 'border-slate-200 dark:border-gray-700 dark:hover:border-gray-600'
-                            "
-                        >
-                            <input
-                                type="radio"
-                                value="suffix"
-                                v-model="form.naming_strategy"
-                                class="text-blue-600 focus:ring-blue-500 dark:text-blue-400"
-                            />
-                            <div
-                                class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-gray-300"
-                            >
-                                <Tag
-                                    class="h-4 w-4 text-slate-400 dark:text-gray-500"
-                                />
-                                Custom Prefix + Serial
+                                Serial Numbers
                             </div>
                         </label>
                     </div>
 
-                    <!-- Options for Serial/Suffix -->
+                    <!-- Options for Serial -->
                     <div
-                        v-if="form.naming_strategy !== 'original'"
+                        v-if="form.naming_strategy === 'serial'"
                         class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2"
                     >
-                        <div v-if="form.naming_strategy === 'suffix'">
+                        <div>
                             <label
                                 class="mb-1 block text-xs font-semibold text-slate-600 dark:text-gray-400"
                             >
                                 Custom Name Prefix
                             </label>
                             <input
-                                v-model="form.naming_suffix"
+                                v-model="form.naming_prefix"
                                 type="text"
-                                placeholder="e.g. Lecture Slide"
+                                placeholder="e.g. image"
                                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900"
                             />
+                            <p
+                                class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Optional prefix before the number (leave blank
+                                for numbers only).
+                            </p>
                         </div>
 
                         <div>
@@ -318,6 +340,12 @@ const submitForm = () => {
                                 placeholder="1"
                                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900"
                             />
+                            <p
+                                class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Number to begin incrementing from (default is
+                                1).
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -328,7 +356,7 @@ const submitForm = () => {
                         <label
                             class="text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >
-                            Selected Images ({{ selectedFiles.length }})
+                            Selected Images ({{ selectedFiles.length }} / 20)
                         </label>
                         <button
                             type="button"
