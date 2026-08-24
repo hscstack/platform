@@ -34,7 +34,9 @@ const href = computed(() => {
                 <span
                     class="mt-0.5 inline-block text-xs font-semibold text-slate-400 sm:hidden dark:text-gray-500"
                 >
-                    {{ (node.children_count || 0) + (node.resources_count || 0) }}
+                    {{
+                        (node.children_count || 0) + (node.resources_count || 0)
+                    }}
                     Items
                 </span>
             </div>
