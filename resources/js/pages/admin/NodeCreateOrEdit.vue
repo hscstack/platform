@@ -11,6 +11,7 @@ const props = defineProps({
 
 const form = useForm({
     name: props.node?.name || '',
+    slug: props.node?.slug || '',
     parent_id: props.node?.parent_id || props.parent?.id || null,
     sort_order: props.node?.sort_order ?? 0,
     redirect: props.redirect,
@@ -158,6 +159,39 @@ const goBack = () => {
                             class="mt-1.5 text-xs text-slate-400 dark:text-gray-500"
                         >
                             Lower numbers will appear first in the list.
+                        </p>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label
+                            for="slug"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Custom URL Slug
+                            <span
+                                class="text-xs font-normal text-slate-400 dark:text-gray-500"
+                                >(Optional)</span
+                            >
+                        </label>
+                        <input
+                            v-model="form.slug"
+                            type="text"
+                            id="slug"
+                            placeholder="e.g., chapter-1-intro (leave blank to auto-generate from name)"
+                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
+                            :class="getInputClass(form.errors.slug)"
+                        />
+                        <p
+                            v-if="form.errors.slug"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.slug }}
+                        </p>
+                        <p
+                            class="mt-1.5 text-xs text-slate-400 dark:text-gray-500"
+                        >
+                            Leave empty to automatically generate from the
+                            folder name.
                         </p>
                     </div>
                 </div>
