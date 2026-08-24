@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { FolderOpen } from 'lucide-vue-next';
+import { FolderOpen, ChevronDown, ChevronRight } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const props = defineProps({
     subject: Object,
@@ -8,6 +9,8 @@ const props = defineProps({
     redirect: String,
     node: Object,
 });
+
+const showSlug = ref(false);
 
 const form = useForm({
     name: props.node?.name || '',
@@ -162,37 +165,64 @@ const goBack = () => {
                         </p>
                     </div>
 
-                    <div class="md:col-span-3">
-                        <label
-                            for="slug"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                    <div class="pt-1 md:col-span-3">
+                        <button
+                            type="button"
+                            @click="showSlug = !showSlug"
+                            class="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
                         >
-                            Custom URL Slug
+                            <component
+                                :is="
+                                    showSlug || form.errors.slug
+                                        ? ChevronDown
+                                        : ChevronRight
+                                "
+                                class="h-3.5 w-3.5"
+                            />
                             <span
-                                class="text-xs font-normal text-slate-400 dark:text-gray-500"
-                                >(Optional)</span
+                                >Change slug?
+                                <span
+                                    class="font-normal text-slate-400 dark:text-gray-500"
+                                    >(advanced)</span
+                                ></span
                             >
-                        </label>
-                        <input
-                            v-model="form.slug"
-                            type="text"
-                            id="slug"
-                            placeholder="e.g., chapter-1-intro (leave blank to auto-generate from name)"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                            :class="getInputClass(form.errors.slug)"
-                        />
-                        <p
-                            v-if="form.errors.slug"
-                            class="mt-1 text-sm text-rose-600"
+                        </button>
+
+                        <div
+                            v-if="showSlug || form.errors.slug"
+                            class="dark:bg-gray-850 mt-3 space-y-1.5 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-gray-700"
                         >
-                            {{ form.errors.slug }}
-                        </p>
-                        <p
-                            class="mt-1.5 text-xs text-slate-400 dark:text-gray-500"
-                        >
-                            Leave empty to automatically generate from the
-                            folder name.
-                        </p>
+                            <label
+                                for="slug"
+                                class="block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                Custom URL Slug
+                                <span
+                                    class="text-[11px] font-normal text-slate-400 dark:text-gray-500"
+                                    >(Optional)</span
+                                >
+                            </label>
+                            <input
+                                v-model="form.slug"
+                                type="text"
+                                id="slug"
+                                placeholder="e.g., chapter-1-intro (leave blank to auto-generate from name)"
+                                class="w-full rounded-lg border bg-white px-3.5 py-2 text-sm transition outline-none dark:bg-gray-900"
+                                :class="getInputClass(form.errors.slug)"
+                            />
+                            <p
+                                v-if="form.errors.slug"
+                                class="mt-1 text-xs text-rose-600"
+                            >
+                                {{ form.errors.slug }}
+                            </p>
+                            <p
+                                class="text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Leave empty to automatically generate from the
+                                folder name.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
