@@ -22,8 +22,8 @@ const form = useForm({
 
 function getInputClass(hasError) {
     return hasError
-        ? 'border-rose-500 focus:ring-rose-500/20'
-        : 'border-slate-300 dark:border-gray-600 focus:ring-blue-500/20 focus:border-blue-500';
+        ? 'border-rose-500 focus:ring-rose-500/20 bg-white dark:bg-gray-900 text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500'
+        : 'border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:ring-blue-500/20 focus:border-blue-500';
 }
 
 const submitForm = () => {
@@ -190,7 +190,7 @@ const goBack = () => {
 
                         <div
                             v-if="showSlug || form.errors.slug"
-                            class="dark:bg-gray-850 mt-3 space-y-1.5 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-gray-700"
+                            class="mt-3 space-y-1.5 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
                         >
                             <label
                                 for="slug"
@@ -207,7 +207,7 @@ const goBack = () => {
                                 type="text"
                                 id="slug"
                                 placeholder="e.g., chapter-1-intro (leave blank to auto-generate from name)"
-                                class="w-full rounded-lg border bg-white px-3.5 py-2 text-sm transition outline-none dark:bg-gray-900"
+                                class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
                                 :class="getInputClass(form.errors.slug)"
                             />
                             <p
