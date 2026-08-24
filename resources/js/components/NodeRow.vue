@@ -34,8 +34,8 @@ const href = computed(() => {
                 <span
                     class="mt-0.5 inline-block text-xs font-semibold text-slate-400 sm:hidden dark:text-gray-500"
                 >
-                    {{ node.resources_count || 0 }}
-                    Materials
+                    {{ (node.children_count || 0) + (node.resources_count || 0) }}
+                    Items
                 </span>
             </div>
         </div>
@@ -44,8 +44,8 @@ const href = computed(() => {
             <span
                 class="hidden rounded-md border border-slate-200/60 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 transition-colors group-hover:border-indigo-100/80 group-hover:bg-indigo-50/60 group-hover:text-indigo-600 sm:inline-block dark:border-gray-700/60 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:border-indigo-500/30 dark:group-hover:bg-indigo-500/10 dark:group-hover:text-indigo-400"
             >
-                {{ node.resources_count || 0 }}
-                Materials
+                {{ (node.children_count || 0) + (node.resources_count || 0) }}
+                Items
             </span>
 
             <svg
