@@ -154,11 +154,23 @@ const submitForm = () => {
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- Dropzone Section -->
                 <div>
-                    <label
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        Select Images
-                    </label>
+                    <div class="mb-2 flex items-center justify-between">
+                        <label
+                            class="block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Select Images
+                        </label>
+                        <span
+                            class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                        >
+                            <span>Max Limit:</span>
+                            <strong
+                                class="font-extrabold text-blue-800 dark:text-blue-200"
+                                >20 images / batch</strong
+                            >
+                        </span>
+                    </div>
+
                     <div
                         @dragover.prevent="isDragging = true"
                         @dragleave.prevent="isDragging = false"
@@ -195,20 +207,30 @@ const submitForm = () => {
                             >
                                 Click to upload or drag & drop images
                             </span>
-                            <span
-                                class="mt-1 text-xs text-slate-400 dark:text-gray-500"
+
+                            <div
+                                class="mt-2.5 flex flex-wrap items-center justify-center gap-2"
                             >
-                                PNG, JPG, WEBP, or GIF (Up to 20 images per
-                                batch)
-                            </span>
+                                <span
+                                    class="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                                >
+                                    ⚡ Maximum 20 images allowed
+                                </span>
+                                <span
+                                    class="text-xs text-slate-400 dark:text-gray-500"
+                                >
+                                    PNG, JPG, WEBP, or GIF
+                                </span>
+                            </div>
                         </label>
                     </div>
-                    <p
+                    <div
                         v-if="fileLimitError"
-                        class="mt-1.5 text-sm font-medium text-amber-600 dark:text-amber-400"
+                        class="mt-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-xs font-semibold text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300"
                     >
-                        {{ fileLimitError }}
-                    </p>
+                        <span class="text-base leading-none">⚠️</span>
+                        <span>{{ fileLimitError }}</span>
+                    </div>
                     <p
                         v-if="form.errors.files"
                         class="mt-1.5 text-sm text-rose-600"
@@ -334,7 +356,7 @@ const submitForm = () => {
                         <label
                             class="text-sm font-semibold text-slate-700 dark:text-gray-300"
                         >
-                            Selected Images ({{ selectedFiles.length }})
+                            Selected Images ({{ selectedFiles.length }} / 20)
                         </label>
                         <button
                             type="button"
