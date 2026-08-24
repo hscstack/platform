@@ -65,8 +65,8 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
-        if (!$request->user()->can('manage users') || $user->email === "check@example.com") {
-            throw UnauthorizedException::forPermissions(['manage users']);
+        if ($user->email === 'check@example.com') {
+            abort(403, 'This demo user cannot be modified.');
         }
 
         $validated = $request->validated();
