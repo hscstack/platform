@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\BlogCommentNotificationMail;
-use App\Mail\BlogReactionMilestoneMail;
+use App\Mail\BlogNotificationMail;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use Illuminate\Http\Request;
@@ -107,7 +106,7 @@ class BlogController extends Controller
                 $blog->loadMissing('user:id,name,email,receive_emails');
 
                 if ($blog->user && $blog->user_id !== $user->id && $blog->user->email && $blog->user->receive_emails !== false) {
-                    Mail::to($blog->user->email)->queue(new BlogReactionMilestoneMail($blog, $user, $reactionsCount));
+                    Mail::to($blog->user->email)->queue(BlogNotificationMail::forReactionMilestone($blog, $user, $reactionsCount));
                 }
             }
         }
@@ -136,7 +135,7 @@ class BlogController extends Controller
         $blog->loadMissing('user:id,name,email,receive_emails');
 
         if ($blog->user && $blog->user_id !== $userId && $blog->user->email && $blog->user->receive_emails !== false) {
-            Mail::to($blog->user->email)->queue(new BlogCommentNotificationMail($blog, $comment));
+            Mail::to($blog->user->email)->queue(BlogNotificationMail::forComment($blog, $comment));
         }
 
         return back()->with('success', 'Comment posted successfully.');
