@@ -731,17 +731,17 @@ onUnmounted(() => {
                     class="mx-auto max-w-md text-xs leading-relaxed font-normal text-slate-300 sm:text-sm"
                 >
                     কোনো সমস্যায় পড়লে বা কোনো specific section manage করার
-                    permission প্রয়োজন হলে, সরাসরি WhatsApp-এ যোগাযোগ করুন।
+                    permission প্রয়োজন হলে, সরাসরি আমাদের সাথে যোগাযোগ করুন।
                 </p>
                 <div class="pt-2">
                     <a
-                        href="https://wa.me/8801909131512"
+                        href="https://facebook.com/hscstackbd"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 sm:w-auto sm:text-sm"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-500 sm:w-auto sm:text-sm"
                     >
                         <MessageCircle class="h-4 w-4" />
-                        Chat on WhatsApp
+                        Message us
                     </a>
                 </div>
             </div>
