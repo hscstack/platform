@@ -52,4 +52,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'short_io' => [
+        'api_key' => env('SHORT_IO_API_KEY'),
+        'domain' => env('SHORT_IO_DOMAIN'),
+    ],
+
 ];
+
