@@ -68,15 +68,7 @@ const currentRoleTitle = computed(() => {
     );
 });
 
-// ডাইনামিক হোয়াটসঅ্যাপ লিংক জেনারেটর
-const whatsappLink = computed(() => {
-    const baseNumber = '8801909131512';
-    const text = encodeURIComponent(
-        `Hello, I want to join as a ${currentRoleTitle.value}.`,
-    );
-
-    return `https://wa.me/${baseNumber}?text=${text}`;
-});
+const facebookPageUrl = 'https://facebook.com/hscstackbd';
 </script>
 
 <template>
@@ -258,13 +250,13 @@ const whatsappLink = computed(() => {
                         </p>
 
                         <a
-                            :href="whatsappLink"
+                            :href="facebookPageUrl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none active:scale-[0.98]"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/20 focus:outline-none active:scale-[0.98]"
                         >
                             <MessageSquareShare class="h-4 w-4" />
-                            Message on WhatsApp
+                            Message us
                         </a>
                     </div>
                 </div>
