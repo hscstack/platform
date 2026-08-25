@@ -84,4 +84,3 @@ import { LogIn, ShieldCheck } from 'lucide-vue-next';
         </div>
     </div>
 </template>
-
