@@ -39,6 +39,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'receive_emails',
         'google_id',
         'email_verified_at',
         'image_path',
@@ -68,8 +69,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'receive_emails' => 'boolean',
         ];
     }
+
 
     public function resources()
     {

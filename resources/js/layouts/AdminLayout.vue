@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { LayoutDashboard, Users, BookOpen, Bell, Book } from 'lucide-vue-next';
+import {
+    LayoutDashboard,
+    Users,
+    BookOpen,
+    Bell,
+    Book,
+    Mail,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
 import MobileSideBar from '@/components/admin/MobileSideBar.vue';
@@ -14,6 +21,7 @@ const navigation = [
     { name: 'Manage Blogs', to: '/admin/blogs', icon: Book },
     { name: 'Site Notice', to: '/admin/notice', icon: Bell },
     { name: 'Users', to: '/admin/users', icon: Users },
+    { name: 'Send Emails', to: '/admin/emails/send', icon: Mail },
 ];
 
 const openMobileSidebar = () => {

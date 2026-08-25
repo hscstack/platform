@@ -8,6 +8,7 @@ import {
     Image as ImageIcon,
     Sparkles,
     ArrowRight,
+    Mail,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -34,6 +35,7 @@ const form = useForm({
     facebook: user.value?.facebook || '',
     github: user.value?.github || '',
     instagram: user.value?.instagram || '',
+    receive_emails: user.value?.receive_emails ?? true,
 });
 
 const submitForm = () => {
@@ -446,6 +448,64 @@ const submitForm = () => {
                             {{ form.errors.instagram }}
                         </p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Email Preferences Card -->
+            <div
+                class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs sm:p-8 dark:border-gray-700 dark:bg-gray-900"
+            >
+                <div
+                    class="mb-6 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-gray-800"
+                >
+                    <div
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                    >
+                        <Mail class="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h2
+                            class="text-base font-semibold text-slate-900 dark:text-gray-100"
+                        >
+                            Email Preferences
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">
+                            Manage what email announcements and updates you
+                            receive.
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-gray-800 dark:bg-gray-950/50"
+                >
+                    <div class="space-y-0.5">
+                        <label
+                            for="receive_emails"
+                            class="cursor-pointer text-sm font-semibold text-slate-900 dark:text-gray-100"
+                        >
+                            Receive Broadcast Emails & Announcements
+                        </label>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">
+                            Stay up-to-date with new resources, study materials,
+                            and platform announcements.
+                        </p>
+                    </div>
+
+                    <label
+                        class="relative inline-flex shrink-0 cursor-pointer items-center"
+                    >
+                        <input
+                            type="checkbox"
+                            id="receive_emails"
+                            v-model="form.receive_emails"
+                            :disabled="form.processing"
+                            class="peer sr-only"
+                        />
+                        <div
+                            class="peer h-6 w-11 rounded-full bg-slate-300 transition-colors peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500/20 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-md after:transition-all after:content-[''] peer-checked:after:translate-x-full dark:bg-gray-700 dark:peer-checked:bg-blue-600 dark:after:bg-gray-200"
+                        ></div>
+                    </label>
                 </div>
             </div>
 
