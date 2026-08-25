@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import { useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import {
     Loader2,
     Save,
     User,
     Globe,
     Image as ImageIcon,
+    Sparkles,
+    ArrowRight,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+const props = defineProps({
+    user: Object,
+});
+
 const page = usePage();
-const user = computed(() => page.props.auth?.user);
+const user = computed(() => props.user || page.props.auth?.user);
+
+const hasNoRole = computed(() => {
+    const roles = user.value?.roles;
+    return !roles || roles.length === 0;
+});
 
 const form = useForm({
     _method: 'PUT',
@@ -44,6 +55,45 @@ const submitForm = () => {
                 Manage your personal profile information, social links, and
                 security settings.
             </p>
+        </div>
+
+        <!-- Be a Contributor Section (Only for users without roles) -->
+        <div
+            v-if="hasNoRole"
+            class="mb-8 overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 via-white to-violet-50/40 p-6 sm:p-8 dark:border-indigo-500/20 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950/20"
+        >
+            <div
+                class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
+            >
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-xs dark:bg-indigo-500"
+                        >
+                            <Sparkles class="h-4 w-4" />
+                        </div>
+                        <h2
+                            class="text-base font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Be a Contributor
+                        </h2>
+                    </div>
+                    <p
+                        class="max-w-xl text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                    >
+                        আমাদের টিমে Resource Curator, Developer বা Campus Promoter হিসেবে যুক্ত হতে চান?
+                        আপনার দক্ষতা ও আগ্রহ দিয়ে HSCStack-কে আরও সমৃদ্ধ করতে আবেদন করুন।
+                    </p>
+                </div>
+
+                <Link
+                    href="/join"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                >
+                    <span>Apply to Join Team</span>
+                    <ArrowRight class="h-3.5 w-3.5" />
+                </Link>
+            </div>
         </div>
 
         <form @submit.prevent="submitForm" class="space-y-8">

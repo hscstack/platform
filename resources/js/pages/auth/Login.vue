@@ -1,6 +1,19 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { LogIn, ShieldCheck } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    LogIn,
+    ShieldCheck,
+    Zap,
+    KeyRound,
+    UserCheck,
+    AlertCircle,
+    ArrowLeft,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
+
+const page = usePage();
+const flashError = computed(() => page.props.flash?.error);
+const flashSuccess = computed(() => page.props.flash?.success);
 </script>
 
 <template>
@@ -15,36 +28,56 @@ import { LogIn, ShieldCheck } from 'lucide-vue-next';
     </div>
 
     <div
-        class="relative z-10 flex min-h-[75vh] items-center justify-center px-6 py-16"
+        class="relative z-10 flex min-h-[85vh] items-center justify-center px-4 py-12 sm:px-6"
     >
-        <div class="w-full max-w-sm">
-            <div class="mb-10 text-center">
+        <div class="w-full max-w-md">
+            <!-- Header -->
+            <div class="mb-8 text-center">
                 <div
                     class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
                     <LogIn class="h-7 w-7" />
                 </div>
                 <h1
-                    class="text-3xl font-black tracking-tight text-slate-900 dark:text-gray-100"
+                    class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                 >
-                    Welcome Back
+                    Welcome to HSCStack
                 </h1>
                 <p
                     class="mt-2 text-xs font-semibold text-slate-500 dark:text-gray-400"
                 >
-                    Sign in to access your profile and platform resources
+                    সহজ ও নিরাপদ Passwordless Login সিস্টেম
                 </p>
+            </div>
+
+            <!-- Flash Error Alert -->
+            <div
+                v-if="flashError"
+                class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/80 p-4 text-xs font-medium text-rose-700 backdrop-blur-sm dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400"
+            >
+                <AlertCircle class="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                <div class="flex-1">{{ flashError }}</div>
+            </div>
+
+            <!-- Flash Success Alert -->
+            <div
+                v-if="flashSuccess"
+                class="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-xs font-medium text-emerald-700 backdrop-blur-sm dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
+            >
+                <ShieldCheck class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <div class="flex-1">{{ flashSuccess }}</div>
             </div>
 
             <!-- Deep Shadow Login Card -->
             <div
-                class="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-[0_20px_50px_rgba(8,11,46,0.15)] backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/80"
+                class="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(8,11,46,0.08)] backdrop-blur-xl sm:p-8 dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
             >
+                <!-- Main Action Button -->
                 <a
                     href="/auth/google"
-                    class="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-3.5 text-xs font-bold text-slate-700 shadow-sm transition-all hover:scale-[1.02] hover:bg-slate-50 active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    class="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-3.5 px-4 text-sm font-bold text-slate-800 shadow-xs transition-all duration-200 hover:scale-[1.01] hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:hover:bg-gray-750"
                 >
-                    <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24">
                         <path
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                             fill="#4285F4"
@@ -65,20 +98,94 @@ import { LogIn, ShieldCheck } from 'lucide-vue-next';
                     <span>Continue with Google</span>
                 </a>
 
-                <div
-                    class="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                >
-                    <ShieldCheck class="h-3.5 w-3.5 text-emerald-500" />
-                    <span>Fast & Secure Authentication</span>
+                <!-- Guided How-It-Works section -->
+                <div class="mt-6 border-t border-slate-100 pt-6 dark:border-gray-800">
+                    <p
+                        class="mb-3.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                    >
+                        How Sign-in Works
+                    </p>
+
+                    <div class="space-y-3.5">
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                            >
+                                <Zap class="h-3.5 w-3.5" />
+                            </div>
+                            <div class="text-xs leading-relaxed text-slate-600 dark:text-gray-400">
+                                <span class="font-semibold text-slate-900 dark:text-gray-200"
+                                    >Instant 1-Click Access:</span
+                                >
+                                নতুন ইউজার হলে এক ক্লিকেই auto account create হবে, আর পুরাতন ইউজার হলে সরাসরি Login হয়ে যাবে।
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+                            >
+                                <KeyRound class="h-3.5 w-3.5" />
+                            </div>
+                            <div class="text-xs leading-relaxed text-slate-600 dark:text-gray-400">
+                                <span class="font-semibold text-slate-900 dark:text-gray-200"
+                                    >Zero Password :</span
+                                >
+                                কোনো পাসওয়ার্ড মনে রাখা বা রিসেট করার ঝামেলা নেই—সবকিছু Google-এর মাধ্যমে secure।
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            >
+                                <UserCheck class="h-3.5 w-3.5" />
+                            </div>
+                            <div class="text-xs leading-relaxed text-slate-600 dark:text-gray-400">
+                                <span class="font-semibold text-slate-900 dark:text-gray-200"
+                                    >Be a Contributor:</span
+                                >
+                                একাউন্ট খোলার পর আপনি আমাদের টিমে Contributor বা Curator হিসেবে
+                                <Link
+                                    href="/join"
+                                    class="font-semibold text-indigo-600 underline decoration-indigo-300 hover:text-indigo-700 dark:text-indigo-400 dark:decoration-indigo-600"
+                                >
+                                    Apply করতে পারবেন
+                                </Link>।
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms & Privacy subtext -->
+                <div class="mt-6 border-t border-slate-100 pt-4 text-center dark:border-gray-800">
+                    <p class="text-[11px] leading-relaxed text-slate-400 dark:text-gray-500">
+                        লগইন করার মাধ্যমে আপনি আমাদের
+                        <Link
+                            href="/terms-service"
+                            class="font-medium text-slate-600 underline decoration-slate-300 hover:text-slate-900 dark:text-gray-400 dark:decoration-gray-600 dark:hover:text-gray-200"
+                        >
+                            Terms of Service
+                        </Link>
+                        ও
+                        <Link
+                            href="/privacy-policy"
+                            class="font-medium text-slate-600 underline decoration-slate-300 hover:text-slate-900 dark:text-gray-400 dark:decoration-gray-600 dark:hover:text-gray-200"
+                        >
+                            Privacy Policy
+                        </Link>-তে সম্মতি দিচ্ছেন।
+                    </p>
                 </div>
             </div>
 
-            <div class="mt-8 text-center">
+            <!-- Back to site link -->
+            <div class="mt-6 text-center">
                 <Link
                     href="/"
-                    class="text-[10px] font-black tracking-widest text-slate-400 uppercase transition-colors hover:text-slate-900 dark:text-gray-500 dark:hover:text-gray-100"
+                    class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 transition-colors hover:text-slate-900 dark:text-gray-500 dark:hover:text-gray-200"
                 >
-                    ← Back to Site
+                    <ArrowLeft class="h-3.5 w-3.5" />
+                    <span>Back to Site</span>
                 </Link>
             </div>
         </div>
