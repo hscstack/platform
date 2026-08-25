@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Loader2, Save } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Loader2, Save, Upload, X } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     notice: Object,
@@ -10,12 +10,50 @@ const props = defineProps({
 const form = useForm({
     title: props.notice?.title || '',
     message: props.notice?.message || '',
-    image: props.notice?.image || '',
+    image: null as File | null,
+    remove_image: false,
     show_button: props.notice?.show_button ?? false,
     button_title: props.notice?.button_title || '',
     button_link: props.notice?.button_link || '',
     is_active: props.notice?.is_active ?? false,
 });
+
+const existingImage = ref(props.notice?.image || '');
+const previewUrl = ref<string | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
+const activeImageSrc = computed(() => {
+    if (previewUrl.value) {
+        return previewUrl.value;
+    }
+
+    if (!form.remove_image && existingImage.value) {
+        return existingImage.value;
+    }
+
+    return null;
+});
+
+const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+
+    if (target.files && target.files[0]) {
+        const file = target.files[0];
+        form.image = file;
+        form.remove_image = false;
+        previewUrl.value = URL.createObjectURL(file);
+    }
+};
+
+const removeImage = () => {
+    form.image = null;
+    form.remove_image = true;
+    previewUrl.value = null;
+
+    if (fileInputRef.value) {
+        fileInputRef.value.value = '';
+    }
+};
 
 const hasContent = computed(
     () => form.title.trim() !== '' || form.message.trim() !== '',
@@ -26,8 +64,9 @@ const goBack = () => {
 };
 
 const submitForm = () => {
-    form.patch('/admin/notice', {
+    form.post('/admin/notice', {
         preserveScroll: true,
+        forceFormData: true,
     });
 };
 </script>
@@ -248,41 +287,80 @@ const submitForm = () => {
                     >
                         <div>
                             <label
-                                for="image"
                                 class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
                             >
-                                Cover Image URL
+                                Notice Cover Image
                             </label>
-                            <input
-                                v-model="form.image"
-                                type="text"
-                                id="image"
-                                placeholder="https://example.com/banner.jpg"
-                                :disabled="form.processing"
-                                class="w-full rounded-xl border px-4 py-2.5 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
+
+                            <div
+                                v-if="activeImageSrc"
+                                class="relative mb-3 overflow-hidden rounded-xl ring-1 ring-slate-900/10 dark:ring-gray-700"
+                            >
+                                <img
+                                    :src="activeImageSrc"
+                                    alt="Notice preview"
+                                    class="h-36 w-full object-cover"
+                                />
+                                <button
+                                    type="button"
+                                    @click="removeImage"
+                                    class="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-white shadow-md backdrop-blur-sm transition hover:bg-rose-600"
+                                    title="Remove image"
+                                >
+                                    <X class="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            <div
+                                class="rounded-xl border-2 border-dashed p-4 text-center transition-colors"
                                 :class="
                                     form.errors.image
-                                        ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                        : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
+                                        ? 'border-rose-300 bg-rose-50/20 dark:border-rose-500/30 dark:bg-rose-500/10'
+                                        : 'border-slate-200 hover:bg-slate-50/50 dark:border-gray-700 dark:hover:bg-gray-800/50'
                                 "
-                            />
+                            >
+                                <input
+                                    ref="fileInputRef"
+                                    type="file"
+                                    id="notice_image_upload"
+                                    class="hidden"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
+                                    :disabled="form.processing"
+                                    @change="handleFileSelect"
+                                />
+                                <label
+                                    for="notice_image_upload"
+                                    class="flex cursor-pointer flex-col items-center justify-center"
+                                >
+                                    <div
+                                        class="mb-2 rounded-full border border-slate-100 bg-white p-2.5 text-slate-400 shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500"
+                                    >
+                                        <Upload class="h-4.5 w-4.5" />
+                                    </div>
+                                    <span
+                                        class="text-xs font-semibold text-slate-700 dark:text-gray-300"
+                                    >
+                                        {{
+                                            form.image?.name ||
+                                            (activeImageSrc
+                                                ? 'Click to change image'
+                                                : 'Click to upload image')
+                                        }}
+                                    </span>
+                                    <span
+                                        class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                                    >
+                                        PNG, JPG, WEBP or GIF (Max 5MB)
+                                    </span>
+                                </label>
+                            </div>
+
                             <p
                                 v-if="form.errors.image"
                                 class="mt-1.5 text-xs font-medium text-rose-600"
                             >
                                 {{ form.errors.image }}
                             </p>
-                        </div>
-
-                        <div
-                            v-if="form.image"
-                            class="overflow-hidden rounded-xl ring-1 ring-slate-900/10 dark:ring-gray-700"
-                        >
-                            <img
-                                :src="form.image"
-                                alt="Notice preview"
-                                class="h-32 w-full object-cover"
-                            />
                         </div>
                     </div>
                 </div>

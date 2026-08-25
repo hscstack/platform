@@ -23,10 +23,10 @@ class UpdateNoticeRequest extends FormRequest
     public function rules(): array
     {
         return [
-
             'title' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string'],
-            'image' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'max:5120'],
+            'remove_image' => ['nullable', 'boolean'],
             'show_button' => ['required', 'boolean'],
             'button_title' => ['nullable', 'required_if:show_button,true', 'string', 'max:100'],
             'button_link' => ['nullable', 'required_if:show_button,true', 'string', 'max:500'],
