@@ -46,7 +46,7 @@ Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'upd
 Route::post('/resources/bulk/images', [AdminResourceController::class, 'storeBulkImages'])->middleware('permission:create resources');
 Route::post('/resources/bulk/videos', [AdminResourceController::class, 'storeBulkVideos'])->middleware('permission:create resources');
 
-Route::patch('/notice', [AdminNoticeController::class, 'update'])->middleware('permission:edit notice')->name('notice.update');
+Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->middleware('permission:edit notice')->name('notice.update');
 Route::post('/clear-cache', function () {
     Cache::flush();
 

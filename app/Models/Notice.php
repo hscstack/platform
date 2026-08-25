@@ -3,12 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Notice extends Model
 {
     protected $casts = ['show_button' => 'boolean', 'is_active' => 'boolean'];
 
     protected $guarded = [];
+
+    public function getImageAttribute(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        return str($value)->startsWith(['http://', 'https://'])
+            ? $value
+            : Storage::url($value);
+    }
 
     public static function singleton(): self
     {
