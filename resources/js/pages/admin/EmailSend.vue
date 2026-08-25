@@ -588,20 +588,34 @@ const submitForm = () => {
                     <div
                         class="mx-auto max-w-[580px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-gray-800 dark:bg-gray-950"
                     >
-                        <!-- Template Header -->
+                        <!-- Template Header with Logo -->
                         <div
-                            class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-5 text-left"
+                            class="border-b border-slate-100 bg-white py-5 text-center dark:border-gray-800 dark:bg-gray-950"
                         >
-                            <h1
-                                class="text-lg font-bold tracking-tight text-white"
-                            >
-                                {{ appName }}
-                            </h1>
+                            <div class="inline-flex items-center gap-2.5">
+                                <div
+                                    class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-xs dark:bg-gray-100"
+                                >
+                                    <img
+                                        src="/favicon.svg"
+                                        alt="HSCStack"
+                                        class="h-6 w-6 scale-120 object-cover"
+                                    />
+                                </div>
+                                <span
+                                    class="text-lg font-extrabold tracking-tight text-slate-900 dark:text-gray-100"
+                                >
+                                    HSC<span
+                                        class="text-indigo-600 dark:text-indigo-400"
+                                        >Stack</span
+                                    >
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Template Content -->
                         <div
-                            class="p-6 text-sm leading-relaxed text-slate-700 dark:text-gray-300"
+                            class="p-7 text-sm leading-relaxed text-slate-700 dark:text-gray-300"
                         >
                             <p
                                 class="mb-4 font-semibold text-slate-900 dark:text-gray-100"
@@ -615,11 +629,11 @@ const submitForm = () => {
                             </p>
 
                             <!-- Banner Image in Preview -->
-                            <div v-if="imagePreview" class="mb-5 text-center">
+                            <div v-if="imagePreview" class="mb-6 text-center">
                                 <img
                                     :src="imagePreview"
                                     alt="Announcement preview"
-                                    class="max-h-64 w-full rounded-xl object-cover"
+                                    class="max-h-64 w-full rounded-2xl border border-slate-200 object-cover dark:border-gray-800"
                                 />
                             </div>
 
@@ -639,14 +653,34 @@ const submitForm = () => {
 
                         <!-- Template Footer -->
                         <div
-                            class="border-t border-slate-100 bg-slate-50/80 px-6 py-4 text-center text-[11px] text-slate-400 dark:border-gray-800 dark:bg-gray-900/80 dark:text-gray-500"
+                            class="border-t border-slate-100 bg-slate-50/90 px-6 py-6 text-center text-xs text-slate-500 dark:border-gray-800 dark:bg-gray-900/90 dark:text-gray-400"
                         >
-                            <p class="mb-1">
-                                You are receiving this email because you have an
-                                account on {{ appName }}.
+                            <p
+                                class="mb-2 font-semibold text-slate-700 dark:text-gray-200"
+                            >
+                                HSCStack &mdash; The Open Learning Platform
                             </p>
-                            <p>
-                                To update your email preferences, visit your
+
+                            <div
+                                class="my-2 flex items-center justify-center gap-3 text-xs font-medium text-indigo-600 dark:text-indigo-400"
+                            >
+                                <span>Visit Platform</span>
+                                <span>&bull;</span>
+                                <span>Read Blogs</span>
+                                <span>&bull;</span>
+                                <span>Support Us</span>
+                            </div>
+
+                            <p
+                                class="mt-3 mb-1 text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                You are receiving this email because you have an
+                                active account on HSCStack.
+                            </p>
+                            <p
+                                class="text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Manage your email preferences anytime in your
                                 <span
                                     class="text-indigo-600 underline dark:text-indigo-400"
                                     >Account Settings</span
