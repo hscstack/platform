@@ -69,9 +69,15 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('manage users');
 
         /*
+         * Email management
+         */
+        Permission::findOrCreate('send email');
+
+        /*
          * Maintenance
          */
         Permission::findOrCreate('clear cache');
+
 
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
