@@ -58,9 +58,9 @@ const copyLink = async () => {
         />
         <meta property="og:type" content="article" />
         <meta
-            v-if="blog.image_url"
+            v-if="blog.featured_image"
             property="og:image"
-            :content="blog.image_url"
+            :content="blog.featured_image"
         />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" :content="blog.meta_title || blog.title" />
@@ -69,9 +69,9 @@ const copyLink = async () => {
             :content="blog.meta_description || blog.excerpt || blog.title"
         />
         <meta
-            v-if="blog.image_url"
+            v-if="blog.featured_image"
             name="twitter:image"
-            :content="blog.image_url"
+            :content="blog.featured_image"
         />
     </Head>
 
