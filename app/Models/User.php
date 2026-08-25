@@ -4,7 +4,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -36,9 +35,11 @@ class User extends Authenticatable
      * @return array<string, string>
      */
     use HasRoles;
+
     protected $fillable = [
         'name',
         'email',
+        'google_id',
         'password',
         'email_verified_at',
         'image_path',
