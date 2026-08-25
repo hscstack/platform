@@ -11,6 +11,13 @@ use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware('throttle:60,1')->get('/api/auth/status', function (Request $request) {
+    return response()->json([
+        'authenticated' => Auth::check(),
+        'user' => $request->user(),
+    ]);
+});
+
 Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
