@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\BlogCommentNotificationMail;
+use App\Mail\BlogReactionMilestoneMail;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use Illuminate\Http\Request;
@@ -97,6 +98,18 @@ class BlogController extends Controller
             $existing->delete();
         } else {
             $blog->reactions()->create(['user_id' => $user->id]);
+
+            $reactionsCount = $blog->reactions()->count();
+            $milestones = [1, 10, 25, 50, 100, 250, 500, 1000];
+            $isMilestone = in_array($reactionsCount, $milestones, true) || ($reactionsCount > 1000 && $reactionsCount % 500 === 0);
+
+            if ($isMilestone) {
+                $blog->loadMissing('user:id,name,email,receive_emails');
+
+                if ($blog->user && $blog->user_id !== $user->id && $blog->user->email && $blog->user->receive_emails !== false) {
+                    Mail::to($blog->user->email)->queue(new BlogReactionMilestoneMail($blog, $user, $reactionsCount));
+                }
+            }
         }
 
         return back();
