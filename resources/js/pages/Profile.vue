@@ -4,7 +4,6 @@ import {
     Loader2,
     Save,
     User,
-    Key,
     Globe,
     Image as ImageIcon,
 } from 'lucide-vue-next';
@@ -16,7 +15,6 @@ const user = computed(() => page.props.auth?.user);
 const form = useForm({
     _method: 'PUT',
     name: user.value?.name || '',
-    password: '',
     file: null as File | null,
     about: user.value?.about || '',
     title: user.value?.title || '',
@@ -29,9 +27,6 @@ const form = useForm({
 const submitForm = () => {
     form.post('/profile', {
         preserveScroll: true,
-        onSuccess: () => {
-            form.password = '';
-        },
     });
 };
 </script>
@@ -391,63 +386,6 @@ const submitForm = () => {
                             {{ form.errors.instagram }}
                         </p>
                     </div>
-                </div>
-            </div>
-
-            <!-- Password Security Card -->
-            <div
-                class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs sm:p-8 dark:border-gray-700 dark:bg-gray-900"
-            >
-                <div
-                    class="mb-6 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-gray-800"
-                >
-                    <div
-                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-                    >
-                        <Key class="h-5 w-5" />
-                    </div>
-                    <div>
-                        <h2
-                            class="text-base font-semibold text-slate-900 dark:text-gray-100"
-                        >
-                            Security & Password
-                        </h2>
-                        <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Leave blank if you don't want to change your
-                            password.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="max-w-md">
-                    <label
-                        for="password"
-                        class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        New Password
-                        <span
-                            class="font-normal text-slate-400 dark:text-gray-500"
-                            >(Minimum 6 characters)</span
-                        >
-                    </label>
-                    <input
-                        v-model="form.password"
-                        type="password"
-                        id="password"
-                        placeholder="••••••••"
-                        :disabled="form.processing"
-                        class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
-                        :class="{
-                            'border-rose-500 focus:ring-rose-500/20':
-                                form.errors.password,
-                        }"
-                    />
-                    <p
-                        v-if="form.errors.password"
-                        class="mt-1 text-xs text-rose-600"
-                    >
-                        {{ form.errors.password }}
-                    </p>
                 </div>
             </div>
 

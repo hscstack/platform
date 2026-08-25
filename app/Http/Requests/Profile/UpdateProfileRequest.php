@@ -15,13 +15,6 @@ class UpdateProfileRequest extends FormRequest
         return $this->user() !== null;
     }
 
-    protected function prepareForValidation(): void
-    {
-        if (! $this->filled('password')) {
-            $this->replace($this->except('password'));
-        }
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -29,11 +22,8 @@ class UpdateProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->user()->id;
-
         return [
             'name' => ['required', 'string', 'max:255'],
-            'password' => ['sometimes', 'nullable', 'string', 'min:6'],
             'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
             'about' => ['sometimes', 'nullable', 'string'],
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],

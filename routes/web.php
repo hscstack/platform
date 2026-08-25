@@ -20,9 +20,6 @@ Route::prefix('admin')
     ->name('admin.')
     ->group(base_path('routes/admin.php'));
 
-Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('throttle:10,1,login');
-
 Route::get('/local/oauth2callback', function (Request $request) {
     abort_unless(app()->environment('local'), 403);
 
@@ -43,6 +40,8 @@ Route::middleware('throttle:60,1')->group(function () {
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
     Route::get('/blogs', [BlogController::class, 'index']);
     Route::get('/blogs/{blog}', [BlogController::class, 'show']);

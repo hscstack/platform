@@ -20,7 +20,6 @@ const form = useForm({
     _method: props.user ? 'PATCH' : 'POST',
     name: props.user?.name || '',
     email: props.user?.email || '',
-    password: '',
     role: props.user?.roles?.[0]?.name || 'manager',
     permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
 
@@ -145,42 +144,8 @@ const submitForm = () => {
                     </div>
                 </div>
 
-                <!-- Password and Role Selection -->
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div>
-                        <label
-                            for="password"
-                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            Password
-                            <span
-                                v-if="props.user"
-                                class="text-xs font-normal text-slate-400 dark:text-gray-500"
-                                >(Leave blank to keep current)</span
-                            >
-                        </label>
-                        <input
-                            v-model="form.password"
-                            type="password"
-                            id="password"
-                            placeholder="••••••••"
-                            :required="!props.user"
-                            :disabled="form.processing"
-                            class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
-                            :class="
-                                form.errors.password
-                                    ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
-                            "
-                        />
-                        <p
-                            v-if="form.errors.password"
-                            class="mt-1 text-sm text-rose-600"
-                        >
-                            {{ form.errors.password }}
-                        </p>
-                    </div>
-
+                <!-- Role Selection -->
+                <div>
                     <div>
                         <label
                             for="role"

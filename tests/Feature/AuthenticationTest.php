@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
 
 test('login page is accessible', function () {
     $response = $this->get('/login');
@@ -8,16 +9,59 @@ test('login page is accessible', function () {
     $response->assertStatus(200);
 });
 
-test('users can authenticate with valid credentials', function () {
+test('redirects to google for authentication', function () {
+    $response = $this->get(route('auth.google'));
+
+    $response->assertRedirect();
+    $this->assertStringContainsString('accounts.google.com', $response->headers->get('Location'));
+});
+
+test('google auth creates new user account if not exists and flashes notice', function () {
+    $abstractUser = Mockery::mock(Laravel\Socialite\Two\User::class);
+    $abstractUser->shouldReceive('getId')->andReturn('google-id-12345');
+    $abstractUser->shouldReceive('getEmail')->andReturn('newuser@example.com');
+    $abstractUser->shouldReceive('getName')->andReturn('Google User');
+    $abstractUser->shouldReceive('getNickname')->andReturn('googleuser');
+
+    Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+    $response = $this->get(route('auth.google.callback'));
+
+    $response->assertRedirect(route('index'));
+    $response->assertSessionHas('success', 'Account not found. New account created.');
+    $this->assertAuthenticated();
+    $this->assertDatabaseHas('users', [
+        'email' => 'newuser@example.com',
+        'google_id' => 'google-id-12345',
+        'name' => 'Google User',
+    ]);
+});
+
+test('existing user logs in with google directly and links google id', function () {
     $user = User::factory()->create([
-        'email' => 'admin@example.com',
+        'email' => 'existing@example.com',
+        'google_id' => null,
     ]);
 
-    $response = $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'password',
-    ]);
+    $abstractUser = Mockery::mock(Laravel\Socialite\Two\User::class);
+    $abstractUser->shouldReceive('getId')->andReturn('google-id-99999');
+    $abstractUser->shouldReceive('getEmail')->andReturn('existing@example.com');
+    $abstractUser->shouldReceive('getName')->andReturn('Existing User');
+    $abstractUser->shouldReceive('getNickname')->andReturn('existing');
 
-    $response->assertRedirect(route('admin.index'));
+    Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+    $response = $this->get(route('auth.google.callback'));
+
     $this->assertAuthenticatedAs($user);
+    $this->assertEquals('google-id-99999', $user->fresh()->google_id);
+});
+
+test('failed google auth redirects to login with error', function () {
+    Socialite::shouldReceive('driver->user')->andThrow(new Exception('Invalid state'));
+
+    $response = $this->get(route('auth.google.callback'));
+
+    $response->assertRedirect(route('login'));
+    $response->assertSessionHas('error', 'Failed to authenticate with Google. Please try again.');
 });

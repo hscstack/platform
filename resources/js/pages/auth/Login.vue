@@ -1,17 +1,6 @@
 <script setup lang="ts">
-import { useForm, Link } from '@inertiajs/vue3';
-
-const form = useForm({
-    email: '',
-    password: '',
-});
-
-const submit = () => {
-    form.post('/login', {
-        forceFormData: true,
-        onError: (errors) => alert(Object.values(errors)[0]),
-    });
-};
+import { Link } from '@inertiajs/vue3';
+import { LogIn, ShieldCheck } from 'lucide-vue-next';
 </script>
 
 <template>
@@ -26,104 +15,63 @@ const submit = () => {
     </div>
 
     <div
-        class="relative z-10 flex min-h-[70vh] items-center justify-center px-6 py-16"
+        class="relative z-10 flex min-h-[75vh] items-center justify-center px-6 py-16"
     >
         <div class="w-full max-w-sm">
             <div class="mb-10 text-center">
+                <div
+                    class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <LogIn class="h-7 w-7" />
+                </div>
                 <h1
                     class="text-3xl font-black tracking-tight text-slate-900 dark:text-gray-100"
                 >
-                    Member Portal
+                    Welcome Back
                 </h1>
                 <p
-                    class="mt-2 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase dark:text-gray-500"
+                    class="mt-2 text-xs font-semibold text-slate-500 dark:text-gray-400"
                 >
-                    Restricted Access
+                    Sign in to access your profile and platform resources
                 </p>
             </div>
 
             <!-- Deep Shadow Login Card -->
-            <form
-                @submit.prevent="submit"
+            <div
                 class="rounded-3xl border border-slate-100 bg-white/80 p-8 shadow-[0_20px_50px_rgba(8,11,46,0.15)] backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/80"
             >
-                <div class="space-y-6">
-                    <div>
-                        <label
-                            class="mb-2 block text-[10px] font-black tracking-widest text-slate-400 uppercase dark:text-gray-500"
-                            >Email</label
-                        >
-                        <input
-                            v-model="form.email"
-                            type="email"
-                            required
-                            class="w-full rounded-2xl border-0 bg-slate-50 px-5 py-4 transition-all placeholder:text-slate-300 focus:ring-2 focus:ring-slate-900 dark:bg-gray-800 dark:placeholder:text-gray-600 dark:focus:ring-gray-100"
-                            placeholder="admin@example.com"
+                <a
+                    href="/auth/google"
+                    class="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-3.5 text-xs font-bold text-slate-700 shadow-sm transition-all hover:scale-[1.02] hover:bg-slate-50 active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                >
+                    <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+                        <path
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            fill="#4285F4"
                         />
-                    </div>
+                        <path
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            fill="#34A853"
+                        />
+                        <path
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                            fill="#FBBC05"
+                        />
+                        <path
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                            fill="#EA4335"
+                        />
+                    </svg>
+                    <span>Continue with Google</span>
+                </a>
 
-                    <div>
-                        <label
-                            class="mb-2 block text-[10px] font-black tracking-widest text-slate-400 uppercase dark:text-gray-500"
-                            >Password</label
-                        >
-                        <input
-                            v-model="form.password"
-                            type="password"
-                            required
-                            class="w-full rounded-2xl border-0 bg-slate-50 px-5 py-4 transition-all placeholder:text-slate-300 focus:ring-2 focus:ring-slate-900 dark:bg-gray-800 dark:placeholder:text-gray-600 dark:focus:ring-gray-100"
-                            placeholder="••••••••"
-                        />
-                    </div>
-                </div>
                 <div
-                    class="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-500/30 dark:bg-indigo-500/10"
+                    class="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                 >
-                    <p
-                        class="mb-1 text-center text-[9px] font-bold tracking-widest text-indigo-400 uppercase dark:text-indigo-300"
-                    >
-                        Read-only Access For Viewing Admin Panel
-                    </p>
-                    <div
-                        class="flex justify-center gap-4 font-mono text-[10px] text-slate-600 dark:text-gray-400"
-                    >
-                        <p>
-                            Email:
-                            <span
-                                class="font-bold text-slate-900 dark:text-gray-100"
-                                >check@example.com</span
-                            >
-                        </p>
-                        <p>
-                            Pass:
-                            <span
-                                class="font-bold text-slate-900 dark:text-gray-100"
-                                >check123</span
-                            >
-                        </p>
-                    </div>
+                    <ShieldCheck class="h-3.5 w-3.5 text-emerald-500" />
+                    <span>Fast & Secure Authentication</span>
                 </div>
-                <button
-                    :disabled="form.processing"
-                    class="mt-8 w-full rounded-2xl bg-slate-900 py-4 text-xs font-black tracking-widest text-white uppercase transition-all hover:scale-[1.02] hover:bg-indigo-600 active:scale-[0.98] dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-indigo-600 dark:hover:text-white"
-                >
-                    {{ form.processing ? 'Authenticating...' : 'Enter System' }}
-                </button>
-
-                <div class="mt-6 text-center">
-                    <p
-                        class="text-[10px] font-black tracking-widest text-slate-400 uppercase dark:text-gray-500"
-                    >
-                        Want to be a member?
-                        <Link
-                            href="/join"
-                            class="ml-1 text-indigo-600 transition-colors hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        >
-                            Join here
-                        </Link>
-                    </p>
-                </div>
-            </form>
+            </div>
 
             <div class="mt-8 text-center">
                 <Link
