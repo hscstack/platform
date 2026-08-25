@@ -23,10 +23,14 @@ class AuthController extends Controller
         return Inertia::render('auth/Login');
     }
 
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
         if (Auth::check()) {
             return redirect()->route('admin.index');
+        }
+
+        if ($request->filled('redirect') && str_starts_with($request->query('redirect'), '/') && !str_starts_with($request->query('redirect'), '//')) {
+            session(['url.intended' => url($request->query('redirect'))]);
         }
 
         return Socialite::driver('google')->redirect();
