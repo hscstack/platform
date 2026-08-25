@@ -155,7 +155,7 @@ onBeforeUnmount(() => {
             >
                 <div
                     v-if="isMenuOpen"
-                    class="absolute right-0 bottom-full mb-2.5 min-w-[180px] rounded-2xl border border-slate-200/80 bg-white/95 p-1 shadow-xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
+                    class="absolute right-0 bottom-full mb-2.5 min-w-[190px] rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
                 >
                     <button
                         @click="handleCopyShortLink"
@@ -175,14 +175,17 @@ onBeforeUnmount(() => {
                             v-else-if="isCopied"
                             class="h-3.5 w-3.5 stroke-[2.5]"
                         />
-                        <LinkIcon v-else class="h-3.5 w-3.5 text-slate-400" />
+                        <LinkIcon
+                            v-else
+                            class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                        />
 
                         <span class="truncate">
                             {{
                                 isLoading
-                                    ? 'Shortening...'
+                                    ? 'Shortening link...'
                                     : isCopied
-                                      ? 'Copied!'
+                                      ? 'Link copied!'
                                       : 'Copy short link'
                             }}
                         </span>
@@ -190,18 +193,20 @@ onBeforeUnmount(() => {
                 </div>
             </Transition>
 
-            <!-- Main Floating Icon Trigger -->
+            <!-- Main Floating Pill Trigger (High-Contrast, Visible & Compact) -->
             <button
                 @click="toggleMenu"
-                class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-slate-700 shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:bg-slate-50 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900/90 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                class="group inline-flex items-center gap-2 rounded-full border border-slate-700/10 bg-slate-900 px-3.5 py-2 text-xs font-bold text-white shadow-xl shadow-slate-900/25 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-slate-800 hover:shadow-2xl active:scale-95 dark:border-white/10 dark:bg-white dark:text-slate-900 dark:shadow-black/40 dark:hover:bg-slate-100"
                 :class="{
-                    'text-indigo-600 ring-2 ring-indigo-500/20 dark:text-indigo-400':
-                        isMenuOpen,
+                    'ring-2 ring-indigo-500/40': isMenuOpen,
                 }"
-                title="Share"
-                aria-label="Share"
+                title="Share this page"
+                aria-label="Share this page"
             >
-                <Share2 class="h-4 w-4" />
+                <Share2
+                    class="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-12"
+                />
+                <span class="tracking-tight">Share</span>
             </button>
         </div>
     </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     Sparkles,
     Bot,
@@ -8,6 +8,7 @@ import {
     Zap,
     ArrowRight,
     Lock,
+    LogIn,
     ChevronRight,
     CheckCircle2,
     Layers,
@@ -17,6 +18,9 @@ import {
     Sigma,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 
 // Mock Data for Pure STEM Subjects (Emojis removed, Lucide Icons added)
 const mockSubjects = [
@@ -131,7 +135,7 @@ const handleMockSubmit = (question?: string) => {
                 <Sparkles
                     class="h-3.5 w-3.5 animate-pulse text-indigo-600 dark:text-indigo-400"
                 />
-                <span>HSCStack AI • Coming Soon</span>
+                <span>HSCStack AI &bull; Smart Learning Assistant</span>
             </div>
 
             <h1
@@ -171,8 +175,10 @@ const handleMockSubmit = (question?: string) => {
                         <h3
                             class="text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
                         >
-                            এই সার্ভিসটি চালু করতে আমাদের ফান্ডিং প্রয়োজন!
+                            এই সার্ভিসটি সম্পূর্ণ ফ্রি রাখতে আমাদের ফান্ডিং
+                            প্রয়োজন!
                         </h3>
+
                         <p
                             class="mt-0.5 text-xs leading-relaxed font-medium text-slate-600 dark:text-gray-400"
                         >
@@ -222,7 +228,16 @@ const handleMockSubmit = (question?: string) => {
                         <Layers class="h-3.5 w-3.5" />
                         {{ selectedTopic }}
                     </span>
+
+                    <Link
+                        v-if="!user"
+                        href="/login"
+                        class="ml-auto inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[11px] font-bold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+                    >
+                        <LogIn class="h-3 w-3" /> Login to Ask
+                    </Link>
                     <span
+                        v-else
                         class="ml-auto inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
                     >
                         <Lock class="h-3 w-3" /> Coming Soon
@@ -360,20 +375,32 @@ const handleMockSubmit = (question?: string) => {
                 </div>
             </div>
 
-            <!-- Lock Overlay Footer -->
+            <!-- Lock / Login Overlay Footer -->
             <div
                 class="relative border-t border-slate-100 bg-slate-50/80 p-4 dark:border-gray-800 dark:bg-gray-800"
             >
-                <!-- Disabled Lock Screen Overlay -->
+                <!-- Overlay -->
                 <div
                     class="absolute inset-0 z-10 flex items-center justify-center bg-white/85 backdrop-blur-[2px] dark:bg-gray-900/85"
                 >
+                    <!-- Guest: Login Button -->
+                    <Link
+                        v-if="!user"
+                        href="/login"
+                        class="inline-flex items-center gap-2 rounded-full border border-indigo-600 bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-700 hover:shadow-lg active:scale-95"
+                    >
+                        <LogIn class="h-3.5 w-3.5" />
+                        <span>Login to ask question</span>
+                    </Link>
+
+                    <!-- Authenticated: Coming Soon Notice with Updated Copy -->
                     <div
+                        v-else
                         class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
                     >
                         <Lock class="h-3.5 w-3.5 text-amber-500" />
                         <span
-                            >AI চালু করতে সাহায্য করুন 👉
+                            >AI সম্পূর্ণ ফ্রি রাখতে সাহায্য করুন &bull;
                             <Link
                                 href="/support"
                                 class="text-indigo-600 hover:underline dark:text-indigo-400"
