@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmailController as AdminEmailController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+
 
 Route::get('/', [DashboardController::class, 'index'])->name('index');
 
@@ -66,3 +68,11 @@ Route::middleware('permission:manage users')->group(function () {
     Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 });
+
+
+Route::get('/emails/send', [AdminEmailController::class, 'create'])->name('emails.create');
+
+Route::middleware('permission:send email')->group(function () {
+    Route::post('/emails/send', [AdminEmailController::class, 'store'])->name('emails.store');
+});
+
