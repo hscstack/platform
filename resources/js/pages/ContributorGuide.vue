@@ -242,9 +242,8 @@ onUnmounted(() => {
                     class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
                 >
                     আপনার account approve হওয়ার পর, আপনি কী ধরনের কাজ করবেন তার
-                    ভিত্তিতে আপনাকে একটি নির্দিষ্ট role প্রদান করা হবে, এবং সেই
-                    সাথে আপনার ব্যক্তিগত login credentials (email ও password)
-                    পাঠানো হবে।
+                    ভিত্তিতে আপনাকে একটি নির্দিষ্ট role প্রদান করা হবে, এবং আপনি আপনার
+                    Google account দিয়ে সরাসরি login করতে পারবেন।
                 </p>
             </section>
 
