@@ -27,7 +27,7 @@ test('google auth creates new user account if not exists and flashes notice', fu
 
     $response = $this->get(route('auth.google.callback'));
 
-    $response->assertRedirect(route('index'));
+    $response->assertRedirect(route('profile.edit'));
     $response->assertSessionHas('success', 'Account not found. New account created.');
     $this->assertAuthenticated();
     $this->assertDatabaseHas('users', [
@@ -64,4 +64,22 @@ test('failed google auth redirects to login with error', function () {
 
     $response->assertRedirect(route('login'));
     $response->assertSessionHas('error', 'Failed to authenticate with Google. Please try again.');
+});
+
+test('google auth redirects to intended url if set', function () {
+    $abstractUser = Mockery::mock(Laravel\Socialite\Two\User::class);
+    $abstractUser->shouldReceive('getId')->andReturn('google-id-intended');
+    $abstractUser->shouldReceive('getEmail')->andReturn('intended@example.com');
+    $abstractUser->shouldReceive('getName')->andReturn('Intended User');
+    $abstractUser->shouldReceive('getNickname')->andReturn('intended');
+
+    Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+    // Attempt to access auth-protected route while logged out
+    $this->get('/profile');
+
+    // Authenticate with Google
+    $response = $this->get(route('auth.google.callback'));
+
+    $response->assertRedirect(route('profile.edit'));
 });

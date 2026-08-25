@@ -40,7 +40,6 @@ class User extends Authenticatable
         'name',
         'email',
         'google_id',
-        'password',
         'email_verified_at',
         'image_path',
         'about',

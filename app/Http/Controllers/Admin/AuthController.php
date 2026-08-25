@@ -62,11 +62,7 @@ class AuthController extends Controller
         Auth::login($user, remember: true);
         $request->session()->regenerate();
 
-        $targetRoute = $user->can('view admin')
-            ? route('admin.index')
-            : route('index');
-
-        $redirect = redirect()->intended($targetRoute);
+        $redirect = redirect()->intended(route('profile.edit'));
 
         if ($isNewUser) {
             $redirect->with('success', 'Account not found. New account created.');
