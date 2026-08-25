@@ -67,7 +67,9 @@ Route::middleware('permission:manage users')->group(function () {
     Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
     Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->name('users.login-as');
 });
+
 
 
 Route::get('/emails/send', [AdminEmailController::class, 'create'])->name('emails.create');
