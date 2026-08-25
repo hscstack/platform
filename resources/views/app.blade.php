@@ -8,22 +8,43 @@
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/favicon.png">
-        <meta name="description" content="A curated open learning platform for HSC & SSC students in Bangladesh with video lectures, notes, books, and question banks.">
-        <meta property="og:title" content="HSCStack - Open source repository">
-        <meta property="og:description" content="A curated resource platform for HSC & SSC students of Bangladesh — built by members, for everyone.">
-        <meta property="og:image" content="{{ url('/feature.png') }}">
-        <meta property="og:url" content="{{ url('/') }}">
-        <meta property="og:type" content="website">
+@php
+    $pageComponent = $page['component'] ?? '';
+    $blog = $page['props']['blog'] ?? null;
+
+    if ($pageComponent === 'Blog/Show' && $blog) {
+        $rawTitle = data_get($blog, 'meta_title') ?: data_get($blog, 'title');
+        $metaTitle = $rawTitle ? "{$rawTitle} - " . config('app.name', 'HSCStack') : config('app.name', 'HSCStack');
+        $ogTitle = $rawTitle ?: config('app.name', 'HSCStack');
+        $metaDescription = data_get($blog, 'meta_description') ?: data_get($blog, 'excerpt') ?: $rawTitle;
+        $ogImage = data_get($blog, 'featured_image') ?: url('/feature.png');
+        $ogType = 'article';
+        $ogUrl = data_get($blog, 'slug') ? url('/blogs/' . data_get($blog, 'slug')) : url()->current();
+    } else {
+        $metaTitle = config('app.name', 'HSCStack');
+        $ogTitle = 'HSCStack - Open source repository';
+        $metaDescription = 'A curated open learning platform for HSC & SSC students in Bangladesh with video lectures, notes, books, and question banks.';
+        $ogImage = url('/feature.png');
+        $ogType = 'website';
+        $ogUrl = url()->current();
+    }
+@endphp
+        <meta name="description" content="{{ $metaDescription }}">
+        <meta property="og:title" content="{{ $ogTitle }}">
+        <meta property="og:description" content="{{ $metaDescription }}">
+        <meta property="og:image" content="{{ $ogImage }}">
+        <meta property="og:url" content="{{ $ogUrl }}">
+        <meta property="og:type" content="{{ $ogType }}">
         <meta property="og:site_name" content="HSCStack">
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="HSCStack - Open source repository">
-        <meta name="twitter:description" content="A curated resource platform for HSC & SSC students of Bangladesh — built by members, for everyone.">
-        <meta name="twitter:image" content="{{ url('/feature.png') }}">
+        <meta name="twitter:title" content="{{ $ogTitle }}">
+        <meta name="twitter:description" content="{{ $metaDescription }}">
+        <meta name="twitter:image" content="{{ $ogImage }}">
         @fonts
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'HSCStack') }}</title>
+            <title>{{ $metaTitle ?? config('app.name', 'HSCStack') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">
