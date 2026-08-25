@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Loader2, Save } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Loader2, Save, Trash2, Upload } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     notice: Object,
@@ -10,27 +10,54 @@ const props = defineProps({
 const form = useForm({
     title: props.notice?.title || '',
     message: props.notice?.message || '',
-    image: props.notice?.image || '',
+    image: null as File | null,
+    remove_image: false,
     show_button: props.notice?.show_button ?? false,
     button_title: props.notice?.button_title || '',
     button_link: props.notice?.button_link || '',
     is_active: props.notice?.is_active ?? false,
 });
 
+const imagePreview = ref<string | null>(props.notice?.image || null);
+const fileInput = ref<HTMLInputElement | null>(null);
+
 const hasContent = computed(
     () => form.title.trim() !== '' || form.message.trim() !== '',
 );
+
+const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+
+    if (target.files && target.files[0]) {
+        const file = target.files[0];
+        form.image = file;
+        form.remove_image = false;
+        imagePreview.value = URL.createObjectURL(file);
+    }
+};
+
+const handleRemoveImage = () => {
+    form.image = null;
+    form.remove_image = true;
+    imagePreview.value = null;
+
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+};
 
 const goBack = () => {
     window.history.back();
 };
 
 const submitForm = () => {
-    form.patch('/admin/notice', {
+    form.post('/admin/notice', {
         preserveScroll: true,
+        forceFormData: true,
     });
 };
 </script>
+
 <template>
     <Head title="Site Notice" />
 
@@ -246,44 +273,90 @@ const submitForm = () => {
                     <div
                         class="space-y-4 rounded-2xl border border-slate-100 p-5 ring-1 ring-slate-900/5 dark:border-gray-800 dark:ring-gray-700"
                     >
-                        <div>
-                            <label
-                                for="image"
-                                class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                            >
-                                Cover Image URL
-                            </label>
-                            <input
-                                v-model="form.image"
-                                type="text"
-                                id="image"
-                                placeholder="https://example.com/banner.jpg"
-                                :disabled="form.processing"
-                                class="w-full rounded-xl border px-4 py-2.5 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
-                                :class="
-                                    form.errors.image
-                                        ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                        : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
-                                "
-                            />
-                            <p
-                                v-if="form.errors.image"
-                                class="mt-1.5 text-xs font-medium text-rose-600"
-                            >
-                                {{ form.errors.image }}
-                            </p>
-                        </div>
+                        <label
+                            class="block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
+                        >
+                            Cover Image
+                        </label>
 
+                        <input
+                            ref="fileInput"
+                            type="file"
+                            id="notice_image_upload"
+                            class="hidden"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            :disabled="form.processing"
+                            @change="handleFileSelect"
+                        />
+
+                        <!-- Image Preview -->
                         <div
-                            v-if="form.image"
-                            class="overflow-hidden rounded-xl ring-1 ring-slate-900/10 dark:ring-gray-700"
+                            v-if="imagePreview"
+                            class="relative overflow-hidden rounded-xl ring-1 ring-slate-900/10 dark:ring-gray-700"
                         >
                             <img
-                                :src="form.image"
+                                :src="imagePreview"
                                 alt="Notice preview"
-                                class="h-32 w-full object-cover"
+                                class="h-40 w-full object-cover"
                             />
+                            <div
+                                class="absolute inset-0 flex items-center justify-center gap-2 bg-slate-900/50 opacity-0 transition-opacity hover:opacity-100"
+                            >
+                                <label
+                                    for="notice_image_upload"
+                                    class="cursor-pointer rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-900 transition hover:bg-white dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    Change Image
+                                </label>
+                                <button
+                                    type="button"
+                                    @click="handleRemoveImage"
+                                    class="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700"
+                                >
+                                    <Trash2 class="h-3.5 w-3.5" />
+                                    Remove
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- Upload Dropzone when no image -->
+                        <div
+                            v-else
+                            class="rounded-xl border-2 border-dashed bg-slate-50/50 p-6 text-center transition dark:bg-gray-800/50"
+                            :class="
+                                form.errors.image
+                                    ? 'border-rose-300 bg-rose-50/20 dark:border-rose-500/30 dark:bg-rose-500/10'
+                                    : 'border-slate-200 dark:border-gray-700 dark:hover:bg-gray-800'
+                            "
+                        >
+                            <label
+                                for="notice_image_upload"
+                                class="flex cursor-pointer flex-col items-center justify-center"
+                            >
+                                <div
+                                    class="mb-2 rounded-full border border-slate-100 bg-white p-3 text-slate-400 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-500"
+                                >
+                                    <Upload class="h-5 w-5" />
+                                </div>
+                                <span
+                                    class="text-center text-sm font-medium text-slate-700 dark:text-gray-300"
+                                >
+                                    Click to upload cover image
+                                </span>
+                                <span
+                                    class="mt-1 text-xs text-slate-400 dark:text-gray-500"
+                                >
+                                    PNG, JPG or WEBP (Max 10MB)
+                                </span>
+                            </label>
+                        </div>
+
+                        <p
+                            v-if="form.errors.image"
+                            class="mt-1.5 text-xs font-medium text-rose-600"
+                        >
+                            {{ form.errors.image }}
+                        </p>
                     </div>
                 </div>
 
