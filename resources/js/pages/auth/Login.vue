@@ -15,8 +15,13 @@ const page = usePage();
 const flashError = computed(() => page.props.flash?.error);
 const flashSuccess = computed(() => page.props.flash?.success);
 
-const redirectParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
-const googleAuthUrl = redirectParam ? `/auth/google?redirect=${encodeURIComponent(redirectParam)}` : '/auth/google';
+const redirectParam =
+    typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('redirect')
+        : null;
+const googleAuthUrl = redirectParam
+    ? `/auth/google?redirect=${encodeURIComponent(redirectParam)}`
+    : '/auth/google';
 </script>
 
 <template>

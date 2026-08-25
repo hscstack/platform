@@ -58,7 +58,6 @@ class UserController extends Controller
             ->with('success', 'User created successfully.');
     }
 
-
     public function edit(User $user)
     {
         return Inertia::render('admin/users/CreateOrEdit', [
@@ -125,6 +124,4 @@ class UserController extends Controller
 
         return redirect()->route('index')->with('success', "Logged in as {$user->name}.");
     }
-
 }
-

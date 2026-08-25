@@ -6,6 +6,7 @@ use Google\Client as GoogleClient;
 use Google\Http\MediaFileUpload;
 use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\DriveFile;
+use Google\Service\Exception;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
@@ -171,7 +172,7 @@ class GoogleDriveBackupService
                 $status = $media->nextChunk($chunk);
             }
             fclose($handle);
-        } catch (\Google\Service\Exception $e) {
+        } catch (Exception $e) {
             $reason = json_decode($e->getMessage(), true)['error']['message'] ?? $e->getMessage();
             throw new RuntimeException("Google Drive rejected the upload: {$reason}", previous: $e);
         } finally {

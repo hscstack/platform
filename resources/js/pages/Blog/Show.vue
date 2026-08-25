@@ -12,7 +12,6 @@ import {
     LogIn,
     X,
     Loader2,
-    Users,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -71,10 +70,13 @@ const handleReactionClick = () => {
     if (!currentUser.value) {
         authModalMessage.value = 'Please sign in to react to this article.';
         showAuthModal.value = true;
+
         return;
     }
 
-    if (isReacting.value) return;
+    if (isReacting.value) {
+        return;
+    }
 
     // Optimistic update
     if (localIsReacted.value) {
@@ -123,10 +125,13 @@ const submitComment = () => {
         authModalMessage.value =
             'Please sign in to join the conversation and leave a comment.';
         showAuthModal.value = true;
+
         return;
     }
 
-    if (!commentForm.content.trim() || commentForm.processing) return;
+    if (!commentForm.content.trim() || commentForm.processing) {
+        return;
+    }
 
     commentForm.post(`/blogs/${props.blog.slug}/comments`, {
         preserveScroll: true,
@@ -137,7 +142,9 @@ const submitComment = () => {
 };
 
 const deleteComment = (commentId: number) => {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
+    if (!confirm('Are you sure you want to delete this comment?')) {
+        return;
+    }
 
     router.delete(`/blogs/comments/${commentId}`, {
         preserveScroll: true,
@@ -163,18 +170,39 @@ const formattedDate = computed(() => {
 });
 
 const formatTimeAgo = (dateStr: string) => {
-    if (!dateStr) return '';
+    if (!dateStr) {
+        return '';
+    }
+
     const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
+
+    if (isNaN(date.getTime())) {
+        return '';
+    }
 
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (seconds < 60) return 'just now';
+
+    if (seconds < 60) {
+        return 'just now';
+    }
+
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
+
+    if (minutes < 60) {
+        return `${minutes}m ago`;
+    }
+
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+
+    if (hours < 24) {
+        return `${hours}h ago`;
+    }
+
     const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}d ago`;
+
+    if (days < 30) {
+        return `${days}d ago`;
+    }
 
     return new Intl.DateTimeFormat('en-US', {
         month: 'short',
@@ -271,17 +299,22 @@ const goBack = () => {
                 <button
                     type="button"
                     @click="showReactorsModal = true"
-                    class="flex items-center gap-1.5 text-slate-500 transition hover:text-rose-600 dark:text-gray-400 dark:hover:text-rose-400 cursor-pointer"
+                    class="flex cursor-pointer items-center gap-1.5 text-slate-500 transition hover:text-rose-600 dark:text-gray-400 dark:hover:text-rose-400"
                 >
                     <Heart class="h-4 w-4 text-rose-500" />
-                    <span>{{ localReactionsCount }} {{ localReactionsCount === 1 ? 'love' : 'loves' }}</span>
+                    <span
+                        >{{ localReactionsCount }}
+                        {{ localReactionsCount === 1 ? 'love' : 'loves' }}</span
+                    >
                 </button>
 
                 <a
                     href="#comments"
                     class="flex items-center gap-1.5 text-slate-500 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                 >
-                    <MessageSquare class="h-4 w-4 text-slate-400 dark:text-gray-500" />
+                    <MessageSquare
+                        class="h-4 w-4 text-slate-400 dark:text-gray-500"
+                    />
                     <span>{{ comments.length }} comments</span>
                 </a>
             </div>
@@ -314,7 +347,7 @@ const goBack = () => {
                     <button
                         @click="handleReactionClick"
                         type="button"
-                        class="group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 select-none active:scale-95 cursor-pointer"
+                        class="group inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 select-none active:scale-95"
                         :class="[
                             localIsReacted
                                 ? 'border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-400'
@@ -325,7 +358,7 @@ const goBack = () => {
                             class="h-5 w-5 transition-transform duration-200 group-hover:scale-110"
                             :class="[
                                 localIsReacted
-                                    ? 'fill-rose-500 text-rose-500 scale-110'
+                                    ? 'scale-110 fill-rose-500 text-rose-500'
                                     : 'text-slate-400 group-hover:text-rose-500 dark:text-gray-400',
                             ]"
                         />
@@ -346,7 +379,9 @@ const goBack = () => {
                         href="#comments"
                         class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700/60"
                     >
-                        <MessageSquare class="h-4 w-4 text-slate-400 dark:text-gray-400" />
+                        <MessageSquare
+                            class="h-4 w-4 text-slate-400 dark:text-gray-400"
+                        />
                         <span>Comment</span>
                     </a>
                 </div>
@@ -357,33 +392,53 @@ const goBack = () => {
                         v-if="localReactionsCount > 0"
                         type="button"
                         @click="showReactorsModal = true"
-                        class="flex items-center gap-2 text-xs text-slate-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition cursor-pointer group"
+                        class="group flex cursor-pointer items-center gap-2 text-xs text-slate-600 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                     >
                         <!-- Overlapping Avatar Stack -->
-                        <div v-if="reactors.length > 0" class="flex -space-x-2 overflow-hidden py-1">
+                        <div
+                            v-if="reactors.length > 0"
+                            class="flex -space-x-2 overflow-hidden py-1"
+                        >
                             <div
                                 v-for="reactor in reactors.slice(0, 3)"
                                 :key="reactor.id"
-                                class="inline-block h-6 w-6 rounded-full ring-2 ring-white overflow-hidden bg-rose-100 dark:ring-gray-900 dark:bg-rose-950"
+                                class="inline-block h-6 w-6 overflow-hidden rounded-full bg-rose-100 ring-2 ring-white dark:bg-rose-950 dark:ring-gray-900"
                             >
                                 <img
-                                    v-if="reactor.image_url || reactor.image_path"
-                                    :src="reactor.image_url || ('/storage/' + reactor.image_path)"
+                                    v-if="
+                                        reactor.image_url || reactor.image_path
+                                    "
+                                    :src="
+                                        reactor.image_url ||
+                                        '/storage/' + reactor.image_path
+                                    "
                                     :alt="reactor.name"
                                     class="h-full w-full object-cover"
                                 />
-                                <span v-else class="flex h-full w-full items-center justify-center text-[10px] font-bold text-rose-600 uppercase dark:text-rose-400">
+                                <span
+                                    v-else
+                                    class="flex h-full w-full items-center justify-center text-[10px] font-bold text-rose-600 uppercase dark:text-rose-400"
+                                >
                                     {{ reactor.name?.charAt(0) || 'U' }}
                                 </span>
                             </div>
                         </div>
 
-                        <span class="underline-offset-2 group-hover:underline font-medium">
-                            {{ localReactionsCount }} {{ localReactionsCount === 1 ? 'person' : 'people' }} loved this
+                        <span
+                            class="font-medium underline-offset-2 group-hover:underline"
+                        >
+                            {{ localReactionsCount }}
+                            {{
+                                localReactionsCount === 1 ? 'person' : 'people'
+                            }}
+                            loved this
                         </span>
                     </button>
 
-                    <span v-else class="text-xs text-slate-500 dark:text-gray-400">
+                    <span
+                        v-else
+                        class="text-xs text-slate-500 dark:text-gray-400"
+                    >
                         Be the first to show some love!
                     </span>
                 </div>
@@ -412,12 +467,21 @@ const goBack = () => {
         </section>
 
         <!-- Comments Section -->
-        <section id="comments" class="mt-12 border-t border-slate-200 pt-10 dark:border-gray-800">
+        <section
+            id="comments"
+            class="mt-12 border-t border-slate-200 pt-10 dark:border-gray-800"
+        >
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
-                    <MessageSquare class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <h2
+                    class="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-gray-100"
+                >
+                    <MessageSquare
+                        class="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                    />
                     <span>Comments</span>
-                    <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-300">
+                    <span
+                        class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-300"
+                    >
                         {{ comments.length }}
                     </span>
                 </h2>
@@ -428,16 +492,23 @@ const goBack = () => {
                 v-if="hasUserCommented"
                 class="mb-8 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4.5 text-sm text-slate-700 dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:text-gray-300"
             >
-                <div class="flex items-center gap-2 font-semibold text-indigo-700 dark:text-indigo-300">
+                <div
+                    class="flex items-center gap-2 font-semibold text-indigo-700 dark:text-indigo-300"
+                >
                     <MessageSquare class="h-4 w-4" />
                     <span>You've already commented on this post</span>
                 </div>
                 <p class="mt-1 text-xs text-slate-600 dark:text-gray-400">
-                    Each user is limited to 1 comment per article. You can delete your existing comment below if you wish to post a new one.
+                    Each user is limited to 1 comment per article. You can
+                    delete your existing comment below if you wish to post a new
+                    one.
                 </p>
             </div>
 
-            <div v-else class="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+            <div
+                v-else
+                class="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900"
+            >
                 <form @submit.prevent="submitComment">
                     <div class="relative">
                         <textarea
@@ -452,7 +523,8 @@ const goBack = () => {
 
                     <div class="mt-3 flex items-center justify-between">
                         <span class="text-xs text-slate-400 dark:text-gray-500">
-                            {{ 1000 - commentForm.content.length }} characters remaining
+                            {{ 1000 - commentForm.content.length }} characters
+                            remaining
                         </span>
 
                         <div class="flex items-center gap-2">
@@ -469,8 +541,11 @@ const goBack = () => {
                             <button
                                 v-else
                                 type="submit"
-                                :disabled="commentForm.processing || !commentForm.content.trim()"
-                                class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="
+                                    commentForm.processing ||
+                                    !commentForm.content.trim()
+                                "
+                                class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Loader2
                                     v-if="commentForm.processing"
@@ -490,8 +565,12 @@ const goBack = () => {
                     v-if="comments.length === 0"
                     class="rounded-2xl border border-dashed border-slate-200 p-8 text-center dark:border-gray-800"
                 >
-                    <MessageSquare class="mx-auto h-8 w-8 text-slate-300 dark:text-gray-600" />
-                    <p class="mt-2 text-sm font-medium text-slate-600 dark:text-gray-400">
+                    <MessageSquare
+                        class="mx-auto h-8 w-8 text-slate-300 dark:text-gray-600"
+                    />
+                    <p
+                        class="mt-2 text-sm font-medium text-slate-600 dark:text-gray-400"
+                    >
                         No comments yet.
                     </p>
                     <p class="mt-0.5 text-xs text-slate-400 dark:text-gray-500">
@@ -510,8 +589,14 @@ const goBack = () => {
                                 class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                             >
                                 <img
-                                    v-if="comment.user?.image_url || comment.user?.image_path"
-                                    :src="comment.user?.image_url || ('/storage/' + comment.user?.image_path)"
+                                    v-if="
+                                        comment.user?.image_url ||
+                                        comment.user?.image_path
+                                    "
+                                    :src="
+                                        comment.user?.image_url ||
+                                        '/storage/' + comment.user?.image_path
+                                    "
                                     :alt="comment.user?.name"
                                     class="h-full w-full object-cover"
                                 />
@@ -522,7 +607,9 @@ const goBack = () => {
 
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-bold text-slate-900 dark:text-gray-100">
+                                    <span
+                                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                                    >
                                         {{ comment.user?.name || 'Anonymous' }}
                                     </span>
                                     <span
@@ -532,7 +619,9 @@ const goBack = () => {
                                         Author
                                     </span>
                                 </div>
-                                <span class="text-xs text-slate-400 dark:text-gray-500">
+                                <span
+                                    class="text-xs text-slate-400 dark:text-gray-500"
+                                >
                                     {{ formatTimeAgo(comment.created_at) }}
                                 </span>
                             </div>
@@ -540,16 +629,22 @@ const goBack = () => {
 
                         <!-- Delete Button (Only for comment author or admin) -->
                         <button
-                            v-if="currentUser && (currentUser.id === comment.user_id || canAccessAdmin)"
+                            v-if="
+                                currentUser &&
+                                (currentUser.id === comment.user_id ||
+                                    canAccessAdmin)
+                            "
                             @click="deleteComment(comment.id)"
                             title="Delete comment"
-                            class="opacity-0 transition-opacity group-hover:opacity-100 rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 cursor-pointer"
+                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                         >
                             <Trash2 class="h-4 w-4" />
                         </button>
                     </div>
 
-                    <p class="mt-3 text-sm leading-relaxed text-slate-700 whitespace-pre-line break-words dark:text-gray-300">
+                    <p
+                        class="mt-3 text-sm leading-relaxed break-words whitespace-pre-line text-slate-700 dark:text-gray-300"
+                    >
                         {{ comment.content }}
                     </p>
                 </div>
@@ -604,19 +699,28 @@ const goBack = () => {
                 >
                     <button
                         @click="showReactorsModal = false"
-                        class="absolute top-3.5 right-3.5 rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
+                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
                     >
                         <X class="h-4 w-4" />
                     </button>
 
-                    <div class="flex items-center gap-2 mb-4">
-                        <Heart class="h-4.5 w-4.5 fill-rose-500 text-rose-500" />
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-gray-100">
-                            Loved by {{ localReactionsCount }} {{ localReactionsCount === 1 ? 'person' : 'people' }}
+                    <div class="mb-4 flex items-center gap-2">
+                        <Heart
+                            class="h-4.5 w-4.5 fill-rose-500 text-rose-500"
+                        />
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Loved by {{ localReactionsCount }}
+                            {{
+                                localReactionsCount === 1 ? 'person' : 'people'
+                            }}
                         </h3>
                     </div>
 
-                    <div class="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-gray-800/80 -mx-1 px-1">
+                    <div
+                        class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
+                    >
                         <div
                             v-if="reactors.length === 0"
                             class="py-6 text-center text-xs text-slate-500 dark:text-gray-400"
@@ -633,8 +737,13 @@ const goBack = () => {
                                 class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-rose-50 font-semibold text-rose-600 dark:bg-rose-950/60 dark:text-rose-300"
                             >
                                 <img
-                                    v-if="reactor.image_url || reactor.image_path"
-                                    :src="reactor.image_url || ('/storage/' + reactor.image_path)"
+                                    v-if="
+                                        reactor.image_url || reactor.image_path
+                                    "
+                                    :src="
+                                        reactor.image_url ||
+                                        '/storage/' + reactor.image_path
+                                    "
                                     :alt="reactor.name"
                                     class="h-full w-full object-cover"
                                 />
@@ -643,12 +752,14 @@ const goBack = () => {
                                 </span>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <p class="text-xs font-semibold text-slate-900 truncate dark:text-gray-100">
+                                <p
+                                    class="truncate text-xs font-semibold text-slate-900 dark:text-gray-100"
+                                >
                                     {{ reactor.name }}
                                 </p>
                                 <p
                                     v-if="reactor.institution"
-                                    class="text-[11px] text-slate-500 truncate dark:text-gray-400"
+                                    class="truncate text-[11px] text-slate-500 dark:text-gray-400"
                                 >
                                     {{ reactor.institution }}
                                 </p>
@@ -659,7 +770,8 @@ const goBack = () => {
                             v-if="localReactionsCount > reactors.length"
                             class="py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400"
                         >
-                            and {{ localReactionsCount - reactors.length }} more...
+                            and
+                            {{ localReactionsCount - reactors.length }} more...
                         </div>
                     </div>
                 </div>
@@ -686,7 +798,7 @@ const goBack = () => {
                 >
                     <button
                         @click="showAuthModal = false"
-                        class="absolute top-3.5 right-3.5 rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
+                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
                     >
                         <X class="h-3.5 w-3.5" />
                     </button>
@@ -711,7 +823,7 @@ const goBack = () => {
                         </Link>
                         <button
                             @click="showAuthModal = false"
-                            class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 cursor-pointer"
+                            class="cursor-pointer rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
                         >
                             Cancel
                         </button>

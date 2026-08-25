@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BlogCommentNotificationMail;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class BlogController extends Controller
@@ -122,7 +123,7 @@ class BlogController extends Controller
         $blog->loadMissing('user:id,name,email,receive_emails');
 
         if ($blog->user && $blog->user_id !== $userId && $blog->user->email && $blog->user->receive_emails !== false) {
-            \Illuminate\Support\Facades\Mail::to($blog->user->email)->queue(new \App\Mail\BlogCommentNotificationMail($blog, $comment));
+            Mail::to($blog->user->email)->queue(new BlogCommentNotificationMail($blog, $comment));
         }
 
         return back()->with('success', 'Comment posted successfully.');
@@ -137,4 +138,3 @@ class BlogController extends Controller
         return back()->with('success', 'Comment deleted successfully.');
     }
 }
-

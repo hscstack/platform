@@ -98,14 +98,23 @@ const formattedDate = computed(() => {
             <div
                 class="mt-auto flex items-center justify-between border-t border-slate-100 pt-3 dark:border-gray-800"
             >
-                <div class="flex items-center gap-3 text-xs text-slate-400 dark:text-gray-500">
+                <div
+                    class="flex items-center gap-3 text-xs text-slate-400 dark:text-gray-500"
+                >
                     <span
                         class="inline-flex items-center gap-1"
-                        :class="{ 'text-rose-500 dark:text-rose-400 font-medium': blog.reactions_count > 0 }"
+                        :class="{
+                            'font-medium text-rose-500 dark:text-rose-400':
+                                blog.reactions_count > 0,
+                        }"
                     >
                         <Heart
                             class="h-3.5 w-3.5"
-                            :class="blog.reactions_count > 0 ? 'fill-rose-500 text-rose-500' : 'text-slate-400 dark:text-gray-500'"
+                            :class="
+                                blog.reactions_count > 0
+                                    ? 'fill-rose-500 text-rose-500'
+                                    : 'text-slate-400 dark:text-gray-500'
+                            "
                         />
                         <span>{{ blog.reactions_count || 0 }}</span>
                     </span>
