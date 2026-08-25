@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Trash2 } from 'lucide-vue-next';
+import { LogIn, Trash2 } from 'lucide-vue-next';
 defineProps({
     user: Object,
 });
+
 const page = usePage();
 const userId = page.props.auth.user.id;
 
@@ -17,6 +18,16 @@ const getRoleBadgeStyles = (role: string) => {
             return 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30';
         default:
             return 'bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+    }
+};
+
+const loginAsUser = (targetUser: any) => {
+    if (
+        confirm(
+            `Login as ${targetUser.name}? You will switch to this user's session.`,
+        )
+    ) {
+        router.post(`/admin/users/${targetUser.id}/login`);
     }
 };
 
@@ -92,6 +103,16 @@ const deleteUser = (id: number) => {
             class="mt-3 block border-t border-gray-100 py-2 pt-3 md:mt-0 md:table-cell md:border-t-0 md:px-6 md:py-4.5 md:pt-0 md:text-right dark:border-gray-800"
         >
             <div class="flex items-center justify-start gap-3.5 md:justify-end">
+                <button
+                    v-if="user.id !== userId"
+                    type="button"
+                    @click="loginAsUser(user)"
+                    class="inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-100 bg-emerald-50/40 px-3 py-1.5 text-xs font-medium text-emerald-600 shadow-2xs transition-all hover:bg-emerald-50 hover:text-emerald-700 md:border-0 md:bg-transparent md:p-0 md:text-emerald-600 md:shadow-none md:hover:text-emerald-700 md:hover:underline dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400 dark:md:bg-transparent dark:md:text-emerald-400 dark:md:hover:text-emerald-400"
+                >
+                    <LogIn class="h-3.5 w-3.5" />
+                    <span>Login</span>
+                </button>
+
                 <Link
                     :href="`/admin/users/edit/${user.id}`"
                     class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-2xs transition-all hover:bg-gray-50 hover:text-blue-600 md:border-0 md:bg-transparent md:p-0 md:text-blue-600 md:shadow-none md:hover:text-blue-700 md:hover:underline dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:md:bg-transparent dark:md:text-blue-400 dark:md:hover:text-blue-400"

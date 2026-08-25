@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
@@ -107,4 +109,17 @@ class UserController extends Controller
             ->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
     }
+
+    /**
+     * Log in as the specified user.
+     */
+    public function loginAs(Request $request, User $user)
+    {
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('index')->with('success', "Logged in as {$user->name}.");
+    }
+
 }
+
