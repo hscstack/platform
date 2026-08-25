@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import {
     Github,
     Facebook,
-    Layers,
+    BookOpen,
     Users,
     UserPlus,
     ExternalLink,
@@ -64,7 +64,14 @@ import AppLogo from './AppLogo.vue';
                     <p
                         class="mt-4 hidden text-xs font-medium text-slate-400 md:block dark:text-gray-500"
                     >
-                        A concern of HSCStack
+                        A concern of
+                        <a
+                            href="https://tajimz.xyz"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-slate-600 underline transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+                            >Tajim</a
+                        >
                     </p>
                 </div>
 
@@ -80,13 +87,13 @@ import AppLogo from './AppLogo.vue';
                         <ul class="mt-5 space-y-3.5">
                             <li>
                                 <Link
-                                    href="/"
+                                    href="/guide"
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
-                                    <Layers
+                                    <BookOpen
                                         class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
                                     />
-                                    <span>Main Platform</span>
+                                    <span>Documentation</span>
                                 </Link>
                             </li>
                             <li>
@@ -159,6 +166,14 @@ import AppLogo from './AppLogo.vue';
                                     Terms of Service
                                 </Link>
                             </li>
+                            <li>
+                                <Link
+                                    href="/content-policy"
+                                    class="text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                >
+                                    Content Policy
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -170,7 +185,14 @@ import AppLogo from './AppLogo.vue';
                 <p
                     class="text-center text-xs font-medium text-slate-400 md:hidden dark:text-gray-500"
                 >
-                    A concern of HSCStack
+                    A concern of
+                    <a
+                        href="https://tajimz.xyz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-slate-600 underline transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+                        >Tajim</a
+                    >
                 </p>
 
                 <p
