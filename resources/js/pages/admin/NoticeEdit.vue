@@ -10,7 +10,7 @@ const props = defineProps({
 const form = useForm({
     title: props.notice?.title || '',
     message: props.notice?.message || '',
-    image: props.notice?.image || '',
+    image: null as File | null,
     show_button: props.notice?.show_button ?? false,
     button_title: props.notice?.button_title || '',
     button_link: props.notice?.button_link || '',
@@ -26,8 +26,9 @@ const goBack = () => {
 };
 
 const submitForm = () => {
-    form.patch('/admin/notice', {
+    form.post('/admin/notice', {
         preserveScroll: true,
+        forceFormData: true,
     });
 };
 </script>
@@ -251,15 +252,19 @@ const submitForm = () => {
                                 for="image"
                                 class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
                             >
-                                Cover Image URL
+                                Notice Image
                             </label>
                             <input
-                                v-model="form.image"
-                                type="text"
+                                type="file"
                                 id="image"
-                                placeholder="https://example.com/banner.jpg"
+                                accept="image/*"
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border px-4 py-2.5 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
+                                @change="
+                                    form.image =
+                                        ($event.target as HTMLInputElement)
+                                            .files?.[0] || null
+                                "
+                                class="w-full rounded-xl border px-4 py-2.5 text-sm transition outline-none file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white dark:file:bg-gray-100 dark:file:text-gray-900"
                                 :class="
                                     form.errors.image
                                         ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
@@ -275,11 +280,11 @@ const submitForm = () => {
                         </div>
 
                         <div
-                            v-if="form.image"
+                            v-if="notice?.image"
                             class="overflow-hidden rounded-xl ring-1 ring-slate-900/10 dark:ring-gray-700"
                         >
                             <img
-                                :src="form.image"
+                                :src="notice.image"
                                 alt="Notice preview"
                                 class="h-32 w-full object-cover"
                             />

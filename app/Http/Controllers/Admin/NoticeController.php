@@ -18,8 +18,15 @@ class NoticeController extends Controller
 
     public function update(UpdateNoticeRequest $request)
     {
+        $data = $request->validated();
 
-        Notice::singleton()->update($request->validated());
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('notices');
+        } else {
+            unset($data['image']);
+        }
+
+        Notice::singleton()->update($data);
 
         return redirect()->route('admin.notice.edit')->with('success', 'Notice updated.');
     }
