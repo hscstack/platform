@@ -33,7 +33,10 @@ const filteredSubjects = computed(() => {
             name="description"
             content="Free curated open learning platform for HSC and SSC students in Bangladesh with topic-wise video lectures, PDFs, notes, and question banks."
         />
-        <meta property="og:title" content="HSCStack - HSC & SSC Learning Platform" />
+        <meta
+            property="og:title"
+            content="HSCStack - HSC & SSC Learning Platform"
+        />
         <meta
             property="og:description"
             content="Free curated open learning platform for HSC and SSC students in Bangladesh with topic-wise video lectures, PDFs, notes, and question banks."

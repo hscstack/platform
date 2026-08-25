@@ -20,6 +20,7 @@ const user = computed(() => props.user || page.props.auth?.user);
 
 const hasNoRole = computed(() => {
     const roles = user.value?.roles;
+
     return !roles || roles.length === 0;
 });
 
@@ -89,8 +90,9 @@ const submitForm = () => {
                     <p
                         class="max-w-xl text-xs leading-relaxed text-slate-600 dark:text-gray-400"
                     >
-                        আমাদের টিমে Resource Curator, Developer বা Campus Promoter হিসেবে যুক্ত হতে চান?
-                        আপনার দক্ষতা ও আগ্রহ দিয়ে HSCStack-কে আরও সমৃদ্ধ করতে আবেদন করুন।
+                        আমাদের টিমে Resource Curator, Developer বা Campus
+                        Promoter হিসেবে যুক্ত হতে চান? আপনার দক্ষতা ও আগ্রহ দিয়ে
+                        HSCStack-কে আরও সমৃদ্ধ করতে আবেদন করুন।
                     </p>
                 </div>
 

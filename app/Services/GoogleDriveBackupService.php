@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Exception;
 use Google\Client as GoogleClient;
+use Google\Http\MediaFileUpload;
 use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\DriveFile;
 use Illuminate\Support\Facades\Log;
@@ -92,12 +92,12 @@ class GoogleDriveBackupService
 
         if (! $clientId || ! $clientSecret || ! $refreshToken) {
             throw new RuntimeException(
-                'Google Drive credentials are missing. Set GOOGLE_DRIVE_CLIENT_ID, ' .
+                'Google Drive credentials are missing. Set GOOGLE_DRIVE_CLIENT_ID, '.
                     'GOOGLE_DRIVE_CLIENT_SECRET and GOOGLE_DRIVE_REFRESH_TOKEN in .env.'
             );
         }
 
-        $client = new GoogleClient();
+        $client = new GoogleClient;
         $client->setClientId($clientId);
         $client->setClientSecret($clientSecret);
         $client->setScopes([GoogleDrive::DRIVE_FILE]);
@@ -109,7 +109,7 @@ class GoogleDriveBackupService
 
         if (isset($token['error'])) {
             throw new RuntimeException(
-                'Failed to refresh Google Drive access token: ' . ($token['error_description'] ?? $token['error'])
+                'Failed to refresh Google Drive access token: '.($token['error_description'] ?? $token['error'])
             );
         }
 
@@ -150,7 +150,7 @@ class GoogleDriveBackupService
                 'fields' => 'id, name, size',
             ]);
 
-            $media = new \Google\Http\MediaFileUpload(
+            $media = new MediaFileUpload(
                 $client,
                 $request,
                 'application/gzip',

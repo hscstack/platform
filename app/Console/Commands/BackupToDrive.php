@@ -31,9 +31,9 @@ class BackupToDrive extends Command
         $timestamp = now()->format('Y-m-d_His');
 
         $this->backupDir = storage_path('app/backups');
-        $this->databaseDumpPath = $this->backupDir . '/database.sql.gz';
-        $this->s3TarPath = $this->backupDir . '/s3.tar';
-        $this->finalArchivePath = $this->backupDir . "/hsc-stack-backup-{$timestamp}.tar.gz";
+        $this->databaseDumpPath = $this->backupDir.'/database.sql.gz';
+        $this->s3TarPath = $this->backupDir.'/s3.tar';
+        $this->finalArchivePath = $this->backupDir."/hsc-stack-backup-{$timestamp}.tar.gz";
     }
 
     public function handle(): int
@@ -63,7 +63,7 @@ class BackupToDrive extends Command
 
             return self::SUCCESS;
         } catch (Exception $e) {
-            $this->error('Backup failed: ' . $e->getMessage());
+            $this->error('Backup failed: '.$e->getMessage());
 
             Log::error('backup:drive failed.', [
                 'message' => $e->getMessage(),
@@ -88,16 +88,16 @@ class BackupToDrive extends Command
             );
         }
 
-        $plainSqlPath = $this->backupDir . '/database.sql';
+        $plainSqlPath = $this->backupDir.'/database.sql';
 
         $command = [
             'mysqldump',
-            '--host=' . $connection['host'],
-            '--port=' . $connection['port'],
-            '--user=' . $connection['username'],
+            '--host='.$connection['host'],
+            '--port='.$connection['port'],
+            '--user='.$connection['username'],
             '--single-transaction',
             '--quick',
-            '--result-file=' . $plainSqlPath,
+            '--result-file='.$plainSqlPath,
             $connection['database'],
         ];
 
@@ -109,7 +109,7 @@ class BackupToDrive extends Command
 
         if ($result->failed()) {
             throw new Exception(
-                'mysqldump failed: ' . $result->errorOutput()
+                'mysqldump failed: '.$result->errorOutput()
             );
         }
 
@@ -126,14 +126,14 @@ class BackupToDrive extends Command
      */
     protected function backupStorage(): void
     {
-        $tempStoragePath = $this->backupDir . '/s3';
+        $tempStoragePath = $this->backupDir.'/s3';
 
         File::ensureDirectoryExists($tempStoragePath);
 
         $disk = Storage::disk('s3');
 
         foreach ($disk->allFiles() as $file) {
-            $localFile = $tempStoragePath . '/' . $file;
+            $localFile = $tempStoragePath.'/'.$file;
 
             File::ensureDirectoryExists(
                 dirname($localFile)
@@ -157,7 +157,7 @@ class BackupToDrive extends Command
 
         if ($result->failed()) {
             throw new Exception(
-                'S3 archive failed: ' . $result->errorOutput()
+                'S3 archive failed: '.$result->errorOutput()
             );
         }
 
@@ -182,7 +182,7 @@ class BackupToDrive extends Command
 
         if ($result->failed()) {
             throw new Exception(
-                'Final archive creation failed: ' . $result->errorOutput()
+                'Final archive creation failed: '.$result->errorOutput()
             );
         }
 

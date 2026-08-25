@@ -29,7 +29,10 @@ const clearSearch = () => {
             name="description"
             content="Read study tips, educational articles, subject advice, and preparation guides for HSC and SSC students on HSCStack."
         />
-        <meta property="og:title" content="Educational Blogs & Study Guides - HSCStack" />
+        <meta
+            property="og:title"
+            content="Educational Blogs & Study Guides - HSCStack"
+        />
         <meta
             property="og:description"
             content="Read study tips, educational articles, subject advice, and preparation guides for HSC and SSC students on HSCStack."

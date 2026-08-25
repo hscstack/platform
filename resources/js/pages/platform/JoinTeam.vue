@@ -86,7 +86,10 @@ const whatsappLink = computed(() => {
             name="description"
             content="Join HSCStack as a Campus Promoter, Resource Curator, Social Media Moderator, Blog Writer, or Software Developer."
         />
-        <meta property="og:title" content="Join the Team - Become a Contributor - HSCStack" />
+        <meta
+            property="og:title"
+            content="Join the Team - Become a Contributor - HSCStack"
+        />
         <meta
             property="og:description"
             content="Join HSCStack as a Campus Promoter, Resource Curator, Social Media Moderator, Blog Writer, or Software Developer."

@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('node_id')->constrained('nodes')->cascadeOnDelete();
             $table->enum('resource_type', ['note', 'question', 'pdf', 'image', 'video']);
-            $table->string('title',100);
+            $table->string('title', 100);
             $table->text('content')->nullable();
-            $table->string('file_url',500)->nullable();
+            $table->string('file_url', 500)->nullable();
             $table->timestamps();
         });
     }

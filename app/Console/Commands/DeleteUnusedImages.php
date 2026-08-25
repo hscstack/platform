@@ -37,8 +37,6 @@ class DeleteUnusedImages extends Command
                 ->toArray()
         );
 
-
-
         $this->info('Done.');
     }
 
@@ -47,10 +45,10 @@ class DeleteUnusedImages extends Command
         $files = Storage::allFiles($directory);
 
         foreach ($files as $file) {
-            if (!in_array($file, $usedFiles, true)) {
+            if (! in_array($file, $usedFiles, true)) {
                 $this->line("Unused: {$file}");
 
-                if (!$this->option('dry-run')) {
+                if (! $this->option('dry-run')) {
                     Storage::delete($file);
                 }
             }

@@ -7,7 +7,6 @@ use App\Http\Requests\Blog\StoreBlogRequest;
 use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Blog;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -41,7 +40,6 @@ class BlogController extends Controller
         $data = $request->validated();
         $data['user_id'] = Auth::id();
 
-
         if ($request->hasFile('featured_image')) {
             $path = $request->file('featured_image')
                 ->store('blogs');
@@ -51,14 +49,12 @@ class BlogController extends Controller
 
         Blog::create($data);
 
-
         return redirect()->route('admin.blogs.index');
     }
 
     public function update(UpdateBlogRequest $request, Blog $blog)
     {
         $data = $request->validated();
-
 
         if ($request->hasFile('featured_image')) {
 
@@ -77,7 +73,6 @@ class BlogController extends Controller
 
         $blog->update($data);
 
-
         return redirect()
             ->route('admin.blogs.index')
             ->with('success', 'Blog updated successfully.');
@@ -90,9 +85,7 @@ class BlogController extends Controller
             Storage::delete($blog->featured_image_path);
         }
 
-
         $blog->delete();
-
 
         return redirect()
             ->back()

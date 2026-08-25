@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Helpers\CacheHelper;
 use App\Models\Subject;
-use Illuminate\Support\Facades\Cache;
 
 class SubjectObserver
 {

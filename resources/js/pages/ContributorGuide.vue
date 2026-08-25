@@ -107,7 +107,10 @@ onUnmounted(() => {
             name="description"
             content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."
         />
-        <meta property="og:title" content="Contributor Handbook & Guidelines - HSCStack" />
+        <meta
+            property="og:title"
+            content="Contributor Handbook & Guidelines - HSCStack"
+        />
         <meta
             property="og:description"
             content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."

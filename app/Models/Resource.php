@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * @property-read \App\Models\Node $node
+ * @property-read Node $node
  */
 class Resource extends Model
 {
@@ -19,9 +19,11 @@ class Resource extends Model
         'external_url',
         'user_id',
     ];
+
     protected $appends = [
         'file_url',
     ];
+
     public function getFileUrlAttribute(): ?string
     {
         if ($this->external_url) {
@@ -40,6 +42,7 @@ class Resource extends Model
     {
         return $this->belongsTo(Node::class);
     }
+
     public function user()
     {
         return $this->belongsTo(User::class);

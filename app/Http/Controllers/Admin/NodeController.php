@@ -13,10 +13,9 @@ use Inertia\Inertia;
 
 class NodeController extends Controller
 {
-
     public function show(Subject $subject, $path = null)
     {
-        if (!$path) {
+        if (! $path) {
             $nodes = Node::where('subject_id', $subject->id)
                 ->orderBy('sort_order')
                 ->whereNull('parent_id')
@@ -37,7 +36,9 @@ class NodeController extends Controller
             ->whereNull('parent_id')
             ->where('slug', $slugs[0])
             ->first();
-        if (!$node) abort(404);
+        if (! $node) {
+            abort(404);
+        }
 
         foreach (array_slice($slugs, 1) as $slug) {
             $node = $node->children()->where('slug', $slug)->first();
@@ -50,7 +51,6 @@ class NodeController extends Controller
             'parent' => $node ?? null,
         ]);
     }
-
 
     public function create(Subject $subject, Request $request)
     {
@@ -80,21 +80,19 @@ class NodeController extends Controller
         ]);
     }
 
-
     public function store(StoreNodeRequest $request, Subject $subject)
     {
         $validated = $request->validated();
 
-
         $parent = null;
 
-        if (!empty($validated['parent_id'])) {
+        if (! empty($validated['parent_id'])) {
             $parent = Node::where('id', $validated['parent_id'])
                 ->where('subject_id', $subject->id)
                 ->firstOrFail();
         }
 
-        $slug = !empty($validated['slug'])
+        $slug = ! empty($validated['slug'])
             ? Str::slug($validated['slug'])
             : Str::slug($validated['name']);
 
@@ -119,8 +117,6 @@ class NodeController extends Controller
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
 
-
-
         $redirect = $validated['redirect'] ? $validated['redirect'] : explode('/create', url()->previous())[0];
 
         return redirect($redirect)->with('success', 'Node created successfully.');
@@ -133,7 +129,7 @@ class NodeController extends Controller
         if (array_key_exists('parent_id', $validated)) {
             $parent = null;
 
-            if (!empty($validated['parent_id'])) {
+            if (! empty($validated['parent_id'])) {
                 $parent = Node::where('id', $validated['parent_id'])
                     ->where('subject_id', $subject->id)
                     ->where('id', '!=', $node->id)
@@ -148,7 +144,7 @@ class NodeController extends Controller
         }
 
         if (array_key_exists('name', $validated) || array_key_exists('slug', $validated) || array_key_exists('parent_id', $validated)) {
-            $rawSlug = !empty($validated['slug'])
+            $rawSlug = ! empty($validated['slug'])
                 ? $validated['slug']
                 : ($validated['name'] ?? $node->name);
 
@@ -187,7 +183,6 @@ class NodeController extends Controller
     public function destroy(Node $node)
     {
         $node->delete();
-
 
         return redirect()->back()->with('success', 'Node deleted successfully.');
     }

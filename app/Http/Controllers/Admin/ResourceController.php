@@ -18,24 +18,22 @@ use Inertia\Inertia;
 
 class ResourceController extends Controller
 {
-
     public function create(Request $request)
     {
         $node = Node::findOrFail($request->node_id);
 
-
         return Inertia::render('admin/ResourceCreateOrEdit', [
             'redirect' => url()->previous(),
-            'node' => $node
+            'node' => $node,
         ]);
     }
+
     public function edit(Resource $resource)
     {
         $node = $resource->node;
 
-
         return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' =>  url()->previous(),
+            'redirect' => url()->previous(),
             'node' => $node,
             'resource' => $resource,
         ]);
@@ -47,7 +45,7 @@ class ResourceController extends Controller
         $validated['user_id'] = Auth::id();
 
         if ($request->hasFile('file')) {
-            $path    = $request->file('file')->store("resources/{$validated['resource_type']}s");
+            $path = $request->file('file')->store("resources/{$validated['resource_type']}s");
             $validated['file_path'] = $path;
         }
 
@@ -55,10 +53,8 @@ class ResourceController extends Controller
 
         $redirect = $validated['redirect'] ?? explode('/resources', url()->previous())[0];
 
-
         return redirect($redirect)->with('success', 'Resource created successfully.');
     }
-
 
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
@@ -95,19 +91,18 @@ class ResourceController extends Controller
         return redirect()->back()->with('success', 'Resource deleted successfully.');
     }
 
-    function createBulkImages(Request $request)
+    public function createBulkImages(Request $request)
     {
         $redirect = $request->input('redirect', url()->previous());
         $node = Node::findOrFail($request->node_id);
 
-
         return Inertia::render('admin/resources/BulkImageCreate', [
             'redirect' => $redirect,
-            'node' => $node
+            'node' => $node,
         ]);
     }
 
-    function storeBulkImages(BulkImageStoreRequest $request)
+    public function storeBulkImages(BulkImageStoreRequest $request)
     {
         $validated = $request->validated();
 
@@ -123,24 +118,21 @@ class ResourceController extends Controller
             }
         });
 
-
         return redirect($validated['redirect'])->with('success', 'Bulk images uploaded successfully.');
     }
 
-    function createBulkVideos(Request $request)
+    public function createBulkVideos(Request $request)
     {
         $redirect = $request->input('redirect', url()->previous());
         $node = Node::findOrFail($request->node_id);
 
-
         return Inertia::render('admin/resources/BulkVideoCreate', [
             'redirect' => $redirect,
-            'node' => $node
+            'node' => $node,
         ]);
     }
 
-
-    function storeBulkVideos(BulkVideoStoreRequest $request)
+    public function storeBulkVideos(BulkVideoStoreRequest $request)
     {
         $validated = $request->validated();
 
@@ -151,8 +143,8 @@ class ResourceController extends Controller
 
         $playlistId = $query['list'] ?? null;
 
-        if (!$playlistId) {
-            return back()->with("error", "Invalid Youtube URL");
+        if (! $playlistId) {
+            return back()->with('error', 'Invalid Youtube URL');
         }
 
         $videos = [];
@@ -167,8 +159,8 @@ class ResourceController extends Controller
                 'key' => config('services.youtube.key'),
             ]);
 
-            if (!$response->successful()) {
-                return back()->with("error", "Unable to fetch youtube url");
+            if (! $response->successful()) {
+                return back()->with('error', 'Unable to fetch youtube url');
             }
 
             $data = $response->json();
@@ -183,7 +175,6 @@ class ResourceController extends Controller
 
             $pageToken = $data['nextPageToken'] ?? null;
         } while ($pageToken);
-
 
         // Apply naming strategy
         foreach ($videos as $index => &$video) {
@@ -212,7 +203,6 @@ class ResourceController extends Controller
                 $video['title'] = "{$validated['naming_prefix']} - {$number}";
             }
         }
-
 
         $userId = Auth::id();
 
