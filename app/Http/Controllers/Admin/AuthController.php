@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -57,6 +59,8 @@ class AuthController extends Controller
                 'email_verified_at' => now(),
             ]);
             $isNewUser = true;
+
+            Mail::to($user->email)->queue(new WelcomeUserMail($user));
         }
 
         Auth::login($user, remember: true);
@@ -70,6 +74,7 @@ class AuthController extends Controller
 
         return $redirect;
     }
+
 
     public function logout(Request $request)
     {
