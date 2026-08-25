@@ -636,7 +636,7 @@ const goBack = () => {
                             "
                             @click="deleteComment(comment.id)"
                             title="Delete comment"
-                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                         >
                             <Trash2 class="h-4 w-4" />
                         </button>
