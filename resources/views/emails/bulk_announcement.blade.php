@@ -17,7 +17,7 @@
         .wrapper {
             width: 100%;
             background-color: #f1f5f9;
-            padding: 48px 0;
+            padding: 40px 0;
         }
         .container {
             max-width: 580px;
@@ -29,60 +29,46 @@
             box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
         }
         .header {
-            padding: 28px 32px;
+            padding: 24px 32px;
             text-align: center;
             background: #ffffff;
             border-bottom: 1px solid #f1f5f9;
         }
         .logo-link {
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            vertical-align: middle;
-        }
-        .logo-box {
             display: inline-block;
-            vertical-align: middle;
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background-color: #0f172a;
-            text-align: center;
-            line-height: 38px;
-            margin-right: 12px;
         }
         .logo-img {
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            display: inline-block;
-            margin-top: 7px;
+            width: 32px;
+            height: 32px;
+            border-radius: 7px;
+            display: block;
+            border: 0;
         }
         .logo-text {
-            display: inline-block;
-            vertical-align: middle;
             font-size: 20px;
             font-weight: 800;
             color: #0f172a;
             letter-spacing: -0.03em;
+            line-height: 1;
         }
         .logo-text-accent {
             color: #4f46e5;
         }
         .content {
-            padding: 36px 36px 28px;
+            padding: 32px 32px 24px;
             font-size: 15px;
             line-height: 1.7;
             color: #334155;
         }
         .banner-container {
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             text-align: center;
         }
         .banner-image {
             max-width: 100%;
             height: auto;
-            border-radius: 14px;
+            border-radius: 12px;
             display: block;
             margin: 0 auto;
             border: 1px solid #e2e8f0;
@@ -132,14 +118,9 @@
             color: #475569;
             font-style: italic;
         }
-        .divider {
-            height: 1px;
-            background-color: #f1f5f9;
-            margin: 28px 0 0;
-        }
         .footer {
             background-color: #f8fafc;
-            padding: 28px 32px;
+            padding: 24px 32px;
             text-align: center;
             font-size: 12px;
             line-height: 1.6;
@@ -149,22 +130,22 @@
         .footer-tagline {
             font-weight: 600;
             color: #334155;
-            margin: 0 0 8px;
+            margin: 0 0 6px;
         }
         .footer-links {
-            margin: 12px 0 16px;
+            margin: 10px 0 14px;
         }
         .footer-links a {
             color: #4f46e5;
             text-decoration: none;
             font-weight: 600;
-            margin: 0 8px;
+            margin: 0 6px;
         }
         .footer-links a:hover {
             text-decoration: underline;
         }
         .footer-notice {
-            margin: 0 0 6px;
+            margin: 0 0 4px;
             color: #94a3b8;
             font-size: 11px;
         }
@@ -182,15 +163,13 @@
 <body>
     <div class="wrapper">
         <div class="container">
-            <!-- Branded Header with HSCStack Logo -->
+            <!-- Clean Single-Box HSCStack Brand Header -->
             <div class="header">
                 <a href="{{ config('app.url', 'https://hscstack.site') }}" class="logo-link" target="_blank">
                     <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                         <tr>
                             <td style="vertical-align: middle; padding-right: 10px;">
-                                <div class="logo-box">
-                                    <img src="{{ config('app.url') }}/favicon.png" alt="HSCStack Logo" class="logo-img" width="24" height="24" />
-                                </div>
+                                <img src="{{ config('app.url') }}/favicon.png" alt="HSCStack" class="logo-img" width="32" height="32" />
                             </td>
                             <td style="vertical-align: middle;">
                                 <span class="logo-text">HSC<span class="logo-text-accent">Stack</span></span>
@@ -217,7 +196,7 @@
                 {!! $mailContent !!}
             </div>
 
-            <!-- Elegant Branded Footer -->
+            <!-- Elegant Footer -->
             <div class="footer">
                 <p class="footer-tagline">
                     HSCStack &mdash; The Open Learning Platform

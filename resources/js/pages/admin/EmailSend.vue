@@ -593,15 +593,11 @@ const submitForm = () => {
                             class="border-b border-slate-100 bg-white py-5 text-center dark:border-gray-800 dark:bg-gray-950"
                         >
                             <div class="inline-flex items-center gap-2.5">
-                                <div
-                                    class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-xs dark:bg-gray-100"
-                                >
-                                    <img
-                                        src="/favicon.svg"
-                                        alt="HSCStack"
-                                        class="h-6 w-6 scale-120 object-cover"
-                                    />
-                                </div>
+                                <img
+                                    src="/favicon.svg"
+                                    alt="HSCStack"
+                                    class="h-8 w-8 rounded-lg shadow-xs"
+                                />
                                 <span
                                     class="text-lg font-extrabold tracking-tight text-slate-900 dark:text-gray-100"
                                 >
