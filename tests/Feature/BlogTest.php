@@ -1,6 +1,6 @@
 <?php
 
-use App\Mail\BlogCommentNotificationMail;
+use App\Mail\BlogNotificationMail;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use App\Models\User;
@@ -159,7 +159,7 @@ test('email is queued to blog author when a new comment is posted', function () 
         ])
         ->assertSessionHas('success');
 
-    Mail::assertQueued(BlogCommentNotificationMail::class, function ($mail) use ($author) {
+    Mail::assertQueued(BlogNotificationMail::class, function ($mail) use ($author) {
         return $mail->hasTo($author->email);
     });
 });
@@ -179,5 +179,40 @@ test('email is not sent if author comments on their own blog', function () {
         ])
         ->assertSessionHas('success');
 
+    Mail::assertNothingQueued();
+});
+
+test('email is queued to author on milestone reactions', function () {
+    Mail::fake();
+
+    $author = User::factory()->create(['email' => 'author@example.com', 'receive_emails' => true]);
+    $blog = Blog::factory()->create([
+        'user_id' => $author->id,
+        'title' => 'Milestone Post',
+        'is_published' => true,
+    ]);
+
+    $firstUser = User::factory()->create(['name' => 'First Lover']);
+    $secondUser = User::factory()->create(['name' => 'Second Lover']);
+
+    // 1st reaction (milestone: 1) -> queues email
+    $this->actingAs($firstUser)->post("/blogs/{$blog->slug}/react");
+    Mail::assertQueued(BlogNotificationMail::class, 1);
+
+    // 2nd reaction (not milestone) -> does not queue new email
+    $this->actingAs($secondUser)->post("/blogs/{$blog->slug}/react");
+    Mail::assertQueued(BlogNotificationMail::class, 1);
+});
+
+test('email is not sent if author reacts to own blog', function () {
+    Mail::fake();
+
+    $author = User::factory()->create(['email' => 'author@example.com', 'receive_emails' => true]);
+    $blog = Blog::factory()->create([
+        'user_id' => $author->id,
+        'is_published' => true,
+    ]);
+
+    $this->actingAs($author)->post("/blogs/{$blog->slug}/react");
     Mail::assertNothingQueued();
 });

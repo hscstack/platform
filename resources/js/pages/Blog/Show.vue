@@ -445,26 +445,29 @@ const goBack = () => {
             </div>
         </article>
 
-        <!-- "Write for us" CTA Banner -->
-        <section
-            class="mt-12 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6 sm:flex sm:items-center sm:justify-between dark:border-indigo-500/30 dark:bg-indigo-500/10"
+        <!-- "Write for us" Minimal Callout -->
+        <div
+            class="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-100/80 bg-indigo-50/40 px-4 py-3 text-xs text-slate-600 dark:border-indigo-950/60 dark:bg-indigo-950/20 dark:text-gray-400"
         >
-            <div class="mb-4 sm:mb-0">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-gray-100">
-                    Want to write a blog on this site?
-                </h3>
-                <p class="mt-1 text-sm text-slate-600 dark:text-gray-400">
-                    Share your thoughts, stories, and expertise with our
-                    community.
-                </p>
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-slate-900 dark:text-gray-200"
+                    >Want to write a blog here?</span
+                >
+                <span class="hidden text-slate-400 sm:inline dark:text-gray-500"
+                    >•</span
+                >
+                <span class="hidden sm:inline"
+                    >Share your thoughts with the community.</span
+                >
             </div>
             <Link
                 href="/join"
-                class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
             >
-                Join us
+                <span>Join us</span>
+                <span aria-hidden="true">&rarr;</span>
             </Link>
-        </section>
+        </div>
 
         <!-- Comments Section -->
         <section
@@ -636,7 +639,7 @@ const goBack = () => {
                             "
                             @click="deleteComment(comment.id)"
                             title="Delete comment"
-                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                         >
                             <Trash2 class="h-4 w-4" />
                         </button>
