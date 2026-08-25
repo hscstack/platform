@@ -27,11 +27,19 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
             </h1>
 
             <p
-                class="mx-auto mb-10 max-w-xl text-base leading-relaxed font-medium text-slate-700/90 sm:text-lg dark:text-gray-400"
+                class="mx-auto mb-2 max-w-xl text-base leading-relaxed font-medium text-slate-700/90 sm:text-lg dark:text-gray-300"
             >
-                HSC & SSC স্টুডেন্টদের জন্য একদম ক্লিন ও ফাস্ট রিসোর্স
-                রিপোজিটরি। সাবজেক্ট এবং চ্যাপ্টার অনুযায়ী খুঁজে নিন প্রয়োজনীয়
-                ক্লাস, নোটস এবং প্র্যাক্টিক্যাল ।
+                HSC & SSC স্টুডেন্টদের জন্য একদম ক্লিন ও ফাস্ট ফ্রি লার্নিং
+                প্ল্যাটফর্ম।
+            </p>
+
+            <p
+                class="mx-auto mb-8 max-w-xl text-xs leading-relaxed text-slate-500 sm:text-sm dark:text-gray-400"
+            >
+                A free, open-source educational repository and learning platform
+                for HSC & SSC students in Bangladesh — access organized video
+                lectures, lecture notes, syllabus breakdowns, and study
+                materials.
             </p>
 
             <div class="group relative mx-auto max-w-lg">
