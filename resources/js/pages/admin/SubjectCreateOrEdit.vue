@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import {
     Atom,
     FlaskConical,
@@ -70,6 +70,8 @@ const submitForm = () => {
 </script>
 
 <template>
+    <Head :title="subject ? `Edit ${subject.name}` : 'Create Subject'" />
+
     <div
         class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >

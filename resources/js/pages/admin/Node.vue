@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
@@ -57,6 +57,8 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
 </script>
 
 <template>
+    <Head :title="parent?.name || subject?.name || 'Manage Nodes'" />
+
     <div
         class="flex w-full flex-1 flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
     >

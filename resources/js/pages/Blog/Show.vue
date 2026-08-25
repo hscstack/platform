@@ -47,10 +47,31 @@ const copyLink = async () => {
 <template>
     <Head>
         <title>{{ blog.meta_title || blog.title }}</title>
-
         <meta
             name="description"
-            :content="blog.meta_description || blog.excerpt"
+            :content="blog.meta_description || blog.excerpt || blog.title"
+        />
+        <meta property="og:title" :content="blog.meta_title || blog.title" />
+        <meta
+            property="og:description"
+            :content="blog.meta_description || blog.excerpt || blog.title"
+        />
+        <meta property="og:type" content="article" />
+        <meta
+            v-if="blog.image_url"
+            property="og:image"
+            :content="blog.image_url"
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" :content="blog.meta_title || blog.title" />
+        <meta
+            name="twitter:description"
+            :content="blog.meta_description || blog.excerpt || blog.title"
+        />
+        <meta
+            v-if="blog.image_url"
+            name="twitter:image"
+            :content="blog.image_url"
         />
     </Head>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
 import UserCard from '@/components/UserCard.vue';
 
@@ -12,6 +12,19 @@ const goBack = () => {
 </script>
 
 <template>
+    <Head>
+        <title>About Us & Core Team</title>
+        <meta
+            name="description"
+            content="Meet the creators, developers, campus promoters, and resource curators behind HSCStack."
+        />
+        <meta property="og:title" content="About Us & Core Team - HSCStack" />
+        <meta
+            property="og:description"
+            content="Meet the creators, developers, campus promoters, and resource curators behind HSCStack."
+        />
+    </Head>
+
     <header class="mx-auto max-w-4xl px-4 pt-16 pb-14 text-center sm:pt-20">
         <button
             @click="goBack"

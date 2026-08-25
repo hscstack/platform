@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { FolderOpen, ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -47,6 +47,8 @@ const goBack = () => {
 </script>
 
 <template>
+    <Head :title="node ? `Edit ${node.name}` : 'Create Node'" />
+
     <div
         class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >

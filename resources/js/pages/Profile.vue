@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import {
     Loader2,
     Save,
@@ -43,6 +43,14 @@ const submitForm = () => {
 </script>
 
 <template>
+    <Head>
+        <title>Account Settings & Profile</title>
+        <meta
+            name="description"
+            content="Manage your personal profile information, social links, and account settings on HSCStack."
+        />
+    </Head>
+
     <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">

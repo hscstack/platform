@@ -1,6 +1,6 @@
 <!-- Content Policy -->
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     FileText,
     ArrowLeft,
@@ -16,6 +16,15 @@ import {
 </script>
 
 <template>
+    <Head>
+        <title>Content & Copyright Policy</title>
+        <meta
+            name="description"
+            content="Content and Copyright Policy of HSCStack. Information on educational resource fair use, DMCA notices, and contributor content guidelines."
+        />
+        <meta property="og:title" content="Content & Copyright Policy - HSCStack" />
+    </Head>
+
     <header class="mx-auto max-w-3xl px-4 pt-12 pb-8 text-center sm:pt-16">
         <Link
             href="/"

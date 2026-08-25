@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { UserPlus, Loader2, Save } from 'lucide-vue-next';
 import { watch } from 'vue';
 
@@ -61,6 +61,8 @@ const submitForm = () => {
 </script>
 
 <template>
+    <Head :title="user ? `Edit ${user.name}` : 'Create User'" />
+
     <div
         class="mobile-deep-border:p-4 flex min-h-full w-full flex-col justify-start bg-slate-50 p-4 lg:p-10 dark:bg-gray-950"
     >

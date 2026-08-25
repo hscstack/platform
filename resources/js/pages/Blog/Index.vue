@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router, Link } from '@inertiajs/vue3';
+import { router, Link, Head } from '@inertiajs/vue3';
 import { Search, X, ArrowRight, AlertTriangle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
@@ -23,6 +23,19 @@ const clearSearch = () => {
 </script>
 
 <template>
+    <Head>
+        <title>Educational Blogs & Study Guides</title>
+        <meta
+            name="description"
+            content="Read study tips, educational articles, subject advice, and preparation guides for HSC and SSC students on HSCStack."
+        />
+        <meta property="og:title" content="Educational Blogs & Study Guides - HSCStack" />
+        <meta
+            property="og:description"
+            content="Read study tips, educational articles, subject advice, and preparation guides for HSC and SSC students on HSCStack."
+        />
+    </Head>
+
     <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div
             class="mb-10 flex flex-col gap-6 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800"

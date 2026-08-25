@@ -4,7 +4,21 @@ import { ArrowLeft, ExternalLink, ArrowRight, Users } from 'lucide-vue-next';
 </script>
 
 <template>
-    <Head title="Our Products" />
+    <Head>
+        <title>Our Products & Open Source Projects</title>
+        <meta
+            name="description"
+            content="Explore educational platforms, open-source web applications, and learning tools developed by the HSCStack team."
+        />
+        <meta
+            property="og:title"
+            content="Our Products & Open Source Projects - HSCStack"
+        />
+        <meta
+            property="og:description"
+            content="Explore educational platforms, open-source web applications, and learning tools developed by the HSCStack team."
+        />
+    </Head>
 
     <header
         class="mx-auto max-w-4xl px-4 pt-12 pb-8 text-center sm:pt-16 sm:pb-12"

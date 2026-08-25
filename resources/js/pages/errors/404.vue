@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     HelpCircle,
     ArrowLeft,
@@ -18,6 +18,11 @@ const goBack = () => {
 </script>
 
 <template>
+    <Head>
+        <title>404 - Page Not Found</title>
+        <meta name="robots" content="noindex, nofollow" />
+    </Head>
+
     <div
         class="relative flex min-h-[calc(100vh-10rem)] items-center justify-center px-4 py-16 sm:px-6 sm:py-24"
     >

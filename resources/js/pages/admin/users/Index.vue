@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import UserRow from '@/components/admin/UserRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -10,6 +10,8 @@ defineProps({
 </script>
 
 <template>
+    <Head title="Manage Users" />
+
     <div
         class="flex w-full flex-1 flex-col rounded-xl border border-gray-300 bg-white p-4 shadow-xs sm:p-6 dark:border-gray-600 dark:bg-gray-900"
     >

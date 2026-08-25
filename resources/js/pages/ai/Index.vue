@@ -105,7 +105,18 @@ const handleMockSubmit = (question?: string) => {
 </script>
 
 <template>
-    <Head title="HSCStack AI - Coming Soon" />
+    <Head>
+        <title>HSCStack AI - Smart Learning Assistant</title>
+        <meta
+            name="description"
+            content="Interactive AI Learning Assistant for HSC & SSC curriculum in Bangladesh. Topic-wise study help, board question explanations, and instant shortcuts."
+        />
+        <meta property="og:title" content="HSCStack AI - Smart Learning Assistant" />
+        <meta
+            property="og:description"
+            content="Interactive AI Learning Assistant for HSC & SSC curriculum in Bangladesh."
+        />
+    </Head>
 
     <main class="mx-auto max-w-7xl px-4 pt-10 pb-20 sm:px-6">
         <!-- Hero Header -->

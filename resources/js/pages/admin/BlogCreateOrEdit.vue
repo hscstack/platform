@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Upload } from 'lucide-vue-next';
 import HTMLEditor from '@/components/HTMLEditor.vue';
 
@@ -39,6 +39,8 @@ const submitForm = () => {
 </script>
 
 <template>
+    <Head :title="blog ? `Edit ${blog.title}` : 'Write Blog Post'" />
+
     <div
         class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >

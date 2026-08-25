@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
@@ -26,6 +27,19 @@ const totalItemsCount = computed(
 </script>
 
 <template>
+    <Head>
+        <title>{{ currentTitle }}</title>
+        <meta
+            name="description"
+            :content="`Study materials, chapter breakdown, and lecture notes for ${currentTitle} - HSCStack.`"
+        />
+        <meta property="og:title" :content="`${currentTitle} - HSCStack`" />
+        <meta
+            property="og:description"
+            :content="`Study materials, chapter breakdown, and lecture notes for ${currentTitle} - HSCStack.`"
+        />
+    </Head>
+
     <div
         class="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-4xl flex-col px-4 py-8 font-sans text-slate-700 selection:bg-indigo-50 sm:px-6 md:py-12 dark:text-gray-300 dark:selection:bg-indigo-500/30"
     >

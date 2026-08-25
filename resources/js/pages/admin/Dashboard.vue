@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     Sparkles,
@@ -16,6 +16,8 @@ defineProps({
 </script>
 
 <template>
+    <Head title="Staff Dashboard" />
+
     <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
         <!-- Main Dashboard Header -->
         <div

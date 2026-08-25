@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     Megaphone,
@@ -80,6 +80,19 @@ const whatsappLink = computed(() => {
 </script>
 
 <template>
+    <Head>
+        <title>Join the Team - Become a Contributor</title>
+        <meta
+            name="description"
+            content="Join HSCStack as a Campus Promoter, Resource Curator, Social Media Moderator, Blog Writer, or Software Developer."
+        />
+        <meta property="og:title" content="Join the Team - Become a Contributor - HSCStack" />
+        <meta
+            property="og:description"
+            content="Join HSCStack as a Campus Promoter, Resource Curator, Social Media Moderator, Blog Writer, or Software Developer."
+        />
+    </Head>
+
     <!-- Header -->
     <header class="mx-auto max-w-3xl px-4 pt-12 pb-10 text-center sm:pt-16">
         <Link

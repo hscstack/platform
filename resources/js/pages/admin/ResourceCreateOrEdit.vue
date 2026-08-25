@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
     FileText,
     File,
@@ -85,6 +85,8 @@ const submitForm = () => {
 </script>
 
 <template>
+    <Head :title="props.resource ? `Edit ${props.resource.title}` : 'Add Resource'" />
+
     <div
         class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >

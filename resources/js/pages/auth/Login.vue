@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     LogIn,
     ShieldCheck,
@@ -17,6 +17,15 @@ const flashSuccess = computed(() => page.props.flash?.success);
 </script>
 
 <template>
+    <Head>
+        <title>Sign In / Register</title>
+        <meta
+            name="description"
+            content="Sign in or create an account on HSCStack with 1-click Google authentication."
+        />
+        <meta property="og:title" content="Sign In / Register - HSCStack" />
+    </Head>
+
     <!-- Atmospheric Blobs -->
     <div class="pointer-events-none fixed inset-0 z-0">
         <div

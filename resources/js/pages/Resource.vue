@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     FileText,
     Image as ImageIcon,
@@ -29,8 +29,6 @@ const props = defineProps({
         default: null,
     },
 });
-console.log(props.previousResourceId);
-console.log(props.nextResourceId);
 
 const isFullscreen = ref(false);
 
@@ -169,6 +167,19 @@ const parseYoutubeUrl = (url) => {
 </script>
 
 <template>
+    <Head>
+        <title>{{ resource.title }}</title>
+        <meta
+            name="description"
+            :content="`Study material: ${resource.title} (${resource.type}) on HSCStack - Open Learning Platform.`"
+        />
+        <meta property="og:title" :content="`${resource.title} - HSCStack`" />
+        <meta
+            property="og:description"
+            :content="`Study material: ${resource.title} (${resource.type}) on HSCStack.`"
+        />
+    </Head>
+
     <div
         class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-4 pt-4 pb-20 sm:px-6 sm:pt-4"
     >

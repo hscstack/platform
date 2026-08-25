@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     Heart,
@@ -15,6 +15,19 @@ const supportUrl = 'https://supportkori.com/hscstack';
 </script>
 
 <template>
+    <Head>
+        <title>Support & Donate</title>
+        <meta
+            name="description"
+            content="Support HSCStack to keep the platform free, ad-free, and accessible to every student in Bangladesh."
+        />
+        <meta property="og:title" content="Support & Donate - HSCStack" />
+        <meta
+            property="og:description"
+            content="Support HSCStack to keep the platform free, ad-free, and accessible to every student in Bangladesh."
+        />
+    </Head>
+
     <header class="mx-auto max-w-3xl px-4 pt-12 pb-8 text-center sm:pt-16">
         <Link
             href="/"

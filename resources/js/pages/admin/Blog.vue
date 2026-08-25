@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import BlogRow from '@/components/BlogRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -13,6 +13,8 @@ defineProps({
 </script>
 
 <template>
+    <Head title="Manage Blogs" />
+
     <div
         class="flex w-full flex-1 flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
     >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { Loader2, Save } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -32,8 +32,10 @@ const submitForm = () => {
 };
 </script>
 <template>
+    <Head title="Site Notice" />
+
     <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-4 lg:p-10 dark:bg-gray-950"
+        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
     >
         <div
             class="w-full rounded-3xl bg-white p-6 shadow-xs ring-1 ring-slate-900/5 md:p-10 dark:bg-gray-900 dark:ring-gray-700"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     Scale,
     ArrowLeft,
@@ -11,6 +11,15 @@ import {
 </script>
 
 <template>
+    <Head>
+        <title>Terms & Conditions</title>
+        <meta
+            name="description"
+            content="Terms and Conditions of use for the HSCStack open educational platform."
+        />
+        <meta property="og:title" content="Terms & Conditions - HSCStack" />
+    </Head>
+
     <header class="mx-auto max-w-3xl px-4 pt-12 pb-8 text-center sm:pt-16">
         <Link
             href="/"

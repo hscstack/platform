@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     Shield,
     ArrowLeft,
@@ -14,6 +14,15 @@ import {
 </script>
 
 <template>
+    <Head>
+        <title>Privacy Policy</title>
+        <meta
+            name="description"
+            content="Privacy Policy for HSCStack. Learn how we handle your data, protect user privacy, and ensure transparent practices."
+        />
+        <meta property="og:title" content="Privacy Policy - HSCStack" />
+    </Head>
+
     <header class="mx-auto max-w-3xl px-4 pt-12 pb-8 text-center sm:pt-16">
         <Link
             href="/"

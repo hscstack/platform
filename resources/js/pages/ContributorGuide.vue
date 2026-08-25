@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     UserPlus,
@@ -101,6 +101,19 @@ onUnmounted(() => {
 </script>
 
 <template>
+    <Head>
+        <title>Contributor Handbook & Guidelines</title>
+        <meta
+            name="description"
+            content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."
+        />
+        <meta property="og:title" content="Contributor Handbook & Guidelines - HSCStack" />
+        <meta
+            property="og:description"
+            content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."
+        />
+    </Head>
+
     <header class="mx-auto max-w-4xl px-4 pt-8 pb-4 text-center sm:pt-12">
         <Link
             href="/"

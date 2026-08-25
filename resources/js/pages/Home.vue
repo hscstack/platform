@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import AIBanner from '@/components/AIBanner.vue';
 import BlogCard from '@/components/BlogCard.vue';
@@ -27,6 +27,19 @@ const filteredSubjects = computed(() => {
 </script>
 
 <template>
+    <Head>
+        <title>HSC & SSC Study Resources, Video Lectures & Notes</title>
+        <meta
+            name="description"
+            content="Free curated open learning platform for HSC and SSC students in Bangladesh with topic-wise video lectures, PDFs, notes, and question banks."
+        />
+        <meta property="og:title" content="HSCStack - HSC & SSC Learning Platform" />
+        <meta
+            property="og:description"
+            content="Free curated open learning platform for HSC and SSC students in Bangladesh with topic-wise video lectures, PDFs, notes, and question banks."
+        />
+    </Head>
+
     <NoticeDialog v-if="notice" :notice="notice" />
 
     <PwaInstallPrompt v-if="!notice" variant="modal" />
