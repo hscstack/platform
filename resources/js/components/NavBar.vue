@@ -34,7 +34,9 @@ const user = computed(() => page.props.auth?.user);
 const canAccessAdmin = computed(() => page.props.auth?.can_access_admin);
 const currentUrl = computed(() => page.url);
 
-const isProjectsActive = computed(() => currentUrl.value.startsWith('/projects'));
+const isProjectsActive = computed(() =>
+    currentUrl.value.startsWith('/projects'),
+);
 const isBlogsActive = computed(() => currentUrl.value.startsWith('/blogs'));
 
 const dropdownOpen = ref(false);
@@ -75,6 +77,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside);
+
     if (removeNavListener) {
         removeNavListener();
     }
@@ -240,7 +243,11 @@ onBeforeUnmount(() => {
                                         :is="isAdmin ? Home : LayoutDashboard"
                                         class="h-3.5 w-3.5 text-slate-400"
                                     />
-                                    {{ isAdmin ? 'Public Site View' : 'Staff Dashboard' }}
+                                    {{
+                                        isAdmin
+                                            ? 'Public Site View'
+                                            : 'Staff Dashboard'
+                                    }}
                                 </Link>
                             </div>
 
@@ -354,7 +361,9 @@ onBeforeUnmount(() => {
                                 : 'text-slate-700 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-900'
                         "
                     >
-                        <FolderGit2 class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        <FolderGit2
+                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                        />
                         <span>Projects</span>
                     </Link>
 
@@ -368,7 +377,9 @@ onBeforeUnmount(() => {
                                 : 'text-slate-700 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-900'
                         "
                     >
-                        <BookOpen class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <BookOpen
+                            class="h-4 w-4 text-blue-600 dark:text-blue-400"
+                        />
                         <span>Blogs</span>
                     </Link>
 
@@ -397,7 +408,9 @@ onBeforeUnmount(() => {
                                 :is="isAdmin ? Home : LayoutDashboard"
                                 class="h-4 w-4 text-slate-400"
                             />
-                            <span>{{ isAdmin ? 'Public Site View' : 'Staff Dashboard' }}</span>
+                            <span>{{
+                                isAdmin ? 'Public Site View' : 'Staff Dashboard'
+                            }}</span>
                         </Link>
 
                         <Link

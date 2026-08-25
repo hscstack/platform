@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Models\Permission;
 
 class UserController extends Controller
@@ -20,10 +18,11 @@ class UserController extends Controller
             'users' => User::with('roles')->get(),
         ]);
     }
+
     public function create()
     {
         return Inertia::render('admin/users/CreateOrEdit', [
-            'permissions' => Permission::select('name')->get()
+            'permissions' => Permission::select('name')->get(),
         ]);
     }
 
@@ -48,7 +47,6 @@ class UserController extends Controller
         } else {
             $user->syncPermissions([]);
         }
-
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
@@ -80,7 +78,6 @@ class UserController extends Controller
             $validated['image_path'] = $path;
         }
 
-
         $user->update($validated);
 
         if (isset($validated['role'])) {
@@ -102,9 +99,10 @@ class UserController extends Controller
             ->with('success', 'User updated successfully.');
     }
 
-    function destroy(User $user)
+    public function destroy(User $user)
     {
         $user->delete();
+
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User deleted successfully.');

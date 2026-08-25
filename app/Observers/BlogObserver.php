@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Helpers\CacheHelper;
 use App\Models\Blog;
-use Illuminate\Support\Facades\Cache;
 
 class BlogObserver
 {

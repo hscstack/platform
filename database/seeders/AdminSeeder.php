@@ -12,13 +12,12 @@ class AdminSeeder extends Seeder
         $admin = User::updateOrCreate(
             ['email' => config('app.admin_email')],
             [
-                'name'              => config('app.admin_name', 'ADMIN'),
+                'name' => config('app.admin_name', 'ADMIN'),
                 'email_verified_at' => now(),
             ]
         );
 
         $admin->assignRole('admin');
 
-        
     }
 }

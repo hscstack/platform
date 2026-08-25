@@ -4,7 +4,6 @@ namespace App\Http\Requests\Subject;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UpdateSubjectRequest extends FormRequest
@@ -16,6 +15,7 @@ class UpdateSubjectRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -26,11 +26,11 @@ class UpdateSubjectRequest extends FormRequest
         $subject = $this->route('subject');
 
         return [
-            'name'            => ['sometimes', 'string', 'max:100', 'min:3', Rule::unique('subjects', 'name')->ignore($subject->id),],
+            'name' => ['sometimes', 'string', 'max:100', 'min:3', Rule::unique('subjects', 'name')->ignore($subject->id)],
             'tailwind_format' => ['sometimes', 'string', 'max:100'],
-            'icon'            => ['sometimes', 'string', 'max:50'],
-            'sort_order'      => ['sometimes', 'integer'],
-            'slug'            => ['sometimes', 'string'],
+            'icon' => ['sometimes', 'string', 'max:50'],
+            'sort_order' => ['sometimes', 'integer'],
+            'slug' => ['sometimes', 'string'],
             'course' => ['sometimes', 'string', 'in:ssc,hsc'],
         ];
     }

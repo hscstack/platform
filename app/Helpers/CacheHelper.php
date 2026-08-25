@@ -10,6 +10,7 @@ class CacheHelper
     {
         if ($course) {
             Cache::forget("home_page_data_{$course}");
+
             return;
         }
 

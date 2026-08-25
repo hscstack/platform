@@ -18,16 +18,16 @@ class TrackTraffic
     public function handle(Request $request, Closure $next): Response
     {
 
-        $crawlerDetect = new CrawlerDetect();
+        $crawlerDetect = new CrawlerDetect;
         if ($crawlerDetect->isCrawler($request->userAgent())) {
             return $next($request);
         }
 
         $source = $request->query('utm_source') ?? match (true) {
-            $request->has('fbclid')  => 'facebook',
-            $request->has('gclid')   => 'google_ads',
-            $request->has('igshid')  => 'instagram',
-            $request->has('ttclid')  => 'tiktok',
+            $request->has('fbclid') => 'facebook',
+            $request->has('gclid') => 'google_ads',
+            $request->has('igshid') => 'instagram',
+            $request->has('ttclid') => 'tiktok',
             default => 'direct',
         };
 
@@ -40,7 +40,6 @@ class TrackTraffic
         );
 
         $traffic->increment('visits');
-
 
         return $next($request);
     }

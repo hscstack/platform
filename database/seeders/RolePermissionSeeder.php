@@ -73,9 +73,6 @@ class RolePermissionSeeder extends Seeder
          */
         Permission::findOrCreate('clear cache');
 
-
-
-
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
 
@@ -90,7 +87,6 @@ class RolePermissionSeeder extends Seeder
         ]);
         // Managers can access the admin panel.
         // Additional manager permissions can be added here in the future if needed.
-
 
     }
 }

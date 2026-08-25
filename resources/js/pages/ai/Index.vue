@@ -111,7 +111,10 @@ const handleMockSubmit = (question?: string) => {
             name="description"
             content="Interactive AI Learning Assistant for HSC & SSC curriculum in Bangladesh. Topic-wise study help, board question explanations, and instant shortcuts."
         />
-        <meta property="og:title" content="HSCStack AI - Smart Learning Assistant" />
+        <meta
+            property="og:title"
+            content="HSCStack AI - Smart Learning Assistant"
+        />
         <meta
             property="og:description"
             content="Interactive AI Learning Assistant for HSC & SSC curriculum in Bangladesh."

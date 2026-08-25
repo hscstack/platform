@@ -19,12 +19,11 @@ class SubjectController extends Controller
                 ->withCount([
                     'nodes' => function ($query) {
                         $query->whereNull('parent_id');
-                    }
+                    },
                 ])
                 ->get();
 
-
-            return  [
+            return [
                 'subjects' => $subjects->toArray(),
                 'featured_blogs' => Blog::where('is_featured', true)
                     ->where('is_published', true)

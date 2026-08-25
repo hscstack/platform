@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->string('name',100);
-            $table->string('tailwind_format',100);
-            $table->string('slug',100)->unique();
-            $table->string('icon',50);
+            $table->string('name', 100);
+            $table->string('tailwind_format', 100);
+            $table->string('slug', 100)->unique();
+            $table->string('icon', 50);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
         });

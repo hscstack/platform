@@ -15,7 +15,7 @@ import {
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
-const props = defineProps({
+defineProps({
     resource: {
         type: Object,
         required: true,

@@ -64,7 +64,9 @@ const flashSuccess = computed(() => page.props.flash?.success);
                 v-if="flashError"
                 class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/80 p-4 text-xs font-medium text-rose-700 backdrop-blur-sm dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400"
             >
-                <AlertCircle class="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                <AlertCircle
+                    class="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"
+                />
                 <div class="flex-1">{{ flashError }}</div>
             </div>
 
@@ -73,7 +75,9 @@ const flashSuccess = computed(() => page.props.flash?.success);
                 v-if="flashSuccess"
                 class="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-xs font-medium text-emerald-700 backdrop-blur-sm dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
             >
-                <ShieldCheck class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <ShieldCheck
+                    class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+                />
                 <div class="flex-1">{{ flashSuccess }}</div>
             </div>
 
@@ -84,7 +88,7 @@ const flashSuccess = computed(() => page.props.flash?.success);
                 <!-- Main Action Button -->
                 <a
                     href="/auth/google"
-                    class="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-3.5 px-4 text-sm font-bold text-slate-800 shadow-xs transition-all duration-200 hover:scale-[1.01] hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:hover:bg-gray-750"
+                    class="group dark:hover:bg-gray-750 flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold text-slate-800 shadow-xs transition-all duration-200 hover:scale-[1.01] hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600"
                 >
                     <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24">
                         <path
@@ -108,7 +112,9 @@ const flashSuccess = computed(() => page.props.flash?.success);
                 </a>
 
                 <!-- Guided How-It-Works section -->
-                <div class="mt-6 border-t border-slate-100 pt-6 dark:border-gray-800">
+                <div
+                    class="mt-6 border-t border-slate-100 pt-6 dark:border-gray-800"
+                >
                     <p
                         class="mb-3.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                     >
@@ -122,11 +128,15 @@ const flashSuccess = computed(() => page.props.flash?.success);
                             >
                                 <Zap class="h-3.5 w-3.5" />
                             </div>
-                            <div class="text-xs leading-relaxed text-slate-600 dark:text-gray-400">
-                                <span class="font-semibold text-slate-900 dark:text-gray-200"
+                            <div
+                                class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
+                                <span
+                                    class="font-semibold text-slate-900 dark:text-gray-200"
                                     >Instant 1-Click Access:</span
                                 >
-                                নতুন ইউজার হলে এক ক্লিকেই auto account create হবে, আর পুরাতন ইউজার হলে সরাসরি Login হয়ে যাবে।
+                                নতুন ইউজার হলে এক ক্লিকেই auto account create
+                                হবে, আর পুরাতন ইউজার হলে সরাসরি Login হয়ে যাবে।
                             </div>
                         </div>
 
@@ -136,11 +146,15 @@ const flashSuccess = computed(() => page.props.flash?.success);
                             >
                                 <KeyRound class="h-3.5 w-3.5" />
                             </div>
-                            <div class="text-xs leading-relaxed text-slate-600 dark:text-gray-400">
-                                <span class="font-semibold text-slate-900 dark:text-gray-200"
+                            <div
+                                class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
+                                <span
+                                    class="font-semibold text-slate-900 dark:text-gray-200"
                                     >Zero Password :</span
                                 >
-                                কোনো পাসওয়ার্ড মনে রাখা বা রিসেট করার ঝামেলা নেই—সবকিছু Google-এর মাধ্যমে secure।
+                                কোনো পাসওয়ার্ড মনে রাখা বা রিসেট করার ঝামেলা
+                                নেই—সবকিছু Google-এর মাধ্যমে secure।
                             </div>
                         </div>
 
@@ -150,25 +164,33 @@ const flashSuccess = computed(() => page.props.flash?.success);
                             >
                                 <UserCheck class="h-3.5 w-3.5" />
                             </div>
-                            <div class="text-xs leading-relaxed text-slate-600 dark:text-gray-400">
-                                <span class="font-semibold text-slate-900 dark:text-gray-200"
+                            <div
+                                class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
+                                <span
+                                    class="font-semibold text-slate-900 dark:text-gray-200"
                                     >Be a Contributor:</span
                                 >
-                                একাউন্ট খোলার পর আপনি আমাদের টিমে Contributor বা Curator হিসেবে
+                                একাউন্ট খোলার পর আপনি আমাদের টিমে Contributor বা
+                                Curator হিসেবে
                                 <Link
                                     href="/join"
                                     class="font-semibold text-indigo-600 underline decoration-indigo-300 hover:text-indigo-700 dark:text-indigo-400 dark:decoration-indigo-600"
                                 >
-                                    Apply করতে পারবেন
-                                </Link>।
+                                    Apply করতে পারবেন </Link
+                                >।
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Terms & Privacy subtext -->
-                <div class="mt-6 border-t border-slate-100 pt-4 text-center dark:border-gray-800">
-                    <p class="text-[11px] leading-relaxed text-slate-400 dark:text-gray-500">
+                <div
+                    class="mt-6 border-t border-slate-100 pt-4 text-center dark:border-gray-800"
+                >
+                    <p
+                        class="text-[11px] leading-relaxed text-slate-400 dark:text-gray-500"
+                    >
                         লগইন করার মাধ্যমে আপনি আমাদের
                         <Link
                             href="/terms-service"
@@ -181,8 +203,8 @@ const flashSuccess = computed(() => page.props.flash?.success);
                             href="/privacy-policy"
                             class="font-medium text-slate-600 underline decoration-slate-300 hover:text-slate-900 dark:text-gray-400 dark:decoration-gray-600 dark:hover:text-gray-200"
                         >
-                            Privacy Policy
-                        </Link>-তে সম্মতি দিচ্ছেন।
+                            Privacy Policy </Link
+                        >-তে সম্মতি দিচ্ছেন।
                     </p>
                 </div>
             </div>

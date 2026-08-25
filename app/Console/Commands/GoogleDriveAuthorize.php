@@ -27,7 +27,7 @@ class GoogleDriveAuthorize extends Command
             return self::FAILURE;
         }
 
-        $client = new GoogleClient();
+        $client = new GoogleClient;
         $client->setClientId($clientId);
         $client->setClientSecret($clientSecret);
         $client->setRedirectUri('http://127.0.0.1:8000/local/oauth2callback');
@@ -46,7 +46,7 @@ class GoogleDriveAuthorize extends Command
         $token = $client->fetchAccessTokenWithAuthCode($code);
 
         if (isset($token['error'])) {
-            $this->error('Authorization failed: ' . ($token['error_description'] ?? $token['error']));
+            $this->error('Authorization failed: '.($token['error_description'] ?? $token['error']));
 
             return self::FAILURE;
         }
@@ -59,7 +59,7 @@ class GoogleDriveAuthorize extends Command
 
         $this->newLine();
         $this->info('Success. Add this line to your .env file:');
-        $this->line('GOOGLE_DRIVE_REFRESH_TOKEN=' . $token['refresh_token']);
+        $this->line('GOOGLE_DRIVE_REFRESH_TOKEN='.$token['refresh_token']);
         $this->newLine();
         $this->warn('This token grants upload access to your Drive — treat it like a password.');
 

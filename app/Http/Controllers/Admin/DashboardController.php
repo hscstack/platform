@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    function index()
+    public function index()
     {
         $stats = Cache::remember('admin_dashboard_stats', now()->addHour(), function () {
             return [

@@ -61,7 +61,7 @@ class GenerateSitemap extends Command
 
         $sitemap->writeToFile($path);
 
-        $this->info("Sitemap generated successfully.");
+        $this->info('Sitemap generated successfully.');
         $this->line($path);
 
         return self::SUCCESS;
