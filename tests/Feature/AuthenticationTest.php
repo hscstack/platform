@@ -53,6 +53,24 @@ test('redirects to custom redirect url after authentication if provided', functi
     $response->assertRedirect(url('/ai'));
 });
 
+test('redirects to trusted subdomain after authentication if provided', function () {
+    config(['app.url' => 'https://hscstack.site']);
+    $subdomainUrl = 'https://ssc2026.hscstack.site';
+    $this->get('/auth/google?redirect='.urlencode($subdomainUrl));
+
+    $abstractUser = Mockery::mock(Laravel\Socialite\Two\User::class);
+    $abstractUser->shouldReceive('getId')->andReturn('google-id-subdomain');
+    $abstractUser->shouldReceive('getEmail')->andReturn('subdomain@example.com');
+    $abstractUser->shouldReceive('getName')->andReturn('Subdomain User');
+    $abstractUser->shouldReceive('getNickname')->andReturn('subdomainuser');
+
+    Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+    $response = $this->get(route('auth.google.callback'));
+
+    $response->assertRedirect($subdomainUrl);
+});
+
 test('existing user logs in with google directly and links google id', function () {
     $user = User::factory()->create([
         'email' => 'existing@example.com',
