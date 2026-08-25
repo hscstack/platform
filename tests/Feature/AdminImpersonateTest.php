@@ -23,7 +23,6 @@ test('admin with manage users permission can log in as another user', function (
     $response->assertRedirect(route('index'));
     $response->assertSessionHas('success', 'Logged in as Student User.');
 
-
     $this->assertAuthenticatedAs($targetUser);
 });
 

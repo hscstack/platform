@@ -2,6 +2,7 @@
 
 use App\Mail\BulkAnnouncementMail;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -122,7 +123,7 @@ test('admin can upload cover image and attach url to queued mail', function () {
         'email' => 'student@example.com',
     ]);
 
-    $image = \Illuminate\Http\UploadedFile::fake()->image('banner.jpg', 600, 300);
+    $image = UploadedFile::fake()->image('banner.jpg', 600, 300);
 
     $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
         'recipient_type' => 'single',
@@ -140,4 +141,3 @@ test('admin can upload cover image and attach url to queued mail', function () {
             ! empty($mail->imageUrl);
     });
 });
-

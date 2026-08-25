@@ -11,7 +11,6 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
-
 Route::get('/', [DashboardController::class, 'index'])->name('index');
 
 Route::get('/subjects', [AdminSubjectController::class, 'index'])->name('subjects.index');
@@ -70,11 +69,8 @@ Route::middleware('permission:manage users')->group(function () {
     Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->name('users.login-as');
 });
 
-
-
 Route::get('/emails/send', [AdminEmailController::class, 'create'])->name('emails.create');
 
 Route::middleware('permission:send email')->group(function () {
     Route::post('/emails/send', [AdminEmailController::class, 'store'])->name('emails.store');
 });
-
