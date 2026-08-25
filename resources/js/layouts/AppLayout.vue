@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FloatingShareBar from '@/components/FloatingShareBar.vue';
 import Footer from '@/components/Footer.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import NavBar from '@/components/NavBar.vue';
@@ -31,6 +32,7 @@ import ToastNotification from '@/components/ToastNotification.vue';
 
             <Footer />
         </div>
+        <FloatingShareBar />
         <ToastNotification />
     </div>
 </template>
