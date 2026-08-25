@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, Head } from '@inertiajs/vue3';
 import { Calendar, User, Eye, ArrowLeft } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
     blog: Object,
@@ -27,20 +27,6 @@ const formattedDate = computed(() => {
 
 const goBack = () => {
     window.history.back();
-};
-const copied = ref(false);
-
-const copyLink = async () => {
-    try {
-        await navigator.clipboard.writeText(window.location.href);
-        copied.value = true;
-
-        setTimeout(() => {
-            copied.value = false;
-        }, 2000);
-    } catch (e) {
-        console.error(e);
-    }
 };
 </script>
 
@@ -191,15 +177,6 @@ const copyLink = async () => {
                     >
                         View more articles by {{ blog.user?.name }} →
                     </Link>
-                </div>
-
-                <div class="flex gap-3">
-                    <button
-                        @click="copyLink"
-                        class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-gray-600 dark:text-gray-300 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
-                    >
-                        {{ copied ? 'Copied!' : 'Copy link' }}
-                    </button>
                 </div>
             </div>
         </footer>
