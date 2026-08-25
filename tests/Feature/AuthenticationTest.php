@@ -37,6 +37,22 @@ test('google auth creates new user account if not exists and flashes notice', fu
     ]);
 });
 
+test('redirects to custom redirect url after authentication if provided', function () {
+    $this->get('/auth/google?redirect=/ai');
+
+    $abstractUser = Mockery::mock(Laravel\Socialite\Two\User::class);
+    $abstractUser->shouldReceive('getId')->andReturn('google-id-custom');
+    $abstractUser->shouldReceive('getEmail')->andReturn('redirect-test@example.com');
+    $abstractUser->shouldReceive('getName')->andReturn('Redirect User');
+    $abstractUser->shouldReceive('getNickname')->andReturn('redirectuser');
+
+    Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+    $response = $this->get(route('auth.google.callback'));
+
+    $response->assertRedirect(url('/ai'));
+});
+
 test('existing user logs in with google directly and links google id', function () {
     $user = User::factory()->create([
         'email' => 'existing@example.com',

@@ -246,7 +246,7 @@ onBeforeUnmount(() => {
 
                     <div class="mt-4 flex items-center gap-2">
                         <Link
-                            href="/login"
+                            :href="`/login?redirect=${encodeURIComponent($page.url)}`"
                             @click="showAuthModal = false"
                             class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                         >
