@@ -7,73 +7,173 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             color: #1e293b;
             margin: 0;
             padding: 0;
             -webkit-text-size-adjust: none;
+            -ms-text-size-adjust: none;
         }
         .wrapper {
             width: 100%;
-            background-color: #f8fafc;
-            padding: 40px 0;
+            background-color: #f1f5f9;
+            padding: 48px 0;
         }
         .container {
-            max-width: 600px;
+            max-width: 580px;
             margin: 0 auto;
             background: #ffffff;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
         }
         .header {
-            background-color: #4f46e5;
-            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
             padding: 28px 32px;
-            text-align: left;
+            text-align: center;
+            background: #ffffff;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .header-title {
-            color: #ffffff;
+        .logo-link {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+        }
+        .logo-box {
+            display: inline-block;
+            vertical-align: middle;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background-color: #0f172a;
+            text-align: center;
+            line-height: 38px;
+            margin-right: 12px;
+        }
+        .logo-img {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            display: inline-block;
+            margin-top: 7px;
+        }
+        .logo-text {
+            display: inline-block;
+            vertical-align: middle;
             font-size: 20px;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: -0.02em;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.03em;
+        }
+        .logo-text-accent {
+            color: #4f46e5;
         }
         .content {
-            padding: 32px;
+            padding: 36px 36px 28px;
             font-size: 15px;
-            line-height: 1.65;
+            line-height: 1.7;
             color: #334155;
+        }
+        .banner-container {
+            margin-bottom: 28px;
+            text-align: center;
         }
         .banner-image {
             max-width: 100%;
             height: auto;
-            border-radius: 12px;
+            border-radius: 14px;
             display: block;
-            margin: 0 auto 24px;
+            margin: 0 auto;
+            border: 1px solid #e2e8f0;
         }
-        .content h1 { font-size: 22px; color: #0f172a; margin-top: 0; }
-        .content h2 { font-size: 18px; color: #0f172a; }
-        .content h3 { font-size: 16px; color: #0f172a; }
-        .content p { margin: 0 0 16px; }
-        .content a { color: #4f46e5; text-decoration: underline; font-weight: 500; }
+        .content h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 16px;
+            letter-spacing: -0.02em;
+            line-height: 1.35;
+        }
+        .content h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 24px 0 12px;
+            letter-spacing: -0.01em;
+        }
+        .content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 20px 0 10px;
+        }
+        .content p {
+            margin: 0 0 16px;
+        }
+        .content a {
+            color: #4f46e5;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .content ul, .content ol {
+            padding-left: 20px;
+            margin: 0 0 18px;
+        }
+        .content li {
+            margin-bottom: 8px;
+        }
         .content blockquote {
-            border-left: 4px solid #cbd5e1;
-            margin: 16px 0;
-            padding-left: 16px;
-            color: #64748b;
+            border-left: 4px solid #4f46e5;
+            background-color: #f8fafc;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            padding: 12px 18px;
+            color: #475569;
             font-style: italic;
+        }
+        .divider {
+            height: 1px;
+            background-color: #f1f5f9;
+            margin: 28px 0 0;
         }
         .footer {
             background-color: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-            padding: 24px 32px;
+            padding: 28px 32px;
             text-align: center;
             font-size: 12px;
-            color: #94a3b8;
+            line-height: 1.6;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
         }
-        .footer a {
+        .footer-tagline {
+            font-weight: 600;
+            color: #334155;
+            margin: 0 0 8px;
+        }
+        .footer-links {
+            margin: 12px 0 16px;
+        }
+        .footer-links a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 8px;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        .footer-notice {
+            margin: 0 0 6px;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+        .footer-unsub {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+        .footer-unsub a {
             color: #64748b;
             text-decoration: underline;
         }
@@ -82,19 +182,34 @@
 <body>
     <div class="wrapper">
         <div class="container">
+            <!-- Branded Header with HSCStack Logo -->
             <div class="header">
-                <h1 class="header-title">{{ config('app.name', 'HSCStack') }}</h1>
+                <a href="{{ config('app.url', 'https://hscstack.site') }}" class="logo-link" target="_blank">
+                    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                        <tr>
+                            <td style="vertical-align: middle; padding-right: 10px;">
+                                <div class="logo-box">
+                                    <img src="{{ config('app.url') }}/favicon.png" alt="HSCStack Logo" class="logo-img" width="24" height="24" />
+                                </div>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <span class="logo-text">HSC<span class="logo-text-accent">Stack</span></span>
+                            </td>
+                        </tr>
+                    </table>
+                </a>
             </div>
 
+            <!-- Email Body Content -->
             <div class="content">
                 @if(!empty($recipientName))
-                    <p style="font-weight: 600; color: #0f172a; margin-bottom: 20px;">
+                    <p style="font-weight: 600; font-size: 16px; color: #0f172a; margin-bottom: 20px;">
                         Hello {{ $recipientName }},
                     </p>
                 @endif
 
                 @if(!empty($imageUrl))
-                    <div style="margin-bottom: 24px; text-align: center;">
+                    <div class="banner-container">
                         <img src="{{ $imageUrl }}" alt="Announcement Banner" class="banner-image" />
                     </div>
                 @endif
@@ -102,13 +217,26 @@
                 {!! $mailContent !!}
             </div>
 
+            <!-- Elegant Branded Footer -->
             <div class="footer">
-                <p style="margin: 0 0 8px;">
-                    You are receiving this email because you have an account on {{ config('app.name', 'HSCStack') }}.
+                <p class="footer-tagline">
+                    HSCStack &mdash; The Open Learning Platform
                 </p>
-                <p style="margin: 0;">
-                    To update your email preferences, visit your
-                    <a href="{{ config('app.url') }}/profile">Account Settings</a>.
+                
+                <div class="footer-links">
+                    <a href="{{ config('app.url', 'https://hscstack.site') }}" target="_blank">Visit Platform</a>
+                    &bull;
+                    <a href="{{ config('app.url') }}/blogs" target="_blank">Read Blogs</a>
+                    &bull;
+                    <a href="{{ config('app.url') }}/support" target="_blank">Support Us</a>
+                </div>
+
+                <p class="footer-notice">
+                    You are receiving this email because you have an active account on {{ config('app.name', 'HSCStack') }}.
+                </p>
+                <p class="footer-unsub">
+                    Manage your email preferences anytime in your
+                    <a href="{{ config('app.url') }}/profile" target="_blank">Account Settings</a>.
                 </p>
             </div>
         </div>
