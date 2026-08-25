@@ -69,6 +69,11 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('manage users');
 
         /*
+         * Email management
+         */
+        Permission::findOrCreate('send email');
+
+        /*
          * Maintenance
          */
         Permission::findOrCreate('clear cache');
