@@ -29,8 +29,19 @@ class AuthController extends Controller
             return redirect()->route('admin.index');
         }
 
-        if ($request->filled('redirect') && str_starts_with($request->query('redirect'), '/') && !str_starts_with($request->query('redirect'), '//')) {
-            session(['url.intended' => url($request->query('redirect'))]);
+        if ($request->filled('redirect')) {
+            $redirectUrl = $request->query('redirect');
+
+            if (str_starts_with($redirectUrl, '/') && !str_starts_with($redirectUrl, '//')) {
+                session(['url.intended' => url($redirectUrl)]);
+            } else {
+                $host = parse_url($redirectUrl, PHP_URL_HOST);
+                $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+
+                if ($host && $appHost && ($host === $appHost || str_ends_with($host, '.' . $appHost) || $host === 'localhost')) {
+                    session(['url.intended' => $redirectUrl]);
+                }
+            }
         }
 
         return Socialite::driver('google')->redirect();
