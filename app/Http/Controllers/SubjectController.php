@@ -13,30 +13,34 @@ class SubjectController extends Controller
 {
     public function index($course)
     {
-        $homeData = Cache::rememberForever("home_page_data_{$course}", function () use ($course) {
-            $subjects = Subject::orderBy('sort_order', 'asc')
+        $subjects = Cache::rememberForever("home_page_subjects_{$course}", function () use ($course) {
+            return Subject::orderBy('sort_order', 'asc')
                 ->where('course', $course)
                 ->withCount([
                     'nodes' => function ($query) {
                         $query->whereNull('parent_id');
                     },
                 ])
-                ->get();
-
-            return [
-                'subjects' => $subjects->toArray(),
-                'featured_blogs' => Blog::where('is_featured', true)
-                    ->where('is_published', true)
-                    ->with('user:id,name')
-                    ->latest()
-                    ->limit(3)
-                    ->get()
-                    ->toArray(),
-                'notice' => Notice::activeForDisplay()?->toArray(),
-            ];
+                ->get()
+                ->toArray();
         });
 
-        return Inertia::render('Home', $homeData);
+        $featuredBlogs = Blog::where('is_featured', true)
+            ->where('is_published', true)
+            ->with('user:id,name')
+            ->withCount(['reactions', 'comments'])
+            ->inRandomOrder()
+            ->limit(3)
+            ->get()
+            ->toArray();
+
+        $notice = Notice::activeForDisplay()?->toArray();
+
+        return Inertia::render('Home', [
+            'subjects' => $subjects,
+            'featured_blogs' => $featuredBlogs,
+            'notice' => $notice,
+        ]);
     }
 
     public function show(Subject $subject)

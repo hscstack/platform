@@ -21,7 +21,7 @@ class BlogFactory extends Factory
         $title = fake()->sentence();
 
         return [
-            'user_id' => User::query()->inRandomOrder()->value('id'),
+            'user_id' => User::query()->inRandomOrder()->value('id') ?? User::factory(),
 
             'title' => $title,
             'slug' => fake()->unique()->slug(),

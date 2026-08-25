@@ -53,6 +53,16 @@ class Blog extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function reactions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BlogReaction::class);
+    }
+
+    public function comments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BlogComment::class);
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
