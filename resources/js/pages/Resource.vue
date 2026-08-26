@@ -214,22 +214,12 @@ const parseYoutubeUrl = (url) => {
                 </h1>
             </div>
 
-            <!-- Right: Action Buttons -->
-            <div class="flex shrink-0 items-center gap-2">
-                <a
-                    v-if="resource.file_url"
-                    :href="resource.file_url"
-                    download
-                    target="_blank"
-                    class="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                    title="Download Resource"
-                >
-                    <Download class="h-3.5 w-3.5 stroke-[2.2]" />
-                    <span class="hidden sm:inline">Download</span>
-                </a>
-
+            <!-- Right: Fullscreen Action (for images) -->
+            <div
+                v-if="resource.resource_type === 'image'"
+                class="flex shrink-0 items-center"
+            >
                 <button
-                    v-if="resource.resource_type === 'image'"
                     @click="toggleFullscreen"
                     class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
                     title="View Fullscreen"
