@@ -15,6 +15,7 @@ import {
     ExternalLink,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import YouTubePlayer from '../components/YouTubePlayer.vue';
 
 const props = defineProps({
     resource: {
@@ -166,39 +167,6 @@ watch(isFullscreen, (val) => {
         document.body.style.overflow = val ? 'hidden' : '';
     }
 });
-
-const getYoutubeEmbedUrl = (url: string) => {
-    if (!url) {
-return null;
-}
-
-    try {
-        const parsed = new URL(url);
-        let videoId = null;
-
-        if (parsed.hostname.includes('youtube.com')) {
-            if (parsed.pathname === '/watch') {
-                videoId = parsed.searchParams.get('v');
-            } else if (parsed.pathname.startsWith('/embed/')) {
-                videoId = parsed.pathname.split('/embed/')[1]?.split('?')[0];
-            } else if (parsed.pathname.startsWith('/shorts/')) {
-                videoId = parsed.pathname.split('/shorts/')[1]?.split('?')[0];
-            }
-        }
-
-        if (parsed.hostname === 'youtu.be') {
-            videoId = parsed.pathname.slice(1)?.split('?')[0];
-        }
-
-        if (!videoId) {
-return null;
-}
-
-        return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`;
-    } catch {
-        return null;
-    }
-};
 </script>
 
 <template>
@@ -322,26 +290,7 @@ return null;
         </div>
 
         <div v-else-if="resource.resource_type === 'video'">
-            <div
-                class="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-200/90 bg-black shadow-sm dark:border-gray-800"
-            >
-                <iframe
-                    v-if="getYoutubeEmbedUrl(resource.file_url)"
-                    :src="getYoutubeEmbedUrl(resource.file_url)!"
-                    :title="resource.title"
-                    class="absolute inset-0 h-full w-full border-0"
-                    allow="
-                        accelerometer;
-                        autoplay;
-                        clipboard-write;
-                        encrypted-media;
-                        gyroscope;
-                        picture-in-picture;
-                        web-share;
-                    "
-                    allowfullscreen
-                ></iframe>
-            </div>
+            <YouTubePlayer :url="resource.file_url" :title="resource.title" />
         </div>
 
         <div v-else-if="resource.resource_type === 'note'">
