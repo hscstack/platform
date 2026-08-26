@@ -47,4 +47,9 @@ class Resource extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function completions()
+    {
+        return $this->hasMany(ResourceCompletion::class);
+    }
 }
