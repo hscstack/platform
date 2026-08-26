@@ -18,6 +18,7 @@ import {
     UploadCloud,
     Activity,
     ArrowUpRight,
+    ArrowBigUp,
     Users,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -98,6 +99,13 @@ const props = defineProps<{
             url: string | null;
             created_at: string;
         }>;
+        upvotes?: Array<{
+            type: string;
+            title: string;
+            subtitle?: string;
+            url: string | null;
+            created_at: string;
+        }>;
     };
     suggestedUsers?: Array<{
         id: number;
@@ -159,8 +167,9 @@ const roleInfo = computed(() => getRoleBadge(props.profileUser.roles));
 const totalActivitiesCount = computed(
     () =>
         (props.recentActivities.uploads?.length || 0) +
-        props.recentActivities.reactions.length +
-        props.recentActivities.comments.length,
+        (props.recentActivities.reactions?.length || 0) +
+        (props.recentActivities.comments?.length || 0) +
+        (props.recentActivities.upvotes?.length || 0),
 );
 </script>
 
@@ -814,6 +823,47 @@ const totalActivitiesCount = computed(
                             >
                                 "{{ item.content }}"
                             </p>
+                        </div>
+
+                        <!-- Upvoted Folders -->
+                        <div
+                            v-for="(item, idx) in recentActivities.upvotes"
+                            :key="'upvote-' + idx"
+                            class="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
+                        >
+                            <div class="flex min-w-0 items-center gap-2">
+                                <div
+                                    class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                                >
+                                    <ArrowBigUp
+                                        class="h-3.5 w-3.5 fill-indigo-600 text-indigo-600 dark:fill-indigo-400 dark:text-indigo-400"
+                                    />
+                                </div>
+                                <div class="min-w-0 flex-1 truncate">
+                                    <span
+                                        class="text-xs text-slate-500 dark:text-gray-400"
+                                        >Upvoted folder
+                                    </span>
+                                    <Link
+                                        v-if="item.url"
+                                        :href="item.url"
+                                        class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                                    >
+                                        {{ item.title }}
+                                    </Link>
+                                    <span
+                                        v-if="item.subtitle"
+                                        class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                                    >
+                                        ({{ item.subtitle }})
+                                    </span>
+                                </div>
+                            </div>
+                            <span
+                                class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                            >
+                                {{ item.created_at }}
+                            </span>
                         </div>
                     </div>
                 </div>

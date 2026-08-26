@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BlogComment;
 use App\Models\BlogReaction;
+use App\Models\Node;
+use App\Models\NodeVote;
 use App\Models\Resource;
 use App\Models\ResourceCompletion;
 use App\Models\User;
@@ -38,7 +40,7 @@ class UserProfileController extends Controller
         $totalBlogLikes = BlogReaction::whereIn('blog_id', $user->blogs()->where('is_published', true)->select('id'))->count();
         $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
 
-        // Recent Community Activities (Uploads, completed topics, comments made, reactions given)
+        // Recent Community Activities (Uploads, completed topics, comments made, reactions given, upvoted folders)
         $recentUploads = Resource::where('user_id', $user->id)
             ->with(['node:id,name,subject_id', 'node.subject:id,name'])
             ->latest()
@@ -94,6 +96,35 @@ class UserProfileController extends Controller
             ])
             ->filter(fn ($item) => $item['title'] !== null);
 
+        $recentUpvotes = NodeVote::where('user_id', $user->id)
+            ->where('type', 'up')
+            ->with([
+                'node.subject:id,name,slug',
+                'node.parent:id,name,slug',
+                'node.parent.parent:id,name,slug',
+            ])
+            ->latest('id')
+            ->take(4)
+            ->get()
+            ->map(function ($item) {
+                $node = $item->node;
+                if (! $node) {
+                    return null;
+                }
+
+                $url = $this->buildNodeUrl($node);
+
+                return [
+                    'type' => 'upvote',
+                    'title' => $node->name,
+                    'subtitle' => $node->subject?->name.($node->parent ? ' · '.$node->parent->name : ''),
+                    'url' => $url,
+                    'created_at' => $item->created_at?->diffForHumans(),
+                ];
+            })
+            ->filter()
+            ->values();
+
         // Suggested / Discover community members: 2 contributors + 2 general users
         $contributorUsers = User::where('id', '!=', $user->id)
             ->whereNotNull('username')
@@ -147,8 +178,25 @@ class UserProfileController extends Controller
                 'completions' => $recentCompleted->values(),
                 'reactions' => $recentReactions->values(),
                 'comments' => $recentComments->values(),
+                'upvotes' => $recentUpvotes->values(),
             ],
             'suggestedUsers' => $suggestedUsers,
         ]);
+    }
+
+    private function buildNodeUrl(Node $node): ?string
+    {
+        if (! $node->subject) {
+            return null;
+        }
+
+        $slugs = [];
+        $curr = $node;
+        while ($curr) {
+            array_unshift($slugs, $curr->slug);
+            $curr = $curr->parent;
+        }
+
+        return '/'.$node->subject->slug.'/'.implode('/', $slugs);
     }
 }
