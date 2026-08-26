@@ -13,6 +13,7 @@ import {
     LogIn,
     X,
     ExternalLink,
+    Loader2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import YouTubePlayer from '../components/YouTubePlayer.vue';
@@ -45,21 +46,68 @@ watch(
     },
 );
 
-const handleDownload = () => {
+const isDownloading = ref(false);
+
+const handleDownload = async () => {
     if (!user.value) {
         showAuthModal.value = true;
 
         return;
     }
 
-    if (props.resource?.file_url) {
+    if (!props.resource?.file_url || isDownloading.value) {
+return;
+}
+
+    isDownloading.value = true;
+
+    try {
+        const response = await fetch(props.resource.file_url);
+
+        if (!response.ok) {
+throw new Error('Network response was not ok');
+}
+
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        // Derive file extension from url or mime type
+        const ext =
+            props.resource.file_url.split('.').pop()?.split('?')[0] ||
+            (blob.type.includes('png')
+                ? 'png'
+                : blob.type.includes('jpeg') || blob.type.includes('jpg')
+                  ? 'jpg'
+                  : blob.type.includes('pdf')
+                    ? 'pdf'
+                    : 'file');
+
+        const sanitizedTitle = (props.resource.title || 'study-material')
+            .replace(/[/\\?%*:|"<>]/g, '_')
+            .trim();
+
+        const filename = sanitizedTitle.endsWith(`.${ext}`)
+            ? sanitizedTitle
+            : `${sanitizedTitle}.${ext}`;
+
         const link = document.createElement('a');
-        link.href = props.resource.file_url;
-        link.download = props.resource.title || 'download';
-        link.target = '_blank';
+        link.href = blobUrl;
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+    } catch {
+        // Fallback for strict CORS configurations
+        const link = document.createElement('a');
+        link.href = props.resource.file_url;
+        link.target = '_blank';
+        link.download = props.resource.title || 'download';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } finally {
+        isDownloading.value = false;
     }
 };
 
@@ -233,12 +281,19 @@ watch(isFullscreen, (val) => {
                         resource.file_url && resource.resource_type !== 'video'
                     "
                     @click="handleDownload"
+                    :disabled="isDownloading"
                     type="button"
-                    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                     title="Download Resource"
                 >
-                    <Download class="h-3.5 w-3.5 stroke-[2.2]" />
-                    <span class="hidden sm:inline">Download</span>
+                    <Loader2
+                        v-if="isDownloading"
+                        class="h-3.5 w-3.5 animate-spin"
+                    />
+                    <Download v-else class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">{{
+                        isDownloading ? 'Downloading...' : 'Download'
+                    }}</span>
                 </button>
 
                 <!-- Fullscreen Action (for images) -->
