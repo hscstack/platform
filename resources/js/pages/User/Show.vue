@@ -360,17 +360,6 @@ const totalActivitiesCount = computed(
                                     {{ profileUser.name }}
                                 </h1>
 
-                                <!-- Verified Staff Badge -->
-                                <span
-                                    v-if="profileUser.is_staff"
-                                    class="inline-flex items-center text-blue-600 dark:text-blue-400"
-                                    title="Verified HSCStack Staff / Contributor"
-                                >
-                                    <BadgeCheck
-                                        class="h-4.5 w-4.5 fill-blue-50 stroke-[2.2] sm:h-5 sm:w-5 dark:fill-blue-950/60"
-                                    />
-                                </span>
-
                                 <!-- Role Pill -->
                                 <span
                                     class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold"
