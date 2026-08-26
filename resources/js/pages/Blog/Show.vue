@@ -17,6 +17,7 @@ import {
     BadgeCheck,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import UserListItem from '@/components/UserListItem.vue';
 
 const props = defineProps({
     blog: {
@@ -779,55 +780,12 @@ const goBack = () => {
                             No reactions yet.
                         </div>
 
-                        <Link
+                        <UserListItem
                             v-for="reactor in reactors"
                             :key="reactor.id"
-                            :href="
-                                reactor.username
-                                    ? `/u/${reactor.username}`
-                                    : '#'
-                            "
-                            class="group/user flex items-center gap-3 py-2.5 transition"
-                        >
-                            <div
-                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-rose-50 font-semibold text-rose-600 transition group-hover/user:ring-2 group-hover/user:ring-rose-400 dark:bg-rose-950/60 dark:text-rose-300"
-                            >
-                                <img
-                                    v-if="
-                                        reactor.image_url || reactor.image_path
-                                    "
-                                    :src="
-                                        reactor.image_url ||
-                                        '/storage/' + reactor.image_path
-                                    "
-                                    :alt="reactor.name"
-                                    class="h-full w-full object-cover"
-                                />
-                                <span v-else class="text-xs uppercase">
-                                    {{ reactor.name?.charAt(0) || 'U' }}
-                                </span>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-1">
-                                    <p
-                                        class="truncate text-xs font-semibold text-slate-900 group-hover/user:text-indigo-600 dark:text-gray-100 dark:group-hover/user:text-indigo-400"
-                                    >
-                                        {{ reactor.name }}
-                                    </p>
-                                    <BadgeCheck
-                                        v-if="reactor.roles && reactor.roles.length > 0"
-                                        class="h-3.5 w-3.5 shrink-0 fill-blue-50 text-blue-600 stroke-[2.2] dark:fill-blue-950/60 dark:text-blue-400"
-                                        title="Verified Contributor"
-                                    />
-                                </div>
-                                <p
-                                    v-if="reactor.institution"
-                                    class="truncate text-[11px] text-slate-500 dark:text-gray-400"
-                                >
-                                    {{ reactor.institution }}
-                                </p>
-                            </div>
-                        </Link>
+                            :user="reactor"
+                            theme="rose"
+                        />
 
                         <div
                             v-if="localReactionsCount > reactors.length"
