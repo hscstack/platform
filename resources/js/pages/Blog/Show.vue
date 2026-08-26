@@ -277,16 +277,9 @@ const goBack = () => {
                                 ? `/u/${blog.user.username}`
                                 : '#'
                         "
-                        class="inline-flex items-center gap-1 font-medium text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                        class="font-medium text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
-                        <span>{{ blog.user?.name }}</span>
-                        <BadgeCheck
-                            v-if="
-                                blog.user?.roles && blog.user.roles.length > 0
-                            "
-                            class="h-4 w-4 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
-                            title="Verified Contributor"
-                        />
+                        {{ blog.user?.name }}
                     </Link>
                 </div>
 

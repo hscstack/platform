@@ -51,14 +51,14 @@ class UserProfileController extends Controller
             : false;
 
         $appreciators = $user->appreciators()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.title'])
             ->with('roles:id,name')
             ->latest('user_appreciations.id')
             ->take(50)
             ->get();
 
         $appreciating = $user->appreciatingUsers()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.title'])
             ->with('roles:id,name')
             ->latest('user_appreciations.id')
             ->take(50)
