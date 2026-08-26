@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     Download,
     AlertCircle,
@@ -13,6 +13,7 @@ import {
     LogIn,
     X,
     ExternalLink,
+    CheckCircle2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import YouTubePlayer from '../components/YouTubePlayer.vue';
@@ -30,11 +31,109 @@ const props = defineProps({
         type: Number,
         default: null,
     },
+    isCompleted: {
+        type: Boolean,
+        default: false,
+    },
+    completionsCount: {
+        type: Number,
+        default: 0,
+    },
+    completers: {
+        type: Array as () => any[],
+        default: () => [],
+    },
 });
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const showAuthModal = ref(false);
+const showCompletersModal = ref(false);
+const authModalMessage = ref('Please sign in to continue.');
+
+// Optimistic Completion state
+const localIsCompleted = ref(props.isCompleted);
+const localCompletionsCount = ref(props.completionsCount);
+const localCompleters = ref<any[]>([...(props.completers || [])]);
+const isTogglingCompletion = ref(false);
+
+watch(
+    () => props.isCompleted,
+    (val) => {
+        localIsCompleted.value = val;
+    },
+);
+
+watch(
+    () => props.completionsCount,
+    (val) => {
+        localCompletionsCount.value = val;
+    },
+);
+
+watch(
+    () => props.completers,
+    (val) => {
+        localCompleters.value = [...(val || [])];
+    },
+);
+
+const handleToggleComplete = () => {
+    if (!user.value) {
+        authModalMessage.value =
+            'Please sign in to mark study materials as completed and track your syllabus progress.';
+        showAuthModal.value = true;
+
+        return;
+    }
+
+    if (isTogglingCompletion.value) {
+        return;
+    }
+
+    // Optimistic update
+    if (localIsCompleted.value) {
+        localIsCompleted.value = false;
+        localCompletionsCount.value = Math.max(
+            0,
+            localCompletionsCount.value - 1,
+        );
+        localCompleters.value = localCompleters.value.filter(
+            (c: any) => c.id !== user.value?.id,
+        );
+    } else {
+        localIsCompleted.value = true;
+        localCompletionsCount.value += 1;
+
+        if (user.value) {
+            localCompleters.value = [
+                {
+                    id: user.value.id,
+                    name: user.value.name,
+                    image_url: user.value.image_url,
+                    image_path: user.value.image_path,
+                    institution: user.value.institution,
+                },
+                ...localCompleters.value.filter(
+                    (c: any) => c.id !== user.value.id,
+                ),
+            ];
+        }
+    }
+
+    isTogglingCompletion.value = true;
+    router.post(
+        `/resources/${props.resource.id}/complete`,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => {
+                isTogglingCompletion.value = false;
+            },
+        },
+    );
+};
 
 const isImageLoaded = ref(false);
 
@@ -47,6 +146,8 @@ watch(
 
 const handleDownload = () => {
     if (!user.value) {
+        authModalMessage.value =
+            'Please sign in to download full-resolution study materials.';
         showAuthModal.value = true;
 
         return;
@@ -216,6 +317,78 @@ watch(isFullscreen, (val) => {
 
             <!-- Right: Action Buttons -->
             <div class="flex shrink-0 items-center gap-2">
+                <!-- Mark as Done / Completed Button (Auth-guarded) -->
+                <div class="flex items-center gap-1.5">
+                    <button
+                        @click="handleToggleComplete"
+                        type="button"
+                        class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold shadow-xs transition active:scale-95"
+                        :class="
+                            localIsCompleted
+                                ? 'border-emerald-500/40 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/70 hover:text-emerald-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-900/50 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-400'
+                        "
+                        :title="
+                            localIsCompleted
+                                ? 'Marked as completed (click to undo)'
+                                : 'Mark as done'
+                        "
+                    >
+                        <CheckCircle2
+                            class="h-3.5 w-3.5 stroke-[2.2] transition-colors"
+                            :class="
+                                localIsCompleted
+                                    ? 'fill-emerald-600/20 text-emerald-600 dark:text-emerald-400'
+                                    : ''
+                            "
+                        />
+                        <span class="text-xs font-semibold">{{
+                            localIsCompleted ? 'Done' : 'Mark as Done'
+                        }}</span>
+                    </button>
+
+                    <!-- Completers Avatar Stack & Counter Trigger -->
+                    <button
+                        v-if="localCompletionsCount > 0"
+                        @click="showCompletersModal = true"
+                        type="button"
+                        class="flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 shadow-xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800"
+                        title="View students who completed this"
+                    >
+                        <div class="flex -space-x-1.5 overflow-hidden">
+                            <div
+                                v-for="completer in localCompleters.slice(0, 3)"
+                                :key="completer.id"
+                                class="inline-block h-5 w-5 rounded-full ring-2 ring-white dark:ring-gray-900"
+                            >
+                                <img
+                                    v-if="
+                                        completer.image_url ||
+                                        completer.image_path
+                                    "
+                                    :src="
+                                        completer.image_url ||
+                                        '/storage/' + completer.image_path
+                                    "
+                                    :alt="completer.name"
+                                    class="h-full w-full rounded-full object-cover"
+                                />
+                                <div
+                                    v-else
+                                    class="flex h-full w-full items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                                >
+                                    {{ completer.name?.charAt(0) || 'U' }}
+                                </div>
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs font-bold text-slate-700 dark:text-gray-300"
+                        >
+                            {{ localCompletionsCount }}
+                        </span>
+                    </button>
+                </div>
+
                 <!-- Watch on YouTube Action (For Video Resources) -->
                 <a
                     v-if="
@@ -517,7 +690,7 @@ watch(isFullscreen, (val) => {
         </div>
     </Teleport>
 
-    <!-- Minimal Sign-in Dialog for Guests (Download Auth Guard) -->
+    <!-- Minimal Sign-in Dialog for Guests (Download & Completion Auth Guard) -->
     <Teleport to="body">
         <Transition
             enter-active-class="transition duration-150 ease-out"
@@ -547,8 +720,7 @@ watch(isFullscreen, (val) => {
                         Sign in required
                     </h3>
                     <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        Please sign in to download full-resolution study
-                        materials.
+                        {{ authModalMessage }}
                     </p>
 
                     <div class="mt-4 flex items-center gap-2">
@@ -566,6 +738,119 @@ watch(isFullscreen, (val) => {
                         >
                             Cancel
                         </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <!-- Students who Completed Modal -->
+    <Teleport to="body">
+        <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+        >
+            <div
+                v-if="showCompletersModal"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs dark:bg-black/50"
+                @click.self="showCompletersModal = false"
+            >
+                <div
+                    class="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <button
+                        @click="showCompletersModal = false"
+                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                    >
+                        <X class="h-4 w-4" />
+                    </button>
+
+                    <div class="mb-4 flex items-center gap-2.5">
+                        <div
+                            class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                        >
+                            <CheckCircle2 class="h-4 w-4 stroke-[2.2]" />
+                        </div>
+                        <div>
+                            <h3
+                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                Completed By
+                            </h3>
+                            <p
+                                class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                            >
+                                {{ localCompletionsCount }} student{{
+                                    localCompletionsCount === 1 ? '' : 's'
+                                }}
+                                marked this as done
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
+                    >
+                        <div
+                            v-if="localCompleters.length === 0"
+                            class="py-6 text-center text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            No completions recorded yet.
+                        </div>
+
+                        <div
+                            v-for="completer in localCompleters"
+                            :key="completer.id"
+                            class="flex items-center gap-3 py-2.5"
+                        >
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-50 font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                            >
+                                <img
+                                    v-if="
+                                        completer.image_url ||
+                                        completer.image_path
+                                    "
+                                    :src="
+                                        completer.image_url ||
+                                        '/storage/' + completer.image_path
+                                    "
+                                    :alt="completer.name"
+                                    class="h-full w-full object-cover"
+                                />
+                                <span v-else class="text-xs uppercase">
+                                    {{ completer.name?.charAt(0) || 'U' }}
+                                </span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p
+                                    class="truncate text-xs font-semibold text-slate-900 dark:text-gray-100"
+                                >
+                                    {{ completer.name }}
+                                </p>
+                                <p
+                                    v-if="completer.institution"
+                                    class="truncate text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    {{ completer.institution }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div
+                            v-if="
+                                localCompletionsCount > localCompleters.length
+                            "
+                            class="py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400"
+                        >
+                            and
+                            {{ localCompletionsCount - localCompleters.length }}
+                            more...
+                        </div>
                     </div>
                 </div>
             </div>
