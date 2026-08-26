@@ -14,7 +14,6 @@ import {
     Facebook,
     FileText,
     Github,
-    GraduationCap,
     Heart,
     Instagram,
     LogIn,
@@ -320,17 +319,17 @@ const totalActivitiesCount = computed(
         <div class="mx-auto max-w-3xl space-y-4.5 sm:space-y-6">
             <!-- Profile Identity Card -->
             <div
-                class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs sm:rounded-3xl sm:p-7 dark:border-gray-800 dark:bg-gray-900"
+                class="relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-2xs sm:rounded-3xl sm:p-7 dark:border-gray-800 dark:bg-gray-900"
             >
                 <div
-                    class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-5"
+                    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                    <!-- Left: Avatar & Bio Details -->
-                    <div class="flex min-w-0 items-start gap-3.5 sm:gap-4.5">
+                    <!-- Left: Avatar, Name, Username, Institution, Role -->
+                    <div class="flex min-w-0 items-center gap-4">
                         <!-- Avatar -->
                         <div class="relative shrink-0">
                             <div
-                                class="h-16 w-16 overflow-hidden rounded-2xl shadow-sm ring-4 ring-slate-100 sm:h-20 sm:w-20 dark:ring-gray-800"
+                                class="h-16 w-16 overflow-hidden rounded-2xl border border-black/5 bg-slate-100 sm:h-18 sm:w-18 dark:border-white/10 dark:bg-gray-800"
                             >
                                 <img
                                     v-if="profileUser.image_url"
@@ -340,100 +339,80 @@ const totalActivitiesCount = computed(
                                 />
                                 <div
                                     v-else
-                                    class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-xl font-black text-white sm:text-2xl"
+                                    class="flex h-full w-full items-center justify-center text-xl font-black text-slate-800 uppercase sm:text-2xl dark:text-gray-200"
                                 >
-                                    {{
-                                        profileUser.name.charAt(0).toUpperCase()
-                                    }}
+                                    {{ profileUser.name.charAt(0) }}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Name, Verified Badge, Username & Institution -->
-                        <div class="min-w-0 flex-1 space-y-1">
-                            <div
-                                class="flex flex-wrap items-center gap-1.5 sm:gap-2"
-                            >
+                        <!-- User Details -->
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <h1
-                                    class="truncate text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
+                                    class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
                                 >
                                     {{ profileUser.name }}
                                 </h1>
 
-                                <!-- Role Pill -->
                                 <span
-                                    class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                                    class="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset"
                                     :class="roleInfo.class"
                                 >
                                     {{ roleInfo.label }}
                                 </span>
                             </div>
 
-                            <!-- Username Tag -->
-                            <p
-                                class="text-xs font-semibold text-slate-400 dark:text-gray-500"
-                            >
-                                @{{ profileUser.username }}
-                            </p>
-
-                            <!-- Academic / Institution Info -->
                             <div
-                                v-if="profileUser.institution"
-                                class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-gray-300"
+                                class="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-slate-400 dark:text-gray-500"
                             >
-                                <GraduationCap
-                                    class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-gray-500"
-                                />
-                                <span class="truncate">{{
-                                    profileUser.institution
-                                }}</span>
+                                <span>@{{ profileUser.username }}</span>
+                                <span v-if="profileUser.institution">•</span>
+                                <span
+                                    v-if="profileUser.institution"
+                                    class="truncate text-slate-600 dark:text-gray-400"
+                                >
+                                    {{ profileUser.institution }}
+                                </span>
                             </div>
 
-                            <!-- Tagline / Title -->
                             <p
                                 v-if="profileUser.title"
-                                class="truncate text-xs font-semibold text-indigo-600 dark:text-indigo-400"
+                                class="mt-1 truncate text-xs font-medium text-indigo-600 dark:text-indigo-400"
                             >
                                 {{ profileUser.title }}
                             </p>
                         </div>
                     </div>
 
-                    <!-- Right Actions: Edit (For Profile Owner) or Appreciate (For Others) -->
-                    <div
-                        class="flex shrink-0 items-center self-start pt-1 sm:self-auto sm:pt-0"
-                    >
+                    <!-- Right: Action (Edit or Appreciate) -->
+                    <div class="flex shrink-0 items-center">
                         <Link
                             v-if="isOwnProfile"
                             href="/profile"
-                            class="inline-flex h-8 items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 active:scale-95 sm:h-8.5 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-slate-900 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                         >
                             <Edit3 class="h-3.5 w-3.5" />
-                            <span>Edit</span>
+                            <span>Edit Profile</span>
                         </Link>
 
                         <button
                             v-else
                             @click="handleAppreciate"
                             type="button"
-                            class="group inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9 sm:px-3.5"
+                            class="group inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-2xs transition-all duration-150 select-none active:scale-95"
                             :class="[
                                 localIsAppreciated
-                                    ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
-                                    : 'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
+                                    ? 'border border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
+                                    : 'border border-slate-200 bg-white text-slate-700 hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
                             ]"
-                            :title="
-                                localIsAppreciated
-                                    ? 'Appreciated (click to remove)'
-                                    : 'Appreciate this member'
-                            "
                         >
                             <Heart
                                 class="h-4 w-4 transition-transform group-hover:scale-110"
                                 :class="[
                                     localIsAppreciated
                                         ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
-                                        : 'stroke-[2.2] text-slate-500 group-hover:text-rose-500 dark:text-gray-400 dark:group-hover:text-rose-400',
+                                        : 'stroke-[2.2] text-slate-400 group-hover:text-rose-500 dark:text-gray-400 dark:group-hover:text-rose-400',
                                 ]"
                             />
                             <span>{{
@@ -443,7 +422,7 @@ const totalActivitiesCount = computed(
                             }}</span>
                             <span
                                 v-if="localAppreciationsCount > 0"
-                                class="ml-0.5 rounded-lg px-1.5 py-0.5 text-[11px] font-bold"
+                                class="ml-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold"
                                 :class="[
                                     localIsAppreciated
                                         ? 'bg-rose-200/70 text-rose-700 dark:bg-rose-900/70 dark:text-rose-300'
@@ -457,101 +436,116 @@ const totalActivitiesCount = computed(
                 </div>
 
                 <!-- Bio / About -->
-                <div
+                <p
                     v-if="profileUser.about"
-                    class="mt-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3 text-xs leading-relaxed text-slate-600 sm:rounded-2xl sm:p-3.5 dark:border-gray-800/80 dark:bg-gray-800/30 dark:text-gray-300"
+                    class="mt-4 border-t border-slate-100 pt-3.5 text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:border-gray-800 dark:text-gray-300"
                 >
-                    <p class="whitespace-pre-line">{{ profileUser.about }}</p>
-                </div>
+                    {{ profileUser.about }}
+                </p>
 
-                <!-- Appreciations Summary Pill Row -->
+                <!-- Social Links & Appreciations / Joined -->
                 <div
-                    v-if="localAppreciationsCount > 0 || appreciatingCount > 0"
-                    class="mt-3.5 flex flex-wrap items-center gap-2"
+                    class="mt-3.5 flex flex-wrap items-center justify-between gap-3"
+                    :class="{
+                        'border-t border-slate-100 pt-3.5 dark:border-gray-800':
+                            !profileUser.about,
+                    }"
                 >
-                    <button
-                        v-if="localAppreciationsCount > 0"
-                        type="button"
-                        @click="showAppreciatorsModal = true"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-100 bg-rose-50/70 px-2.5 py-1 text-xs font-bold text-rose-700 transition select-none hover:bg-rose-100 active:scale-95 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
-                        title="View members who appreciated this profile"
-                    >
-                        <Heart
-                            class="h-3.5 w-3.5 fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400"
-                        />
-                        <span
-                            >{{ localAppreciationsCount }}
-                            {{
-                                localAppreciationsCount === 1
-                                    ? 'Appreciation'
-                                    : 'Appreciations'
-                            }}</span
+                    <!-- Appreciations & Appreciating counters -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button
+                            v-if="localAppreciationsCount > 0"
+                            type="button"
+                            @click="showAppreciatorsModal = true"
+                            class="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-slate-600 transition hover:text-rose-600 dark:text-gray-400 dark:hover:text-rose-400"
                         >
-                    </button>
+                            <Heart
+                                class="h-3.5 w-3.5 fill-rose-500 text-rose-500"
+                            />
+                            <span
+                                >{{ localAppreciationsCount }}
+                                {{
+                                    localAppreciationsCount === 1
+                                        ? 'appreciation'
+                                        : 'appreciations'
+                                }}</span
+                            >
+                        </button>
 
-                    <button
-                        v-if="appreciatingCount > 0"
-                        type="button"
-                        @click="showAppreciatingModal = true"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50/80 px-2.5 py-1 text-xs font-semibold text-slate-600 transition select-none hover:bg-slate-100 active:scale-95 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
-                        title="View members this user appreciates"
-                    >
-                        <Heart
-                            class="h-3.5 w-3.5 stroke-[2] text-slate-400 dark:text-gray-500"
-                        />
                         <span
-                            >Appreciating {{ appreciatingCount }}
-                            {{
-                                appreciatingCount === 1 ? 'user' : 'users'
-                            }}</span
+                            v-if="
+                                localAppreciationsCount > 0 &&
+                                appreciatingCount > 0
+                            "
+                            class="text-slate-300 dark:text-gray-700"
+                            >•</span
                         >
-                    </button>
-                </div>
 
-                <!-- Social Links & Joined Date Footer -->
-                <div
-                    class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5 dark:border-gray-800"
-                >
-                    <!-- Social Links -->
-                    <div class="flex items-center gap-2">
-                        <a
-                            v-if="profileUser.facebook"
-                            :href="profileUser.facebook"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-blue-400"
-                            title="Facebook Profile"
+                        <button
+                            v-if="appreciatingCount > 0"
+                            type="button"
+                            @click="showAppreciatingModal = true"
+                            class="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-200"
                         >
-                            <Facebook class="h-3.5 w-3.5" />
-                        </a>
-                        <a
-                            v-if="profileUser.instagram"
-                            :href="profileUser.instagram"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-pink-400"
-                            title="Instagram Profile"
-                        >
-                            <Instagram class="h-3.5 w-3.5" />
-                        </a>
-                        <a
-                            v-if="profileUser.github"
-                            :href="profileUser.github"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
-                            title="GitHub Profile"
-                        >
-                            <Github class="h-3.5 w-3.5" />
-                        </a>
+                            <span
+                                >Appreciating {{ appreciatingCount }}
+                                {{
+                                    appreciatingCount === 1
+                                        ? 'member'
+                                        : 'members'
+                                }}</span
+                            >
+                        </button>
                     </div>
 
-                    <!-- Member Joined Date -->
-                    <div
-                        class="flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-gray-500"
-                    >
-                        <Calendar class="h-3.5 w-3.5" />
-                        <span>Joined {{ profileUser.created_at }}</span>
+                    <!-- Right: Social Links & Joined Date -->
+                    <div class="ml-auto flex items-center gap-3">
+                        <div
+                            v-if="
+                                profileUser.facebook ||
+                                profileUser.instagram ||
+                                profileUser.github
+                            "
+                            class="flex items-center gap-1.5"
+                        >
+                            <a
+                                v-if="profileUser.facebook"
+                                :href="profileUser.facebook"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-blue-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-blue-400"
+                                title="Facebook"
+                            >
+                                <Facebook class="h-3.5 w-3.5" />
+                            </a>
+                            <a
+                                v-if="profileUser.instagram"
+                                :href="profileUser.instagram"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-pink-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-pink-400"
+                                title="Instagram"
+                            >
+                                <Instagram class="h-3.5 w-3.5" />
+                            </a>
+                            <a
+                                v-if="profileUser.github"
+                                :href="profileUser.github"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-900 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                title="GitHub"
+                            >
+                                <Github class="h-3.5 w-3.5" />
+                            </a>
+                        </div>
+
+                        <div
+                            class="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-gray-500"
+                        >
+                            <Calendar class="h-3 w-3" />
+                            <span>Joined {{ profileUser.created_at }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
