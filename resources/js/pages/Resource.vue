@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     Download,
     AlertCircle,
@@ -10,8 +10,10 @@ import {
     RotateCcw,
     User,
     Image as ImageIcon,
+    LogIn,
+    X,
 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     resource: {
@@ -28,6 +30,10 @@ const props = defineProps({
     },
 });
 
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
+const showAuthModal = ref(false);
+
 const isImageLoaded = ref(false);
 
 watch(
@@ -36,6 +42,24 @@ watch(
         isImageLoaded.value = false;
     },
 );
+
+const handleDownload = () => {
+    if (!user.value) {
+        showAuthModal.value = true;
+
+        return;
+    }
+
+    if (props.resource?.file_url) {
+        const link = document.createElement('a');
+        link.href = props.resource.file_url;
+        link.download = props.resource.title || 'download';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+};
 
 const isFullscreen = ref(false);
 
@@ -323,16 +347,15 @@ const parseYoutubeUrl = (url) => {
             </p>
 
             <div class="mt-6 flex justify-center">
-                <a
+                <button
                     v-if="resource.file_url"
-                    :href="resource.file_url"
-                    download
-                    target="_blank"
-                    class="inline-flex touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all duration-200 hover:bg-indigo-700 active:scale-95"
+                    @click="handleDownload"
+                    type="button"
+                    class="inline-flex cursor-pointer touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all duration-200 hover:bg-indigo-700 active:scale-95"
                 >
                     <Download class="h-4 w-4 stroke-[2.5]" />
                     Download
-                </a>
+                </button>
             </div>
         </div>
 
@@ -340,31 +363,47 @@ const parseYoutubeUrl = (url) => {
         <div
             v-if="
                 resource.user?.name ||
+                resource.file_url ||
                 resource.resource_type === 'video' ||
                 (resource.content && resource.resource_type !== 'note')
             "
             class="mt-3.5 space-y-2.5"
         >
             <div
-                v-if="resource.user?.name"
-                class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400"
+                class="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-gray-400"
             >
-                <Link
-                    :href="`/about-us#${resource.user.id}`"
-                    class="group inline-flex items-center gap-1.5 transition hover:text-indigo-600 dark:hover:text-indigo-400"
-                >
-                    <User
-                        class="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 dark:text-gray-500"
-                    />
-                    <span>
-                        Shared by
-                        <span
-                            class="font-bold text-slate-700 group-hover:underline dark:text-gray-300"
-                        >
-                            {{ resource.user.name }}
+                <div v-if="resource.user?.name">
+                    <Link
+                        :href="`/about-us#${resource.user.id}`"
+                        class="group inline-flex items-center gap-1.5 transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                    >
+                        <User
+                            class="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 dark:text-gray-500"
+                        />
+                        <span>
+                            Shared by
+                            <span
+                                class="font-bold text-slate-700 group-hover:underline dark:text-gray-300"
+                            >
+                                {{ resource.user.name }}
+                            </span>
                         </span>
-                    </span>
-                </Link>
+                    </Link>
+                </div>
+
+                <!-- Download File Action (Auth-guarded) -->
+                <button
+                    v-if="
+                        resource.file_url && resource.resource_type !== 'video'
+                    "
+                    @click="handleDownload"
+                    type="button"
+                    class="inline-flex cursor-pointer items-center gap-1.5 font-medium text-slate-600 transition hover:text-indigo-600 active:scale-95 dark:text-gray-400 dark:hover:text-indigo-400"
+                    title="Download full material"
+                >
+                    <Download class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span>Download file</span>
+                </button>
             </div>
 
             <!-- YouTube Educational Disclaimer (For Videos) -->
@@ -463,9 +502,17 @@ const parseYoutubeUrl = (url) => {
                 </div>
 
                 <button
+                    @click="handleDownload"
+                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    title="Download Image"
+                >
+                    <Download class="h-5 w-5" />
+                </button>
+
+                <button
                     v-if="scale > 1"
                     @click="resetZoom"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Reset Zoom"
                 >
                     <RotateCcw class="h-5 w-5" />
@@ -473,7 +520,7 @@ const parseYoutubeUrl = (url) => {
 
                 <button
                     @click="toggleFullscreen"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Exit Fullscreen"
                 >
                     <Minimize2 class="h-5 w-5" />
@@ -489,6 +536,61 @@ const parseYoutubeUrl = (url) => {
                 }"
             />
         </div>
+    </Teleport>
+
+    <!-- Minimal Sign-in Dialog for Guests (Download Auth Guard) -->
+    <Teleport to="body">
+        <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+        >
+            <div
+                v-if="showAuthModal"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs dark:bg-black/50"
+            >
+                <div
+                    class="relative w-full max-w-xs rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <button
+                        @click="showAuthModal = false"
+                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                    >
+                        <X class="h-3.5 w-3.5" />
+                    </button>
+
+                    <h3
+                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        Sign in required
+                    </h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                        Please sign in to download full-resolution study
+                        materials.
+                    </p>
+
+                    <div class="mt-4 flex items-center gap-2">
+                        <Link
+                            :href="`/login?redirect=${encodeURIComponent($page.url)}`"
+                            @click="showAuthModal = false"
+                            class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                        >
+                            <LogIn class="h-3.5 w-3.5" />
+                            <span>Sign in</span>
+                        </Link>
+                        <button
+                            @click="showAuthModal = false"
+                            class="cursor-pointer rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </Teleport>
 </template>
 
