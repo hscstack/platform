@@ -3,6 +3,7 @@
 use App\Mail\NodeNotificationMail;
 use App\Models\Node;
 use App\Models\NodeVote;
+use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -474,4 +475,59 @@ test('author upvoting their own folder does not trigger milestone email', functi
         ->assertRedirect();
 
     Mail::assertNothingQueued();
+});
+
+test('first resource upload in an empty node automatically updates node user_id to the contributor', function () {
+    $admin = User::factory()->create([
+        'name' => 'Admin User',
+        'email' => 'admin@example.com',
+    ]);
+
+    $contributor = User::factory()->create([
+        'name' => 'Contributor Rahim',
+        'email' => 'rahim@example.com',
+        'receive_emails' => true,
+    ]);
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+
+    // Admin pre-creates an empty folder skeleton
+    $folder = Node::create([
+        'user_id' => $admin->id,
+        'subject_id' => $subject->id,
+        'name' => 'Chapter 1 Skeleton',
+        'slug' => 'chapter-1-skeleton',
+    ]);
+
+    expect($folder->user_id)->toBe($admin->id);
+
+    // Contributor uploads the first resource
+    App\Models\Resource::create([
+        'node_id' => $folder->id,
+        'user_id' => $contributor->id,
+        'title' => 'Lecture Note PDF',
+        'resource_type' => 'note',
+    ]);
+
+    // Node owner should now be automatically updated to the contributor
+    $folder->refresh();
+    expect($folder->user_id)->toBe($contributor->id);
+
+    // Upvoting milestone should route to the contributor
+    Mail::fake();
+    $voter = User::factory()->create();
+
+    $this->actingAs($voter)
+        ->post("/nodes/{$folder->id}/vote", ['type' => 'up'])
+        ->assertRedirect();
+
+    Mail::assertQueued(NodeNotificationMail::class, function ($mail) use ($contributor) {
+        return $mail->hasTo($contributor->email);
+    });
 });
