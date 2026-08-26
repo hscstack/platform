@@ -350,6 +350,7 @@ const parseYoutubeUrl = (url) => {
         <div
             v-if="
                 resource.user?.name ||
+                resource.resource_type === 'video' ||
                 (resource.content && resource.resource_type !== 'note')
             "
             class="mt-3.5 space-y-2.5"
@@ -376,9 +377,25 @@ const parseYoutubeUrl = (url) => {
                 </Link>
             </div>
 
-            <!-- Author Note (if provided) -->
+            <!-- YouTube Educational Disclaimer (For Videos) -->
             <div
-                v-if="resource.content && resource.resource_type !== 'note'"
+                v-if="resource.resource_type === 'video'"
+                class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs leading-relaxed text-slate-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-400"
+            >
+                <span class="font-bold text-slate-900 dark:text-gray-200"
+                    >Note:</span
+                >
+                <p class="mt-0.5">
+                    This content is hosted on YouTube by the original creator.
+                    We have embedded it here for educational reference only.
+                </p>
+            </div>
+
+            <!-- Author Note (For Images & other resources if provided) -->
+            <div
+                v-else-if="
+                    resource.content && resource.resource_type !== 'note'
+                "
                 class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs leading-relaxed text-slate-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-400"
             >
                 <span class="font-bold text-slate-900 dark:text-gray-200"
