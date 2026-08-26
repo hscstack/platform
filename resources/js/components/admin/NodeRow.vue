@@ -16,45 +16,43 @@ const handleDelete = () => {
 <template>
     <div
         @click="router.visit(`${$page.url}/${node.slug}`)"
-        class="group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border border-transparent p-2 text-center transition-all duration-200 hover:border-indigo-100/60 hover:bg-slate-50/60 hover:shadow-sm active:scale-95 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/60"
+        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <div
-            class="absolute top-1 right-1 z-10 flex gap-1 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100"
-            @click.stop
-        >
+        <!-- Left: Icon + Full Title -->
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+            <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200/40 bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
+            >
+                <Folder class="h-4.5 w-4.5 stroke-[2]" />
+            </div>
+
+            <div class="min-w-0 flex-1">
+                <h3
+                    class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                >
+                    {{ node.name }}
+                </h3>
+            </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="flex shrink-0 items-center gap-1" @click.stop>
             <Link
                 :href="`/admin/nodes/edit/${node.id}`"
-                class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                 title="Edit Node"
             >
-                <Pencil class="h-2.5 w-2.5" :stroke-width="2.2" />
-                <span>Edit</span>
+                <Pencil class="h-4 w-4" :stroke-width="1.8" />
             </Link>
 
             <button
                 type="button"
                 @click="handleDelete"
-                class="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 title="Delete Node"
             >
-                <Trash2 class="h-2.5 w-2.5" :stroke-width="2.2" />
-                <span>Delete</span>
+                <Trash2 class="h-4 w-4" :stroke-width="1.8" />
             </button>
-        </div>
-
-        <div
-            class="mb-2 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-slate-200/40 bg-slate-100 text-slate-500 transition-colors duration-200 group-hover:border-indigo-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:border-gray-700/40 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:border-indigo-500/30 dark:group-hover:bg-indigo-500/10 dark:group-hover:text-indigo-400"
-        >
-            <Folder class="h-6.5 w-6.5 stroke-[2.2]" />
-        </div>
-
-        <div class="w-full max-w-[100px] px-0.5">
-            <span
-                class="block truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
-                :title="node.name"
-            >
-                {{ node.name }}
-            </span>
         </div>
     </div>
 </template>

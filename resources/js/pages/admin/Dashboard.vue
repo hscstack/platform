@@ -9,11 +9,37 @@ import {
     BookOpen,
     ArrowRight,
     Zap,
+    RefreshCw,
+    BarChart3,
 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
-defineProps({
-    stats: Object,
-});
+const stats = ref<any>(null);
+const isLoading = ref(false);
+const hasFetched = ref(false);
+const errorMsg = ref<string | null>(null);
+
+const fetchAnalytics = async (refresh = false) => {
+    isLoading.value = true;
+    errorMsg.value = null;
+
+    try {
+        const res = await fetch(
+            `/admin/analytics${refresh ? '?refresh=1' : ''}`,
+        );
+
+        if (!res.ok) {
+            throw new Error('Failed to fetch analytics data');
+        }
+
+        stats.value = await res.json();
+        hasFetched.value = true;
+    } catch (e: any) {
+        errorMsg.value = e.message || 'Error loading analytics';
+    } finally {
+        isLoading.value = false;
+    }
+};
 </script>
 
 <template>
@@ -22,7 +48,7 @@ defineProps({
     <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
         <!-- Main Dashboard Header -->
         <div
-            class="relative overflow-hidden rounded-2xl border border-slate-300 bg-gradient-to-r from-white via-slate-50 to-white p-6 shadow-sm sm:p-8 dark:border-gray-700 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
+            class="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-r from-white via-slate-50 to-white p-5 shadow-2xs sm:p-6 dark:border-gray-800 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
         >
             <div
                 class="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/20"
@@ -30,51 +56,71 @@ defineProps({
             <div
                 class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
             >
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3.5">
                     <div
-                        class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-gradient-to-b from-white to-slate-100 text-indigo-600 shadow-sm sm:flex dark:border-gray-700 dark:from-gray-900 dark:to-gray-800 dark:text-indigo-400"
+                        class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-gradient-to-b from-white to-slate-100 text-indigo-600 shadow-2xs sm:flex dark:border-gray-800 dark:from-gray-900 dark:to-gray-800 dark:text-indigo-400"
                     >
-                        <Sparkles class="h-5 w-5" />
+                        <Sparkles class="h-4.5 w-4.5" />
                     </div>
                     <div>
                         <h1
-                            class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
+                            class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
                         >
                             Dashboard
                         </h1>
                         <p
-                            class="mt-0.5 text-sm text-slate-600 dark:text-gray-400"
+                            class="mt-0.5 text-xs text-slate-600 dark:text-gray-400"
                         >
-                            Welcome to your administration workspace. Real-time
-                            operational overviews populate here.
+                            Administration workspace overview & analytics.
                         </p>
                     </div>
                 </div>
 
+                <!-- On-Demand Load / Reload Button -->
+                <button
+                    type="button"
+                    @click="fetchAnalytics(hasFetched)"
+                    :disabled="isLoading"
+                    class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
+                >
+                    <RefreshCw
+                        class="h-3.5 w-3.5"
+                        :class="{ 'animate-spin': isLoading }"
+                    />
+                    <span>{{
+                        hasFetched
+                            ? isLoading
+                                ? 'Refreshing...'
+                                : 'Reload Analytics'
+                            : isLoading
+                              ? 'Loading...'
+                              : 'Load Analytics'
+                    }}</span>
+                </button>
             </div>
         </div>
 
-        <!-- Highlighted Guide/Tour Card (Placed Directly Below Header) -->
+        <!-- Highlighted Guide/Tour Card -->
         <div
-            class="relative overflow-hidden rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-xs transition-colors hover:border-indigo-300 sm:p-6 dark:border-indigo-500/30 dark:bg-indigo-500/10"
+            class="relative overflow-hidden rounded-2xl border border-indigo-200/70 bg-indigo-50/50 p-4 shadow-2xs transition-colors hover:border-indigo-300 sm:p-5 dark:border-indigo-500/30 dark:bg-indigo-500/10"
         >
             <div
                 class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
             >
-                <div class="flex items-start gap-3.5 sm:items-center">
+                <div class="flex items-start gap-3 sm:items-center">
                     <div
-                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs dark:bg-indigo-500"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-2xs dark:bg-indigo-500"
                     >
-                        <BookOpen class="h-5 w-5" />
+                        <BookOpen class="h-4.5 w-4.5" />
                     </div>
                     <div>
                         <h2
-                            class="text-base font-bold text-slate-900 dark:text-gray-100"
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
                         >
                             New to the Contributor Workspace?
                         </h2>
                         <p
-                            class="mt-0.5 text-xs text-slate-600 sm:text-sm dark:text-gray-400"
+                            class="mt-0.5 text-xs text-slate-600 dark:text-gray-400"
                         >
                             Learn how to manage subjects, upload resources,
                             create blogs, and navigate panel permissions.
@@ -84,106 +130,159 @@ defineProps({
 
                 <Link
                     href="/guide"
-                    class="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95"
+                    class="group inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-2xs transition-all hover:bg-indigo-700 active:scale-95"
                 >
                     <span>Take a Tour</span>
                     <ArrowRight
-                        class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                        class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
                     />
                 </Link>
             </div>
         </div>
 
-        <!-- Metrics Section -->
-        <div class="grid gap-6 md:grid-cols-2">
+        <!-- Initial Unloaded State Placeholder -->
+        <div
+            v-if="!hasFetched && !isLoading"
+            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-12 text-center dark:border-gray-800 dark:bg-gray-900/40"
+        >
+            <div
+                class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-xs dark:bg-gray-800"
+            >
+                <BarChart3
+                    class="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+                />
+            </div>
+            <h3
+                class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
+            >
+                Analytics are Ready to Load
+            </h3>
+            <p class="mt-1 max-w-sm text-xs text-slate-500 dark:text-gray-400">
+                To keep page load instant, analytics data is fetched on demand.
+                Click below to load live metrics from PostHog.
+            </p>
+            <button
+                type="button"
+                @click="fetchAnalytics(false)"
+                class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-700 active:scale-95"
+            >
+                <RefreshCw class="h-3.5 w-3.5" />
+                <span>Fetch Live Analytics</span>
+            </button>
+        </div>
+
+        <!-- Loading State Spinner -->
+        <div
+            v-else-if="isLoading && !hasFetched"
+            class="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-16 text-center shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <RefreshCw
+                class="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400"
+            />
+            <p
+                class="mt-3 text-xs font-medium text-slate-500 dark:text-gray-400"
+            >
+                Connecting to PostHog & querying 30-day analytics...
+            </p>
+        </div>
+
+        <!-- Metrics Section (Rendered once loaded) -->
+        <div v-else class="grid gap-6 md:grid-cols-2">
             <div class="space-y-6">
+                <!-- Realtime Active -->
                 <div
-                    class="relative overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-500/10 via-white to-white p-6 shadow-sm dark:border-emerald-500/30 dark:from-emerald-950/40 dark:via-gray-900 dark:to-gray-900"
+                    class="relative overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-500/10 via-white to-white p-5 shadow-2xs dark:border-emerald-500/30 dark:from-emerald-950/40 dark:via-gray-900 dark:to-gray-900"
                 >
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <span class="relative flex h-2.5 w-2.5">
-                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                                <span
+                                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+                                ></span>
+                                <span
+                                    class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"
+                                ></span>
                             </span>
                             <p
-                                class="text-sm font-semibold tracking-wide text-emerald-900 uppercase dark:text-emerald-300"
+                                class="text-xs font-bold tracking-wider text-emerald-900 uppercase dark:text-emerald-300"
                             >
                                 Active Now
                             </p>
                         </div>
                         <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-100/60 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-300"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-100/60 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-300"
                         >
-                            <Zap class="h-5 w-5" />
+                            <Zap class="h-4.5 w-4.5" />
                         </div>
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-3.5">
                         <h3
-                            class="text-3xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                            class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                         >
                             {{ stats?.realtime_users ?? 0 }}
                         </h3>
                         <p
-                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
                             Active users in the last 5 minutes
                         </p>
                     </div>
                 </div>
 
+                <!-- Total Visits -->
                 <div
-                    class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                    class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div class="flex items-center justify-between">
                         <p
-                            class="text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-gray-400"
+                            class="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-gray-400"
                         >
                             Total Visits
                         </p>
                         <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 bg-indigo-50 text-indigo-600 dark:border-gray-800 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-indigo-50 text-indigo-600 dark:border-gray-800 dark:bg-indigo-500/10 dark:text-indigo-400"
                         >
-                            <Eye class="h-5 w-5" />
+                            <Eye class="h-4.5 w-4.5" />
                         </div>
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-3.5">
                         <h3
-                            class="text-3xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                            class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                         >
                             {{ stats?.total_visits?.toLocaleString() ?? 0 }}
                         </h3>
                         <p
-                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
                             Total page views recorded (Last 30 Days)
                         </p>
                     </div>
                 </div>
 
+                <!-- Unique Visitors -->
                 <div
-                    class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                    class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div class="flex items-center justify-between">
                         <p
-                            class="text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-gray-400"
+                            class="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-gray-400"
                         >
                             Unique Visitors
                         </p>
                         <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 bg-blue-50 text-blue-600 dark:border-gray-800 dark:bg-blue-500/10 dark:text-blue-400"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-blue-50 text-blue-600 dark:border-gray-800 dark:bg-blue-500/10 dark:text-blue-400"
                         >
-                            <Users class="h-5 w-5" />
+                            <Users class="h-4.5 w-4.5" />
                         </div>
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-3.5">
                         <h3
-                            class="text-3xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                            class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                         >
                             {{ stats?.total_users?.toLocaleString() ?? 0 }}
                         </h3>
                         <p
-                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
                             Distinct audience reach (Last 30 Days)
                         </p>
@@ -191,20 +290,21 @@ defineProps({
                 </div>
             </div>
 
+            <!-- Top Acquisition Sources -->
             <div
-                class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                class="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
             >
                 <div
-                    class="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-gray-800"
+                    class="flex items-center gap-3 border-b border-slate-100 pb-3.5 dark:border-gray-800"
                 >
                     <div
-                        class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                     >
                         <Share2 class="h-4 w-4" />
                     </div>
                     <div>
                         <h3
-                            class="font-semibold text-slate-900 dark:text-gray-100"
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
                         >
                             Top Acquisition Sources
                         </h3>
@@ -214,7 +314,7 @@ defineProps({
                     </div>
                 </div>
 
-                <div class="mt-4 max-h-[300px] flex-1 overflow-auto">
+                <div class="mt-3.5 max-h-[300px] flex-1 overflow-auto">
                     <div
                         v-if="stats?.top_sources?.length"
                         class="divide-y divide-slate-100 dark:divide-gray-800"
@@ -222,11 +322,11 @@ defineProps({
                         <div
                             v-for="(source, index) in stats.top_sources"
                             :key="index"
-                            class="flex items-center justify-between py-3"
+                            class="flex items-center justify-between py-2.5"
                         >
                             <div class="w-2/3 pr-4">
                                 <p
-                                    class="truncate text-sm font-medium text-slate-700 dark:text-gray-300"
+                                    class="truncate text-xs font-semibold text-slate-700 dark:text-gray-300"
                                     :title="source.source"
                                 >
                                     {{ source.source || 'Direct / Unknown' }}
@@ -234,9 +334,9 @@ defineProps({
                             </div>
                             <div class="flex w-1/3 items-center justify-end">
                                 <span
-                                    class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800 dark:bg-gray-800 dark:text-gray-200"
+                                    class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-800 dark:bg-gray-800 dark:text-gray-200"
                                 >
-                                    {{ source.visits }} users
+                                    {{ source.visits?.toLocaleString() }} visits
                                 </span>
                             </div>
                         </div>
@@ -244,13 +344,13 @@ defineProps({
 
                     <div
                         v-else
-                        class="flex h-full flex-col items-center justify-center py-12 text-center"
+                        class="flex h-full flex-col items-center justify-center py-10 text-center"
                     >
                         <LayoutGrid
-                            class="h-8 w-8 text-slate-300 dark:text-gray-600"
+                            class="h-7 w-7 text-slate-300 dark:text-gray-600"
                         />
                         <p
-                            class="mt-2 text-sm font-medium text-slate-500 dark:text-gray-400"
+                            class="mt-2 text-xs font-medium text-slate-500 dark:text-gray-400"
                         >
                             No source data captured yet.
                         </p>

@@ -14,7 +14,6 @@ import {
     FolderGit2,
     BookOpen,
     LogIn,
-    Shield,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useDarkMode } from '@/lib/useDarkMode';
@@ -91,17 +90,9 @@ onBeforeUnmount(() => {
         <div
             class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
         >
-            <!-- Left: Logo & Context Badge -->
+            <!-- Left: Logo -->
             <div class="flex items-center gap-3">
                 <AppLogo />
-
-                <span
-                    v-if="isAdmin"
-                    class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-indigo-700 uppercase dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
-                >
-                    <Shield class="h-3 w-3" />
-                    Admin
-                </span>
             </div>
 
             <!-- Center/Desktop Navigation (md and up) -->

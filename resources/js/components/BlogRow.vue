@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
+import { Pencil, Trash2, Eye, BookOpen } from 'lucide-vue-next';
+
 const props = defineProps({
     blog: {
         type: Object,
@@ -16,84 +18,83 @@ const deleteBlog = () => {
 
 <template>
     <div
-        class="group relative flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white p-3.5 transition-colors duration-150 hover:border-blue-200 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-500/30"
+        @click="router.visit(`/blogs/${blog.slug}`)"
+        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <Link
-            :href="`/admin/blogs/edit/${blog.slug}`"
-            class="flex min-w-0 flex-1 items-center gap-3 active:scale-[0.99]"
-        >
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+            <!-- Thumbnail / Icon -->
             <div
-                class="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+                class="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-black/5 bg-slate-100 dark:border-white/10 dark:bg-gray-800"
             >
                 <img
                     v-if="blog.featured_image"
                     :src="blog.featured_image"
-                    alt=""
+                    :alt="blog.title"
                     class="h-full w-full object-cover"
                 />
                 <div
                     v-else
-                    class="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400 uppercase dark:text-gray-500"
+                    class="flex h-full w-full items-center justify-center text-slate-400 dark:text-gray-500"
                 >
-                    TXT
+                    <BookOpen class="h-4.5 w-4.5 stroke-[2]" />
                 </div>
             </div>
 
-            <div class="min-w-0 flex-1">
-                <h4
-                    class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100"
-                >
-                    {{ blog.title }}
-                </h4>
+            <!-- Title & Metadata -->
+            <div class="flex min-w-0 flex-col">
+                <div class="flex flex-wrap items-center gap-2">
+                    <h4
+                        class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                    >
+                        {{ blog.title }}
+                    </h4>
 
-                <div
-                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 dark:text-gray-400"
-                >
-                    <span>{{ blog.views }} views</span>
-                    <span>•</span>
                     <span
-                        :class="
+                        :class="[
                             blog.is_published
-                                ? 'text-green-600 dark:text-green-400'
-                                : 'text-gray-400 dark:text-gray-500'
-                        "
+                                ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/30'
+                                : 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20',
+                            'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset',
+                        ]"
                     >
                         {{ blog.is_published ? 'Published' : 'Draft' }}
                     </span>
+
                     <span
                         v-if="blog.is_featured"
-                        class="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-amber-700 uppercase dark:bg-amber-500/10 dark:text-amber-400"
+                        class="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 uppercase ring-1 ring-amber-600/20 ring-inset dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30"
                     >
                         Featured
                     </span>
                 </div>
-            </div>
-        </Link>
 
-        <div class="flex shrink-0 items-center gap-2 pl-1">
+                <div
+                    class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-gray-500"
+                >
+                    <Eye class="h-3.5 w-3.5" />
+                    <span>{{ blog.views || 0 }} views</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="flex shrink-0 items-center gap-1" @click.stop>
+            <Link
+                :href="`/admin/blogs/edit/${blog.slug}`"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                title="Edit blog"
+            >
+                <Pencil class="h-4 w-4" :stroke-width="1.8" />
+            </Link>
+
             <button
-                @click.stop.prevent="deleteBlog"
+                @click="deleteBlog"
                 type="button"
-                class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 title="Delete blog"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="h-5 w-5"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                    />
-                </svg>
+                <Trash2 class="h-4 w-4" :stroke-width="1.8" />
             </button>
-
-            <span class="text-lg text-gray-300 dark:text-gray-600">→</span>
         </div>
     </div>
 </template>
