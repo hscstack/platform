@@ -200,6 +200,17 @@ import AppLogo from './AppLogo.vue';
                 >
                     &copy; 2026 HSCStack. Built for the future of learning.
                 </p>
+
+                <div v-if="$page.props.app_version" class="flex items-center gap-2">
+                    <a
+                        :href="`https://github.com/hscstack/platform/releases/tag/${$page.props.app_version}`"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-mono font-medium text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:text-gray-200"
+                    >
+                        {{ $page.props.app_version }}
+                    </a>
+                </div>
             </div>
         </div>
     </footer>

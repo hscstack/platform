@@ -38,6 +38,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'app_version' => config('app.version'),
             'auth' => [
                 'user' => $request->user(),
                 'can_access_admin' => $request->user()?->can('view admin') ?? false,
