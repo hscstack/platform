@@ -1,13 +1,26 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
 import SubjectCard from '@/components/admin/SubjectCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
-defineProps({
+
+const props = defineProps({
     subjects: {
-        type: Array,
+        type: Array as () => any[],
         default: () => [],
     },
+});
+
+const activeCourse = ref<'all' | 'hsc' | 'ssc'>('all');
+
+const filteredSubjects = computed(() => {
+    if (activeCourse.value === 'all') {
+        return props.subjects;
+    }
+    return props.subjects.filter(
+        (s) => s.course?.toLowerCase() === activeCourse.value.toLowerCase(),
+    );
 });
 </script>
 
@@ -30,16 +43,6 @@ defineProps({
             </div>
 
             <div class="flex items-center gap-3 self-start sm:self-center">
-                <div
-                    class="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 dark:border-blue-500/30 dark:bg-blue-500/10"
-                >
-                    <span
-                        class="text-xs font-medium text-blue-700 dark:text-blue-400"
-                    >
-                        Total: {{ subjects.length }}
-                    </span>
-                </div>
-
                 <Link
                     href="/admin/subjects/create"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700"
@@ -50,13 +53,55 @@ defineProps({
             </div>
         </div>
 
+        <!-- Filter Pills (All / HSC / SSC) -->
+        <div class="mb-5 flex items-center gap-1.5 border-b border-slate-100 pb-3.5 dark:border-gray-800">
+            <button
+                type="button"
+                @click="activeCourse = 'all'"
+                :class="[
+                    activeCourse === 'all'
+                        ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    'rounded-lg px-3 py-1 text-xs font-semibold transition-colors',
+                ]"
+            >
+                All ({{ subjects.length }})
+            </button>
+
+            <button
+                type="button"
+                @click="activeCourse = 'hsc'"
+                :class="[
+                    activeCourse === 'hsc'
+                        ? 'bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    'rounded-lg px-3 py-1 text-xs font-semibold transition-colors',
+                ]"
+            >
+                HSC ({{ subjects.filter((s) => s.course?.toLowerCase() === 'hsc').length }})
+            </button>
+
+            <button
+                type="button"
+                @click="activeCourse = 'ssc'"
+                :class="[
+                    activeCourse === 'ssc'
+                        ? 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    'rounded-lg px-3 py-1 text-xs font-semibold transition-colors',
+                ]"
+            >
+                SSC ({{ subjects.filter((s) => s.course?.toLowerCase() === 'ssc').length }})
+            </button>
+        </div>
+
         <div class="flex flex-1 flex-col">
             <div
-                v-if="subjects.length > 0"
+                v-if="filteredSubjects.length > 0"
                 class="flex flex-col gap-2.5 sm:gap-3"
             >
                 <SubjectCard
-                    v-for="subject in subjects"
+                    v-for="subject in filteredSubjects"
                     :key="subject.id || subject.name"
                     :admin="true"
                     :subject="subject"
