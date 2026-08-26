@@ -94,6 +94,29 @@ class UserProfileController extends Controller
             ])
             ->filter(fn ($item) => $item['title'] !== null);
 
+        // Suggested / Discover community members: 2 contributors + 2 general users
+        $contributorUsers = User::where('id', '!=', $user->id)
+            ->whereNotNull('username')
+            ->whereHas('roles')
+            ->select(['id', 'name', 'username', 'title', 'institution', 'image_path', 'about'])
+            ->with('roles:id,name')
+            ->inRandomOrder()
+            ->take(2)
+            ->get();
+
+        $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
+        $remainingNeeded = 4 - $contributorUsers->count();
+
+        $randomUsers = User::whereNotIn('id', $excludedIds)
+            ->whereNotNull('username')
+            ->select(['id', 'name', 'username', 'title', 'institution', 'image_path', 'about'])
+            ->with('roles:id,name')
+            ->inRandomOrder()
+            ->take($remainingNeeded)
+            ->get();
+
+        $suggestedUsers = $contributorUsers->concat($randomUsers)->shuffle()->values();
+
         return Inertia::render('User/Show', [
             'profileUser' => [
                 'id' => $user->id,
@@ -125,6 +148,7 @@ class UserProfileController extends Controller
                 'reactions' => $recentReactions->values(),
                 'comments' => $recentComments->values(),
             ],
+            'suggestedUsers' => $suggestedUsers,
         ]);
     }
 }

@@ -18,6 +18,7 @@ import {
     UploadCloud,
     Activity,
     ArrowUpRight,
+    Users,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -98,6 +99,17 @@ const props = defineProps<{
             created_at: string;
         }>;
     };
+    suggestedUsers?: Array<{
+        id: number;
+        name: string;
+        username: string;
+        title: string | null;
+        institution: string | null;
+        image_url: string | null;
+        image_path: string | null;
+        about: string | null;
+        roles?: Array<{ id: number; name: string }>;
+    }>;
 }>();
 
 const page = usePage();
@@ -156,7 +168,53 @@ const totalActivitiesCount = computed(
     <Head :title="`${profileUser.name} (@${profileUser.username})`">
         <meta
             name="description"
-            :content="`${profileUser.name}'s profile on HSCStack.`"
+            :content="
+                [profileUser.title, profileUser.institution, profileUser.about]
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join(' · ') ||
+                `View ${profileUser.name}'s profile, completed study topics, and contributions on HSCStack.`
+            "
+        />
+        <meta
+            property="og:title"
+            :content="`${profileUser.name} (@${profileUser.username})`"
+        />
+        <meta
+            property="og:description"
+            :content="
+                [profileUser.title, profileUser.institution, profileUser.about]
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join(' · ') ||
+                `View ${profileUser.name}'s profile, completed study topics, and contributions on HSCStack.`
+            "
+        />
+        <meta property="og:type" content="profile" />
+        <meta
+            v-if="profileUser.image_url"
+            property="og:image"
+            :content="profileUser.image_url"
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+            name="twitter:title"
+            :content="`${profileUser.name} (@${profileUser.username})`"
+        />
+        <meta
+            name="twitter:description"
+            :content="
+                [profileUser.title, profileUser.institution, profileUser.about]
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join(' · ') ||
+                `View ${profileUser.name}'s profile, completed study topics, and contributions on HSCStack.`
+            "
+        />
+        <meta
+            v-if="profileUser.image_url"
+            name="twitter:image"
+            :content="profileUser.image_url"
         />
     </Head>
 
@@ -758,6 +816,87 @@ const totalActivitiesCount = computed(
                             </p>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Suggested / Discover Other Learners & Contributors -->
+            <div
+                v-if="suggestedUsers && suggestedUsers.length > 0"
+                class="space-y-3 pt-2"
+            >
+                <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-gray-300">
+                        <Users class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                        <span>Discover People</span>
+                    </div>
+                    <Link
+                        href="/about-us"
+                        class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+                    >
+                        Meet team →
+                    </Link>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                    <Link
+                        v-for="person in suggestedUsers"
+                        :key="person.id"
+                        :href="`/u/${person.username}`"
+                        class="group flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs transition hover:border-indigo-300 hover:bg-slate-50/70 sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/60 dark:hover:bg-gray-800/50"
+                    >
+                        <div class="flex min-w-0 items-center gap-3">
+                            <div
+                                class="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-indigo-50 shadow-2xs ring-2 ring-slate-100 sm:h-11 sm:w-11 dark:bg-indigo-950/60 dark:ring-gray-800"
+                            >
+                                <img
+                                    v-if="person.image_url"
+                                    :src="person.image_url"
+                                    :alt="person.name"
+                                    class="h-full w-full object-cover"
+                                />
+                                <div
+                                    v-else
+                                    class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-600 text-sm font-black text-white"
+                                >
+                                    {{ person.name.charAt(0).toUpperCase() }}
+                                </div>
+                            </div>
+                            <div class="min-w-0 flex-1 space-y-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <p
+                                        class="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                                    >
+                                        {{ person.name }}
+                                    </p>
+                                    <span
+                                        v-if="person.roles && person.roles.length > 0"
+                                        class="inline-flex items-center text-blue-600 dark:text-blue-400"
+                                        title="Verified HSCStack Contributor"
+                                    >
+                                        <BadgeCheck
+                                            class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] dark:fill-blue-950/60"
+                                        />
+                                    </span>
+                                </div>
+                                <p
+                                    v-if="person.title || person.institution"
+                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                >
+                                    {{ person.title || person.institution }}
+                                </p>
+                                <p
+                                    v-else
+                                    class="truncate text-[10px] font-semibold text-slate-400 dark:text-gray-500"
+                                >
+                                    @{{ person.username }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <ArrowUpRight
+                            class="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
+                        />
+                    </Link>
                 </div>
             </div>
         </div>
