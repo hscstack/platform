@@ -15,11 +15,9 @@ defineProps({
 <template>
     <Head title="Manage Blogs" />
 
-    <div
-        class="flex w-full flex-1 flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
-    >
+    <div class="flex w-full flex-1 flex-col">
         <div
-            class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
+            class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
         >
             <div>
                 <h3

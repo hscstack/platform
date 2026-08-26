@@ -61,25 +61,20 @@ const submitForm = () => {
 <template>
     <Head title="Site Notice" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="flex w-full flex-1 flex-col">
         <div
-            class="w-full rounded-3xl bg-white p-6 shadow-xs ring-1 ring-slate-900/5 md:p-10 dark:bg-gray-900 dark:ring-gray-700"
+            class="mb-8 border-b border-slate-200 pb-6 dark:border-gray-800"
         >
-            <div
-                class="mb-10 border-b border-slate-100 pb-6 dark:border-gray-800"
+            <h1
+                class="text-2xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
             >
-                <h1
-                    class="text-2xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
-                >
-                    Site Notice
-                </h1>
-                <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
-                    Configure the announcement dialog shown on the home page.
-                    Only one notice is displayed at a time.
-                </p>
-            </div>
+                Site Notice
+            </h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                Configure the announcement dialog shown on the home page.
+                Only one notice is displayed at a time.
+            </p>
+        </div>
 
             <form
                 @submit.prevent="submitForm"
@@ -385,5 +380,4 @@ const submitForm = () => {
                 </div>
             </form>
         </div>
-    </div>
 </template>

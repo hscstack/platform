@@ -12,11 +12,9 @@ defineProps({
 <template>
     <Head title="Manage Users" />
 
-    <div
-        class="flex w-full flex-1 flex-col rounded-xl border border-gray-300 bg-white p-4 shadow-xs sm:p-6 dark:border-gray-600 dark:bg-gray-900"
-    >
+    <div class="flex w-full flex-1 flex-col">
         <div
-            class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-300 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-600"
+            class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-200 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
         >
             <div>
                 <h3

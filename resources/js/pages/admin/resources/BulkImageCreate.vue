@@ -133,28 +133,23 @@ const submitForm = () => {
 <template>
     <Head title="Bulk Upload Images" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="flex w-full flex-1 flex-col">
+        <!-- Header -->
         <div
-            class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
         >
-            <!-- Header -->
-            <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
-            >
-                <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        Bulk Upload Images
-                    </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
-                        Upload multiple image resources simultaneously and
-                        configure naming conventions.
-                    </p>
-                </div>
+            <div>
+                <h1
+                    class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                >
+                    Bulk Upload Images
+                </h1>
+                <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                    Upload multiple images directly to this chapter or
+                    folder at once.
+                </p>
             </div>
+        </div>
 
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- Dropzone Section -->
@@ -444,5 +439,4 @@ const submitForm = () => {
                 </div>
             </form>
         </div>
-    </div>
 </template>

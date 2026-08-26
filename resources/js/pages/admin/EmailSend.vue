@@ -101,34 +101,29 @@ const submitForm = () => {
 <template>
     <Head title="Send Email" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="flex w-full flex-1 flex-col">
+        <!-- Header -->
         <div
-            class="mx-auto w-full max-w-4xl rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
         >
-            <!-- Header -->
-            <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
-            >
-                <div>
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                        >
-                            <Mail class="h-5 w-5" />
-                        </div>
-                        <h1
-                            class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            Send Email
-                        </h1>
+            <div>
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                    >
+                        <Mail class="h-5 w-5" />
                     </div>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
-                        Compose and dispatch email announcements to subscribed
-                        users or individual accounts.
-                    </p>
+                    <h1
+                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        Send Email
+                    </h1>
                 </div>
+                <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
+                    Compose and dispatch email announcements to subscribed
+                    users or individual accounts.
+                </p>
+            </div>
 
                 <div class="flex items-center gap-3">
                     <!-- Preview Trigger Button -->
@@ -490,7 +485,6 @@ const submitForm = () => {
                 </div>
             </form>
         </div>
-    </div>
 
     <!-- Live PC / Desktop Email Client Preview Modal -->
     <Teleport to="body">

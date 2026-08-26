@@ -49,32 +49,27 @@ const goBack = () => {
 <template>
     <Head :title="node ? `Edit ${node.name}` : 'Create Node'" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="flex w-full flex-1 flex-col">
         <div
-            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
         >
-            <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
-            >
-                <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+            <div>
+                <h1
+                    class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                >
+                    {{ props.node ? 'Edit Folder' : 'Create Folder' }}
+                </h1>
+                <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                    Subject:
+                    <span
+                        class="font-semibold text-slate-700 dark:text-gray-300"
+                        >{{ props.subject?.name }}</span
                     >
-                        {{ props.node ? 'Edit Folder' : 'Create Folder' }}
-                    </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
-                        Subject:
-                        <span
-                            class="font-semibold text-slate-700 dark:text-gray-300"
-                            >{{ props.subject?.name }}</span
-                        >
-                    </p>
-                </div>
+                </p>
             </div>
+        </div>
 
-            <form @submit.prevent="submitForm" class="space-y-8">
+        <form @submit.prevent="submitForm" class="space-y-8">
                 <div
                     class="flex items-start space-x-3 rounded-xl border border-slate-200/60 bg-slate-50 p-5 dark:border-gray-700 dark:bg-gray-800"
                 >
@@ -253,5 +248,4 @@ const goBack = () => {
                 </div>
             </form>
         </div>
-    </div>
 </template>

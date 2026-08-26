@@ -72,37 +72,32 @@ const submitForm = () => {
 <template>
     <Head :title="subject ? `Edit ${subject.name}` : 'Create Subject'" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="flex w-full flex-1 flex-col">
         <div
-            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
         >
-            <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
-            >
-                <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        {{ props.subject ? 'Edit' : 'Create' }} New Subject
-                    </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
-                        {{
-                            props.subject
-                                ? 'Update the subject details below.'
-                                : 'Add a new subject category to the platform.'
-                        }}
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    @click="goBack"
-                    class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+            <div>
+                <h1
+                    class="text-2xl font-bold text-slate-900 dark:text-gray-100"
                 >
-                    &larr; Back
-                </button>
+                    {{ props.subject ? 'Edit' : 'Create' }} New Subject
+                </h1>
+                <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                    {{
+                        props.subject
+                            ? 'Update the subject details below.'
+                            : 'Add a new subject category to the platform.'
+                    }}
+                </p>
             </div>
+            <button
+                type="button"
+                @click="goBack"
+                class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+            >
+                &larr; Back
+            </button>
+        </div>
 
             <form @submit.prevent="submitForm" class="space-y-8">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -317,5 +312,4 @@ const submitForm = () => {
                 </div>
             </form>
         </div>
-    </div>
 </template>

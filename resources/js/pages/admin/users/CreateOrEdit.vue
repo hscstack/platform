@@ -63,30 +63,25 @@ const submitForm = () => {
 <template>
     <Head :title="user ? `Edit ${user.name}` : 'Create User'" />
 
-    <div
-        class="mobile-deep-border:p-4 flex min-h-full w-full flex-col justify-start bg-slate-50 p-4 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="flex w-full flex-1 flex-col">
         <div
-            class="w-full rounded-2xl border border-gray-300 bg-white p-5 shadow-xs md:p-10 dark:border-gray-600 dark:bg-gray-900"
+            class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
         >
-            <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-gray-300 pb-6 sm:flex-row sm:items-center dark:border-gray-600"
-            >
-                <div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        {{ props.user ? 'Edit' : 'Create New' }} User
-                    </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
-                        {{
-                            props.user
-                                ? 'Update team member details and system access rules.'
-                                : 'Add a new team member and assign their system access role.'
-                        }}
-                    </p>
-                </div>
+            <div>
+                <h1
+                    class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                >
+                    {{ props.user ? 'Edit' : 'Create New' }} User
+                </h1>
+                <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                    {{
+                        props.user
+                            ? 'Update team member details and system access rules.'
+                            : 'Add a new team member and assign their system access role.'
+                    }}
+                </p>
             </div>
+        </div>
 
             <form @submit.prevent="submitForm" class="max-w-3xl space-y-6">
                 <!-- Base fields section (Name, Email) -->
@@ -521,5 +516,4 @@ const submitForm = () => {
                 </div>
             </form>
         </div>
-    </div>
 </template>
