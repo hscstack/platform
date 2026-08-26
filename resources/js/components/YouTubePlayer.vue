@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import { Play } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import Plyr from 'plyr';
+import 'plyr/dist/plyr.css';
+import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    watch,
+} from 'vue';
 
 const props = defineProps({
     url: {
@@ -13,7 +21,8 @@ const props = defineProps({
     },
 });
 
-const isStarted = ref(false);
+const playerContainerRef = ref<HTMLElement | null>(null);
+let playerInstance: Plyr | null = null;
 
 const videoId = computed(() => {
     try {
@@ -43,96 +52,116 @@ const videoId = computed(() => {
     }
 });
 
-const thumbnailUrl = computed(() => {
-    if (!videoId.value) {
-return '';
+const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+const initPlyr = async () => {
+    if (playerInstance) {
+        playerInstance.destroy();
+        playerInstance = null;
+    }
+
+    await nextTick();
+
+    if (!playerContainerRef.value || !videoId.value) {
+return;
 }
 
-    return `https://i.ytimg.com/vi/${videoId.value}/maxresdefault.jpg`;
-});
-
-const embedUrl = computed(() => {
-    if (!videoId.value) {
-return '';
-}
-
-    return `https://www.youtube-nocookie.com/embed/${videoId.value}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&color=white`;
-});
-
-const handleStart = () => {
-    isStarted.value = true;
+    playerInstance = new Plyr(playerContainerRef.value, {
+        controls: [
+            'play-large',
+            'play',
+            'progress',
+            'current-time',
+            'duration',
+            'mute',
+            'volume',
+            'settings',
+            'fullscreen',
+        ],
+        settings: ['speed'],
+        speed: { selected: 1, options: [0.75, 1, 1.25, 1.5, 2] },
+        youtube: {
+            noCookie: true,
+            rel: 0,
+            showinfo: 0,
+            iv_load_policy: 3,
+            modestbranding: 1,
+        },
+    });
 };
+
+onMounted(() => {
+    initPlyr();
+});
+
+onBeforeUnmount(() => {
+    if (playerInstance) {
+        playerInstance.destroy();
+        playerInstance = null;
+    }
+});
 
 watch(
     () => props.url,
     () => {
-        isStarted.value = false;
+        initPlyr();
     },
 );
 </script>
 
 <template>
     <div
-        class="group relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-200/90 bg-slate-950 shadow-md select-none dark:border-gray-800"
+        class="custom-plyr-wrapper aspect-video w-full overflow-hidden rounded-2xl border border-slate-200/90 bg-black shadow-md dark:border-gray-800"
     >
-        <!-- Native Poster & Play Hero (Shown before click) -->
-        <div
-            v-if="!isStarted"
-            class="absolute inset-0 z-20 flex cursor-pointer items-center justify-center overflow-hidden bg-slate-950"
-            @click="handleStart"
-        >
-            <!-- Thumbnail Background with Blur & Vignette -->
-            <img
-                :src="thumbnailUrl"
-                :alt="title"
-                class="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-700 ease-out group-hover:scale-105"
-                @error="
-                    ($event.target as HTMLImageElement).src =
-                        `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-                "
-            />
-            <div
-                class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-slate-950/40"
-            ></div>
-
-            <!-- Pulsing Native Play Button -->
-            <div
-                class="relative flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:scale-110 sm:h-20 sm:w-20"
-            >
-                <Play class="ml-1 h-7 w-7 fill-current sm:h-8 sm:w-8" />
-            </div>
-
-            <!-- Bottom Video Title Preview -->
-            <div class="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                <span
-                    class="inline-block rounded-md bg-indigo-600/90 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase backdrop-blur-xs"
-                >
-                    Video Lecture
-                </span>
-                <h3
-                    class="mt-1.5 line-clamp-1 text-sm font-bold text-white sm:text-base"
-                >
-                    {{ title }}
-                </h3>
-            </div>
+        <div ref="playerContainerRef" class="plyr__video-embed h-full w-full">
+            <iframe
+                v-if="videoId"
+                :src="`https://www.youtube-nocookie.com/embed/${videoId}?origin=${origin}&iv_load_policy=3&modestbranding=1&playsinline=1&showinfo=0&rel=0&enablejsapi=1`"
+                :title="title"
+                allowfullscreen
+                allowtransparency
+                allow="autoplay"
+                class="h-full w-full"
+            ></iframe>
         </div>
-
-        <!-- Privacy-Enhanced Clean YouTube Embed -->
-        <iframe
-            v-if="isStarted"
-            :src="embedUrl"
-            :title="title"
-            class="absolute inset-0 h-full w-full border-0"
-            allow="
-                accelerometer;
-                autoplay;
-                clipboard-write;
-                encrypted-media;
-                gyroscope;
-                picture-in-picture;
-                web-share;
-            "
-            allowfullscreen
-        ></iframe>
     </div>
 </template>
+
+<style>
+/* HSCStack Custom Theme for Plyr */
+.custom-plyr-wrapper {
+    --plyr-color-main: #6366f1; /* Indigo-500 */
+    --plyr-video-background: #020617;
+    --plyr-control-radius: 10px;
+    --plyr-font-family: inherit;
+    --plyr-font-size-small: 12px;
+    --plyr-font-size-base: 13px;
+}
+
+.custom-plyr-wrapper .plyr {
+    height: 100%;
+    width: 100%;
+    border-radius: 1rem;
+}
+
+.custom-plyr-wrapper .plyr--video {
+    background: #020617;
+}
+
+.custom-plyr-wrapper .plyr__control--overlaid {
+    background: rgba(99, 102, 241, 0.9);
+    padding: 18px;
+}
+
+.custom-plyr-wrapper .plyr__control--overlaid:hover {
+    background: #4f46e5;
+    transform: scale(1.08);
+}
+
+.custom-plyr-wrapper .plyr__menu__container {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+</style>
