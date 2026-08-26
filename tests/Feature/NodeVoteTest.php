@@ -1,9 +1,12 @@
 <?php
 
+use App\Mail\NodeNotificationMail;
 use App\Models\Node;
 use App\Models\NodeVote;
 use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('guests are redirected to login when attempting to vote on a folder', function () {
@@ -296,7 +299,7 @@ test('node page shows upvote list and counts while downvote list is not exposed'
     NodeVote::create(['node_id' => $node->id, 'user_id' => $upvoter->id, 'type' => 'up']);
     NodeVote::create(['node_id' => $node->id, 'user_id' => $downvoter->id, 'type' => 'down']);
 
-    $response = $this->actingAs($upvoter)->get("/physics/chapter-1");
+    $response = $this->actingAs($upvoter)->get('/physics/chapter-1');
 
     $response->assertInertia(fn (Assert $page) => $page
         ->component('Node')
@@ -342,7 +345,7 @@ test('voting on a folder properly clears and refreshes parent node and subject p
             ->where('nodes.1.upvotes_count', 0)
         );
 
-    expect(Illuminate\Support\Facades\Cache::has("subject_page_{$subject->id}"))->toBeTrue();
+    expect(Cache::has("subject_page_{$subject->id}"))->toBeTrue();
 
     // 2. User votes on Folder B
     $this->actingAs($user)
@@ -350,7 +353,7 @@ test('voting on a folder properly clears and refreshes parent node and subject p
         ->assertRedirect();
 
     // Cache should have been invalidated
-    expect(Illuminate\Support\Facades\Cache::has("subject_page_{$subject->id}"))->toBeFalse();
+    expect(Cache::has("subject_page_{$subject->id}"))->toBeFalse();
 
     // 3. Next visit to subject page reflects Folder B with updated upvote count
     $this->get('/physics')
@@ -383,7 +386,7 @@ test('voting on a folder properly clears and refreshes parent node and subject p
             ->where('nodes.1.upvotes_count', 0)
         );
 
-    expect(Illuminate\Support\Facades\Cache::has("node_children_{$folderA->id}"))->toBeTrue();
+    expect(Cache::has("node_children_{$folderA->id}"))->toBeTrue();
 
     // Vote on Subfolder B
     $this->actingAs($user)
@@ -391,7 +394,7 @@ test('voting on a folder properly clears and refreshes parent node and subject p
         ->assertRedirect();
 
     // Cache should be cleared
-    expect(Illuminate\Support\Facades\Cache::has("node_children_{$folderA->id}"))->toBeFalse();
+    expect(Cache::has("node_children_{$folderA->id}"))->toBeFalse();
 
     // Next visit reflects new order and count
     $this->get("/physics/{$folderA->slug}")
@@ -402,7 +405,7 @@ test('voting on a folder properly clears and refreshes parent node and subject p
 });
 
 test('folder author receives milestone email notification when folder hits 1 upvote', function () {
-    Illuminate\Support\Facades\Mail::fake();
+    Mail::fake();
 
     $author = User::factory()->create([
         'name' => 'Author Rahim',
@@ -435,7 +438,7 @@ test('folder author receives milestone email notification when folder hits 1 upv
         ->post("/nodes/{$folder->id}/vote", ['type' => 'up'])
         ->assertRedirect();
 
-    Illuminate\Support\Facades\Mail::assertQueued(App\Mail\NodeNotificationMail::class, function ($mail) use ($author, $folder) {
+    Mail::assertQueued(NodeNotificationMail::class, function ($mail) use ($author) {
         return $mail->hasTo($author->email) &&
             str_contains($mail->mailSubject, 'first upvote') &&
             str_contains($mail->mailContent, 'Vectors Complete Guide');
@@ -443,7 +446,7 @@ test('folder author receives milestone email notification when folder hits 1 upv
 });
 
 test('author upvoting their own folder does not trigger milestone email', function () {
-    Illuminate\Support\Facades\Mail::fake();
+    Mail::fake();
 
     $author = User::factory()->create([
         'name' => 'Self Voter',
@@ -470,5 +473,5 @@ test('author upvoting their own folder does not trigger milestone email', functi
         ->post("/nodes/{$folder->id}/vote", ['type' => 'up'])
         ->assertRedirect();
 
-    Illuminate\Support\Facades\Mail::assertNothingQueued();
+    Mail::assertNothingQueued();
 });

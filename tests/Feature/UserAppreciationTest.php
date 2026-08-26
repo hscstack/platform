@@ -117,7 +117,7 @@ test('recipient receives milestone email on 1st appreciation', function () {
         ->post("/u/{$author->id}/appreciate")
         ->assertRedirect();
 
-    Mail::assertQueued(UserAppreciationMail::class, function ($mail) use ($author, $fan) {
+    Mail::assertQueued(UserAppreciationMail::class, function ($mail) use ($author) {
         return $mail->hasTo($author->email) &&
             str_contains($mail->mailSubject, 'appreciated your profile') &&
             str_contains($mail->mailContent, 'Fahim Hasan');

@@ -185,6 +185,7 @@ watch(
 const handleAppreciate = () => {
     if (!currentUser.value) {
         showGuestModal.value = true;
+
         return;
     }
 
@@ -482,32 +483,38 @@ const totalActivitiesCount = computed(
                         v-if="localAppreciationsCount > 0"
                         type="button"
                         @click="showAppreciatorsModal = true"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-100 bg-rose-50/70 px-2.5 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 select-none active:scale-95 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-100 bg-rose-50/70 px-2.5 py-1 text-xs font-bold text-rose-700 transition select-none hover:bg-rose-100 active:scale-95 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
                         title="View members who appreciated this profile"
                     >
                         <Heart
                             class="h-3.5 w-3.5 fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400"
                         />
-                        <span>{{ localAppreciationsCount }} {{
-                            localAppreciationsCount === 1
-                                ? 'Appreciation'
-                                : 'Appreciations'
-                        }}</span>
+                        <span
+                            >{{ localAppreciationsCount }}
+                            {{
+                                localAppreciationsCount === 1
+                                    ? 'Appreciation'
+                                    : 'Appreciations'
+                            }}</span
+                        >
                     </button>
 
                     <button
                         v-if="appreciatingCount > 0"
                         type="button"
                         @click="showAppreciatingModal = true"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50/80 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 select-none active:scale-95 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50/80 px-2.5 py-1 text-xs font-semibold text-slate-600 transition select-none hover:bg-slate-100 active:scale-95 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
                         title="View members this user appreciates"
                     >
                         <Heart
                             class="h-3.5 w-3.5 stroke-[2] text-slate-400 dark:text-gray-500"
                         />
-                        <span>Appreciating {{ appreciatingCount }} {{
-                            appreciatingCount === 1 ? 'user' : 'users'
-                        }}</span>
+                        <span
+                            >Appreciating {{ appreciatingCount }}
+                            {{
+                                appreciatingCount === 1 ? 'user' : 'users'
+                            }}</span
+                        >
                     </button>
                 </div>
 
@@ -1033,7 +1040,9 @@ const totalActivitiesCount = computed(
 
                         <!-- Appreciations Given -->
                         <div
-                            v-for="(item, idx) in recentActivities.appreciations"
+                            v-for="(
+                                item, idx
+                            ) in recentActivities.appreciations"
                             :key="'apprec-' + idx"
                             class="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
                         >
@@ -1199,7 +1208,8 @@ const totalActivitiesCount = computed(
                         <p
                             class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
                         >
-                            {{ localAppreciationsCount }} community {{
+                            {{ localAppreciationsCount }} community
+                            {{
                                 localAppreciationsCount === 1
                                     ? 'member'
                                     : 'members'
@@ -1305,9 +1315,8 @@ const totalActivitiesCount = computed(
                         <p
                             class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
                         >
-                            {{ appreciatingCount }} community {{
-                                appreciatingCount === 1 ? 'member' : 'members'
-                            }}
+                            {{ appreciatingCount }} community
+                            {{ appreciatingCount === 1 ? 'member' : 'members' }}
                         </p>
                     </div>
                 </div>
@@ -1405,10 +1414,9 @@ const totalActivitiesCount = computed(
                 >
                     Sign in to Appreciate
                 </h3>
-                <p
-                    class="mt-1 text-xs text-slate-500 dark:text-gray-400"
-                >
-                    You need to be logged in to send appreciation and support fellow students and contributors.
+                <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                    You need to be logged in to send appreciation and support
+                    fellow students and contributors.
                 </p>
 
                 <div class="mt-5 flex gap-2.5">
