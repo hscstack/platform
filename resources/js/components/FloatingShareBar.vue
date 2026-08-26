@@ -160,7 +160,7 @@ onBeforeUnmount(() => {
                     <button
                         @click="handleCopyShortLink"
                         :disabled="isLoading"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap transition-colors"
                         :class="
                             isCopied
                                 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'

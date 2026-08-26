@@ -48,18 +48,22 @@ watch(
 
 <template>
     <div
-        class="pointer-events-none fixed top-3.5 inset-x-0 z-[9999] flex flex-col items-center gap-2 px-4 sm:top-5"
+        class="pointer-events-none fixed inset-x-0 top-3.5 z-[9999] flex flex-col items-center gap-2 px-4 sm:top-5"
     >
-        <TransitionGroup name="toast" tag="div" class="flex flex-col items-center gap-2 w-full">
+        <TransitionGroup
+            name="toast"
+            tag="div"
+            class="flex w-full flex-col items-center gap-2"
+        >
             <div
                 v-for="toast in toasts"
                 :key="toast.id"
                 @click="removeToast(toast.id)"
-                class="pointer-events-auto group relative flex max-w-[calc(100vw-2rem)] sm:max-w-md items-center gap-2.5 sm:gap-3 rounded-full border border-slate-200/80 bg-white/95 py-2 px-3.5 sm:py-2.5 sm:px-4 text-xs sm:text-sm font-medium text-slate-900 shadow-lg shadow-slate-900/5 ring-1 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 hover:shadow-xl active:scale-[0.98] dark:border-gray-800 dark:bg-gray-900/95 dark:text-gray-100 dark:shadow-2xl dark:shadow-black/60 dark:ring-white/[0.08] cursor-pointer"
+                class="group pointer-events-auto relative flex max-w-[calc(100vw-2rem)] cursor-pointer items-center gap-2.5 rounded-full border border-slate-200/80 bg-white/95 px-3.5 py-2 text-xs font-medium text-slate-900 shadow-lg ring-1 shadow-slate-900/5 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 hover:shadow-xl active:scale-[0.98] sm:max-w-md sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm dark:border-gray-800 dark:bg-gray-900/95 dark:text-gray-100 dark:shadow-2xl dark:shadow-black/60 dark:ring-white/[0.08]"
             >
                 <!-- Minimal Status Icon Dot / Pill -->
                 <div
-                    class="flex h-5 w-5 sm:h-5.5 sm:w-5.5 shrink-0 items-center justify-center rounded-full"
+                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full sm:h-5.5 sm:w-5.5"
                     :class="{
                         'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400':
                             toast.type === 'success',
@@ -71,13 +75,16 @@ watch(
                 >
                     <Check
                         v-if="toast.type === 'success'"
-                        class="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.8]"
+                        class="h-3 w-3 stroke-[2.8] sm:h-3.5 sm:w-3.5"
                     />
                     <AlertCircle
                         v-else-if="toast.type === 'error'"
-                        class="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.8]"
+                        class="h-3 w-3 stroke-[2.8] sm:h-3.5 sm:w-3.5"
                     />
-                    <Info v-else class="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.8]" />
+                    <Info
+                        v-else
+                        class="h-3 w-3 stroke-[2.8] sm:h-3.5 sm:w-3.5"
+                    />
                 </div>
 
                 <!-- Message -->
@@ -92,7 +99,7 @@ watch(
                     type="button"
                     @click.stop="removeToast(toast.id)"
                     aria-label="Dismiss"
-                    class="ml-1 -mr-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                    class="-mr-1 ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                 >
                     <X class="h-3 w-3 stroke-[2.5]" />
                 </button>

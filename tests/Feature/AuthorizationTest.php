@@ -71,7 +71,6 @@ test('authenticated user can update their profile without changing email', funct
     $response = $this->actingAs($user)->put('/profile', [
         'name' => 'New Name',
         'email' => 'changed@example.com',
-        'title' => 'Engineer',
         'institution' => 'Tech Corp',
         'facebook' => 'https://facebook.com/new',
         'github' => 'https://github.com/new',
@@ -82,7 +81,7 @@ test('authenticated user can update their profile without changing email', funct
     $response->assertRedirect(route('profile.edit'));
     $response->assertSessionHas('success', 'Profile updated successfully.');
     expect($user->fresh()->name)->toBe('New Name')
-        ->and($user->fresh()->title)->toBe('Engineer')
+        ->and($user->fresh()->institution)->toBe('Tech Corp')
         ->and($user->fresh()->email)->toBe('original@example.com');
 });
 
