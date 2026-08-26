@@ -193,10 +193,10 @@ onBeforeUnmount(() => {
                 </div>
             </Transition>
 
-            <!-- Main Floating Pill Trigger (High-Contrast, Visible & Compact) -->
+            <!-- Main Floating Icon Trigger (Icon only, Compact Floating Action Button) -->
             <button
                 @click="toggleMenu"
-                class="group inline-flex items-center gap-2 rounded-full border border-slate-700/10 bg-slate-900 px-3.5 py-2 text-xs font-bold text-white shadow-xl shadow-slate-900/25 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-slate-800 hover:shadow-2xl active:scale-95 dark:border-white/10 dark:bg-white dark:text-slate-900 dark:shadow-black/40 dark:hover:bg-slate-100"
+                class="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-slate-700/10 bg-slate-900 text-white shadow-xl shadow-slate-900/25 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-slate-800 hover:shadow-2xl active:scale-95 dark:border-white/10 dark:bg-white dark:text-slate-900 dark:shadow-black/40 dark:hover:bg-slate-100"
                 :class="{
                     'ring-2 ring-indigo-500/40': isMenuOpen,
                 }"
@@ -204,9 +204,8 @@ onBeforeUnmount(() => {
                 aria-label="Share this page"
             >
                 <Share2
-                    class="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-12"
+                    class="h-4 w-4 transition-transform duration-200 group-hover:rotate-12"
                 />
-                <span class="tracking-tight">Share</span>
             </button>
         </div>
     </div>

@@ -178,7 +178,7 @@ const parseYoutubeUrl = (url) => {
     </Head>
 
     <div
-        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-3 pt-3 pb-24 sm:px-6"
+        class="mx-auto flex min-h-[75vh] max-w-5xl flex-col justify-start px-3 pt-3 pb-24 sm:px-6"
     >
         <!-- Flat, Minimal Media Header -->
         <div class="mb-3 flex items-center justify-between gap-3">
@@ -231,16 +231,15 @@ const parseYoutubeUrl = (url) => {
         </div>
 
         <!-- Pure Media Canvas -->
-        <div v-if="resource.resource_type === 'image'">
-            <div
-                class="flex justify-center overflow-hidden rounded-2xl border border-slate-200/90 bg-slate-100/50 p-1.5 shadow-xs sm:p-3 dark:border-gray-800 dark:bg-gray-900/50"
-            >
-                <img
-                    :src="resource.file_url"
-                    :alt="resource.title"
-                    class="max-h-[80vh] w-auto rounded-xl object-contain shadow-xs select-none"
-                />
-            </div>
+        <div
+            v-if="resource.resource_type === 'image'"
+            class="flex justify-center"
+        >
+            <img
+                :src="resource.file_url"
+                :alt="resource.title"
+                class="max-h-[85vh] w-auto max-w-full rounded-2xl border border-slate-200/90 bg-white object-contain shadow-sm select-none dark:border-gray-800 dark:bg-gray-900"
+            />
         </div>
 
         <div v-else-if="resource.resource_type === 'video'">
