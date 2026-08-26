@@ -9,10 +9,11 @@ import {
     Minimize2,
     RotateCcw,
     User,
+    Image as ImageIcon,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
-defineProps({
+const props = defineProps({
     resource: {
         type: Object,
         required: true,
@@ -26,6 +27,15 @@ defineProps({
         default: null,
     },
 });
+
+const isImageLoaded = ref(false);
+
+watch(
+    () => props.resource?.file_url,
+    () => {
+        isImageLoaded.value = false;
+    },
+);
 
 const isFullscreen = ref(false);
 
@@ -233,12 +243,34 @@ const parseYoutubeUrl = (url) => {
         <!-- Pure Media Canvas -->
         <div
             v-if="resource.resource_type === 'image'"
-            class="flex justify-center"
+            class="relative flex min-h-[55vh] w-full items-center justify-center sm:min-h-[70vh]"
         >
+            <!-- Skeleton Loader Placeholder -->
+            <div
+                v-if="!isImageLoaded"
+                class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-100/70 dark:border-gray-800 dark:bg-gray-900/60"
+            >
+                <div class="flex animate-pulse flex-col items-center gap-3">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-200/90 text-slate-400 dark:bg-gray-800 dark:text-gray-600"
+                    >
+                        <ImageIcon class="h-6 w-6 stroke-[1.8]" />
+                    </div>
+                    <div
+                        class="h-2.5 w-28 rounded-full bg-slate-200/80 dark:bg-gray-800"
+                    ></div>
+                </div>
+            </div>
+
             <img
                 :src="resource.file_url"
                 :alt="resource.title"
-                class="max-h-[85vh] w-auto max-w-full rounded-2xl border border-slate-200/90 bg-white object-contain shadow-sm select-none dark:border-gray-800 dark:bg-gray-900"
+                @load="isImageLoaded = true"
+                class="max-h-[85vh] w-auto max-w-full rounded-2xl border border-slate-200/90 bg-white object-contain shadow-sm transition-opacity duration-300 select-none dark:border-gray-800 dark:bg-gray-900"
+                :class="{
+                    'opacity-0': !isImageLoaded,
+                    'opacity-100': isImageLoaded,
+                }"
             />
         </div>
 
