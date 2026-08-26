@@ -110,6 +110,7 @@ class NodeController extends Controller
         }
 
         Node::create([
+            'user_id' => auth()->id(),
             'subject_id' => $subject->id,
             'parent_id' => $parent?->id,
             'name' => $validated['name'],

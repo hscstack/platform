@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Models\Blog;
 use App\Models\Node;
+use App\Models\NodeVote;
 use App\Models\Notice;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
 use App\Observers\BlogObserver;
 use App\Observers\NodeObserver;
+use App\Observers\NodeVoteObserver;
 use App\Observers\NoticeObserver;
 use App\Observers\ResourceObserver;
 use App\Observers\SubjectObserver;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
 
         Blog::observe(BlogObserver::class);
         Node::observe(NodeObserver::class);
+        NodeVote::observe(NodeVoteObserver::class);
         Notice::observe(NoticeObserver::class);
         Resource::observe(ResourceObserver::class);
         Subject::observe(SubjectObserver::class);

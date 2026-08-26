@@ -122,3 +122,44 @@ test('public profile includes both contributors and random users in suggestions'
         ->has('suggestedUsers', 4)
     );
 });
+
+test('public profile displays latest upvoted folders in recent activity', function () {
+    $user = User::factory()->create(['username' => 'voter_student']);
+    $subject = Subject::create([
+        'name' => 'Higher Math',
+        'slug' => 'higher-math',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-emerald-500',
+        'icon' => 'calculator',
+    ]);
+
+    $parentFolder = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Calculus',
+        'slug' => 'calculus',
+    ]);
+
+    $childFolder = Node::create([
+        'subject_id' => $subject->id,
+        'parent_id' => $parentFolder->id,
+        'name' => 'Differentiation Master Notes',
+        'slug' => 'diff-notes',
+    ]);
+
+    \App\Models\NodeVote::create([
+        'node_id' => $childFolder->id,
+        'user_id' => $user->id,
+        'type' => 'up',
+    ]);
+
+    $response = $this->get('/u/voter_student');
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('User/Show')
+        ->has('recentActivities.upvotes', 1)
+        ->where('recentActivities.upvotes.0.title', 'Differentiation Master Notes')
+        ->where('recentActivities.upvotes.0.subtitle', 'Higher Math · Calculus')
+        ->where('recentActivities.upvotes.0.url', '/higher-math/calculus/diff-notes')
+    );
+});
