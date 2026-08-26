@@ -164,7 +164,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                 </div>
 
                 <div
-                    class="grid grid-cols-2 gap-4 rounded-b-lg border border-gray-100 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 dark:border-gray-700"
+                    class="flex flex-col gap-2.5 sm:gap-3"
                 >
                     <NodeRow
                         v-for="node in nodes"
