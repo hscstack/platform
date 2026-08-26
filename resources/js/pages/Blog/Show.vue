@@ -14,6 +14,7 @@ import {
     LogIn,
     X,
     Loader2,
+    BadgeCheck,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import UserListItem from '@/components/UserListItem.vue';
@@ -632,9 +633,19 @@ const goBack = () => {
                                                 ? `/u/${comment.user.username}`
                                                 : '#'
                                         "
-                                        class="text-sm font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                                        class="inline-flex items-center gap-1 text-sm font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                                     >
-                                        {{ comment.user?.name || 'Anonymous' }}
+                                        <span>{{
+                                            comment.user?.name || 'Anonymous'
+                                        }}</span>
+                                        <BadgeCheck
+                                            v-if="
+                                                comment.user?.roles &&
+                                                comment.user.roles.length > 0
+                                            "
+                                            class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
+                                            title="Verified Contributor"
+                                        />
                                     </Link>
                                     <span
                                         v-if="comment.user_id === blog.user_id"

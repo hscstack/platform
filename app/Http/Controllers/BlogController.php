@@ -25,7 +25,7 @@ class BlogController extends Controller
                 'views',
                 'created_at',
             ])
-            ->with(['user:id,name,username', 'user.roles:id,name'])
+            ->with('user:id,name,username')
             ->withCount(['reactions', 'comments'])
             ->where('is_published', true);
 
@@ -56,7 +56,7 @@ class BlogController extends Controller
     {
         abort_unless($blog->is_published, 404);
 
-        $blog->load(['user:id,name,username,image_path', 'user.roles:id,name']);
+        $blog->load('user:id,name,username,image_path');
         $blog->increment('views');
 
         $reactionsCount = $blog->reactions()->count();
