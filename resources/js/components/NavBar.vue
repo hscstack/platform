@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
                                 <p
                                     class="truncate text-[11px] font-medium text-slate-400 dark:text-gray-500"
                                 >
-                                    {{ user.email }}
+                                    {{ user.username ? '@' + user.username : user.email }}
                                 </p>
                             </div>
 
@@ -323,15 +323,19 @@ onBeforeUnmount(() => {
                     v-if="user"
                     class="mb-3 flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-900/80"
                 >
-                    <img
+                    <div
                         v-if="user.image_url"
-                        :src="user.image_url"
-                        :alt="user.name"
-                        class="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-500/20"
-                    />
+                        class="h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-indigo-600/20"
+                    >
+                        <img
+                            :src="user.image_url"
+                            :alt="user.name"
+                            class="h-full w-full object-cover"
+                        />
+                    </div>
                     <div
                         v-else
-                        class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-sm font-black text-white dark:bg-indigo-500"
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                     >
                         {{ user.name.charAt(0).toUpperCase() }}
                     </div>
@@ -344,7 +348,7 @@ onBeforeUnmount(() => {
                         <p
                             class="truncate text-[11px] text-slate-400 dark:text-gray-500"
                         >
-                            {{ user.email }}
+                            {{ user.username ? '@' + user.username : user.email }}
                         </p>
                     </div>
                 </div>

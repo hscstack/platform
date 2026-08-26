@@ -25,7 +25,7 @@ class BlogController extends Controller
                 'views',
                 'created_at',
             ])
-            ->with('user:id,name')
+            ->with('user:id,name,username')
             ->withCount(['reactions', 'comments'])
             ->where('is_published', true);
 
@@ -56,13 +56,13 @@ class BlogController extends Controller
     {
         abort_unless($blog->is_published, 404);
 
-        $blog->load('user:id,name');
+        $blog->load('user:id,name,username');
         $blog->increment('views');
 
         $reactionsCount = $blog->reactions()->count();
 
         $reactors = $blog->reactions()
-            ->with('user:id,name,image_path,institution')
+            ->with('user:id,name,username,image_path,institution')
             ->latest('id')
             ->limit(50)
             ->get()
@@ -71,7 +71,7 @@ class BlogController extends Controller
             ->values();
 
         $comments = $blog->comments()
-            ->with('user:id,name,image_path,institution')
+            ->with('user:id,name,username,image_path,institution')
             ->latest()
             ->get();
 

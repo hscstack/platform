@@ -38,7 +38,7 @@ class ResourceController extends Controller
         $completionsCount = ResourceCompletion::where('resource_id', $id)->count();
 
         $completers = ResourceCompletion::where('resource_id', $id)
-            ->with('user:id,name,image_path,institution')
+            ->with('user:id,name,username,image_path,institution')
             ->latest()
             ->take(10)
             ->get()
