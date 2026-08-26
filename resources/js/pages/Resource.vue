@@ -238,13 +238,27 @@ const parseYoutubeUrl = (url) => {
                 </h1>
             </div>
 
-            <!-- Right: Fullscreen Action (for images) -->
-            <div
-                v-if="resource.resource_type === 'image'"
-                class="flex shrink-0 items-center"
-            >
+            <!-- Right: Action Buttons -->
+            <div class="flex shrink-0 items-center gap-2">
+                <!-- Download Button (Auth-guarded, only for downloadable files, NOT for video) -->
                 <button
+                    v-if="
+                        resource.file_url && resource.resource_type !== 'video'
+                    "
+                    @click="handleDownload"
+                    type="button"
+                    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    title="Download Resource"
+                >
+                    <Download class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">Download</span>
+                </button>
+
+                <!-- Fullscreen Action (for images) -->
+                <button
+                    v-if="resource.resource_type === 'image'"
                     @click="toggleFullscreen"
+                    type="button"
                     class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
                     title="View Fullscreen"
                 >
@@ -363,47 +377,31 @@ const parseYoutubeUrl = (url) => {
         <div
             v-if="
                 resource.user?.name ||
-                resource.file_url ||
                 resource.resource_type === 'video' ||
                 (resource.content && resource.resource_type !== 'note')
             "
             class="mt-3.5 space-y-2.5"
         >
             <div
-                class="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-gray-400"
+                v-if="resource.user?.name"
+                class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400"
             >
-                <div v-if="resource.user?.name">
-                    <Link
-                        :href="`/about-us#${resource.user.id}`"
-                        class="group inline-flex items-center gap-1.5 transition hover:text-indigo-600 dark:hover:text-indigo-400"
-                    >
-                        <User
-                            class="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 dark:text-gray-500"
-                        />
-                        <span>
-                            Shared by
-                            <span
-                                class="font-bold text-slate-700 group-hover:underline dark:text-gray-300"
-                            >
-                                {{ resource.user.name }}
-                            </span>
-                        </span>
-                    </Link>
-                </div>
-
-                <!-- Download File Action (Auth-guarded) -->
-                <button
-                    v-if="
-                        resource.file_url && resource.resource_type !== 'video'
-                    "
-                    @click="handleDownload"
-                    type="button"
-                    class="inline-flex cursor-pointer items-center gap-1.5 font-medium text-slate-600 transition hover:text-indigo-600 active:scale-95 dark:text-gray-400 dark:hover:text-indigo-400"
-                    title="Download full material"
+                <Link
+                    :href="`/about-us#${resource.user.id}`"
+                    class="group inline-flex items-center gap-1.5 transition hover:text-indigo-600 dark:hover:text-indigo-400"
                 >
-                    <Download class="h-3.5 w-3.5 stroke-[2.2]" />
-                    <span>Download file</span>
-                </button>
+                    <User
+                        class="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 dark:text-gray-500"
+                    />
+                    <span>
+                        Shared by
+                        <span
+                            class="font-bold text-slate-700 group-hover:underline dark:text-gray-300"
+                        >
+                            {{ resource.user.name }}
+                        </span>
+                    </span>
+                </Link>
             </div>
 
             <!-- YouTube Educational Disclaimer (For Videos) -->
