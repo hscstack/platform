@@ -341,7 +341,7 @@ const goBack = () => {
 
             <!-- Reaction Interaction Bar -->
             <div
-                class="mt-10 flex flex-wrap items-center justify-between gap-4 border-y border-slate-200/80 py-4 dark:border-gray-800"
+                class="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-slate-200/80 py-3.5 dark:border-gray-800"
             >
                 <div class="flex items-center gap-3">
                     <button
@@ -447,7 +447,7 @@ const goBack = () => {
 
         <!-- "Write for us" Minimal Callout -->
         <div
-            class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-100/80 bg-indigo-50/40 px-4 py-2.5 text-xs text-slate-600 dark:border-indigo-950/60 dark:bg-indigo-950/20 dark:text-gray-400"
+            class="mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-100/80 bg-indigo-50/40 px-4 py-2 text-xs text-slate-600 dark:border-indigo-950/60 dark:bg-indigo-950/20 dark:text-gray-400"
         >
             <div class="flex items-center gap-2">
                 <span class="font-semibold text-slate-900 dark:text-gray-200"
@@ -472,7 +472,7 @@ const goBack = () => {
         <!-- Comments Section -->
         <section
             id="comments"
-            class="mt-8 border-t border-slate-200 pt-6 dark:border-gray-800"
+            class="mt-4 border-t border-slate-200/80 pt-4 dark:border-gray-800"
         >
             <div class="mb-4 flex items-center justify-between">
                 <h2
