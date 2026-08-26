@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { LogIn, Trash2 } from 'lucide-vue-next';
+import { LogIn, Pencil, Trash2 } from 'lucide-vue-next';
+
 defineProps({
     user: Object,
 });
@@ -11,13 +12,13 @@ const userId = page.props.auth.user.id;
 const getRoleBadgeStyles = (role: string) => {
     switch (role) {
         case 'admin':
-            return 'bg-red-50 text-red-700 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30';
+            return 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30';
         case 'manager':
-            return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30';
+            return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30';
         case 'editor':
-            return 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30';
+            return 'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-500/10 dark:text-purple-400 dark:ring-purple-500/30';
         default:
-            return 'bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+            return 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20';
     }
 };
 
@@ -37,99 +38,83 @@ const deleteUser = (id: number) => {
     }
 };
 </script>
+
 <template>
-    <tr
-        class="block border-b border-gray-100 p-5 transition-colors duration-200 last:border-b-0 md:table-row md:border-b md:border-gray-200/60 md:p-0 dark:border-gray-800 dark:md:border-gray-600"
+    <div
+        class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
         :class="[
             user.id === userId
-                ? 'bg-blue-50/50 md:bg-blue-50/30 md:hover:bg-blue-50/50 dark:bg-blue-500/10 dark:md:bg-blue-500/10 dark:md:hover:bg-blue-500/20'
-                : 'bg-white md:hover:bg-gray-50/50 dark:bg-gray-900 dark:md:hover:bg-gray-800',
+                ? 'ring-1 ring-indigo-500/20 dark:ring-indigo-500/30'
+                : '',
         ]"
     >
-        <td
-            class="block py-1.5 font-medium text-gray-900 md:table-cell md:px-6 md:py-4.5 dark:text-gray-100"
-        >
-            <div class="flex items-center gap-3.5">
-                <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold tracking-wider text-slate-700 uppercase shadow-xs ring-1 ring-black/5 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    {{ user.name.charAt(0) }}
-                </div>
-                <div class="flex min-w-0 flex-col">
-                    <div class="flex items-center gap-1.5">
-                        <Link
-                            :href="user.username ? `/u/${user.username}` : '#'"
-                            class="truncate text-sm font-semibold text-gray-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                        >
-                            {{ user.name }}
-                        </Link>
-                        <span
-                            v-if="user.id === userId"
-                            class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
-                        >
-                            You
-                        </span>
-                    </div>
-                    <span
-                        class="mt-0.5 truncate text-xs text-gray-400 md:hidden dark:text-gray-500"
+        <!-- Left: User Avatar + Name + Email + Role -->
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 bg-slate-100 text-xs font-bold text-slate-700 uppercase sm:h-10 sm:w-10 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300"
+            >
+                {{ user.name.charAt(0) }}
+            </div>
+
+            <div class="flex flex-col min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                    <Link
+                        :href="user.username ? `/u/${user.username}` : '#'"
+                        class="text-sm font-semibold text-slate-900 break-words transition-colors hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                     >
-                        {{ user.email }}
+                        {{ user.name }}
+                    </Link>
+
+                    <span
+                        v-if="user.id === userId"
+                        class="inline-flex items-center rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 uppercase dark:bg-indigo-500/10 dark:text-indigo-400"
+                    >
+                        You
+                    </span>
+
+                    <span
+                        class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset"
+                        :class="getRoleBadgeStyles(user.roles?.[0]?.name)"
+                    >
+                        {{ user.roles?.[0]?.name ?? 'no role' }}
                     </span>
                 </div>
+
+                <p class="mt-0.5 truncate text-xs text-slate-400 dark:text-gray-500">
+                    {{ user.email }}
+                </p>
             </div>
-        </td>
+        </div>
 
-        <td
-            class="hidden text-sm font-normal text-gray-600 md:table-cell md:px-6 md:py-4.5 dark:text-gray-400"
-        >
-            {{ user.email }}
-        </td>
+        <!-- Right: Actions -->
+        <div class="flex shrink-0 items-center gap-1" @click.stop>
+            <button
+                v-if="user.id !== userId"
+                type="button"
+                @click="loginAsUser(user)"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600 dark:text-gray-500 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                title="Login as user"
+            >
+                <LogIn class="h-4 w-4" :stroke-width="1.8" />
+            </button>
 
-        <td class="mt-1 block py-1.5 md:mt-0 md:table-cell md:px-6 md:py-4.5">
-            <div class="flex items-center gap-2 md:block">
-                <span
-                    class="w-12 text-xs font-medium text-gray-400 md:hidden dark:text-gray-500"
-                >
-                    Role:
-                </span>
-                <span
-                    class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium tracking-wide capitalize shadow-2xs"
-                    :class="getRoleBadgeStyles(user.roles?.[0]?.name)"
-                >
-                    {{ user.roles?.[0]?.name ?? 'no role' }}
-                </span>
-            </div>
-        </td>
+            <Link
+                :href="`/admin/users/edit/${user.id}`"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                title="Edit user"
+            >
+                <Pencil class="h-4 w-4" :stroke-width="1.8" />
+            </Link>
 
-        <td
-            class="mt-3 block border-t border-gray-100 py-2 pt-3 md:mt-0 md:table-cell md:border-t-0 md:px-6 md:py-4.5 md:pt-0 md:text-right dark:border-gray-800"
-        >
-            <div class="flex items-center justify-start gap-3.5 md:justify-end">
-                <button
-                    v-if="user.id !== userId"
-                    type="button"
-                    @click="loginAsUser(user)"
-                    class="inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-100 bg-emerald-50/40 px-3 py-1.5 text-xs font-medium text-emerald-600 shadow-2xs transition-all hover:bg-emerald-50 hover:text-emerald-700 md:border-0 md:bg-transparent md:p-0 md:text-emerald-600 md:shadow-none md:hover:text-emerald-700 md:hover:underline dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400 dark:md:bg-transparent dark:md:text-emerald-400 dark:md:hover:text-emerald-400"
-                >
-                    <LogIn class="h-3.5 w-3.5" />
-                    <span>Login</span>
-                </button>
-
-                <Link
-                    :href="`/admin/users/edit/${user.id}`"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-2xs transition-all hover:bg-gray-50 hover:text-blue-600 md:border-0 md:bg-transparent md:p-0 md:text-blue-600 md:shadow-none md:hover:text-blue-700 md:hover:underline dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:md:bg-transparent dark:md:text-blue-400 dark:md:hover:text-blue-400"
-                >
-                    Edit
-                </Link>
-
-                <button
-                    @click="deleteUser(user.id)"
-                    class="inline-flex items-center justify-center gap-1 rounded-lg border border-red-100 bg-red-50/40 px-3 py-1.5 text-xs font-medium text-red-600 shadow-2xs transition-all hover:bg-red-50 hover:text-red-700 md:border-0 md:bg-transparent md:p-0 md:text-red-500 md:shadow-none md:hover:text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:md:bg-transparent dark:md:text-red-400 dark:md:hover:text-red-400"
-                >
-                    <Trash2 class="h-3.5 w-3.5" />
-                    <span class="md:hidden">Delete</span>
-                </button>
-            </div>
-        </td>
-    </tr>
+            <button
+                v-if="user.id !== userId"
+                @click="deleteUser(user.id)"
+                type="button"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                title="Delete user"
+            >
+                <Trash2 class="h-4 w-4" :stroke-width="1.8" />
+            </button>
+        </div>
+    </div>
 </template>
