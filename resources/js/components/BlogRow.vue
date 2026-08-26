@@ -18,7 +18,7 @@ const deleteBlog = () => {
 
 <template>
     <div
-        @click="router.visit(`/admin/blogs/edit/${blog.slug}`)"
+        @click="router.visit(`/blogs/${blog.slug}`)"
         class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
         <div class="flex items-center gap-3 min-w-0 flex-1">
