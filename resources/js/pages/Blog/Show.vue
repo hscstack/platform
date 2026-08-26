@@ -5,8 +5,6 @@ import {
     User,
     Eye,
     ArrowLeft,
-    ArrowRight,
-    PenLine,
     Heart,
     MessageSquare,
     Trash2,
@@ -447,35 +445,17 @@ const goBack = () => {
             </div>
         </article>
 
-        <!-- Write on HSCStack Contributor CTA Card -->
+        <!-- Minimal Contributor CTA -->
         <div
-            class="mt-4 flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3.5 sm:flex-row sm:items-center sm:px-4 sm:py-3 dark:border-gray-800 dark:bg-gray-900/50"
+            class="mt-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-gray-400"
         >
-            <div class="flex items-center gap-3">
-                <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-400"
-                >
-                    <PenLine class="h-4 w-4 stroke-[2.2]" />
-                </div>
-                <div class="space-y-0.5">
-                    <p
-                        class="text-xs font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        Have insights or study notes to share?
-                    </p>
-                    <p class="text-[11px] text-slate-500 dark:text-gray-400">
-                        Join our community of contributors and publish on
-                        HSCStack.
-                    </p>
-                </div>
-            </div>
-
+            <span>Interested in writing for HSCStack?</span>
             <Link
                 href="/join"
-                class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 active:scale-95 dark:bg-gray-100 dark:text-slate-900 dark:hover:bg-indigo-400 dark:hover:text-white"
+                class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
             >
                 <span>Write with us</span>
-                <ArrowRight class="h-3 w-3" />
+                <span aria-hidden="true">&rarr;</span>
             </Link>
         </div>
 
