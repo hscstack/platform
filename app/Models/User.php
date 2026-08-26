@@ -16,6 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property int $id
  * @property string $name
+ * @property string|null $username
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
@@ -38,6 +39,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'username',
         'email',
         'receive_emails',
         'google_id',
@@ -50,6 +52,16 @@ class User extends Authenticatable
         'instagram',
         'github',
     ];
+
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            if (! $user->username) {
+                $user->updateQuietly(['username' => "student_{$user->id}"]);
+                $user->username = "student_{$user->id}";
+            }
+        });
+    }
 
     protected $appends = [
         'image_url',
