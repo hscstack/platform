@@ -48,16 +48,21 @@ class SubjectController extends Controller
         $nodes = Cache::rememberForever("subject_page_{$subject->id}", function () use ($subject) {
             return Node::where('subject_id', $subject->id)
                 ->whereNull('parent_id')
+                ->withCount(['children', 'resources', 'upvotes', 'downvotes'])
                 ->orderBy('sort_order')
-                ->withCount(['children', 'resources'])
                 ->get(['id', 'name', 'slug'])->toArray();
         });
 
         return Inertia::render('Node', [
             'subject' => $subject,
+            'currentNode' => null,
             'nodes' => $nodes,
             'breadcrumb' => [],
             'resources' => [],
+            'upvotesCount' => 0,
+            'downvotesCount' => 0,
+            'userVote' => null,
+            'upvoters' => [],
         ]);
     }
 }
