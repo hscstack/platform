@@ -5,6 +5,8 @@ import {
     User,
     Eye,
     ArrowLeft,
+    ArrowRight,
+    PenLine,
     Heart,
     MessageSquare,
     Trash2,
@@ -341,7 +343,7 @@ const goBack = () => {
 
             <!-- Reaction Interaction Bar -->
             <div
-                class="mt-10 flex flex-wrap items-center justify-between gap-4 border-y border-slate-200/80 py-4 dark:border-gray-800"
+                class="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-slate-200/80 py-3.5 dark:border-gray-800"
             >
                 <div class="flex items-center gap-3">
                     <button
@@ -445,36 +447,38 @@ const goBack = () => {
             </div>
         </article>
 
-        <!-- "Write for us" Minimal Callout -->
+        <!-- Contributor Invitation Banner -->
         <div
-            class="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-100/80 bg-indigo-50/40 px-4 py-3 text-xs text-slate-600 dark:border-indigo-950/60 dark:bg-indigo-950/20 dark:text-gray-400"
+            class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-slate-50/70 px-4 py-2.5 text-xs transition-colors hover:border-slate-300 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-gray-700"
         >
-            <div class="flex items-center gap-2">
-                <span class="font-semibold text-slate-900 dark:text-gray-200"
-                    >Want to write a blog here?</span
+            <div class="flex items-center gap-2.5">
+                <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400"
                 >
-                <span class="hidden text-slate-400 sm:inline dark:text-gray-500"
-                    >•</span
-                >
-                <span class="hidden sm:inline"
-                    >Share your thoughts with the community.</span
-                >
+                    <PenLine class="h-3.5 w-3.5" />
+                </span>
+                <span class="font-medium text-slate-700 dark:text-gray-300">
+                    Want to write study guides or articles on HSCStack?
+                </span>
             </div>
+
             <Link
                 href="/join"
-                class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                class="group inline-flex items-center gap-1.5 font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
             >
-                <span>Join us</span>
-                <span aria-hidden="true">&rarr;</span>
+                <span>Join as Contributor</span>
+                <ArrowRight
+                    class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                />
             </Link>
         </div>
 
         <!-- Comments Section -->
         <section
             id="comments"
-            class="mt-12 border-t border-slate-200 pt-10 dark:border-gray-800"
+            class="mt-4 border-t border-slate-200/80 pt-4 dark:border-gray-800"
         >
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-4 flex items-center justify-between">
                 <h2
                     class="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-gray-100"
                 >
@@ -493,7 +497,7 @@ const goBack = () => {
             <!-- Comment Input Box or Already Commented Notice -->
             <div
                 v-if="hasUserCommented"
-                class="mb-8 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4.5 text-sm text-slate-700 dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:text-gray-300"
+                class="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-sm text-slate-700 dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:text-gray-300"
             >
                 <div
                     class="flex items-center gap-2 font-semibold text-indigo-700 dark:text-indigo-300"
@@ -510,7 +514,7 @@ const goBack = () => {
 
             <div
                 v-else
-                class="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900"
+                class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900"
             >
                 <form @submit.prevent="submitComment">
                     <div class="relative">
@@ -563,7 +567,7 @@ const goBack = () => {
             </div>
 
             <!-- Comments List -->
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div
                     v-if="comments.length === 0"
                     class="rounded-2xl border border-dashed border-slate-200 p-8 text-center dark:border-gray-800"
@@ -587,7 +591,7 @@ const goBack = () => {
                     class="group rounded-2xl border border-slate-100 bg-white p-4.5 shadow-2xs transition hover:border-slate-200 dark:border-gray-800/80 dark:bg-gray-900/90 dark:hover:border-gray-700"
                 >
                     <div class="flex items-start justify-between gap-3">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-start gap-3">
                             <div
                                 class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                             >
@@ -608,8 +612,8 @@ const goBack = () => {
                                 </span>
                             </div>
 
-                            <div>
-                                <div class="flex items-center gap-2">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
                                     <span
                                         class="text-sm font-bold text-slate-900 dark:text-gray-100"
                                     >
@@ -622,27 +626,37 @@ const goBack = () => {
                                         Author
                                     </span>
                                 </div>
-                                <span
-                                    class="text-xs text-slate-400 dark:text-gray-500"
+                                <p
+                                    v-if="comment.user?.institution"
+                                    class="truncate text-xs font-medium text-slate-500 dark:text-gray-400"
                                 >
-                                    {{ formatTimeAgo(comment.created_at) }}
-                                </span>
+                                    {{ comment.user.institution }}
+                                </p>
                             </div>
                         </div>
 
-                        <!-- Delete Button (Only for comment author or admin) -->
-                        <button
-                            v-if="
-                                currentUser &&
-                                (currentUser.id === comment.user_id ||
-                                    canAccessAdmin)
-                            "
-                            @click="deleteComment(comment.id)"
-                            title="Delete comment"
-                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                        >
-                            <Trash2 class="h-4 w-4" />
-                        </button>
+                        <!-- Top-Right Actions & Timestamp -->
+                        <div class="flex shrink-0 items-center gap-2">
+                            <span
+                                class="text-xs text-slate-400 dark:text-gray-500"
+                            >
+                                {{ formatTimeAgo(comment.created_at) }}
+                            </span>
+
+                            <!-- Delete Button (Only for comment author or admin) -->
+                            <button
+                                v-if="
+                                    currentUser &&
+                                    (currentUser.id === comment.user_id ||
+                                        canAccessAdmin)
+                                "
+                                @click="deleteComment(comment.id)"
+                                title="Delete comment"
+                                class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                            >
+                                <Trash2 class="h-4 w-4" />
+                            </button>
+                        </div>
                     </div>
 
                     <p
@@ -655,7 +669,7 @@ const goBack = () => {
         </section>
 
         <footer
-            class="mt-12 border-t border-slate-200 pt-8 dark:border-gray-700"
+            class="mt-8 border-t border-slate-200 pt-6 dark:border-gray-700"
         >
             <div
                 class="flex flex-col gap-6 rounded-2xl bg-slate-50 p-6 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-800"
@@ -666,7 +680,7 @@ const goBack = () => {
                     </p>
 
                     <Link
-                        :href="`/about-us#author-${blog.user?.id}`"
+                        :href="`/about-us#${blog.user?.id}`"
                         class="mt-1 block text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
                     >
                         {{ blog.user?.name }}

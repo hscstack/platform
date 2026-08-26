@@ -155,12 +155,12 @@ onBeforeUnmount(() => {
             >
                 <div
                     v-if="isMenuOpen"
-                    class="absolute right-0 bottom-full mb-2.5 min-w-[190px] rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
+                    class="absolute right-0 bottom-full mb-2.5 min-w-[220px] rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
                 >
                     <button
                         @click="handleCopyShortLink"
                         :disabled="isLoading"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap transition-colors"
                         :class="
                             isCopied
                                 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
@@ -180,13 +180,13 @@ onBeforeUnmount(() => {
                             class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
                         />
 
-                        <span class="truncate">
+                        <span>
                             {{
                                 isLoading
                                     ? 'Shortening link...'
                                     : isCopied
                                       ? 'Link copied!'
-                                      : 'Copy short link'
+                                      : 'Copy current page short link'
                             }}
                         </span>
                     </button>
