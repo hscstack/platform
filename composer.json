@@ -12,7 +12,6 @@
         "php": "^8.3",
         "google/apiclient": "^2.15",
         "inertiajs/inertia-laravel": "^3.0",
-        "jaybizzle/crawler-detect": "^1.4",
         "laravel/framework": "^13.7",
         "laravel/socialite": "^5.30",
         "laravel/tinker": "^3.0",
