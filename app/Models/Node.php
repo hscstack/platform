@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class Node extends Model
 {
     protected $fillable = [
+        'user_id',
         'subject_id',
         'parent_id',
         'name',
@@ -22,7 +23,14 @@ class Node extends Model
         return [
             'children_count' => 'integer',
             'resources_count' => 'integer',
+            'upvotes_count' => 'integer',
+            'downvotes_count' => 'integer',
         ];
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function children()
@@ -43,5 +51,20 @@ class Node extends Model
     public function resources()
     {
         return $this->hasMany(Resource::class);
+    }
+
+    public function votes()
+    {
+        return $this->hasMany(NodeVote::class);
+    }
+
+    public function upvotes()
+    {
+        return $this->hasMany(NodeVote::class)->where('type', 'up');
+    }
+
+    public function downvotes()
+    {
+        return $this->hasMany(NodeVote::class)->where('type', 'down');
     }
 }
