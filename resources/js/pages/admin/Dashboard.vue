@@ -22,9 +22,16 @@ const errorMsg = ref<string | null>(null);
 const fetchAnalytics = async (refresh = false) => {
     isLoading.value = true;
     errorMsg.value = null;
+
     try {
-        const res = await fetch(`/admin/analytics${refresh ? '?refresh=1' : ''}`);
-        if (!res.ok) throw new Error('Failed to fetch analytics data');
+        const res = await fetch(
+            `/admin/analytics${refresh ? '?refresh=1' : ''}`,
+        );
+
+        if (!res.ok) {
+            throw new Error('Failed to fetch analytics data');
+        }
+
         stats.value = await res.json();
         hasFetched.value = true;
     } catch (e: any) {
@@ -80,7 +87,15 @@ const fetchAnalytics = async (refresh = false) => {
                         class="h-3.5 w-3.5"
                         :class="{ 'animate-spin': isLoading }"
                     />
-                    <span>{{ hasFetched ? (isLoading ? 'Refreshing...' : 'Reload Analytics') : (isLoading ? 'Loading...' : 'Load Analytics') }}</span>
+                    <span>{{
+                        hasFetched
+                            ? isLoading
+                                ? 'Refreshing...'
+                                : 'Reload Analytics'
+                            : isLoading
+                              ? 'Loading...'
+                              : 'Load Analytics'
+                    }}</span>
                 </button>
             </div>
         </div>
@@ -107,7 +122,8 @@ const fetchAnalytics = async (refresh = false) => {
                         <p
                             class="mt-0.5 text-xs text-slate-600 dark:text-gray-400"
                         >
-                            Learn how to manage subjects, upload resources, create blogs, and navigate panel permissions.
+                            Learn how to manage subjects, upload resources,
+                            create blogs, and navigate panel permissions.
                         </p>
                     </div>
                 </div>
@@ -132,13 +148,18 @@ const fetchAnalytics = async (refresh = false) => {
             <div
                 class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-xs dark:bg-gray-800"
             >
-                <BarChart3 class="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                <BarChart3
+                    class="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+                />
             </div>
-            <h3 class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200">
+            <h3
+                class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
+            >
                 Analytics are Ready to Load
             </h3>
             <p class="mt-1 max-w-sm text-xs text-slate-500 dark:text-gray-400">
-                To keep page load instant, analytics data is fetched on demand. Click below to load live metrics from PostHog.
+                To keep page load instant, analytics data is fetched on demand.
+                Click below to load live metrics from PostHog.
             </p>
             <button
                 type="button"
@@ -155,8 +176,12 @@ const fetchAnalytics = async (refresh = false) => {
             v-else-if="isLoading && !hasFetched"
             class="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-16 text-center shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
-            <RefreshCw class="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
-            <p class="mt-3 text-xs font-medium text-slate-500 dark:text-gray-400">
+            <RefreshCw
+                class="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400"
+            />
+            <p
+                class="mt-3 text-xs font-medium text-slate-500 dark:text-gray-400"
+            >
                 Connecting to PostHog & querying 30-day analytics...
             </p>
         </div>
@@ -171,8 +196,12 @@ const fetchAnalytics = async (refresh = false) => {
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <span class="relative flex h-2.5 w-2.5">
-                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                                <span
+                                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+                                ></span>
+                                <span
+                                    class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"
+                                ></span>
                             </span>
                             <p
                                 class="text-xs font-bold tracking-wider text-emerald-900 uppercase dark:text-emerald-300"

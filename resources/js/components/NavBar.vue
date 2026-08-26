@@ -14,7 +14,6 @@ import {
     FolderGit2,
     BookOpen,
     LogIn,
-    Shield,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useDarkMode } from '@/lib/useDarkMode';

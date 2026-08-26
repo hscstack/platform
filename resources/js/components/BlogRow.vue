@@ -21,7 +21,7 @@ const deleteBlog = () => {
         @click="router.visit(`/blogs/${blog.slug}`)"
         class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <div class="flex items-center gap-3 min-w-0 flex-1">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
             <!-- Thumbnail / Icon -->
             <div
                 class="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-black/5 bg-slate-100 dark:border-white/10 dark:bg-gray-800"
@@ -41,10 +41,10 @@ const deleteBlog = () => {
             </div>
 
             <!-- Title & Metadata -->
-            <div class="flex flex-col min-w-0">
+            <div class="flex min-w-0 flex-col">
                 <div class="flex flex-wrap items-center gap-2">
                     <h4
-                        class="text-sm font-semibold text-slate-900 break-words transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                        class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                     >
                         {{ blog.title }}
                     </h4>
@@ -68,7 +68,9 @@ const deleteBlog = () => {
                     </span>
                 </div>
 
-                <div class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-gray-500">
+                <div
+                    class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-gray-500"
+                >
                     <Eye class="h-3.5 w-3.5" />
                     <span>{{ blog.views || 0 }} views</span>
                 </div>

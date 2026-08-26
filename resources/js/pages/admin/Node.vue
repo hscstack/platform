@@ -64,7 +64,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
         <div
             class="mb-3.5 flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-gray-800"
         >
-            <div class="flex items-center gap-2.5 min-w-0">
+            <div class="flex min-w-0 items-center gap-2.5">
                 <button
                     @click="handleBack"
                     class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-2xs transition-colors hover:bg-slate-50 hover:text-slate-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
@@ -73,9 +73,9 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                     <ArrowLeft class="h-4 w-4" :stroke-width="2.2" />
                 </button>
 
-                <div class="flex flex-wrap items-center gap-2 min-w-0">
+                <div class="flex min-w-0 flex-wrap items-center gap-2">
                     <h3
-                        class="text-base font-bold tracking-tight text-slate-900 truncate dark:text-gray-100"
+                        class="truncate text-base font-bold tracking-tight text-slate-900 dark:text-gray-100"
                     >
                         {{ parent?.name ? parent.name : subject.name }}
                     </h3>
@@ -158,9 +158,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
                     <span>Resources</span>
                 </div>
 
-                <div
-                    class="flex flex-col gap-2.5 sm:gap-3"
-                >
+                <div class="flex flex-col gap-2.5 sm:gap-3">
                     <NodeRow
                         v-for="node in nodes"
                         :key="`node-${node.id}`"

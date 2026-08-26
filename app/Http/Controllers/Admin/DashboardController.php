@@ -19,7 +19,7 @@ class DashboardController extends Controller
     public function analytics(Request $request)
     {
         $force = $request->boolean('refresh');
-        
+
         if ($force) {
             Cache::forget('admin_dashboard_stats');
         }
@@ -65,7 +65,7 @@ class DashboardController extends Controller
 
                     if ($resOverview->successful()) {
                         $results = $resOverview->json('results');
-                        if (!empty($results) && isset($results[0])) {
+                        if (! empty($results) && isset($results[0])) {
                             $totalVisits = (int) ($results[0][0] ?? 0);
                             $totalUsers = (int) ($results[0][1] ?? 0);
                             $realtimeUsers = (int) ($results[0][2] ?? 0);
@@ -113,7 +113,7 @@ class DashboardController extends Controller
                         })->values()->toArray();
                     }
                 } catch (\Throwable $e) {
-                    Log::warning('PostHog Analytics Query Failed: ' . $e->getMessage());
+                    Log::warning('PostHog Analytics Query Failed: '.$e->getMessage());
                 }
             }
 

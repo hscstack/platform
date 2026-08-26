@@ -19,7 +19,7 @@ const handleDelete = () => {
         class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
         <!-- Left: Icon + Full Title -->
-        <div class="flex items-center gap-3 min-w-0 flex-1">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200/40 bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
             >
@@ -28,7 +28,7 @@ const handleDelete = () => {
 
             <div class="min-w-0 flex-1">
                 <h3
-                    class="text-sm font-semibold text-slate-900 break-words transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                    class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                 >
                     {{ node.name }}
                 </h3>
@@ -36,10 +36,7 @@ const handleDelete = () => {
         </div>
 
         <!-- Right: Actions -->
-        <div
-            class="flex shrink-0 items-center gap-1"
-            @click.stop
-        >
+        <div class="flex shrink-0 items-center gap-1" @click.stop>
             <Link
                 :href="`/admin/nodes/edit/${node.id}`"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"

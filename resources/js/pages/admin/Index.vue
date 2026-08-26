@@ -18,6 +18,7 @@ const filteredSubjects = computed(() => {
     if (activeCourse.value === 'all') {
         return props.subjects;
     }
+
     return props.subjects.filter(
         (s) => s.course?.toLowerCase() === activeCourse.value.toLowerCase(),
     );
@@ -32,9 +33,9 @@ const filteredSubjects = computed(() => {
         <div
             class="mb-3.5 flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-gray-800"
         >
-            <div class="flex items-center gap-2.5 min-w-0">
+            <div class="flex min-w-0 items-center gap-2.5">
                 <h3
-                    class="text-base font-bold tracking-tight text-slate-900 truncate dark:text-gray-100"
+                    class="truncate text-base font-bold tracking-tight text-slate-900 dark:text-gray-100"
                 >
                     Manage Subjects
                 </h3>
@@ -76,7 +77,10 @@ const filteredSubjects = computed(() => {
                     'rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors',
                 ]"
             >
-                HSC ({{ subjects.filter((s) => s.course?.toLowerCase() === 'hsc').length }})
+                HSC ({{
+                    subjects.filter((s) => s.course?.toLowerCase() === 'hsc')
+                        .length
+                }})
             </button>
 
             <button
@@ -89,7 +93,10 @@ const filteredSubjects = computed(() => {
                     'rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors',
                 ]"
             >
-                SSC ({{ subjects.filter((s) => s.course?.toLowerCase() === 'ssc').length }})
+                SSC ({{
+                    subjects.filter((s) => s.course?.toLowerCase() === 'ssc')
+                        .length
+                }})
             </button>
         </div>
 

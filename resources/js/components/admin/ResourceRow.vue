@@ -27,7 +27,7 @@ const handleDelete = () => {
         class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-amber-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-amber-500/30 dark:hover:bg-gray-800/40"
     >
         <!-- Left: Resource Icon + Full Title -->
-        <div class="flex items-center gap-3 min-w-0 flex-1">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200/40 bg-amber-50 text-amber-600 sm:h-10 sm:w-10 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
             >
@@ -50,9 +50,9 @@ const handleDelete = () => {
                 <File v-else class="h-4.5 w-4.5 stroke-[2]" />
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 min-w-0">
+            <div class="flex min-w-0 flex-wrap items-center gap-2">
                 <h3
-                    class="text-sm font-semibold text-slate-900 break-words transition-colors group-hover:text-amber-700 dark:text-gray-100 dark:group-hover:text-amber-400"
+                    class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-amber-700 dark:text-gray-100 dark:group-hover:text-amber-400"
                 >
                     {{ resource.title }}
                 </h3>
@@ -67,10 +67,7 @@ const handleDelete = () => {
         </div>
 
         <!-- Right: Actions -->
-        <div
-            class="flex shrink-0 items-center gap-1"
-            @click.stop
-        >
+        <div class="flex shrink-0 items-center gap-1" @click.stop>
             <Link
                 :href="`/admin/resources/edit/${resource.id}`"
                 target="_self"

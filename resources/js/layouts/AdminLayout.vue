@@ -76,7 +76,9 @@ const closeMobileSidebar = () => {
                 />
 
                 <!-- Main Content Area -->
-                <main class="flex flex-1 flex-col overflow-x-hidden p-3.5 sm:p-6 lg:p-8">
+                <main
+                    class="flex flex-1 flex-col overflow-x-hidden p-3.5 sm:p-6 lg:p-8"
+                >
                     <div
                         class="flex w-full flex-1 flex-col rounded-xl border border-slate-200/90 bg-white p-4.5 shadow-2xs sm:p-7 md:p-8 dark:border-gray-800 dark:bg-gray-900"
                     >

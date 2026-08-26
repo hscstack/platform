@@ -17,9 +17,9 @@ defineProps({
         <div
             class="mb-3.5 flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-gray-800"
         >
-            <div class="flex items-center gap-2.5 min-w-0">
+            <div class="flex min-w-0 items-center gap-2.5">
                 <h3
-                    class="text-base font-bold tracking-tight text-slate-900 truncate dark:text-gray-100"
+                    class="truncate text-base font-bold tracking-tight text-slate-900 dark:text-gray-100"
                 >
                     Manage Users
                 </h3>
@@ -43,15 +43,8 @@ defineProps({
         </div>
 
         <div class="flex flex-1 flex-col">
-            <div
-                v-if="users.length > 0"
-                class="flex flex-col gap-2.5 sm:gap-3"
-            >
-                <UserRow
-                    v-for="user in users"
-                    :key="user.id"
-                    :user="user"
-                />
+            <div v-if="users.length > 0" class="flex flex-col gap-2.5 sm:gap-3">
+                <UserRow v-for="user in users" :key="user.id" :user="user" />
             </div>
 
             <EmptyState v-else />

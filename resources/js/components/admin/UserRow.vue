@@ -49,18 +49,18 @@ const deleteUser = (id: number) => {
         ]"
     >
         <!-- Left: User Avatar + Name + Email + Role -->
-        <div class="flex items-center gap-3 min-w-0 flex-1">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 bg-slate-100 text-xs font-bold text-slate-700 uppercase sm:h-10 sm:w-10 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300"
             >
                 {{ user.name.charAt(0) }}
             </div>
 
-            <div class="flex flex-col min-w-0">
+            <div class="flex min-w-0 flex-col">
                 <div class="flex flex-wrap items-center gap-2">
                     <Link
                         :href="user.username ? `/u/${user.username}` : '#'"
-                        class="text-sm font-semibold text-slate-900 break-words transition-colors hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                        class="text-sm font-semibold break-words text-slate-900 transition-colors hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                     >
                         {{ user.name }}
                     </Link>
@@ -80,7 +80,9 @@ const deleteUser = (id: number) => {
                     </span>
                 </div>
 
-                <p class="mt-0.5 truncate text-xs text-slate-400 dark:text-gray-500">
+                <p
+                    class="mt-0.5 truncate text-xs text-slate-400 dark:text-gray-500"
+                >
                     {{ user.email }}
                 </p>
             </div>
