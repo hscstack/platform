@@ -28,6 +28,24 @@
         $ogImage = data_get($blog, 'featured_image') ?: url('/feature.png');
         $ogType = 'article';
         $ogUrl = data_get($blog, 'slug') ? url('/blogs/' . data_get($blog, 'slug')) : url()->current();
+    } elseif ($pageComponent === 'User/Show' && !empty($props['profileUser'])) {
+        $profileUser = $props['profileUser'];
+        $userName = data_get($profileUser, 'name');
+        $userHandle = data_get($profileUser, 'username');
+        $userTitle = data_get($profileUser, 'title');
+        $userInstitution = data_get($profileUser, 'institution');
+        $userAbout = data_get($profileUser, 'about');
+
+        $metaTitle = "{$userName} (@{$userHandle}) - " . config('app.name', 'HSCStack');
+        $ogTitle = "{$userName} (@{$userHandle})";
+        
+        $descParts = array_filter([$userTitle, $userInstitution, $userAbout]);
+        $metaDescription = !empty($descParts) 
+            ? implode(' · ', array_slice($descParts, 0, 2)) 
+            : "View {$userName}'s profile, completed study topics, and contributions on HSCStack.";
+        $ogImage = data_get($profileUser, 'image_url') ?: url('/feature.png');
+        $ogType = 'profile';
+        $ogUrl = $userHandle ? url('/u/' . $userHandle) : url()->current();
     } elseif ($pageComponent === 'Node' && (!empty($props['breadcrumb']) || !empty($props['subject']))) {
         $crumbs = $props['breadcrumb'] ?? [];
         $lastCrumb = is_array($crumbs) && count($crumbs) ? end($crumbs) : null;
