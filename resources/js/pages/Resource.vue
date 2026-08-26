@@ -16,6 +16,7 @@ import {
     CheckCircle2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import UserListItem from '@/components/UserListItem.vue';
 import YouTubePlayer from '../components/YouTubePlayer.vue';
 
 const props = defineProps({
@@ -806,49 +807,12 @@ watch(isFullscreen, (val) => {
                             No completions recorded yet.
                         </div>
 
-                        <Link
+                        <UserListItem
                             v-for="completer in localCompleters"
                             :key="completer.id"
-                            :href="
-                                completer.username
-                                    ? `/u/${completer.username}`
-                                    : '#'
-                            "
-                            class="group/user flex items-center gap-3 py-2.5 transition"
-                        >
-                            <div
-                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-50 font-semibold text-emerald-700 transition group-hover/user:ring-2 group-hover/user:ring-emerald-400 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            >
-                                <img
-                                    v-if="
-                                        completer.image_url ||
-                                        completer.image_path
-                                    "
-                                    :src="
-                                        completer.image_url ||
-                                        '/storage/' + completer.image_path
-                                    "
-                                    :alt="completer.name"
-                                    class="h-full w-full object-cover"
-                                />
-                                <span v-else class="text-xs uppercase">
-                                    {{ completer.name?.charAt(0) || 'U' }}
-                                </span>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p
-                                    class="truncate text-xs font-semibold text-slate-900 group-hover/user:text-indigo-600 dark:text-gray-100 dark:group-hover/user:text-indigo-400"
-                                >
-                                    {{ completer.name }}
-                                </p>
-                                <p
-                                    v-if="completer.institution"
-                                    class="truncate text-[11px] text-slate-500 dark:text-gray-400"
-                                >
-                                    {{ completer.institution }}
-                                </p>
-                            </div>
-                        </Link>
+                            :user="completer"
+                            theme="emerald"
+                        />
 
                         <div
                             v-if="

@@ -18,11 +18,15 @@ test('public user profile can be rendered by username', function () {
     $response = $this->get('/u/tajim_pro');
 
     $response->assertOk();
+    $response->assertSee('<meta property="og:title" content="Tajim Ahmed (@tajim_pro)">', false);
+    $response->assertSee('<meta property="og:type" content="profile">', false);
+    $response->assertSee('<meta property="og:url" content="'.url('/u/tajim_pro').'">', false);
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
         ->where('profileUser.username', 'tajim_pro')
         ->where('profileUser.name', 'Tajim Ahmed')
         ->where('profileUser.institution', 'Notre Dame College')
+        ->has('suggestedUsers')
     );
 });
 
@@ -93,5 +97,28 @@ test('public profile accurately displays completed study topics and activities',
         ->has('recentCompletions', 1)
         ->where('recentCompletions.0.title', 'Vector Lecture Notes')
         ->has('recentActivities.completions', 1)
+    );
+});
+
+test('public profile includes both contributors and random users in suggestions', function () {
+    $role = Role::firstOrCreate(['name' => 'editor']);
+
+    $mainUser = User::factory()->create(['username' => 'current_user']);
+
+    $contributor1 = User::factory()->create(['username' => 'contrib_1']);
+    $contributor1->assignRole($role);
+
+    $contributor2 = User::factory()->create(['username' => 'contrib_2']);
+    $contributor2->assignRole($role);
+
+    $student1 = User::factory()->create(['username' => 'student_1']);
+    $student2 = User::factory()->create(['username' => 'student_2']);
+
+    $response = $this->get('/u/current_user');
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('User/Show')
+        ->has('suggestedUsers', 4)
     );
 });

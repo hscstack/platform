@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { GraduationCap, ArrowRight } from 'lucide-vue-next';
+import { GraduationCap, ArrowRight, BadgeCheck } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -81,12 +81,23 @@ const roleInfo = computed(() => {
 
             <!-- Name, Handle & Role -->
             <div class="space-y-1">
-                <Link
-                    :href="profileUrl"
-                    class="text-lg font-black tracking-tight text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                >
-                    {{ member.name }}
-                </Link>
+                <div class="flex items-center justify-center gap-1.5">
+                    <Link
+                        :href="profileUrl"
+                        class="text-lg font-black tracking-tight text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                    >
+                        {{ member.name }}
+                    </Link>
+                    <span
+                        v-if="member.roles && member.roles.length > 0"
+                        class="inline-flex items-center text-blue-600 dark:text-blue-400"
+                        title="Verified HSCStack Contributor"
+                    >
+                        <BadgeCheck
+                            class="h-4.5 w-4.5 fill-blue-50 stroke-[2.2] dark:fill-blue-950/60"
+                        />
+                    </span>
+                </div>
 
                 <!-- Role Pill -->
                 <div class="flex items-center justify-center pt-0.5">

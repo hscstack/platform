@@ -51,6 +51,7 @@ class User extends Authenticatable
         'instagram',
         'github',
     ];
+
     protected static function booted(): void
     {
         static::created(function (User $user) {

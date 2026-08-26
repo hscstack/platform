@@ -14,8 +14,10 @@ import {
     LogIn,
     X,
     Loader2,
+    BadgeCheck,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import UserListItem from '@/components/UserListItem.vue';
 
 const props = defineProps({
     blog: {
@@ -275,9 +277,16 @@ const goBack = () => {
                                 ? `/u/${blog.user.username}`
                                 : '#'
                         "
-                        class="font-medium text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                        class="inline-flex items-center gap-1 font-medium text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
-                        {{ blog.user?.name }}
+                        <span>{{ blog.user?.name }}</span>
+                        <BadgeCheck
+                            v-if="
+                                blog.user?.roles && blog.user.roles.length > 0
+                            "
+                            class="h-4 w-4 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
+                            title="Verified Contributor"
+                        />
                     </Link>
                 </div>
 
@@ -622,16 +631,28 @@ const goBack = () => {
                             </Link>
 
                             <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-2">
+                                <div
+                                    class="flex flex-wrap items-center gap-1.5"
+                                >
                                     <Link
                                         :href="
                                             comment.user?.username
                                                 ? `/u/${comment.user.username}`
                                                 : '#'
                                         "
-                                        class="text-sm font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                                        class="inline-flex items-center gap-1 text-sm font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                                     >
-                                        {{ comment.user?.name || 'Anonymous' }}
+                                        <span>{{
+                                            comment.user?.name || 'Anonymous'
+                                        }}</span>
+                                        <BadgeCheck
+                                            v-if="
+                                                comment.user?.roles &&
+                                                comment.user.roles.length > 0
+                                            "
+                                            class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
+                                            title="Verified Contributor"
+                                        />
                                     </Link>
                                     <span
                                         v-if="comment.user_id === blog.user_id"
@@ -699,9 +720,16 @@ const goBack = () => {
                                 ? `/u/${blog.user.username}`
                                 : '#'
                         "
-                        class="mt-1 block text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
+                        class="mt-1 inline-flex items-center gap-1.5 text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
                     >
-                        {{ blog.user?.name }}
+                        <span>{{ blog.user?.name }}</span>
+                        <BadgeCheck
+                            v-if="
+                                blog.user?.roles && blog.user.roles.length > 0
+                            "
+                            class="h-4.5 w-4.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
+                            title="Verified Contributor"
+                        />
                     </Link>
 
                     <Link
@@ -763,48 +791,12 @@ const goBack = () => {
                             No reactions yet.
                         </div>
 
-                        <Link
+                        <UserListItem
                             v-for="reactor in reactors"
                             :key="reactor.id"
-                            :href="
-                                reactor.username
-                                    ? `/u/${reactor.username}`
-                                    : '#'
-                            "
-                            class="group/user flex items-center gap-3 py-2.5 transition"
-                        >
-                            <div
-                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-rose-50 font-semibold text-rose-600 transition group-hover/user:ring-2 group-hover/user:ring-rose-400 dark:bg-rose-950/60 dark:text-rose-300"
-                            >
-                                <img
-                                    v-if="
-                                        reactor.image_url || reactor.image_path
-                                    "
-                                    :src="
-                                        reactor.image_url ||
-                                        '/storage/' + reactor.image_path
-                                    "
-                                    :alt="reactor.name"
-                                    class="h-full w-full object-cover"
-                                />
-                                <span v-else class="text-xs uppercase">
-                                    {{ reactor.name?.charAt(0) || 'U' }}
-                                </span>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p
-                                    class="truncate text-xs font-semibold text-slate-900 group-hover/user:text-indigo-600 dark:text-gray-100 dark:group-hover/user:text-indigo-400"
-                                >
-                                    {{ reactor.name }}
-                                </p>
-                                <p
-                                    v-if="reactor.institution"
-                                    class="truncate text-[11px] text-slate-500 dark:text-gray-400"
-                                >
-                                    {{ reactor.institution }}
-                                </p>
-                            </div>
-                        </Link>
+                            :user="reactor"
+                            theme="rose"
+                        />
 
                         <div
                             v-if="localReactionsCount > reactors.length"

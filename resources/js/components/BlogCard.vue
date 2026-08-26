@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowRight, Heart, MessageSquare } from 'lucide-vue-next';
+import { ArrowRight, Heart, MessageSquare, BadgeCheck } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -59,15 +59,25 @@ const formattedDate = computed(() => {
                 <Link
                     v-if="blog.user?.username"
                     :href="`/u/${blog.user.username}`"
-                    class="font-medium text-indigo-600 underline transition-colors hover:underline dark:text-indigo-400"
+                    class="inline-flex items-center gap-1 font-medium text-indigo-600 underline transition-colors hover:underline dark:text-indigo-400"
                 >
-                    {{ blog.user?.name }}
+                    <span>{{ blog.user?.name }}</span>
+                    <BadgeCheck
+                        v-if="blog.user?.roles && blog.user.roles.length > 0"
+                        class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
+                        title="Verified Contributor"
+                    />
                 </Link>
                 <span
                     v-else
-                    class="font-medium text-slate-700 dark:text-gray-300"
+                    class="inline-flex items-center gap-1 font-medium text-slate-700 dark:text-gray-300"
                 >
-                    {{ blog.user?.name }}
+                    <span>{{ blog.user?.name }}</span>
+                    <BadgeCheck
+                        v-if="blog.user?.roles && blog.user.roles.length > 0"
+                        class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
+                        title="Verified Contributor"
+                    />
                 </span>
 
                 <span
