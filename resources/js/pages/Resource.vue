@@ -56,8 +56,8 @@ const handleDownload = async () => {
     }
 
     if (!props.resource?.file_url || isDownloading.value) {
-return;
-}
+        return;
+    }
 
     isDownloading.value = true;
 
@@ -65,8 +65,8 @@ return;
         const response = await fetch(props.resource.file_url);
 
         if (!response.ok) {
-throw new Error('Network response was not ok');
-}
+            throw new Error('Network response was not ok');
+        }
 
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
