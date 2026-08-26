@@ -400,3 +400,75 @@ test('voting on a folder properly clears and refreshes parent node and subject p
             ->where('nodes.0.upvotes_count', 1)
         );
 });
+
+test('folder author receives milestone email notification when folder hits 1 upvote', function () {
+    Illuminate\Support\Facades\Mail::fake();
+
+    $author = User::factory()->create([
+        'name' => 'Author Rahim',
+        'email' => 'rahim@example.com',
+        'receive_emails' => true,
+    ]);
+
+    $voter = User::factory()->create([
+        'name' => 'Voter Karim',
+        'email' => 'karim@example.com',
+    ]);
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+
+    $folder = Node::create([
+        'user_id' => $author->id,
+        'subject_id' => $subject->id,
+        'name' => 'Vectors Complete Guide',
+        'slug' => 'vectors-guide',
+    ]);
+
+    // Voter upvotes folder
+    $this->actingAs($voter)
+        ->post("/nodes/{$folder->id}/vote", ['type' => 'up'])
+        ->assertRedirect();
+
+    Illuminate\Support\Facades\Mail::assertQueued(App\Mail\NodeNotificationMail::class, function ($mail) use ($author, $folder) {
+        return $mail->hasTo($author->email) &&
+            str_contains($mail->mailSubject, 'first upvote') &&
+            str_contains($mail->mailContent, 'Vectors Complete Guide');
+    });
+});
+
+test('author upvoting their own folder does not trigger milestone email', function () {
+    Illuminate\Support\Facades\Mail::fake();
+
+    $author = User::factory()->create([
+        'name' => 'Self Voter',
+        'email' => 'self@example.com',
+        'receive_emails' => true,
+    ]);
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+
+    $folder = Node::create([
+        'user_id' => $author->id,
+        'subject_id' => $subject->id,
+        'name' => 'Vectors Complete Guide',
+        'slug' => 'vectors-guide',
+    ]);
+
+    $this->actingAs($author)
+        ->post("/nodes/{$folder->id}/vote", ['type' => 'up'])
+        ->assertRedirect();
+
+    Illuminate\Support\Facades\Mail::assertNothingQueued();
+});
