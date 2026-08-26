@@ -119,6 +119,7 @@ const handleVote = (type: 'up' | 'down') => {
     if (previousVote === type) {
         // Toggle off
         localUserVote.value = null;
+
         if (type === 'up') {
             localUpvotesCount.value = Math.max(0, localUpvotesCount.value - 1);
             localUpvoters.value = localUpvoters.value.filter(
@@ -133,8 +134,10 @@ const handleVote = (type: 'up' | 'down') => {
     } else if (previousVote === null) {
         // New vote
         localUserVote.value = type;
+
         if (type === 'up') {
             localUpvotesCount.value += 1;
+
             if (currentUser.value) {
                 localUpvoters.value = [
                     {
@@ -157,12 +160,14 @@ const handleVote = (type: 'up' | 'down') => {
     } else {
         // Switching vote
         localUserVote.value = type;
+
         if (type === 'up') {
             localUpvotesCount.value += 1;
             localDownvotesCount.value = Math.max(
                 0,
                 localDownvotesCount.value - 1,
             );
+
             if (currentUser.value) {
                 localUpvoters.value = [
                     {

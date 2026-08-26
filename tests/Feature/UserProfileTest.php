@@ -2,6 +2,7 @@
 
 use App\Models\Blog;
 use App\Models\Node;
+use App\Models\NodeVote;
 use App\Models\ResourceCompletion;
 use App\Models\Subject;
 use App\Models\User;
@@ -146,7 +147,7 @@ test('public profile displays latest upvoted folders in recent activity', functi
         'slug' => 'diff-notes',
     ]);
 
-    \App\Models\NodeVote::create([
+    NodeVote::create([
         'node_id' => $childFolder->id,
         'user_id' => $user->id,
         'type' => 'up',
