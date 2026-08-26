@@ -48,54 +48,53 @@ watch(
 
 <template>
     <div
-        class="pointer-events-none fixed top-4 right-4 z-[9999] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-2.5 sm:top-6 sm:right-6"
+        class="pointer-events-none fixed top-3.5 inset-x-0 z-[9999] flex flex-col items-center gap-2 px-4 sm:top-5"
     >
-        <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2.5">
+        <TransitionGroup name="toast" tag="div" class="flex flex-col items-center gap-2 w-full">
             <div
                 v-for="toast in toasts"
                 :key="toast.id"
-                class="pointer-events-auto group relative flex items-start gap-3 rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/5 backdrop-blur-md transition-all duration-200 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-black/40"
+                @click="removeToast(toast.id)"
+                class="pointer-events-auto group relative flex max-w-[calc(100vw-2rem)] sm:max-w-md items-center gap-2.5 sm:gap-3 rounded-full border border-slate-200/80 bg-white/95 py-2 px-3.5 sm:py-2.5 sm:px-4 text-xs sm:text-sm font-medium text-slate-900 shadow-lg shadow-slate-900/5 ring-1 ring-black/[0.04] backdrop-blur-xl transition-all duration-200 hover:shadow-xl active:scale-[0.98] dark:border-gray-800 dark:bg-gray-900/95 dark:text-gray-100 dark:shadow-2xl dark:shadow-black/60 dark:ring-white/[0.08] cursor-pointer"
             >
-                <!-- Status Icon Badge -->
+                <!-- Minimal Status Icon Dot / Pill -->
                 <div
-                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border transition-transform duration-200 group-hover:scale-105"
+                    class="flex h-5 w-5 sm:h-5.5 sm:w-5.5 shrink-0 items-center justify-center rounded-full"
                     :class="{
-                        'border-emerald-500/20 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400':
+                        'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400':
                             toast.type === 'success',
-                        'border-rose-500/20 bg-rose-50 text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400':
+                        'bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400':
                             toast.type === 'error',
-                        'border-indigo-500/20 bg-indigo-50 text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400':
+                        'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400':
                             toast.type === 'info',
                     }"
                 >
                     <Check
                         v-if="toast.type === 'success'"
-                        class="h-4 w-4 stroke-[2.5]"
+                        class="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.8]"
                     />
                     <AlertCircle
                         v-else-if="toast.type === 'error'"
-                        class="h-4 w-4 stroke-[2.2]"
+                        class="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.8]"
                     />
-                    <Info v-else class="h-4 w-4 stroke-[2.2]" />
+                    <Info v-else class="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.8]" />
                 </div>
 
-                <!-- Message Content -->
-                <div class="min-w-0 flex-1 pt-0.5">
-                    <p
-                        class="text-[13px] leading-snug font-semibold text-slate-800 break-words dark:text-gray-200"
-                    >
-                        {{ toast.message }}
-                    </p>
-                </div>
+                <!-- Message -->
+                <p
+                    class="truncate font-semibold tracking-tight text-slate-800 dark:text-gray-200"
+                >
+                    {{ toast.message }}
+                </p>
 
-                <!-- Close Button -->
+                <!-- Subtle Dismiss Action -->
                 <button
                     type="button"
-                    @click="removeToast(toast.id)"
-                    aria-label="Dismiss notification"
-                    class="cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                    @click.stop="removeToast(toast.id)"
+                    aria-label="Dismiss"
+                    class="ml-1 -mr-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                 >
-                    <X class="h-3.5 w-3.5" />
+                    <X class="h-3 w-3 stroke-[2.5]" />
                 </button>
             </div>
         </TransitionGroup>
@@ -105,20 +104,20 @@ watch(
 <style scoped>
 .toast-enter-active,
 .toast-leave-active {
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s cubic-bezier(0.21, 1.02, 0.73, 1);
 }
 
 .toast-enter-from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.96);
+    transform: translateY(-16px) scale(0.94);
 }
 
 .toast-leave-to {
     opacity: 0;
-    transform: translateY(-8px) scale(0.96);
+    transform: translateY(-12px) scale(0.94);
 }
 
 .toast-move {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.21, 1.02, 0.73, 1);
 }
 </style>
