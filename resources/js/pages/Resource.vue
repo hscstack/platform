@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import {
-    FileText,
-    Image as ImageIcon,
     Download,
     AlertCircle,
     ArrowLeft,
@@ -11,7 +9,6 @@ import {
     Minimize2,
     RotateCcw,
     User,
-    FilePlay,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
@@ -181,289 +178,227 @@ const parseYoutubeUrl = (url) => {
     </Head>
 
     <div
-        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-3 pt-2 pb-24 sm:px-6 sm:pt-3"
+        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-3 pt-3 pb-24 sm:px-6"
     >
-        <div
-            class="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
-        >
-            <!-- Sleek Minimal Content-First Toolbar -->
+        <!-- Flat, Minimal Media Header -->
+        <div class="mb-3 flex items-center justify-between gap-3">
+            <!-- Left: Back Button + Title -->
+            <div class="flex min-w-0 items-center gap-2.5">
+                <button
+                    @click="handleBack"
+                    type="button"
+                    aria-label="Go back"
+                    class="group flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs transition hover:border-slate-300 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-700 dark:hover:text-indigo-400"
+                    title="Back"
+                >
+                    <ArrowLeft
+                        class="h-4 w-4 transition-transform group-hover:-translate-x-0.5"
+                    />
+                </button>
+
+                <h1
+                    class="truncate text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
+                    :title="resource.title"
+                >
+                    {{ resource.title }}
+                </h1>
+            </div>
+
+            <!-- Right: Action Buttons -->
+            <div class="flex shrink-0 items-center gap-2">
+                <a
+                    v-if="resource.file_url"
+                    :href="resource.file_url"
+                    download
+                    target="_blank"
+                    class="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    title="Download Resource"
+                >
+                    <Download class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">Download</span>
+                </a>
+
+                <button
+                    v-if="resource.resource_type === 'image'"
+                    @click="toggleFullscreen"
+                    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                    title="View Fullscreen"
+                >
+                    <Maximize2 class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">Full Screen</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pure Media Canvas -->
+        <div v-if="resource.resource_type === 'image'">
             <div
-                class="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2 sm:px-4 sm:py-2.5 dark:border-gray-800 dark:bg-gray-900/90"
+                class="flex justify-center overflow-hidden rounded-2xl border border-slate-200/90 bg-slate-100/50 p-1.5 shadow-xs sm:p-3 dark:border-gray-800 dark:bg-gray-900/50"
             >
-                <!-- Left: Back Button + Type Badge + Compact Title -->
-                <div class="flex min-w-0 items-center gap-2 sm:gap-2.5">
-                    <button
-                        @click="handleBack"
-                        type="button"
-                        aria-label="Go back"
-                        class="group flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-xs transition hover:border-slate-300 hover:text-indigo-600 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-indigo-400"
-                        title="Back"
-                    >
-                        <ArrowLeft
-                            class="h-4 w-4 transition-transform group-hover:-translate-x-0.5"
-                        />
-                    </button>
+                <img
+                    :src="resource.file_url"
+                    :alt="resource.title"
+                    class="max-h-[80vh] w-auto rounded-xl object-contain shadow-xs select-none"
+                />
+            </div>
+        </div>
 
-                    <span
-                        class="inline-flex shrink-0 items-center gap-1 rounded-md bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-slate-700 uppercase dark:bg-gray-800 dark:text-gray-300"
-                    >
-                        <FileText
-                            v-if="resource.resource_type === 'note'"
-                            class="h-3 w-3"
-                        />
-                        <ImageIcon
-                            v-else-if="resource.resource_type === 'image'"
-                            class="h-3 w-3"
-                        />
-                        <FilePlay
-                            v-else-if="resource.resource_type === 'video'"
-                            class="h-3 w-3"
-                        />
-                        <Download v-else class="h-3 w-3" />
-                        <span>{{ resource.resource_type }}</span>
+        <div v-else-if="resource.resource_type === 'video'">
+            <div
+                class="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 bg-black shadow-sm dark:border-gray-800"
+            >
+                <iframe
+                    :src="parseYoutubeUrl(resource.file_url)"
+                    :title="resource.title"
+                    class="absolute inset-0 h-full w-full"
+                    allow="
+                        accelerometer;
+                        autoplay;
+                        clipboard-write;
+                        encrypted-media;
+                        gyroscope;
+                        picture-in-picture;
+                        web-share;
+                    "
+                    allowfullscreen
+                ></iframe>
+            </div>
+        </div>
+
+        <div v-else-if="resource.resource_type === 'note'">
+            <div
+                class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div
+                    class="prose max-w-none text-sm leading-relaxed whitespace-pre-line text-slate-800 sm:text-base dark:text-gray-200"
+                >
+                    {{ resource.content }}
+                </div>
+            </div>
+        </div>
+
+        <div
+            v-else
+            class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <div
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
+            >
+                <AlertCircle class="h-6 w-6 stroke-[2.2]" />
+            </div>
+
+            <h3
+                class="mt-4 text-base font-bold text-slate-900 dark:text-gray-100"
+            >
+                Unsupported Preview:
+                <span class="text-indigo-600 capitalize dark:text-indigo-400">{{
+                    resource.resource_type
+                }}</span>
+            </h3>
+            <p
+                class="mx-auto mt-2 max-w-sm text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400"
+            >
+                The file can't be shown here. Please download.
+            </p>
+
+            <div class="mt-6 flex justify-center">
+                <a
+                    v-if="resource.file_url"
+                    :href="resource.file_url"
+                    download
+                    target="_blank"
+                    class="inline-flex touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all duration-200 hover:bg-indigo-700 active:scale-95"
+                >
+                    <Download class="h-4 w-4 stroke-[2.5]" />
+                    Download
+                </a>
+            </div>
+        </div>
+
+        <!-- Author Credit & Notes (Below Media) -->
+        <div
+            v-if="
+                resource.user?.name ||
+                (resource.content && resource.resource_type !== 'note')
+            "
+            class="mt-3.5 space-y-2.5"
+        >
+            <div
+                v-if="resource.user?.name"
+                class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400"
+            >
+                <Link
+                    :href="`/about-us#${resource.user.id}`"
+                    class="group inline-flex items-center gap-1.5 transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    <User
+                        class="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 dark:text-gray-500"
+                    />
+                    <span>
+                        Shared by
+                        <span
+                            class="font-bold text-slate-700 group-hover:underline dark:text-gray-300"
+                        >
+                            {{ resource.user.name }}
+                        </span>
                     </span>
-
-                    <h1
-                        class="truncate text-xs font-bold text-slate-900 sm:text-sm dark:text-gray-100"
-                        :title="resource.title"
-                    >
-                        {{ resource.title }}
-                    </h1>
-                </div>
-
-                <!-- Right: Author Credit (desktop) + Action Buttons -->
-                <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-                    <Link
-                        v-if="resource.user?.name"
-                        :href="`/about-us#${resource.user.id}`"
-                        class="hidden items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-200/60 hover:text-indigo-600 md:inline-flex dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                        :title="`Shared by ${resource.user.name}`"
-                    >
-                        <User class="h-3.5 w-3.5 text-slate-400" />
-                        <span class="max-w-[120px] truncate">{{
-                            resource.user.name
-                        }}</span>
-                    </Link>
-
-                    <a
-                        v-if="resource.file_url"
-                        :href="resource.file_url"
-                        download
-                        target="_blank"
-                        class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
-                        title="Download Resource"
-                    >
-                        <Download class="h-3.5 w-3.5 stroke-[2.2]" />
-                        <span class="hidden sm:inline">Download</span>
-                    </a>
-
-                    <button
-                        v-if="resource.resource_type === 'image'"
-                        @click="toggleFullscreen"
-                        class="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
-                        title="View Fullscreen"
-                    >
-                        <Maximize2 class="h-3.5 w-3.5 stroke-[2.2]" />
-                        <span class="hidden sm:inline">Full Screen</span>
-                    </button>
-                </div>
+                </Link>
             </div>
 
-            <div v-if="resource.resource_type === 'note'" class="p-4 sm:p-6">
-                <div
-                    class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
+            <!-- Author Note (if provided) -->
+            <div
+                v-if="resource.content && resource.resource_type !== 'note'"
+                class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs leading-relaxed text-slate-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-400"
+            >
+                <span class="font-bold text-slate-900 dark:text-gray-200"
+                    >Note:</span
                 >
-                    <h3
-                        class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                    >
-                        Note:
-                    </h3>
-                    <p
-                        class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
-                    >
-                        {{ resource.content }}
-                    </p>
-                </div>
-            </div>
-
-            <div v-else-if="resource.resource_type === 'image'">
-                <div
-                    v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-3.5 sm:p-5 dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div
-                        class="prose max-w-none text-xs leading-relaxed font-medium text-slate-700 sm:text-sm dark:text-gray-300"
-                    >
-                        <h3
-                            class="mb-1 text-[11px] font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >
-                            Note:
-                        </h3>
-                        <p
-                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
-                        >
-                            {{ resource.content }}
-                        </p>
-                    </div>
-                </div>
-
-                <div
-                    class="flex justify-center bg-slate-950/5 p-2 sm:p-4 dark:bg-white/10"
-                >
-                    <div
-                        class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-shadow duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
-                    >
-                        <img
-                            :src="resource.file_url"
-                            :alt="resource.title"
-                            class="max-h-[78vh] w-auto object-contain select-none sm:max-h-[82vh]"
-                        />
-                    </div>
-                </div>
-            </div>
-            <div v-else-if="resource.resource_type === 'video'">
-                <div
-                    v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-3.5 sm:p-5 dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div
-                        class="prose max-w-none text-xs leading-relaxed font-medium text-slate-700 sm:text-sm dark:text-gray-300"
-                    >
-                        <h3
-                            class="mb-1 text-[11px] font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >
-                            Note:
-                        </h3>
-                        <p
-                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
-                        >
-                            This content is hosted on YouTube by the original
-                            creator. We have embedded it here for educational
-                            reference only.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-slate-950/5 p-2 sm:p-4 dark:bg-white/10">
-                    <div
-                        class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm dark:border-gray-700"
-                    >
-                        <iframe
-                            :src="parseYoutubeUrl(resource.file_url)"
-                            :title="resource.title"
-                            class="absolute inset-0 h-full w-full"
-                            allow="
-                                accelerometer;
-                                autoplay;
-                                clipboard-write;
-                                encrypted-media;
-                                gyroscope;
-                                picture-in-picture;
-                                web-share;
-                            "
-                            allowfullscreen
-                        ></iframe>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="p-6 text-center sm:p-10">
-                <div
-                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
-                >
-                    <AlertCircle class="h-6 w-6 stroke-[2.2]" />
-                </div>
-
-                <h3
-                    class="mt-4 text-base font-bold text-slate-900 dark:text-gray-100"
-                >
-                    Unsupported Preview:
-                    <span
-                        class="text-indigo-600 capitalize dark:text-indigo-400"
-                        >{{ resource.resource_type }}</span
-                    >
-                </h3>
-                <p
-                    class="mx-auto mt-2 max-w-sm text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400"
-                >
-                    The file can't be shown here. Please download.
-                </p>
-
-                <div class="mt-6 flex justify-center">
-                    <a
-                        v-if="resource.file_url"
-                        :href="resource.file_url"
-                        download
-                        target="_blank"
-                        class="inline-flex touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98]"
-                    >
-                        <Download class="h-4 w-4 stroke-[2.5]" />
-                        Download
-                    </a>
-                    <div
-                        v-else
-                        class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
-                    >
-                        No download target generated for this asset.
-                    </div>
-                </div>
+                <p class="mt-1 whitespace-pre-line">{{ resource.content }}</p>
             </div>
         </div>
     </div>
 
-    <!-- User Friendly Sticky Floating Navigation Strip -->
+    <!-- Floating Bottom Navigation (Centered pill, no overlap with bottom-right floating share bar) -->
     <div
-        class="pointer-events-none fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-slate-900/10 via-slate-900/5 to-transparent pt-10 pb-6"
+        v-if="previousResourceId || nextResourceId"
+        class="pointer-events-none fixed inset-x-0 bottom-6 z-30 flex justify-center px-4"
     >
-        <div class="pointer-events-auto mx-auto max-w-4xl px-4 sm:px-6">
-            <div
-                class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90"
+        <div
+            class="pointer-events-auto flex items-center gap-1 rounded-full border border-slate-200/90 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/95"
+        >
+            <Link
+                v-if="previousResourceId"
+                :href="`/resources/${previousResourceId}`"
+                replace
+                class="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-indigo-600 active:scale-95 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
             >
-                <div>
-                    <Link
-                        v-if="previousResourceId"
-                        :href="`/resources/${previousResourceId}`"
-                        replace
-                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                    >
-                        <ArrowLeft
-                            class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
-                        />
-                        <span class="xs:inline hidden">Previous Page</span>
-                        <span class="xs:hidden">Prev Page</span>
-                    </Link>
-                    <span
-                        v-else
-                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"
-                        >First Page</span
-                    >
-                </div>
+                <ArrowLeft class="h-3.5 w-3.5" />
+                <span>Prev</span>
+            </Link>
+            <span
+                v-else
+                class="inline-flex h-8 items-center px-3 text-xs font-medium text-slate-300 select-none dark:text-gray-600"
+            >
+                First
+            </span>
 
-                <div
-                    class="hidden text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none sm:block dark:text-gray-500"
-                >
-                    Quick Navigation
-                </div>
+            <span class="h-3.5 w-px bg-slate-200 dark:bg-gray-700"></span>
 
-                <div>
-                    <Link
-                        v-if="nextResourceId"
-                        :href="`/resources/${nextResourceId}`"
-                        replace
-                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                    >
-                        <span class="xs:inline hidden">Next Page</span>
-                        <span class="xs:hidden">Next Page</span>
-                        <ArrowRight
-                            class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                        />
-                    </Link>
-                    <span
-                        v-else
-                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"
-                        >Last Page</span
-                    >
-                </div>
-            </div>
+            <Link
+                v-if="nextResourceId"
+                :href="`/resources/${nextResourceId}`"
+                replace
+                class="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-indigo-600 active:scale-95 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+            >
+                <span>Next</span>
+                <ArrowRight class="h-3.5 w-3.5" />
+            </Link>
+            <span
+                v-else
+                class="inline-flex h-8 items-center px-3 text-xs font-medium text-slate-300 select-none dark:text-gray-600"
+            >
+                Last
+            </span>
         </div>
     </div>
 
