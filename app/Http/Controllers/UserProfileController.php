@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserAppreciationMail;
 use App\Models\BlogComment;
 use App\Models\BlogReaction;
 use App\Models\Node;
@@ -9,6 +10,8 @@ use App\Models\NodeVote;
 use App\Models\Resource;
 use App\Models\ResourceCompletion;
 use App\Models\User;
+use App\Models\UserAppreciation;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class UserProfileController extends Controller
@@ -40,7 +43,28 @@ class UserProfileController extends Controller
         $totalBlogLikes = BlogReaction::whereIn('blog_id', $user->blogs()->where('is_published', true)->select('id'))->count();
         $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
 
-        // Recent Community Activities (Uploads, completed topics, comments made, reactions given, upvoted folders)
+        // Appreciations (Received & Given)
+        $appreciationsCount = $user->appreciationsReceived()->count();
+        $appreciatingCount = $user->appreciationsGiven()->count();
+        $isAppreciated = auth()->check()
+            ? $user->appreciationsReceived()->where('appreciator_id', auth()->id())->exists()
+            : false;
+
+        $appreciators = $user->appreciators()
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
+            ->with('roles:id,name')
+            ->latest('user_appreciations.id')
+            ->take(50)
+            ->get();
+
+        $appreciating = $user->appreciatingUsers()
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
+            ->with('roles:id,name')
+            ->latest('user_appreciations.id')
+            ->take(50)
+            ->get();
+
+        // Recent Community Activities (Uploads, completed topics, comments made, reactions given, upvoted folders, appreciations given)
         $recentUploads = Resource::where('user_id', $user->id)
             ->with(['node:id,name,subject_id', 'node.subject:id,name'])
             ->latest()
@@ -125,6 +149,21 @@ class UserProfileController extends Controller
             ->filter()
             ->values();
 
+        $recentAppreciations = UserAppreciation::where('appreciator_id', $user->id)
+            ->with('user:id,name,username')
+            ->latest('id')
+            ->take(4)
+            ->get()
+            ->map(fn ($item) => [
+                'type' => 'appreciation',
+                'title' => $item->user?->name,
+                'username' => $item->user?->username,
+                'url' => $item->user ? "/u/{$item->user->username}" : null,
+                'created_at' => $item->created_at?->diffForHumans(),
+            ])
+            ->filter(fn ($item) => $item['title'] !== null)
+            ->values();
+
         // Suggested / Discover community members: 2 contributors + 2 general users
         $contributorUsers = User::where('id', '!=', $user->id)
             ->whereNotNull('username')
@@ -171,6 +210,11 @@ class UserProfileController extends Controller
                 'totalBlogViews' => (int) $totalBlogViews,
                 'sharedResourcesCount' => $sharedResourcesCount,
             ],
+            'appreciationsCount' => $appreciationsCount,
+            'appreciatingCount' => $appreciatingCount,
+            'isAppreciated' => $isAppreciated,
+            'appreciators' => $appreciators,
+            'appreciating' => $appreciating,
             'recentCompletions' => $recentCompletions,
             'blogs' => $publishedBlogs,
             'recentActivities' => [
@@ -179,9 +223,43 @@ class UserProfileController extends Controller
                 'reactions' => $recentReactions->values(),
                 'comments' => $recentComments->values(),
                 'upvotes' => $recentUpvotes->values(),
+                'appreciations' => $recentAppreciations->values(),
             ],
             'suggestedUsers' => $suggestedUsers,
         ]);
+    }
+
+    public function toggleAppreciate(User $user)
+    {
+        $currentAuthUser = auth()->user();
+
+        // Cannot appreciate own profile
+        if ($currentAuthUser->id === $user->id) {
+            return back();
+        }
+
+        $existing = UserAppreciation::where('user_id', $user->id)
+            ->where('appreciator_id', $currentAuthUser->id)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+        } else {
+            UserAppreciation::create([
+                'user_id' => $user->id,
+                'appreciator_id' => $currentAuthUser->id,
+            ]);
+
+            $appreciationsCount = $user->appreciationsReceived()->count();
+            $milestones = [1, 10, 25, 50, 100, 250, 500, 1000];
+            $isMilestone = in_array($appreciationsCount, $milestones, true) || ($appreciationsCount > 1000 && $appreciationsCount % 500 === 0);
+
+            if ($isMilestone && $user->email && $user->receive_emails !== false) {
+                Mail::to($user->email)->queue(UserAppreciationMail::forMilestone($user, $currentAuthUser, $appreciationsCount));
+            }
+        }
+
+        return back();
     }
 
     private function buildNodeUrl(Node $node): ?string

@@ -113,4 +113,24 @@ class User extends Authenticatable
     {
         return $this->hasMany(Node::class);
     }
+
+    public function appreciationsReceived(): HasMany
+    {
+        return $this->hasMany(UserAppreciation::class, 'user_id');
+    }
+
+    public function appreciationsGiven(): HasMany
+    {
+        return $this->hasMany(UserAppreciation::class, 'appreciator_id');
+    }
+
+    public function appreciators()
+    {
+        return $this->belongsToMany(User::class, 'user_appreciations', 'user_id', 'appreciator_id');
+    }
+
+    public function appreciatingUsers()
+    {
+        return $this->belongsToMany(User::class, 'user_appreciations', 'appreciator_id', 'user_id');
+    }
 }

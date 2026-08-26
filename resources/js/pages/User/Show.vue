@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
-    Calendar,
-    GraduationCap,
-    Edit3,
-    Facebook,
-    Instagram,
-    Github,
-    BadgeCheck,
-    ArrowRight,
-    Heart,
-    MessageSquare,
-    Eye,
-    CheckCircle2,
-    BookOpen,
-    FileText,
-    UploadCloud,
     Activity,
-    ArrowUpRight,
     ArrowBigUp,
+    ArrowRight,
+    ArrowUpRight,
+    BadgeCheck,
+    BookOpen,
+    Calendar,
+    CheckCircle2,
+    Edit3,
+    Eye,
+    Facebook,
+    FileText,
+    Github,
+    GraduationCap,
+    Heart,
+    Instagram,
+    LogIn,
+    MessageSquare,
+    UploadCloud,
     Users,
+    X,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     profileUser: {
@@ -46,6 +48,25 @@ const props = defineProps<{
         totalBlogViews: number;
         sharedResourcesCount: number;
     };
+    appreciationsCount: number;
+    appreciatingCount: number;
+    isAppreciated: boolean;
+    appreciators?: Array<{
+        id: number;
+        name: string;
+        username: string;
+        image_path?: string | null;
+        institution?: string | null;
+        roles?: Array<{ id: number; name: string }>;
+    }>;
+    appreciating?: Array<{
+        id: number;
+        name: string;
+        username: string;
+        image_path?: string | null;
+        institution?: string | null;
+        roles?: Array<{ id: number; name: string }>;
+    }>;
     recentCompletions: Array<{
         id: number;
         title: string;
@@ -106,6 +127,13 @@ const props = defineProps<{
             url: string | null;
             created_at: string;
         }>;
+        appreciations?: Array<{
+            type: string;
+            title: string;
+            username?: string;
+            url: string | null;
+            created_at: string;
+        }>;
     };
     suggestedUsers?: Array<{
         id: number;
@@ -133,6 +161,62 @@ const activeTab = ref<'completed' | 'blogs' | 'activity'>(
           ? 'blogs'
           : 'completed',
 );
+
+const localIsAppreciated = ref(props.isAppreciated);
+const localAppreciationsCount = ref(props.appreciationsCount);
+const showAppreciatorsModal = ref(false);
+const showAppreciatingModal = ref(false);
+const showGuestModal = ref(false);
+
+watch(
+    () => props.isAppreciated,
+    (val) => {
+        localIsAppreciated.value = val;
+    },
+);
+
+watch(
+    () => props.appreciationsCount,
+    (val) => {
+        localAppreciationsCount.value = val;
+    },
+);
+
+const handleAppreciate = () => {
+    if (!currentUser.value) {
+        showGuestModal.value = true;
+        return;
+    }
+
+    if (isOwnProfile.value) {
+        return;
+    }
+
+    // Optimistic UI update
+    if (localIsAppreciated.value) {
+        localIsAppreciated.value = false;
+        localAppreciationsCount.value = Math.max(
+            0,
+            localAppreciationsCount.value - 1,
+        );
+    } else {
+        localIsAppreciated.value = true;
+        localAppreciationsCount.value++;
+    }
+
+    router.post(
+        `/u/${props.profileUser.id}/appreciate`,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onError: () => {
+                localIsAppreciated.value = props.isAppreciated;
+                localAppreciationsCount.value = props.appreciationsCount;
+            },
+        },
+    );
+};
 
 const getRoleBadge = (roles: string[]) => {
     if (roles.includes('admin')) {
@@ -169,7 +253,8 @@ const totalActivitiesCount = computed(
         (props.recentActivities.uploads?.length || 0) +
         (props.recentActivities.reactions?.length || 0) +
         (props.recentActivities.comments?.length || 0) +
-        (props.recentActivities.upvotes?.length || 0),
+        (props.recentActivities.upvotes?.length || 0) +
+        (props.recentActivities.appreciations?.length || 0),
 );
 </script>
 
@@ -323,18 +408,60 @@ const totalActivitiesCount = computed(
                         </div>
                     </div>
 
-                    <!-- Right Actions: Edit (Only for Profile Owner) -->
+                    <!-- Right Actions: Edit (For Profile Owner) or Appreciate (For Others) -->
                     <div
-                        v-if="isOwnProfile"
                         class="flex shrink-0 items-center self-start pt-1 sm:self-auto sm:pt-0"
                     >
                         <Link
+                            v-if="isOwnProfile"
                             href="/profile"
                             class="inline-flex h-8 items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 active:scale-95 sm:h-8.5 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                         >
                             <Edit3 class="h-3.5 w-3.5" />
                             <span>Edit</span>
                         </Link>
+
+                        <button
+                            v-else
+                            @click="handleAppreciate"
+                            type="button"
+                            class="group inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9 sm:px-3.5"
+                            :class="[
+                                localIsAppreciated
+                                    ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
+                                    : 'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
+                            ]"
+                            :title="
+                                localIsAppreciated
+                                    ? 'Appreciated (click to remove)'
+                                    : 'Appreciate this member'
+                            "
+                        >
+                            <Heart
+                                class="h-4 w-4 transition-transform group-hover:scale-110"
+                                :class="[
+                                    localIsAppreciated
+                                        ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
+                                        : 'stroke-[2.2] text-slate-500 group-hover:text-rose-500 dark:text-gray-400 dark:group-hover:text-rose-400',
+                                ]"
+                            />
+                            <span>{{
+                                localIsAppreciated
+                                    ? 'Appreciated'
+                                    : 'Appreciate'
+                            }}</span>
+                            <span
+                                v-if="localAppreciationsCount > 0"
+                                class="ml-0.5 rounded-lg px-1.5 py-0.5 text-[11px] font-bold"
+                                :class="[
+                                    localIsAppreciated
+                                        ? 'bg-rose-200/70 text-rose-700 dark:bg-rose-900/70 dark:text-rose-300'
+                                        : 'bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-gray-300',
+                                ]"
+                            >
+                                {{ localAppreciationsCount }}
+                            </span>
+                        </button>
                     </div>
                 </div>
 
@@ -346,9 +473,47 @@ const totalActivitiesCount = computed(
                     <p class="whitespace-pre-line">{{ profileUser.about }}</p>
                 </div>
 
+                <!-- Appreciations Summary Pill Row -->
+                <div
+                    v-if="localAppreciationsCount > 0 || appreciatingCount > 0"
+                    class="mt-3.5 flex flex-wrap items-center gap-2"
+                >
+                    <button
+                        v-if="localAppreciationsCount > 0"
+                        type="button"
+                        @click="showAppreciatorsModal = true"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-100 bg-rose-50/70 px-2.5 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 select-none active:scale-95 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
+                        title="View members who appreciated this profile"
+                    >
+                        <Heart
+                            class="h-3.5 w-3.5 fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400"
+                        />
+                        <span>{{ localAppreciationsCount }} {{
+                            localAppreciationsCount === 1
+                                ? 'Appreciation'
+                                : 'Appreciations'
+                        }}</span>
+                    </button>
+
+                    <button
+                        v-if="appreciatingCount > 0"
+                        type="button"
+                        @click="showAppreciatingModal = true"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50/80 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 select-none active:scale-95 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
+                        title="View members this user appreciates"
+                    >
+                        <Heart
+                            class="h-3.5 w-3.5 stroke-[2] text-slate-400 dark:text-gray-500"
+                        />
+                        <span>Appreciating {{ appreciatingCount }} {{
+                            appreciatingCount === 1 ? 'user' : 'users'
+                        }}</span>
+                    </button>
+                </div>
+
                 <!-- Social Links & Joined Date Footer -->
                 <div
-                    class="mt-4.5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5 dark:border-gray-800"
+                    class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5 dark:border-gray-800"
                 >
                     <!-- Social Links -->
                     <div class="flex items-center gap-2">
@@ -865,6 +1030,45 @@ const totalActivitiesCount = computed(
                                 {{ item.created_at }}
                             </span>
                         </div>
+
+                        <!-- Appreciations Given -->
+                        <div
+                            v-for="(item, idx) in recentActivities.appreciations"
+                            :key="'apprec-' + idx"
+                            class="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
+                        >
+                            <div class="flex min-w-0 items-center gap-2">
+                                <div
+                                    class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
+                                >
+                                    <Heart class="h-3.5 w-3.5 fill-rose-500" />
+                                </div>
+                                <div class="min-w-0 flex-1 truncate">
+                                    <span
+                                        class="text-xs text-slate-500 dark:text-gray-400"
+                                        >Appreciated
+                                    </span>
+                                    <Link
+                                        v-if="item.url"
+                                        :href="item.url"
+                                        class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                                    >
+                                        {{ item.title }}
+                                    </Link>
+                                    <span
+                                        v-if="item.username"
+                                        class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                                    >
+                                        (@{{ item.username }})
+                                    </span>
+                                </div>
+                            </div>
+                            <span
+                                class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                            >
+                                {{ item.created_at }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -958,4 +1162,272 @@ const totalActivitiesCount = computed(
             </div>
         </div>
     </div>
+
+    <!-- Appreciators Modal -->
+    <Teleport to="body">
+        <div
+            v-if="showAppreciatorsModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <div
+                @click="showAppreciatorsModal = false"
+                class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+            ></div>
+
+            <div
+                class="relative w-full max-w-sm overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <button
+                    @click="showAppreciatorsModal = false"
+                    class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                >
+                    <X class="h-4 w-4" />
+                </button>
+
+                <div class="mb-4 flex items-center gap-2.5">
+                    <div
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
+                    >
+                        <Heart class="h-4 w-4 fill-rose-500" />
+                    </div>
+                    <div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Appreciated by
+                        </h3>
+                        <p
+                            class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                        >
+                            {{ localAppreciationsCount }} community {{
+                                localAppreciationsCount === 1
+                                    ? 'member'
+                                    : 'members'
+                            }}
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    v-if="appreciators && appreciators.length > 0"
+                    class="max-h-72 space-y-2 overflow-y-auto pr-1"
+                >
+                    <Link
+                        v-for="person in appreciators"
+                        :key="person.id"
+                        :href="`/u/${person.username}`"
+                        @click="showAppreciatorsModal = false"
+                        class="group flex items-center justify-between rounded-xl p-2 transition hover:bg-slate-50 dark:hover:bg-gray-800/60"
+                    >
+                        <div class="flex min-w-0 items-center gap-2.5">
+                            <div
+                                class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-indigo-50 text-xs font-black text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                            >
+                                <img
+                                    v-if="person.image_path"
+                                    :src="'/storage/' + person.image_path"
+                                    :alt="person.name"
+                                    class="h-full w-full object-cover"
+                                />
+                                <span v-else>{{
+                                    person.name.charAt(0).toUpperCase()
+                                }}</span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p
+                                    class="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                                >
+                                    {{ person.name }}
+                                </p>
+                                <p
+                                    class="truncate text-[10px] text-slate-400 dark:text-gray-500"
+                                >
+                                    {{
+                                        person.institution ||
+                                        '@' + person.username
+                                    }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <span
+                            v-if="person.roles && person.roles.length > 0"
+                            class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400"
+                        >
+                            {{ person.roles[0].name }}
+                        </span>
+                    </Link>
+                </div>
+
+                <div
+                    v-else
+                    class="py-6 text-center text-xs text-slate-400 dark:text-gray-500"
+                >
+                    No appreciations yet.
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
+    <!-- Appreciating Modal -->
+    <Teleport to="body">
+        <div
+            v-if="showAppreciatingModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <div
+                @click="showAppreciatingModal = false"
+                class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+            ></div>
+
+            <div
+                class="relative w-full max-w-sm overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <button
+                    @click="showAppreciatingModal = false"
+                    class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                >
+                    <X class="h-4 w-4" />
+                </button>
+
+                <div class="mb-4 flex items-center gap-2.5">
+                    <div
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-400"
+                    >
+                        <Heart class="h-4 w-4 fill-rose-500 text-rose-500" />
+                    </div>
+                    <div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Appreciating
+                        </h3>
+                        <p
+                            class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                        >
+                            {{ appreciatingCount }} community {{
+                                appreciatingCount === 1 ? 'member' : 'members'
+                            }}
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    v-if="appreciating && appreciating.length > 0"
+                    class="max-h-72 space-y-2 overflow-y-auto pr-1"
+                >
+                    <Link
+                        v-for="person in appreciating"
+                        :key="person.id"
+                        :href="`/u/${person.username}`"
+                        @click="showAppreciatingModal = false"
+                        class="group flex items-center justify-between rounded-xl p-2 transition hover:bg-slate-50 dark:hover:bg-gray-800/60"
+                    >
+                        <div class="flex min-w-0 items-center gap-2.5">
+                            <div
+                                class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-indigo-50 text-xs font-black text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                            >
+                                <img
+                                    v-if="person.image_path"
+                                    :src="'/storage/' + person.image_path"
+                                    :alt="person.name"
+                                    class="h-full w-full object-cover"
+                                />
+                                <span v-else>{{
+                                    person.name.charAt(0).toUpperCase()
+                                }}</span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p
+                                    class="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                                >
+                                    {{ person.name }}
+                                </p>
+                                <p
+                                    class="truncate text-[10px] text-slate-400 dark:text-gray-500"
+                                >
+                                    {{
+                                        person.institution ||
+                                        '@' + person.username
+                                    }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <span
+                            v-if="person.roles && person.roles.length > 0"
+                            class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400"
+                        >
+                            {{ person.roles[0].name }}
+                        </span>
+                    </Link>
+                </div>
+
+                <div
+                    v-else
+                    class="py-6 text-center text-xs text-slate-400 dark:text-gray-500"
+                >
+                    Not appreciating any users yet.
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
+    <!-- Guest Sign-in Dialog Modal -->
+    <Teleport to="body">
+        <div
+            v-if="showGuestModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <div
+                @click="showGuestModal = false"
+                class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+            ></div>
+
+            <div
+                class="relative w-full max-w-sm overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 text-center shadow-2xl transition-all sm:p-7 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <button
+                    @click="showGuestModal = false"
+                    class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                >
+                    <X class="h-4 w-4" />
+                </button>
+
+                <div
+                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"
+                >
+                    <Heart class="h-6 w-6 fill-rose-500" />
+                </div>
+
+                <h3
+                    class="mt-3.5 text-base font-bold text-slate-900 dark:text-gray-100"
+                >
+                    Sign in to Appreciate
+                </h3>
+                <p
+                    class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                >
+                    You need to be logged in to send appreciation and support fellow students and contributors.
+                </p>
+
+                <div class="mt-5 flex gap-2.5">
+                    <button
+                        type="button"
+                        @click="showGuestModal = false"
+                        class="flex-1 cursor-pointer rounded-xl border border-slate-200 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                        Cancel
+                    </button>
+                    <Link
+                        href="/login"
+                        class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-slate-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    >
+                        <LogIn class="h-3.5 w-3.5" />
+                        <span>Sign In</span>
+                    </Link>
+                </div>
+            </div>
+        </div>
+    </Teleport>
 </template>
