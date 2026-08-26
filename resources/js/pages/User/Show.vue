@@ -23,6 +23,7 @@ import {
     Users,
     X,
 } from 'lucide-vue-next';
+import UserListItem from '@/components/UserListItem.vue';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -1220,53 +1221,15 @@ const totalActivitiesCount = computed(
 
                 <div
                     v-if="appreciators && appreciators.length > 0"
-                    class="max-h-72 space-y-2 overflow-y-auto pr-1"
+                    class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
                 >
-                    <Link
+                    <UserListItem
                         v-for="person in appreciators"
                         :key="person.id"
-                        :href="`/u/${person.username}`"
+                        :user="person"
+                        theme="rose"
                         @click="showAppreciatorsModal = false"
-                        class="group flex items-center justify-between rounded-xl p-2 transition hover:bg-slate-50 dark:hover:bg-gray-800/60"
-                    >
-                        <div class="flex min-w-0 items-center gap-2.5">
-                            <div
-                                class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-indigo-50 text-xs font-black text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                            >
-                                <img
-                                    v-if="person.image_path"
-                                    :src="'/storage/' + person.image_path"
-                                    :alt="person.name"
-                                    class="h-full w-full object-cover"
-                                />
-                                <span v-else>{{
-                                    person.name.charAt(0).toUpperCase()
-                                }}</span>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p
-                                    class="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
-                                >
-                                    {{ person.name }}
-                                </p>
-                                <p
-                                    class="truncate text-[10px] text-slate-400 dark:text-gray-500"
-                                >
-                                    {{
-                                        person.institution ||
-                                        '@' + person.username
-                                    }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <span
-                            v-if="person.roles && person.roles.length > 0"
-                            class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400"
-                        >
-                            {{ person.roles[0].name }}
-                        </span>
-                    </Link>
+                    />
                 </div>
 
                 <div
@@ -1323,53 +1286,15 @@ const totalActivitiesCount = computed(
 
                 <div
                     v-if="appreciating && appreciating.length > 0"
-                    class="max-h-72 space-y-2 overflow-y-auto pr-1"
+                    class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
                 >
-                    <Link
+                    <UserListItem
                         v-for="person in appreciating"
                         :key="person.id"
-                        :href="`/u/${person.username}`"
+                        :user="person"
+                        theme="indigo"
                         @click="showAppreciatingModal = false"
-                        class="group flex items-center justify-between rounded-xl p-2 transition hover:bg-slate-50 dark:hover:bg-gray-800/60"
-                    >
-                        <div class="flex min-w-0 items-center gap-2.5">
-                            <div
-                                class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-indigo-50 text-xs font-black text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                            >
-                                <img
-                                    v-if="person.image_path"
-                                    :src="'/storage/' + person.image_path"
-                                    :alt="person.name"
-                                    class="h-full w-full object-cover"
-                                />
-                                <span v-else>{{
-                                    person.name.charAt(0).toUpperCase()
-                                }}</span>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p
-                                    class="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
-                                >
-                                    {{ person.name }}
-                                </p>
-                                <p
-                                    class="truncate text-[10px] text-slate-400 dark:text-gray-500"
-                                >
-                                    {{
-                                        person.institution ||
-                                        '@' + person.username
-                                    }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <span
-                            v-if="person.roles && person.roles.length > 0"
-                            class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400"
-                        >
-                            {{ person.roles[0].name }}
-                        </span>
-                    </Link>
+                    />
                 </div>
 
                 <div
