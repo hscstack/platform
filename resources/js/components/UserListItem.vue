@@ -36,9 +36,11 @@ const avatarBgClass = computed(() => {
     if (props.theme === 'rose') {
         return 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-300 group-hover/user:ring-rose-400';
     }
+
     if (props.theme === 'emerald') {
         return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 group-hover/user:ring-emerald-400';
     }
+
     return 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300 group-hover/user:ring-indigo-400';
 });
 </script>
@@ -71,7 +73,7 @@ const avatarBgClass = computed(() => {
                 </p>
                 <BadgeCheck
                     v-if="isVerified"
-                    class="h-3.5 w-3.5 shrink-0 fill-blue-50 text-blue-600 stroke-[2.2] dark:fill-blue-950/60 dark:text-blue-400"
+                    class="h-3.5 w-3.5 shrink-0 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
                     title="Verified Contributor"
                 />
             </div>

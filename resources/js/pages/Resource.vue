@@ -16,8 +16,8 @@ import {
     CheckCircle2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import YouTubePlayer from '../components/YouTubePlayer.vue';
 import UserListItem from '@/components/UserListItem.vue';
+import YouTubePlayer from '../components/YouTubePlayer.vue';
 
 const props = defineProps({
     resource: {

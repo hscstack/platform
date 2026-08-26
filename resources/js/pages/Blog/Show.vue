@@ -281,8 +281,10 @@ const goBack = () => {
                     >
                         <span>{{ blog.user?.name }}</span>
                         <BadgeCheck
-                            v-if="blog.user?.roles && blog.user.roles.length > 0"
-                            class="h-4 w-4 fill-blue-50 text-blue-600 stroke-[2.2] dark:fill-blue-950/60 dark:text-blue-400"
+                            v-if="
+                                blog.user?.roles && blog.user.roles.length > 0
+                            "
+                            class="h-4 w-4 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
                             title="Verified Contributor"
                         />
                     </Link>
@@ -629,19 +631,26 @@ const goBack = () => {
                             </Link>
 
                             <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-1.5">
+                                <div
+                                    class="flex flex-wrap items-center gap-1.5"
+                                >
                                     <Link
                                         :href="
                                             comment.user?.username
-                                                 ? `/u/${comment.user.username}`
-                                                 : '#'
+                                                ? `/u/${comment.user.username}`
+                                                : '#'
                                         "
                                         class="inline-flex items-center gap-1 text-sm font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                                     >
-                                        <span>{{ comment.user?.name || 'Anonymous' }}</span>
+                                        <span>{{
+                                            comment.user?.name || 'Anonymous'
+                                        }}</span>
                                         <BadgeCheck
-                                            v-if="comment.user?.roles && comment.user.roles.length > 0"
-                                            class="h-3.5 w-3.5 fill-blue-50 text-blue-600 stroke-[2.2] dark:fill-blue-950/60 dark:text-blue-400"
+                                            v-if="
+                                                comment.user?.roles &&
+                                                comment.user.roles.length > 0
+                                            "
+                                            class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
                                             title="Verified Contributor"
                                         />
                                     </Link>
@@ -715,8 +724,10 @@ const goBack = () => {
                     >
                         <span>{{ blog.user?.name }}</span>
                         <BadgeCheck
-                            v-if="blog.user?.roles && blog.user.roles.length > 0"
-                            class="h-4.5 w-4.5 fill-blue-50 text-blue-600 stroke-[2.2] dark:fill-blue-950/60 dark:text-blue-400"
+                            v-if="
+                                blog.user?.roles && blog.user.roles.length > 0
+                            "
+                            class="h-4.5 w-4.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
                             title="Verified Contributor"
                         />
                     </Link>

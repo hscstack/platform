@@ -825,8 +825,12 @@ const totalActivitiesCount = computed(
                 class="space-y-3 pt-2"
             >
                 <div class="flex items-center justify-between px-1">
-                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-gray-300">
-                        <Users class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <div
+                        class="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-gray-300"
+                    >
+                        <Users
+                            class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                        />
                         <span>Discover People</span>
                     </div>
                     <Link
@@ -869,7 +873,10 @@ const totalActivitiesCount = computed(
                                         {{ person.name }}
                                     </p>
                                     <span
-                                        v-if="person.roles && person.roles.length > 0"
+                                        v-if="
+                                            person.roles &&
+                                            person.roles.length > 0
+                                        "
                                         class="inline-flex items-center text-blue-600 dark:text-blue-400"
                                         title="Verified HSCStack Contributor"
                                     >
