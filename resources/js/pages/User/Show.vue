@@ -23,8 +23,8 @@ import {
     Users,
     X,
 } from 'lucide-vue-next';
-import UserListItem from '@/components/UserListItem.vue';
 import { computed, ref, watch } from 'vue';
+import UserListItem from '@/components/UserListItem.vue';
 
 const props = defineProps<{
     profileUser: {
