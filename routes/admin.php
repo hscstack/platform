@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('index');
+Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
 
 Route::get('/subjects', [AdminSubjectController::class, 'index'])->name('subjects.index');
 Route::get('/subjects/create', [AdminSubjectController::class, 'create'])->name('subjects.create');

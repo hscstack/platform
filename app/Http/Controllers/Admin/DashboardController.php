@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -12,7 +13,18 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $stats = Cache::remember('admin_dashboard_stats', now()->addSeconds(30), function () {
+        return Inertia::render('admin/Dashboard');
+    }
+
+    public function analytics(Request $request)
+    {
+        $force = $request->boolean('refresh');
+        
+        if ($force) {
+            Cache::forget('admin_dashboard_stats');
+        }
+
+        $stats = Cache::remember('admin_dashboard_stats', now()->addMinutes(5), function () {
             $totalVisits = 0;
             $totalUsers = 0;
             $realtimeUsers = 0;
@@ -114,8 +126,6 @@ class DashboardController extends Controller
             ];
         });
 
-        return Inertia::render('admin/Dashboard', [
-            'stats' => $stats,
-        ]);
+        return response()->json($stats);
     }
 }
