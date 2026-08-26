@@ -290,7 +290,7 @@ watch(isFullscreen, (val) => {
     </Head>
 
     <div
-        class="mx-auto flex min-h-[75vh] max-w-5xl flex-col justify-start px-3 pt-3 pb-24 sm:px-6"
+        class="mx-auto flex max-w-5xl flex-col justify-start px-3 pt-3 pb-24 sm:px-6"
     >
         <!-- Flat, Minimal Media Header -->
         <div class="mb-3 flex items-center justify-between gap-3">

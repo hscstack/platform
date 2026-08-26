@@ -24,12 +24,11 @@ import ToastNotification from '@/components/ToastNotification.vue';
             ></div>
         </div>
 
-        <div class="relative z-10 flex min-h-screen flex-col justify-between">
-            <div>
-                <NavBar />
+        <div class="relative z-10 flex min-h-screen flex-col">
+            <NavBar />
+            <main class="min-h-[calc(100vh-4rem)] flex-1">
                 <slot />
-            </div>
-
+            </main>
             <Footer />
         </div>
         <FloatingShareBar />

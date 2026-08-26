@@ -15,7 +15,7 @@ import AppLogo from './AppLogo.vue';
 
 <template>
     <footer
-        class="mt-16 border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900"
+        class="mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900"
     >
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
             <div class="grid grid-cols-1 gap-y-10 md:grid-cols-12 md:gap-x-12">
