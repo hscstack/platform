@@ -12,9 +12,9 @@ import {
     Image as ImageIcon,
     LogIn,
     X,
+    ExternalLink,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import YouTubePlayer from '../components/YouTubePlayer.vue';
 
 const props = defineProps({
     resource: {
@@ -166,6 +166,39 @@ watch(isFullscreen, (val) => {
         document.body.style.overflow = val ? 'hidden' : '';
     }
 });
+
+const getYoutubeEmbedUrl = (url: string) => {
+    if (!url) {
+return null;
+}
+
+    try {
+        const parsed = new URL(url);
+        let videoId = null;
+
+        if (parsed.hostname.includes('youtube.com')) {
+            if (parsed.pathname === '/watch') {
+                videoId = parsed.searchParams.get('v');
+            } else if (parsed.pathname.startsWith('/embed/')) {
+                videoId = parsed.pathname.split('/embed/')[1]?.split('?')[0];
+            } else if (parsed.pathname.startsWith('/shorts/')) {
+                videoId = parsed.pathname.split('/shorts/')[1]?.split('?')[0];
+            }
+        }
+
+        if (parsed.hostname === 'youtu.be') {
+            videoId = parsed.pathname.slice(1)?.split('?')[0];
+        }
+
+        if (!videoId) {
+return null;
+}
+
+        return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`;
+    } catch {
+        return null;
+    }
+};
 </script>
 
 <template>
@@ -211,6 +244,21 @@ watch(isFullscreen, (val) => {
 
             <!-- Right: Action Buttons -->
             <div class="flex shrink-0 items-center gap-2">
+                <!-- Watch on YouTube Action (For Video Resources) -->
+                <a
+                    v-if="
+                        resource.resource_type === 'video' && resource.file_url
+                    "
+                    :href="resource.file_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-red-900/50 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                    title="Watch on YouTube"
+                >
+                    <ExternalLink class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">Watch on YouTube</span>
+                </a>
+
                 <!-- Download Button (Auth-guarded, only for downloadable files, NOT for video) -->
                 <button
                     v-if="
@@ -274,7 +322,26 @@ watch(isFullscreen, (val) => {
         </div>
 
         <div v-else-if="resource.resource_type === 'video'">
-            <YouTubePlayer :url="resource.file_url" :title="resource.title" />
+            <div
+                class="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-200/90 bg-black shadow-sm dark:border-gray-800"
+            >
+                <iframe
+                    v-if="getYoutubeEmbedUrl(resource.file_url)"
+                    :src="getYoutubeEmbedUrl(resource.file_url)!"
+                    :title="resource.title"
+                    class="absolute inset-0 h-full w-full border-0"
+                    allow="
+                        accelerometer;
+                        autoplay;
+                        clipboard-write;
+                        encrypted-media;
+                        gyroscope;
+                        picture-in-picture;
+                        web-share;
+                    "
+                    allowfullscreen
+                ></iframe>
+            </div>
         </div>
 
         <div v-else-if="resource.resource_type === 'note'">
