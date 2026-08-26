@@ -19,10 +19,10 @@ defineProps({
 <template>
     <Head title="Staff Dashboard" />
 
-    <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
+    <div class="animate-fade-in mx-auto w-full max-w-7xl space-y-6">
         <!-- Main Dashboard Header -->
         <div
-            class="relative overflow-hidden rounded-2xl border border-slate-300 bg-gradient-to-r from-white via-slate-50 to-white p-6 shadow-sm sm:p-8 dark:border-gray-700 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
+            class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-r from-white via-slate-50 to-white p-4 shadow-xs sm:p-8 dark:border-gray-800 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
         >
             <div
                 class="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/20"

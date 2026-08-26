@@ -72,22 +72,20 @@ const submitForm = () => {
 <template>
     <Head :title="subject ? `Edit ${subject.name}` : 'Create Subject'" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="mx-auto w-full max-w-5xl">
         <div
-            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="w-full rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-8 md:p-10 dark:border-gray-800 dark:bg-gray-900"
         >
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
+                class="mb-6 flex flex-col justify-between gap-4 border-b border-slate-100 pb-5 sm:mb-8 sm:flex-row sm:items-center sm:pb-6 dark:border-gray-800"
             >
                 <div>
                     <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                        class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
                     >
                         {{ props.subject ? 'Edit' : 'Create' }} New Subject
                     </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                    <p class="mt-1 text-xs text-slate-500 sm:text-sm dark:text-gray-400">
                         {{
                             props.subject
                                 ? 'Update the subject details below.'
@@ -98,7 +96,7 @@ const submitForm = () => {
                 <button
                     type="button"
                     @click="goBack"
-                    class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                    class="inline-flex items-center self-start rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-100 sm:self-center dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                     &larr; Back
                 </button>

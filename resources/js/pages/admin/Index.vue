@@ -15,10 +15,10 @@ defineProps({
     <Head title="Manage Contents" />
 
     <div
-        class="flex w-full flex-1 flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+        class="flex w-full flex-1 flex-col rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-6 dark:border-gray-800 dark:bg-gray-900"
     >
         <div
-            class="mb-6 flex shrink-0 flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
+            class="mb-5 flex shrink-0 flex-col gap-3.5 border-b border-slate-100 pb-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:pb-5 dark:border-gray-800"
         >
             <div>
                 <h3

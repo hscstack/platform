@@ -41,24 +41,22 @@ const submitForm = () => {
 <template>
     <Head :title="blog ? `Edit ${blog.title}` : 'Write Blog Post'" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="mx-auto w-full max-w-5xl">
         <div
-            class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="w-full rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-8 md:p-10 dark:border-gray-800 dark:bg-gray-900"
         >
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
+                class="mb-6 flex flex-col justify-between gap-4 border-b border-slate-100 pb-5 sm:mb-8 sm:flex-row sm:items-center sm:pb-6 dark:border-gray-800"
             >
                 <div>
                     <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                        class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
                     >
                         {{ props.blog ? 'Edit' : 'Create' }} Blog Post
                     </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                    <p class="mt-1 text-xs text-slate-500 sm:text-sm dark:text-gray-400">
                         Compose and manage article content for your web
-                        application audience.
+                        platform.
                     </p>
                 </div>
             </div>

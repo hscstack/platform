@@ -101,30 +101,28 @@ const submitForm = () => {
 <template>
     <Head title="Send Email" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="mx-auto w-full max-w-5xl">
         <div
-            class="mx-auto w-full max-w-4xl rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="w-full rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-8 md:p-10 dark:border-gray-800 dark:bg-gray-900"
         >
             <!-- Header -->
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
+                class="mb-6 flex flex-col justify-between gap-4 border-b border-slate-100 pb-5 sm:mb-8 sm:flex-row sm:items-center sm:pb-6 dark:border-gray-800"
             >
                 <div>
                     <div class="flex items-center gap-3">
                         <div
-                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:bg-indigo-500/10 dark:text-indigo-400"
                         >
-                            <Mail class="h-5 w-5" />
+                            <Mail class="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
                         <h1
-                            class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                            class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
                         >
                             Send Email
                         </h1>
                     </div>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
+                    <p class="mt-1 text-xs text-slate-500 sm:text-sm dark:text-gray-400">
                         Compose and dispatch email announcements to subscribed
                         users or individual accounts.
                     </p>

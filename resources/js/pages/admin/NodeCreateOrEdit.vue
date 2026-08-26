@@ -49,29 +49,36 @@ const goBack = () => {
 <template>
     <Head :title="node ? `Edit ${node.name}` : 'Create Node'" />
 
-    <div
-        class="flex min-h-full w-full flex-col justify-start bg-slate-50 p-6 lg:p-10 dark:bg-gray-950"
-    >
+    <div class="mx-auto w-full max-w-5xl">
         <div
-            class="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-10 dark:border-gray-700 dark:bg-gray-900"
+            class="w-full rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-8 md:p-10 dark:border-gray-800 dark:bg-gray-900"
         >
             <div
-                class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
+                class="mb-6 flex flex-col justify-between gap-4 border-b border-slate-100 pb-5 sm:mb-8 sm:flex-row sm:items-center sm:pb-6 dark:border-gray-800"
             >
                 <div>
                     <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+                        class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
                     >
-                        {{ props.node ? 'Edit Folder' : 'Create Folder' }}
+                        {{ props.node ? 'Edit' : 'Create' }} Curriculum Node
                     </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
-                        Subject:
-                        <span
-                            class="font-semibold text-slate-700 dark:text-gray-300"
-                            >{{ props.subject?.name }}</span
-                        >
+                    <p class="mt-1 text-xs text-slate-500 sm:text-sm dark:text-gray-400">
+                        {{
+                            props.node
+                                ? 'Update node folder and hierarchy configuration.'
+                                : 'Add a new chapter or folder in ' +
+                                  (parent?.name || subject?.name) +
+                                  '.'
+                        }}
                     </p>
                 </div>
+                <button
+                    type="button"
+                    @click="goBack"
+                    class="inline-flex items-center self-start rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-100 sm:self-center dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                    &larr; Back
+                </button>
             </div>
 
             <form @submit.prevent="submitForm" class="space-y-8">
