@@ -27,7 +27,7 @@ class SubjectController extends Controller
 
         $featuredBlogs = Blog::where('is_featured', true)
             ->where('is_published', true)
-            ->with('user:id,name')
+            ->with('user:id,name,username')
             ->withCount(['reactions', 'comments'])
             ->inRandomOrder()
             ->limit(3)

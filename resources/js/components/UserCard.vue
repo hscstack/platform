@@ -1,148 +1,143 @@
 <script setup lang="ts">
-import { Github, Facebook, Instagram } from 'lucide-vue-next';
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { GraduationCap, ArrowRight } from 'lucide-vue-next';
+import { computed } from 'vue';
 
-defineProps({
-    member: Object,
-    id: String,
+const props = defineProps<{
+    member: {
+        id: number;
+        name: string;
+        username?: string;
+        title?: string | null;
+        about?: string | null;
+        institution?: string | null;
+        image_url?: string | null;
+        roles?: Array<{ name: string }>;
+    };
+}>();
+
+const profileUrl = computed(() => {
+    return props.member.username ? `/u/${props.member.username}` : '#';
 });
 
-const activeHash = ref('');
+const roleInfo = computed(() => {
+    const roleName = props.member.roles?.[0]?.name?.toLowerCase() || 'staff';
 
-const updateHash = () => {
-    activeHash.value = window.location.hash;
-};
+    if (roleName === 'admin') {
+        return {
+            label: 'Admin',
+            class: 'border-rose-200/80 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-300',
+        };
+    }
 
-onMounted(() => {
-    updateHash();
-    window.addEventListener('hashchange', updateHash);
-});
+    if (roleName === 'editor') {
+        return {
+            label: 'Editor',
+            class: 'border-purple-200/80 bg-purple-50 text-purple-700 dark:border-purple-800/60 dark:bg-purple-950/40 dark:text-purple-300',
+        };
+    }
 
-onBeforeUnmount(() => {
-    window.removeEventListener('hashchange', updateHash);
+    if (roleName === 'manager') {
+        return {
+            label: 'Staff',
+            class: 'border-amber-200/80 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300',
+        };
+    }
+
+    return {
+        label: roleName,
+        class: 'border-blue-200/80 bg-blue-50 text-blue-700 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300',
+    };
 });
 </script>
 
 <template>
     <div
-        :id="id"
-        class="group flex scroll-mt-64 flex-col justify-between rounded-2xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-slate-300 hover:shadow-md hover:shadow-slate-100/50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:shadow-gray-800/40"
-        :class="{
-            'border-indigo-500 shadow-lg ring-2 shadow-indigo-100 ring-indigo-500 ring-offset-4 dark:shadow-indigo-500/20 dark:ring-offset-gray-900':
-                activeHash === `#${id}`,
-        }"
+        class="group flex flex-col justify-between rounded-3xl border border-slate-200/80 bg-white p-6 text-center shadow-xs transition-all duration-300 hover:border-indigo-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/60"
     >
         <div class="flex flex-col items-center">
-            <div class="mb-6">
-                <img
-                    v-if="member.image_url"
-                    :src="member.image_url"
-                    :alt="member.name"
-                    class="h-28 w-28 rounded-3xl border border-slate-100 object-cover shadow-sm transition-transform duration-300 group-hover:scale-[1.03] dark:border-gray-800"
-                />
+            <!-- Avatar Linking to Public Profile -->
+            <Link
+                :href="profileUrl"
+                class="mb-4 block transition-transform group-hover:scale-105"
+            >
                 <div
-                    v-else
-                    class="flex h-28 w-28 items-center justify-center rounded-3xl border border-indigo-100 bg-indigo-50 text-2xl font-black text-indigo-600 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
+                    class="h-24 w-24 overflow-hidden rounded-2xl shadow-sm ring-4 ring-slate-100 dark:ring-gray-800"
                 >
-                    {{
-                        member.name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                    }}
+                    <img
+                        v-if="member.image_url"
+                        :src="member.image_url"
+                        :alt="member.name"
+                        class="h-full w-full object-cover"
+                    />
+                    <div
+                        v-else
+                        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-2xl font-black text-white"
+                    >
+                        {{ member.name.charAt(0).toUpperCase() }}
+                    </div>
                 </div>
-            </div>
+            </Link>
 
+            <!-- Name, Handle & Role -->
             <div class="space-y-1">
-                <h3
-                    class="text-xl font-black tracking-tight text-slate-950 dark:text-gray-100"
+                <Link
+                    :href="profileUrl"
+                    class="text-lg font-black tracking-tight text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                 >
                     {{ member.name }}
-                </h3>
-                <span
-                    class="inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider capitalize"
-                    :class="{
-                        'border border-rose-100 bg-rose-50 text-rose-600 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400':
-                            member.roles[0].name.toLowerCase() === 'admin',
-                        'border border-blue-100 bg-blue-50 text-blue-600 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400':
-                            member.roles[0].name.toLowerCase() === 'editor',
-                        'border border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400':
-                            member.roles[0].name.toLowerCase() === 'manager',
-                    }"
-                >
-                    {{
-                        member.roles[0].name.toLowerCase() === 'manager'
-                            ? 'Staff'
-                            : member.roles[0].name
-                    }}
-                </span>
+                </Link>
+
+                <!-- Role Pill -->
+                <div class="flex items-center justify-center pt-0.5">
+                    <span
+                        class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                        :class="roleInfo.class"
+                    >
+                        {{ roleInfo.label }}
+                    </span>
+                </div>
+
+                <!-- Title / Tagline -->
                 <p
-                    class="text-xs font-bold tracking-wide text-indigo-600 uppercase dark:text-indigo-400"
+                    v-if="member.title"
+                    class="pt-1 text-xs font-bold text-indigo-600 dark:text-indigo-400"
                 >
                     {{ member.title }}
                 </p>
-                <p
-                    class="text-xs font-semibold text-slate-400 dark:text-gray-500"
+
+                <!-- Institution -->
+                <div
+                    v-if="member.institution"
+                    class="flex items-center justify-center gap-1 text-xs font-medium text-slate-500 dark:text-gray-400"
                 >
-                    {{ member.institution }}
-                </p>
+                    <GraduationCap
+                        class="h-3.5 w-3.5 shrink-0 text-slate-400"
+                    />
+                    <span>{{ member.institution }}</span>
+                </div>
             </div>
 
+            <!-- About Snippet -->
             <p
-                class="mt-5 max-w-xs text-sm leading-relaxed font-medium text-slate-600 dark:text-gray-400"
+                v-if="member.about"
+                class="mt-4 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-gray-400"
             >
                 {{ member.about }}
             </p>
         </div>
 
-        <div
-            class="mt-8 flex items-center justify-center gap-4 border-t border-slate-100 pt-5 dark:border-gray-800"
-        >
-            <!-- GitHub Link -->
-            <a
-                v-if="member.github"
-                :href="member.github"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 text-xs font-bold text-slate-400 transition-colors hover:text-slate-950 dark:text-gray-500 dark:hover:text-gray-100"
+        <!-- Minimal Footer: View Profile -->
+        <div class="mt-6 border-t border-slate-100 pt-4 dark:border-gray-800">
+            <Link
+                :href="profileUrl"
+                class="group/btn inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-900 hover:text-white dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-100 dark:hover:text-gray-900"
             >
-                <Github class="h-4 w-4" />
-                GitHub
-            </a>
-
-            <!-- Separator between GitHub and Facebook -->
-            <span
-                v-if="member.github && (member.facebook || member.instagram)"
-                class="h-3.5 w-px bg-slate-200 dark:bg-gray-700"
-            ></span>
-
-            <!-- Facebook Link -->
-            <a
-                v-if="member.facebook"
-                :href="member.facebook"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 text-xs font-bold text-slate-400 transition-colors hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400"
-            >
-                <Facebook class="h-4 w-4" />
-                Facebook
-            </a>
-
-            <span
-                v-if="member.facebook && member.instagram"
-                class="h-3.5 w-px bg-slate-200 dark:bg-gray-700"
-            ></span>
-
-            <a
-                v-if="member.instagram"
-                :href="member.instagram"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 text-xs font-bold text-slate-400 transition-colors hover:text-pink-600 dark:text-gray-500 dark:hover:text-pink-400"
-            >
-                <Instagram class="h-4 w-4" />
-                Instagram
-            </a>
+                <span>View Profile</span>
+                <ArrowRight
+                    class="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5"
+                />
+            </Link>
         </div>
     </div>
 </template>
