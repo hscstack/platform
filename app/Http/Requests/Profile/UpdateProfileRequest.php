@@ -26,7 +26,6 @@ class UpdateProfileRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
             'about' => ['sometimes', 'nullable', 'string'],
-            'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255'],
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],

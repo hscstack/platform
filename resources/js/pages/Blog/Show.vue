@@ -587,7 +587,7 @@ const goBack = () => {
                     class="group rounded-2xl border border-slate-100 bg-white p-4.5 shadow-2xs transition hover:border-slate-200 dark:border-gray-800/80 dark:bg-gray-900/90 dark:hover:border-gray-700"
                 >
                     <div class="flex items-start justify-between gap-3">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-start gap-3">
                             <div
                                 class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                             >
@@ -608,8 +608,8 @@ const goBack = () => {
                                 </span>
                             </div>
 
-                            <div>
-                                <div class="flex items-center gap-2">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
                                     <span
                                         class="text-sm font-bold text-slate-900 dark:text-gray-100"
                                     >
@@ -622,27 +622,37 @@ const goBack = () => {
                                         Author
                                     </span>
                                 </div>
-                                <span
-                                    class="text-xs text-slate-400 dark:text-gray-500"
+                                <p
+                                    v-if="comment.user?.institution"
+                                    class="truncate text-xs font-medium text-slate-500 dark:text-gray-400"
                                 >
-                                    {{ formatTimeAgo(comment.created_at) }}
-                                </span>
+                                    {{ comment.user.institution }}
+                                </p>
                             </div>
                         </div>
 
-                        <!-- Delete Button (Only for comment author or admin) -->
-                        <button
-                            v-if="
-                                currentUser &&
-                                (currentUser.id === comment.user_id ||
-                                    canAccessAdmin)
-                            "
-                            @click="deleteComment(comment.id)"
-                            title="Delete comment"
-                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                        >
-                            <Trash2 class="h-4 w-4" />
-                        </button>
+                        <!-- Top-Right Actions & Timestamp -->
+                        <div class="flex shrink-0 items-center gap-2">
+                            <span
+                                class="text-xs text-slate-400 dark:text-gray-500"
+                            >
+                                {{ formatTimeAgo(comment.created_at) }}
+                            </span>
+
+                            <!-- Delete Button (Only for comment author or admin) -->
+                            <button
+                                v-if="
+                                    currentUser &&
+                                    (currentUser.id === comment.user_id ||
+                                        canAccessAdmin)
+                                "
+                                @click="deleteComment(comment.id)"
+                                title="Delete comment"
+                                class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                            >
+                                <Trash2 class="h-4 w-4" />
+                            </button>
+                        </div>
                     </div>
 
                     <p

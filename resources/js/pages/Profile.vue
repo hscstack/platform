@@ -35,7 +35,6 @@ const form = useForm({
     name: user.value?.name || '',
     file: null as File | null,
     about: user.value?.about || '',
-    title: user.value?.title || '',
     institution: user.value?.institution || '',
     facebook: user.value?.facebook || '',
     github: user.value?.github || '',
@@ -200,34 +199,7 @@ const submitForm = () => {
                         />
                     </div>
 
-                    <div>
-                        <label
-                            for="title"
-                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            Title / Designation
-                        </label>
-                        <input
-                            v-model="form.title"
-                            type="text"
-                            id="title"
-                            placeholder="e.g., Student, Educator, Developer"
-                            :disabled="form.processing"
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
-                            :class="{
-                                'border-rose-500 focus:ring-rose-500/20':
-                                    form.errors.title,
-                            }"
-                        />
-                        <p
-                            v-if="form.errors.title"
-                            class="mt-1 text-xs text-rose-600"
-                        >
-                            {{ form.errors.title }}
-                        </p>
-                    </div>
-
-                    <div>
+                    <div class="sm:col-span-2">
                         <label
                             for="institution"
                             class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"

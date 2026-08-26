@@ -17,6 +17,14 @@ class Node extends Model
         'sort_order',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'children_count' => 'integer',
+            'resources_count' => 'integer',
+        ];
+    }
+
     public function children()
     {
         return $this->hasMany(Node::class, 'parent_id');
