@@ -8,6 +8,7 @@ import {
     Share2,
     BookOpen,
     ArrowRight,
+    Zap,
 } from 'lucide-vue-next';
 
 defineProps({
@@ -49,6 +50,7 @@ defineProps({
                         </p>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -96,6 +98,41 @@ defineProps({
         <div class="grid gap-6 md:grid-cols-2">
             <div class="space-y-6">
                 <div
+                    class="relative overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-500/10 via-white to-white p-6 shadow-sm dark:border-emerald-500/30 dark:from-emerald-950/40 dark:via-gray-900 dark:to-gray-900"
+                >
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                            </span>
+                            <p
+                                class="text-sm font-semibold tracking-wide text-emerald-900 uppercase dark:text-emerald-300"
+                            >
+                                Active Now
+                            </p>
+                        </div>
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-100/60 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-300"
+                        >
+                            <Zap class="h-5 w-5" />
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h3
+                            class="text-3xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                        >
+                            {{ stats?.realtime_users ?? 0 }}
+                        </h3>
+                        <p
+                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Active users in the last 5 minutes
+                        </p>
+                    </div>
+                </div>
+
+                <div
                     class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
                 >
                     <div class="flex items-center justify-between">
@@ -114,12 +151,12 @@ defineProps({
                         <h3
                             class="text-3xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
                         >
-                            {{ stats?.total_visits ?? 0 }}
+                            {{ stats?.total_visits?.toLocaleString() ?? 0 }}
                         </h3>
                         <p
                             class="mt-1 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            Cumulative raw platform hits recorded
+                            Total page views recorded (Last 30 Days)
                         </p>
                     </div>
                 </div>
@@ -134,7 +171,7 @@ defineProps({
                             Unique Visitors
                         </p>
                         <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 bg-emerald-50 text-emerald-600 dark:border-gray-800 dark:bg-emerald-500/10 dark:text-emerald-400"
+                            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 bg-blue-50 text-blue-600 dark:border-gray-800 dark:bg-blue-500/10 dark:text-blue-400"
                         >
                             <Users class="h-5 w-5" />
                         </div>
@@ -143,12 +180,12 @@ defineProps({
                         <h3
                             class="text-3xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
                         >
-                            {{ stats?.total_users ?? 0 }}
+                            {{ stats?.total_users?.toLocaleString() ?? 0 }}
                         </h3>
                         <p
                             class="mt-1 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            Distinct audiences grouped by IP address
+                            Distinct audience reach (Last 30 Days)
                         </p>
                     </div>
                 </div>
