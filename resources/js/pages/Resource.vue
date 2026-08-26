@@ -181,103 +181,95 @@ const parseYoutubeUrl = (url) => {
     </Head>
 
     <div
-        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-4 pt-4 pb-20 sm:px-6 sm:pt-4"
+        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-3 pt-2 pb-24 sm:px-6 sm:pt-3"
     >
-        <div class="mb-2">
-            <button
-                @click="handleBack"
-                class="group inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-            >
-                <ArrowLeft
-                    class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
-                />
-                Back
-            </button>
-        </div>
-
         <div
-            class="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            class="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
         >
+            <!-- Sleek Minimal Content-First Toolbar -->
             <div
-                class="border-b border-slate-100 bg-slate-50/50 p-5 sm:p-6 dark:border-gray-800 dark:bg-gray-800/50"
+                class="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2 sm:px-4 sm:py-2.5 dark:border-gray-800 dark:bg-gray-900/90"
             >
-                <div
-                    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                    <div class="min-w-0">
-                        <span
-                            class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-xs font-bold tracking-wider text-slate-600 uppercase dark:bg-gray-800 dark:text-gray-400"
-                        >
-                            <FileText
-                                v-if="resource.resource_type === 'note'"
-                                class="h-3 w-3"
-                            />
-                            <ImageIcon
-                                v-else-if="resource.resource_type === 'image'"
-                                class="h-3 w-3"
-                            />
-                            <FilePlay
-                                v-else-if="resource.resource_type === 'video'"
-                                class="h-3 w-3"
-                            />
-
-                            <Download v-else class="h-3 w-3" />
-                            {{ resource.resource_type }}
-                        </span>
-
-                        <h1
-                            class="mt-2 text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
-                        >
-                            {{ resource.title }}
-                        </h1>
-
-                        <Link
-                            v-if="resource.user?.name"
-                            :href="`/about-us#${resource.user.id}`"
-                            class="group mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 transition-all hover:bg-indigo-50 hover:text-indigo-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
-                        >
-                            <User
-                                class="h-3.5 w-3.5 stroke-[2.2] text-slate-500 group-hover:text-indigo-600 dark:text-gray-400 dark:group-hover:text-indigo-400"
-                            />
-                            <span>
-                                Shared by
-                                <span
-                                    class="font-bold text-indigo-600 group-hover:underline dark:text-indigo-400"
-                                >
-                                    {{ resource.user.name }}
-                                </span>
-                            </span>
-                        </Link>
-                    </div>
-
-                    <div
-                        v-if="resource.resource_type === 'image'"
-                        class="flex items-center gap-2 self-start sm:self-center"
+                <!-- Left: Back Button + Type Badge + Compact Title -->
+                <div class="flex min-w-0 items-center gap-2 sm:gap-2.5">
+                    <button
+                        @click="handleBack"
+                        type="button"
+                        aria-label="Go back"
+                        class="group flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-xs transition hover:border-slate-300 hover:text-indigo-600 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-indigo-400"
+                        title="Back"
                     >
-                        <a
-                            v-if="resource.file_url"
-                            :href="resource.file_url"
-                            download
-                            target="_blank"
-                            class="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.98] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                        >
-                            <Download class="h-4 w-4 stroke-[2.2]" />
-                            Download
-                        </a>
+                        <ArrowLeft
+                            class="h-4 w-4 transition-transform group-hover:-translate-x-0.5"
+                        />
+                    </button>
 
-                        <button
-                            @click="toggleFullscreen"
-                            class="inline-flex h-9 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
-                            title="View Fullscreen"
-                        >
-                            <Maximize2 class="h-4 w-4 stroke-[2.2]" />
-                            Full Screen
-                        </button>
-                    </div>
+                    <span
+                        class="inline-flex shrink-0 items-center gap-1 rounded-md bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-slate-700 uppercase dark:bg-gray-800 dark:text-gray-300"
+                    >
+                        <FileText
+                            v-if="resource.resource_type === 'note'"
+                            class="h-3 w-3"
+                        />
+                        <ImageIcon
+                            v-else-if="resource.resource_type === 'image'"
+                            class="h-3 w-3"
+                        />
+                        <FilePlay
+                            v-else-if="resource.resource_type === 'video'"
+                            class="h-3 w-3"
+                        />
+                        <Download v-else class="h-3 w-3" />
+                        <span>{{ resource.resource_type }}</span>
+                    </span>
+
+                    <h1
+                        class="truncate text-xs font-bold text-slate-900 sm:text-sm dark:text-gray-100"
+                        :title="resource.title"
+                    >
+                        {{ resource.title }}
+                    </h1>
+                </div>
+
+                <!-- Right: Author Credit (desktop) + Action Buttons -->
+                <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                    <Link
+                        v-if="resource.user?.name"
+                        :href="`/about-us#${resource.user.id}`"
+                        class="hidden items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-200/60 hover:text-indigo-600 md:inline-flex dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                        :title="`Shared by ${resource.user.name}`"
+                    >
+                        <User class="h-3.5 w-3.5 text-slate-400" />
+                        <span class="max-w-[120px] truncate">{{
+                            resource.user.name
+                        }}</span>
+                    </Link>
+
+                    <a
+                        v-if="resource.file_url"
+                        :href="resource.file_url"
+                        download
+                        target="_blank"
+                        class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                        title="Download Resource"
+                    >
+                        <Download class="h-3.5 w-3.5 stroke-[2.2]" />
+                        <span class="hidden sm:inline">Download</span>
+                    </a>
+
+                    <button
+                        v-if="resource.resource_type === 'image'"
+                        @click="toggleFullscreen"
+                        class="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                        title="View Fullscreen"
+                    >
+                        <Maximize2 class="h-3.5 w-3.5 stroke-[2.2]" />
+                        <span class="hidden sm:inline">Full Screen</span>
+                    </button>
                 </div>
             </div>
 
-            <div v-if="resource.resource_type === 'note'" class="p-6 sm:p-8">
+            <div v-if="resource.resource_type === 'note'" class="p-4 sm:p-6">
                 <div
                     class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
                 >
@@ -297,13 +289,13 @@ const parseYoutubeUrl = (url) => {
             <div v-else-if="resource.resource_type === 'image'">
                 <div
                     v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+                    class="border-b border-slate-100 bg-white p-3.5 sm:p-5 dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div
-                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
+                        class="prose max-w-none text-xs leading-relaxed font-medium text-slate-700 sm:text-sm dark:text-gray-300"
                     >
                         <h3
-                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                            class="mb-1 text-[11px] font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
                         >
                             Note:
                         </h3>
@@ -316,15 +308,15 @@ const parseYoutubeUrl = (url) => {
                 </div>
 
                 <div
-                    class="flex justify-center bg-slate-950/5 p-4 sm:p-8 dark:bg-white/10"
+                    class="flex justify-center bg-slate-950/5 p-2 sm:p-4 dark:bg-white/10"
                 >
                     <div
-                        class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
+                        class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-shadow duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
                     >
                         <img
                             :src="resource.file_url"
                             :alt="resource.title"
-                            class="max-h-[70vh] w-auto object-contain select-none"
+                            class="max-h-[78vh] w-auto object-contain select-none sm:max-h-[82vh]"
                         />
                     </div>
                 </div>
@@ -332,13 +324,13 @@ const parseYoutubeUrl = (url) => {
             <div v-else-if="resource.resource_type === 'video'">
                 <div
                     v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+                    class="border-b border-slate-100 bg-white p-3.5 sm:p-5 dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div
-                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
+                        class="prose max-w-none text-xs leading-relaxed font-medium text-slate-700 sm:text-sm dark:text-gray-300"
                     >
                         <h3
-                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                            class="mb-1 text-[11px] font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
                         >
                             Note:
                         </h3>
@@ -352,7 +344,7 @@ const parseYoutubeUrl = (url) => {
                     </div>
                 </div>
 
-                <div class="bg-slate-950/5 p-4 sm:p-8 dark:bg-white/10">
+                <div class="bg-slate-950/5 p-2 sm:p-4 dark:bg-white/10">
                     <div
                         class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm dark:border-gray-700"
                     >
