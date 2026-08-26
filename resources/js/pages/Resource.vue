@@ -357,7 +357,7 @@ watch(isFullscreen, (val) => {
                 </Link>
             </div>
 
-            <!-- YouTube Educational Disclaimer (For Videos) -->
+            <!-- YouTube Educational Disclaimer (For Videos) with Official Legal Reference -->
             <div
                 v-if="resource.resource_type === 'video'"
                 class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs leading-relaxed text-slate-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-400"
@@ -366,8 +366,16 @@ watch(isFullscreen, (val) => {
                     >Note:</span
                 >
                 <p class="mt-0.5">
-                    This content is hosted on YouTube by the original creator.
-                    We have embedded it here for educational reference only.
+                    This content is hosted on YouTube by the original creator
+                    and embedded for educational reference in compliance with
+                    <a
+                        href="https://www.youtube.com/static?template=terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                        YouTube's Terms of Service </a
+                    >.
                 </p>
             </div>
 
