@@ -53,8 +53,12 @@ const handleDownload = () => {
     }
 
     if (props.resource?.file_url) {
+        const downloadUrl = props.resource.file_url.includes('?')
+            ? `${props.resource.file_url}&download=1`
+            : `${props.resource.file_url}?download=1`;
+
         const link = document.createElement('a');
-        link.href = props.resource.file_url;
+        link.href = downloadUrl;
         link.download = props.resource.title || 'download';
         link.target = '_blank';
         document.body.appendChild(link);
