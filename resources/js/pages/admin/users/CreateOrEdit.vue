@@ -19,6 +19,7 @@ const availablePermissions = props.permissions;
 const form = useForm({
     _method: props.user ? 'PATCH' : 'POST',
     name: props.user?.name || '',
+    username: props.user?.username || '',
     email: props.user?.email || '',
     role: props.user?.roles?.[0]?.name || 'manager',
     permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
@@ -89,8 +90,8 @@ const submitForm = () => {
             </div>
 
             <form @submit.prevent="submitForm" class="max-w-3xl space-y-6">
-                <!-- Base fields section (Name, Email) -->
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <!-- Base fields section (Name, Username, Email) -->
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div>
                         <label
                             for="name"
@@ -115,6 +116,40 @@ const submitForm = () => {
                             class="mt-1 text-sm text-rose-600"
                         >
                             {{ form.errors.name }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="username"
+                            class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                            >Username</label
+                        >
+                        <div class="relative">
+                            <span
+                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-sm font-semibold text-slate-400 dark:text-gray-500"
+                            >
+                                @
+                            </span>
+                            <input
+                                v-model="form.username"
+                                type="text"
+                                id="username"
+                                placeholder="johndoe"
+                                :disabled="form.processing"
+                                class="w-full rounded-lg border py-2.5 pr-4 pl-8 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                                :class="
+                                    form.errors.username
+                                        ? 'border-rose-500 focus:ring-rose-500/20'
+                                        : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
+                                "
+                            />
+                        </div>
+                        <p
+                            v-if="form.errors.username"
+                            class="mt-1 text-sm text-rose-600"
+                        >
+                            {{ form.errors.username }}
                         </p>
                     </div>
 

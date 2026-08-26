@@ -62,6 +62,12 @@ const deleteUser = (id: number) => {
                             >{{ user.name }}</span
                         >
                         <span
+                            v-if="user.username"
+                            class="text-xs text-slate-400 dark:text-gray-500"
+                        >
+                            @{{ user.username }}
+                        </span>
+                        <span
                             v-if="user.id === userId"
                             class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
                         >
