@@ -41,71 +41,67 @@ const handleDelete = () => {
 <template>
     <div
         @click="router.visit(`/admin/subjects/${subject.slug}/nodes`)"
-        class="group relative flex cursor-pointer flex-col gap-3 rounded-xl border border-slate-200/90 bg-white p-3.5 transition-all duration-150 hover:border-indigo-300 hover:bg-slate-50/60 hover:shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-4 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/40 dark:hover:bg-gray-800/50"
+        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
         <!-- Left: Icon + Subject Details (Full title, no ellipsis) -->
-        <div class="flex items-center gap-3.5 min-w-0">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
             <div
                 :class="[
                     subject.tailwind_format ||
                         'bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-400',
-                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-black/5 shadow-2xs transition-transform duration-200 group-hover:scale-105 sm:h-11 sm:w-11 dark:border-white/10',
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 sm:h-10 sm:w-10 dark:border-white/10',
                 ]"
             >
                 <component
                     :is="icons[subject.icon] || BookOpen"
-                    class="h-5 w-5 stroke-[2.2]"
+                    class="h-4.5 w-4.5 stroke-[2]"
                 />
             </div>
 
-            <div class="flex flex-col min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                    <h3
-                        class="text-sm font-bold text-slate-800 break-words transition-colors group-hover:text-indigo-600 dark:text-gray-200 dark:group-hover:text-indigo-400"
-                    >
-                        {{ subject.name }}
-                    </h3>
+            <div class="flex flex-wrap items-center gap-2 min-w-0">
+                <h3
+                    class="text-sm font-semibold text-slate-900 break-words transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                >
+                    {{ subject.name }}
+                </h3>
 
-                    <!-- Course Badge (HSC / SSC) -->
-                    <span
-                        v-if="subject.course"
-                        :class="[
-                            subject.course.toUpperCase() === 'SSC'
-                                ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30'
-                                : subject.course.toUpperCase() === 'HSC'
-                                  ? 'bg-indigo-50 text-indigo-700 ring-indigo-700/10 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/30'
-                                  : 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20',
-                            'inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-extrabold tracking-wider uppercase ring-1 ring-inset',
-                        ]"
-                    >
-                        {{ subject.course }}
-                    </span>
-                </div>
+                <!-- Course Badge (HSC / SSC) -->
+                <span
+                    v-if="subject.course"
+                    :class="[
+                        subject.course.toUpperCase() === 'SSC'
+                            ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30'
+                            : subject.course.toUpperCase() === 'HSC'
+                              ? 'bg-indigo-50 text-indigo-700 ring-indigo-700/10 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/30'
+                              : 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20',
+                        'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset',
+                    ]"
+                >
+                    {{ subject.course }}
+                </span>
             </div>
         </div>
 
         <!-- Right: Actions -->
         <div
-            class="flex items-center gap-2 self-end sm:self-center"
+            class="flex shrink-0 items-center gap-1"
             @click.stop
         >
             <Link
                 :href="`/admin/subjects/edit/${subject.id}`"
-                class="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 shadow-2xs transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                 title="Edit Subject"
             >
-                <Pencil class="h-3 w-3" :stroke-width="2" />
-                <span>Edit</span>
+                <Pencil class="h-4 w-4" :stroke-width="1.8" />
             </Link>
 
             <button
                 type="button"
                 @click="handleDelete"
-                class="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-rose-600 shadow-2xs transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-gray-700 dark:bg-gray-800 dark:text-rose-400 dark:hover:border-red-500/30 dark:hover:bg-red-500/10"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 title="Delete Subject"
             >
-                <Trash2 class="h-3 w-3" :stroke-width="2" />
-                <span>Delete</span>
+                <Trash2 class="h-4 w-4" :stroke-width="1.8" />
             </button>
         </div>
     </div>
