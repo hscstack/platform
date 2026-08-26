@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\UserProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +59,7 @@ Route::middleware('throttle:60,1')->group(function () {
 
     Route::get('/blogs', [BlogController::class, 'index']);
     Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+    Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
     Route::get('/', [SubjectController::class, 'index'])
         ->defaults('course', 'hsc')
