@@ -5,6 +5,8 @@ import {
     User,
     Eye,
     ArrowLeft,
+    ArrowRight,
+    PenLine,
     Heart,
     MessageSquare,
     Trash2,
@@ -445,27 +447,35 @@ const goBack = () => {
             </div>
         </article>
 
-        <!-- "Write for us" Minimal Callout -->
+        <!-- Write on HSCStack Contributor CTA Card -->
         <div
-            class="mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-100/80 bg-indigo-50/40 px-4 py-2 text-xs text-slate-600 dark:border-indigo-950/60 dark:bg-indigo-950/20 dark:text-gray-400"
+            class="mt-4 flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3.5 sm:flex-row sm:items-center sm:px-4 sm:py-3 dark:border-gray-800 dark:bg-gray-900/50"
         >
-            <div class="flex items-center gap-2">
-                <span class="font-semibold text-slate-900 dark:text-gray-200"
-                    >Want to write a blog here?</span
+            <div class="flex items-center gap-3">
+                <div
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-400"
                 >
-                <span class="hidden text-slate-400 sm:inline dark:text-gray-500"
-                    >•</span
-                >
-                <span class="hidden sm:inline"
-                    >Share your thoughts with the community.</span
-                >
+                    <PenLine class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div class="space-y-0.5">
+                    <p
+                        class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        Have insights or study notes to share?
+                    </p>
+                    <p class="text-[11px] text-slate-500 dark:text-gray-400">
+                        Join our community of contributors and publish on
+                        HSCStack.
+                    </p>
+                </div>
             </div>
+
             <Link
                 href="/join"
-                class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600 active:scale-95 dark:bg-gray-100 dark:text-slate-900 dark:hover:bg-indigo-400 dark:hover:text-white"
             >
-                <span>Join us</span>
-                <span aria-hidden="true">&rarr;</span>
+                <span>Write with us</span>
+                <ArrowRight class="h-3 w-3" />
             </Link>
         </div>
 
