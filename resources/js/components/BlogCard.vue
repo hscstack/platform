@@ -57,11 +57,18 @@ const formattedDate = computed(() => {
             >
                 <span class="text-slate-400 dark:text-gray-500">Author</span>
                 <Link
-                    :href="`/about-us#${blog.user?.id}`"
+                    v-if="blog.user?.username"
+                    :href="`/u/${blog.user.username}`"
                     class="font-medium text-indigo-600 underline transition-colors hover:underline dark:text-indigo-400"
                 >
                     {{ blog.user?.name }}
                 </Link>
+                <span
+                    v-else
+                    class="font-medium text-slate-700 dark:text-gray-300"
+                >
+                    {{ blog.user?.name }}
+                </span>
 
                 <span
                     v-if="formattedDate"

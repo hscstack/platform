@@ -225,12 +225,16 @@ onBeforeUnmount(() => {
 
                             <div class="py-1">
                                 <Link
-                                    href="/profile"
+                                    :href="
+                                        user.username
+                                            ? `/u/${user.username}`
+                                            : '/profile'
+                                    "
                                     class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
                                     @click="closeDropdown"
                                 >
                                     <User class="h-3.5 w-3.5 text-slate-400" />
-                                    Profile Settings
+                                    Profile
                                 </Link>
 
                                 <Link
@@ -319,9 +323,11 @@ onBeforeUnmount(() => {
                 class="border-t border-slate-200/80 bg-white/95 px-4 pt-3 pb-6 shadow-2xl backdrop-blur-xl md:hidden dark:border-gray-800 dark:bg-gray-950/95"
             >
                 <!-- User Profile Header on Mobile (if logged in) -->
-                <div
+                <Link
                     v-if="user"
-                    class="mb-3 flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-900/80"
+                    :href="user.username ? `/u/${user.username}` : '/profile'"
+                    @click="closeMobileMenu"
+                    class="mb-3 flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 transition hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-900/80 dark:hover:bg-gray-800"
                 >
                     <img
                         v-if="user.image_url"
@@ -347,7 +353,7 @@ onBeforeUnmount(() => {
                             {{ user.email }}
                         </p>
                     </div>
-                </div>
+                </Link>
 
                 <!-- Navigation Links List -->
                 <div class="space-y-1">
@@ -390,12 +396,16 @@ onBeforeUnmount(() => {
                         ></div>
 
                         <Link
-                            href="/profile"
+                            :href="
+                                user.username
+                                    ? `/u/${user.username}`
+                                    : '/profile'
+                            "
                             @click="closeMobileMenu"
                             class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-900"
                         >
                             <User class="h-4 w-4 text-slate-400" />
-                            <span>Profile Settings</span>
+                            <span>Profile</span>
                         </Link>
 
                         <Link

@@ -57,10 +57,12 @@ const deleteUser = (id: number) => {
                 </div>
                 <div class="flex min-w-0 flex-col">
                     <div class="flex items-center gap-1.5">
-                        <span
-                            class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100"
-                            >{{ user.name }}</span
+                        <Link
+                            :href="user.username ? `/u/${user.username}` : '#'"
+                            class="truncate text-sm font-semibold text-gray-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                         >
+                            {{ user.name }}
+                        </Link>
                         <span
                             v-if="user.id === userId"
                             class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"

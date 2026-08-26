@@ -533,7 +533,11 @@ watch(isFullscreen, (val) => {
                 class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400"
             >
                 <Link
-                    :href="`/about-us#${resource.user.id}`"
+                    :href="
+                        resource.user?.username
+                            ? `/u/${resource.user.username}`
+                            : '#'
+                    "
                     class="group inline-flex items-center gap-1.5 transition hover:text-indigo-600 dark:hover:text-indigo-400"
                 >
                     <User
@@ -802,13 +806,18 @@ watch(isFullscreen, (val) => {
                             No completions recorded yet.
                         </div>
 
-                        <div
+                        <Link
                             v-for="completer in localCompleters"
                             :key="completer.id"
-                            class="flex items-center gap-3 py-2.5"
+                            :href="
+                                completer.username
+                                    ? `/u/${completer.username}`
+                                    : '#'
+                            "
+                            class="group/user flex items-center gap-3 py-2.5 transition"
                         >
                             <div
-                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-50 font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-50 font-semibold text-emerald-700 transition group-hover/user:ring-2 group-hover/user:ring-emerald-400 dark:bg-emerald-950/60 dark:text-emerald-300"
                             >
                                 <img
                                     v-if="
@@ -828,7 +837,7 @@ watch(isFullscreen, (val) => {
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p
-                                    class="truncate text-xs font-semibold text-slate-900 dark:text-gray-100"
+                                    class="truncate text-xs font-semibold text-slate-900 group-hover/user:text-indigo-600 dark:text-gray-100 dark:group-hover/user:text-indigo-400"
                                 >
                                     {{ completer.name }}
                                 </p>
@@ -839,7 +848,7 @@ watch(isFullscreen, (val) => {
                                     {{ completer.institution }}
                                 </p>
                             </div>
-                        </div>
+                        </Link>
 
                         <div
                             v-if="
