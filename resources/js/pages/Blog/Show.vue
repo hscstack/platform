@@ -5,6 +5,8 @@ import {
     User,
     Eye,
     ArrowLeft,
+    ArrowRight,
+    PenLine,
     Heart,
     MessageSquare,
     Trash2,
@@ -445,17 +447,29 @@ const goBack = () => {
             </div>
         </article>
 
-        <!-- Minimal Contributor CTA -->
+        <!-- Contributor Invitation Banner -->
         <div
-            class="mt-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-gray-400"
+            class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-slate-50/70 px-4 py-2.5 text-xs transition-colors hover:border-slate-300 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-gray-700"
         >
-            <span>Interested in writing for HSCStack?</span>
+            <div class="flex items-center gap-2.5">
+                <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400"
+                >
+                    <PenLine class="h-3.5 w-3.5" />
+                </span>
+                <span class="font-medium text-slate-700 dark:text-gray-300">
+                    Want to write study guides or articles on HSCStack?
+                </span>
+            </div>
+
             <Link
                 href="/join"
-                class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                class="group inline-flex items-center gap-1.5 font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
             >
-                <span>Write with us</span>
-                <span aria-hidden="true">&rarr;</span>
+                <span>Join as Contributor</span>
+                <ArrowRight
+                    class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                />
             </Link>
         </div>
 
