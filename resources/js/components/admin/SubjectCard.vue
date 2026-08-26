@@ -13,7 +13,6 @@ import {
     BarChart3,
     Pencil,
     Trash2,
-    FolderTree,
 } from 'lucide-vue-next';
 
 const { subject } = defineProps({
@@ -81,11 +80,6 @@ const handleDelete = () => {
                     >
                         {{ subject.course }}
                     </span>
-                </div>
-
-                <div class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-gray-500">
-                    <FolderTree class="h-3.5 w-3.5" />
-                    <span>{{ subject.nodes_count || 0 }} items</span>
                 </div>
             </div>
         </div>
