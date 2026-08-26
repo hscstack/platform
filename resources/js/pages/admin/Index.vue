@@ -53,7 +53,7 @@ defineProps({
         <div class="flex flex-1 flex-col">
             <div
                 v-if="subjects.length > 0"
-                class="grid auto-rows-max grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+                class="flex flex-col gap-2.5 sm:gap-3"
             >
                 <SubjectCard
                     v-for="subject in subjects"
