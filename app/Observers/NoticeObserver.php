@@ -11,4 +11,9 @@ class NoticeObserver
     {
         CacheHelper::clearHomePage();
     }
+
+    public function deleted(Notice $notice): void
+    {
+        CacheHelper::clearHomePage();
+    }
 }

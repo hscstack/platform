@@ -25,16 +25,20 @@ class SubjectController extends Controller
                 ->toArray();
         });
 
-        $featuredBlogs = Blog::where('is_featured', true)
-            ->where('is_published', true)
-            ->with('user:id,name,username')
-            ->withCount(['reactions', 'comments'])
-            ->inRandomOrder()
-            ->limit(3)
-            ->get()
-            ->toArray();
+        $featuredBlogs = Cache::remember('home_page_featured_blogs', now()->addDay(), function () {
+            return Blog::where('is_featured', true)
+                ->where('is_published', true)
+                ->with('user:id,name,username')
+                ->withCount(['reactions', 'comments'])
+                ->inRandomOrder()
+                ->limit(3)
+                ->get()
+                ->toArray();
+        });
 
-        $notice = Notice::activeForDisplay()?->toArray();
+        $notice = Cache::rememberForever('home_page_notice', function () {
+            return Notice::activeForDisplay()?->toArray();
+        });
 
         return Inertia::render('Home', [
             'subjects' => $subjects,
