@@ -32,6 +32,7 @@ const showConfirmModal = ref(false);
 const form = useForm({
     _method: 'PUT',
     name: user.value?.name || '',
+    username: user.value?.username || '',
     file: null as File | null,
     about: user.value?.about || '',
     institution: user.value?.institution || '',
@@ -175,6 +176,47 @@ const submitForm = () => {
                             class="mt-1 text-xs text-rose-600"
                         >
                             {{ form.errors.name }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="username"
+                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Username
+                        </label>
+                        <div class="relative">
+                            <span
+                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-sm font-semibold text-slate-400 dark:text-gray-500"
+                            >
+                                @
+                            </span>
+                            <input
+                                v-model="form.username"
+                                type="text"
+                                id="username"
+                                required
+                                placeholder="your_handle"
+                                :disabled="form.processing"
+                                class="w-full rounded-lg border border-slate-300 bg-white py-2.5 pr-3.5 pl-8 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
+                                :class="{
+                                    'border-rose-500 focus:ring-rose-500/20':
+                                        form.errors.username,
+                                }"
+                            />
+                        </div>
+                        <p
+                            v-if="form.errors.username"
+                            class="mt-1 text-xs text-rose-600"
+                        >
+                            {{ form.errors.username }}
+                        </p>
+                        <p
+                            v-else
+                            class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                        >
+                            Letters, numbers, and underscores (3–30 chars).
                         </p>
                     </div>
 
