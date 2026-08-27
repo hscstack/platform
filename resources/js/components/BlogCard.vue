@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowUpRight, Heart, MessageSquare } from 'lucide-vue-next';
+import { ArrowRight, Heart, MessageSquare } from 'lucide-vue-next';
 
 defineProps({
     blog: Object,
@@ -33,40 +33,31 @@ defineProps({
         <!-- Card Body -->
         <div class="flex min-w-0 flex-1 flex-col justify-between pl-3 sm:p-4">
             <div>
-                <!-- Top Row: Category / Author & Arrow -->
+                <!-- Top Row: Category / Author -->
                 <div
-                    class="mb-1 flex items-center justify-between gap-1.5 text-[11px] sm:mb-1.5 sm:text-xs"
+                    class="mb-1 flex items-center gap-1.5 text-[11px] sm:mb-1.5 sm:text-xs"
                 >
-                    <div class="flex min-w-0 items-center gap-1.5 text-slate-500 dark:text-gray-400">
-                        <span
-                            v-if="blog.category"
-                            class="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 sm:hidden dark:bg-indigo-950/60 dark:text-indigo-400"
-                        >
-                            {{ blog.category }}
-                        </span>
-
-                        <Link
-                            v-if="blog.user?.username"
-                            :href="`/u/${blog.user.username}`"
-                            @click.stop
-                            class="relative z-10 truncate font-semibold text-indigo-600 underline transition-colors hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        >
-                            {{ blog.user?.name }}
-                        </Link>
-                        <span
-                            v-else
-                            class="truncate font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            {{ blog.user?.name }}
-                        </span>
-                    </div>
-
-                    <!-- Top-Right Action Arrow -->
-                    <div
-                        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                    <span
+                        v-if="blog.category"
+                        class="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 sm:hidden dark:bg-indigo-950/60 dark:text-indigo-400"
                     >
-                        <ArrowUpRight class="h-4 w-4" />
-                    </div>
+                        {{ blog.category }}
+                    </span>
+
+                    <Link
+                        v-if="blog.user?.username"
+                        :href="`/u/${blog.user.username}`"
+                        @click.stop
+                        class="relative z-10 truncate font-semibold text-indigo-600 underline transition-colors hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                        {{ blog.user?.name }}
+                    </Link>
+                    <span
+                        v-else
+                        class="truncate font-semibold text-slate-700 dark:text-gray-300"
+                    >
+                        {{ blog.user?.name }}
+                    </span>
                 </div>
 
                 <!-- Title -->
@@ -113,6 +104,13 @@ defineProps({
                         <MessageSquare class="h-3.5 w-3.5" />
                         <span>{{ blog.comments_count || 0 }}</span>
                     </span>
+                </div>
+
+                <!-- Bottom-Right Arrow Indicator -->
+                <div
+                    class="flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                >
+                    <ArrowRight class="h-3.5 w-3.5" />
                 </div>
             </div>
         </div>
