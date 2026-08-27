@@ -73,6 +73,7 @@ Route::middleware('throttle:60,1')->group(function () {
 
     Route::get('/blogs', [BlogController::class, 'index']);
     Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
     Route::get('/', [SubjectController::class, 'index'])

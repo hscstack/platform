@@ -8,6 +8,7 @@ use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Inertia\Inertia;
 
 class ChatController extends Controller
 {
@@ -58,6 +59,21 @@ class ChatController extends Controller
                     'roles' => $msg->user->roles->pluck('name')->toArray(),
                 ],
             ]);
+
+        if (! $request->wantsJson() && ! $request->is('api/*')) {
+            return Inertia::render('Chat/Index', [
+                'chatState' => [
+                    'enabled' => (bool) $isEnabled,
+                    'audience' => $audience,
+                    'can_post' => $canPost,
+                    'reason' => $reason,
+                    'can_delete' => (bool) $user?->can('delete chat messages'),
+                    'messages' => $messages,
+                    'pusher_key' => config('broadcasting.connections.pusher.key'),
+                    'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
+                ],
+            ]);
+        }
 
         return response()->json([
             'enabled' => (bool) $isEnabled,
