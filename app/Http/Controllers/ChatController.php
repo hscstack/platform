@@ -21,6 +21,7 @@ class ChatController extends Controller
         $isEnabled = AppSetting::get('global_chat_enabled', true);
         $audience = AppSetting::get('global_chat_audience', 'verified_members'); // 'verified_members', 'all', 'disabled'
         $cooldownSeconds = (int) AppSetting::get('global_chat_cooldown_seconds', 30);
+        $maxMessages = (int) AppSetting::get('global_chat_max_messages', 200);
 
         // Determine if user can post
         $canPost = false;
@@ -43,10 +44,10 @@ class ChatController extends Controller
             $canPost = true;
         }
 
-        // Fetch last 200 messages in chronological order
+        // Fetch last X messages in chronological order
         $messages = ChatMessage::with(['user:id,name,username,image_path,institution', 'user.roles:id,name'])
             ->latest('id')
-            ->take(200)
+            ->take($maxMessages)
             ->get()
             ->reverse()
             ->values()
@@ -73,6 +74,7 @@ class ChatController extends Controller
                     'enabled' => (bool) $isEnabled,
                     'audience' => $audience,
                     'cooldown_seconds' => $cooldownSeconds,
+                    'max_messages' => $maxMessages,
                     'can_post' => $canPost,
                     'reason' => $reason,
                     'can_delete' => (bool) $user?->can('manage chat'),
@@ -87,6 +89,7 @@ class ChatController extends Controller
             'enabled' => (bool) $isEnabled,
             'audience' => $audience,
             'cooldown_seconds' => $cooldownSeconds,
+            'max_messages' => $maxMessages,
             'can_post' => $canPost,
             'reason' => $reason,
             'can_delete' => (bool) $user?->can('manage chat'),
@@ -104,6 +107,7 @@ class ChatController extends Controller
         $isEnabled = AppSetting::get('global_chat_enabled', true);
         $audience = AppSetting::get('global_chat_audience', 'verified_members');
         $cooldownSeconds = (int) AppSetting::get('global_chat_cooldown_seconds', 30);
+        $maxMessages = (int) AppSetting::get('global_chat_max_messages', 200);
 
         // Check if chat is enabled
         if (! $isEnabled || $audience === 'disabled') {
@@ -177,8 +181,8 @@ class ChatController extends Controller
             RateLimiter::hit($rateLimitKey, $cooldownSeconds);
         }
 
-        // Keep rolling buffer of latest 200 messages in DB
-        ChatMessage::pruneOldMessages(200);
+        // Keep rolling buffer of latest X messages in DB
+        ChatMessage::pruneOldMessages($maxMessages);
 
         // Broadcast to Pusher Channels
         try {

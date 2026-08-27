@@ -30,6 +30,7 @@ const props = defineProps<{
         enabled: boolean;
         audience: string;
         cooldown_seconds: number;
+        max_messages?: number;
         can_post: boolean;
         reason: string | null;
         can_delete: boolean;
@@ -43,6 +44,7 @@ const page = usePage();
 const { can } = usePermissions();
 const currentUser = computed(() => page.props.auth?.user);
 
+const maxMessagesLimit = computed(() => props.chatState.max_messages ?? 200);
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
 const inputContent = ref('');
 const isSending = ref(false);
@@ -181,7 +183,7 @@ const setupRealtime = () => {
                 if (!messages.value.some((m) => m.id === e.message.id)) {
                     messages.value.push(e.message);
 
-                    if (messages.value.length > 200) {
+                    if (messages.value.length > maxMessagesLimit.value) {
                         messages.value.shift();
                     }
 
@@ -240,7 +242,7 @@ const sendMessage = async () => {
             if (!messages.value.some((m) => m.id === newMsg.id)) {
                 messages.value.push(newMsg);
 
-                if (messages.value.length > 200) {
+                if (messages.value.length > maxMessagesLimit.value) {
                     messages.value.shift();
                 }
             }

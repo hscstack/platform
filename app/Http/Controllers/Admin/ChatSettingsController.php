@@ -18,6 +18,7 @@ class ChatSettingsController extends Controller
                 'enabled' => (bool) AppSetting::get('global_chat_enabled', true),
                 'audience' => AppSetting::get('global_chat_audience', 'verified_members'),
                 'cooldown_seconds' => (int) AppSetting::get('global_chat_cooldown_seconds', 30),
+                'max_messages' => (int) AppSetting::get('global_chat_max_messages', 200),
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
@@ -70,11 +71,16 @@ class ChatSettingsController extends Controller
             'enabled' => ['required', 'boolean'],
             'audience' => ['required', 'string', 'in:verified_members,all,disabled'],
             'cooldown_seconds' => ['required', 'integer', 'min:0', 'max:3600'],
+            'max_messages' => ['required', 'integer', 'min:20', 'max:1000'],
         ]);
 
         AppSetting::set('global_chat_enabled', $validated['enabled'], 'boolean');
         AppSetting::set('global_chat_audience', $validated['audience'], 'string');
         AppSetting::set('global_chat_cooldown_seconds', $validated['cooldown_seconds'], 'integer');
+        AppSetting::set('global_chat_max_messages', $validated['max_messages'], 'integer');
+
+        // Immediately prune if current count exceeds new limit
+        ChatMessage::pruneOldMessages($validated['max_messages']);
 
         return back()->with('success', 'Global chat settings updated successfully.');
     }

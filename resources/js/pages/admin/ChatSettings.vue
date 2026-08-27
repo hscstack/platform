@@ -14,21 +14,25 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 
 defineOptions({ layout: AdminLayout });
 
-const props = defineProps<{
+interface ChatSettingsProps {
     settings: {
         enabled: boolean;
         audience: string;
         cooldown_seconds: number;
+        max_messages: number;
     };
     totalMessages: number;
     recentMessagesCount: number;
     pendingReportsCount?: number;
-}>();
+}
+
+const props = defineProps<ChatSettingsProps>();
 
 const form = useForm({
     enabled: props.settings.enabled,
     audience: props.settings.audience,
     cooldown_seconds: props.settings.cooldown_seconds,
+    max_messages: props.settings.max_messages ?? 200,
 });
 
 const submitSettings = () => {
@@ -54,6 +58,14 @@ const cooldownPresets = [
     { label: '1 Minute (60s)', value: 60 },
     { label: '2 Minutes (120s)', value: 120 },
     { label: '5 Minutes (300s)', value: 300 },
+];
+
+const messageLimitPresets = [
+    { label: '50 Messages', value: 50 },
+    { label: '100 Messages', value: 100 },
+    { label: '200 Messages (Default)', value: 200 },
+    { label: '500 Messages', value: 500 },
+    { label: '1000 Messages', value: 1000 },
 ];
 </script>
 
@@ -154,7 +166,7 @@ const cooldownPresets = [
                     {{ totalMessages }}
                 </p>
                 <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Auto-pruning maintains max 200</span
+                    >Auto-pruning maintains max {{ form.max_messages }}</span
                 >
             </div>
 
@@ -406,6 +418,65 @@ const cooldownPresets = [
                             class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
                         >
                             seconds
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Message Retention Buffer (Rolling Limit) -->
+            <div
+                class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
+            >
+                <div>
+                    <label
+                        class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        <MessageCircle class="h-4 w-4 text-indigo-500" />
+                        Rolling Message Buffer (Max Stored Messages)
+                    </label>
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
+                        Specify how many recent messages to keep in storage.
+                        Older messages beyond this limit are automatically pruned.
+                    </p>
+                </div>
+
+                <!-- Quick Preset Buttons -->
+                <div class="flex flex-wrap gap-2">
+                    <button
+                        v-for="preset in messageLimitPresets"
+                        :key="preset.value"
+                        type="button"
+                        @click="form.max_messages = preset.value"
+                        class="cursor-pointer rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95"
+                        :class="
+                            form.max_messages === preset.value
+                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                        "
+                    >
+                        {{ preset.label }}
+                    </button>
+                </div>
+
+                <!-- Custom Limit Input -->
+                <div class="max-w-xs">
+                    <label
+                        class="mb-1 block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                    >
+                        Custom Retention Limit (20 - 1000 messages):
+                    </label>
+                    <div class="relative">
+                        <input
+                            v-model.number="form.max_messages"
+                            type="number"
+                            min="20"
+                            max="1000"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400"
+                        />
+                        <span
+                            class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
+                        >
+                            messages
                         </span>
                     </div>
                 </div>
