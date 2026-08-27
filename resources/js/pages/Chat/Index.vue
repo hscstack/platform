@@ -307,50 +307,47 @@ onUnmounted(() => {
 
 <template>
     <Head>
-        <title>Student Lounge</title>
+        <title>Global Chat</title>
         <meta
             name="description"
             content="Real-time public discussion space for HSC and SSC students."
         />
     </Head>
 
-    <div class="mx-auto max-w-3xl px-3 py-6 sm:px-6 sm:py-8">
-        <!-- Minimal Stream Container -->
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <!-- Page Title & Subtitle Matching Journal / Standard Page Structure -->
         <div
-            class="flex h-[calc(100vh-10rem)] max-h-[780px] min-h-[500px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            class="mb-6 flex flex-col gap-2 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-gray-800"
         >
-            <!-- Compact Header -->
-            <div
-                class="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3 sm:px-5 dark:border-gray-800/80 dark:bg-gray-900"
-            >
-                <div class="flex items-center gap-2.5">
-                    <h1
-                        class="text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
-                    >
-                        Student Lounge
-                    </h1>
-                    <span
-                        class="flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-300"
-                    >
-                        <span
-                            class="h-1.5 w-1.5 rounded-full bg-emerald-500"
-                        ></span>
-                        Live
-                    </span>
-                </div>
-
-                <div class="text-[11px] text-slate-400 dark:text-gray-500">
-                    <span v-if="activeCooldownSeconds > 0"
-                        >{{ activeCooldownSeconds }}s delay</span
-                    >
-                </div>
+            <div>
+                <h1
+                    class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-gray-100"
+                >
+                    Global Chat
+                </h1>
+                <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
+                    করুন।
+                </p>
             </div>
 
-            <!-- Messages Stream (Clean linear feed matching comment threads) -->
+            <div
+                v-if="activeCooldownSeconds > 0"
+                class="text-xs text-slate-400 dark:text-gray-500"
+            >
+                <span>{{ activeCooldownSeconds }}s delay between messages</span>
+            </div>
+        </div>
+
+        <!-- Chat Container Window -->
+        <div
+            class="flex h-[620px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <!-- Messages Stream -->
             <div
                 ref="messagesContainerRef"
                 @scroll="handleScroll"
-                class="relative flex-1 divide-y divide-slate-100/70 overflow-y-auto p-4 sm:p-5 dark:divide-gray-800/50"
+                class="relative flex-1 divide-y divide-slate-100 overflow-y-auto p-4 sm:p-6 dark:divide-gray-800/60"
             >
                 <!-- Empty State -->
                 <div
@@ -363,11 +360,12 @@ onUnmounted(() => {
                         No messages yet
                     </p>
                     <p class="mt-1 text-xs text-slate-400 dark:text-gray-500">
-                        Send a message to start the lounge conversation.
+                        Be the first to send a message to start the
+                        conversation.
                     </p>
                 </div>
 
-                <!-- Messages -->
+                <!-- Messages Feed -->
                 <template v-for="(msg, idx) in messages" :key="msg.id">
                     <!-- Date Divider -->
                     <div
@@ -375,20 +373,20 @@ onUnmounted(() => {
                         class="sticky top-0 z-10 my-3 flex justify-center"
                     >
                         <span
-                            class="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                            class="rounded-full bg-slate-100 px-3 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-gray-800 dark:text-gray-300"
                         >
                             {{ formatDateDivider(msg.created_at) }}
                         </span>
                     </div>
 
-                    <!-- Message Row -->
+                    <!-- Individual Message Row -->
                     <div
-                        class="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-slate-50/50 dark:hover:bg-gray-800/20"
+                        class="group -mx-2 flex items-start gap-3.5 rounded-xl px-2 py-3.5 text-left transition hover:bg-slate-50/60 dark:hover:bg-gray-800/30"
                     >
                         <!-- User Avatar -->
                         <Link
                             :href="`/u/${msg.user.username}`"
-                            class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 font-semibold text-indigo-700 transition hover:ring-2 hover:ring-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 font-semibold text-indigo-700 transition hover:ring-2 hover:ring-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300"
                         >
                             <img
                                 v-if="msg.user.image_url"
@@ -401,9 +399,9 @@ onUnmounted(() => {
                             </span>
                         </Link>
 
-                        <!-- Content -->
+                        <!-- Content Area -->
                         <div class="min-w-0 flex-1">
-                            <!-- User Meta Line -->
+                            <!-- Header Info -->
                             <div
                                 class="flex items-center justify-between gap-2"
                             >
@@ -425,14 +423,14 @@ onUnmounted(() => {
                                     </span>
                                 </div>
 
-                                <div class="flex shrink-0 items-center gap-2">
+                                <div class="flex shrink-0 items-center gap-2.5">
                                     <span
                                         class="text-[11px] text-slate-400 dark:text-gray-500"
                                     >
                                         {{ formatTime(msg.created_at) }}
                                     </span>
 
-                                    <!-- Delete Button (Only for Admin or Author) -->
+                                    <!-- Delete Button -->
                                     <button
                                         v-if="
                                             canDelete ||
@@ -448,7 +446,7 @@ onUnmounted(() => {
                                 </div>
                             </div>
 
-                            <!-- Text Message Content -->
+                            <!-- Message Text -->
                             <p
                                 class="mt-1 text-xs leading-relaxed break-words whitespace-pre-wrap text-slate-700 sm:text-sm dark:text-gray-300"
                             >
@@ -459,21 +457,22 @@ onUnmounted(() => {
                 </template>
             </div>
 
-            <!-- Scroll to bottom float button -->
+            <!-- Scroll To Bottom Button -->
             <button
                 v-if="showScrollButton"
+                type="button"
                 @click="scrollToBottom(true)"
-                class="absolute right-8 bottom-20 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-md transition hover:bg-slate-800 active:scale-95 dark:bg-gray-100 dark:text-gray-900"
+                class="absolute right-8 bottom-24 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-white shadow-md transition hover:bg-slate-800 active:scale-95 dark:bg-gray-100 dark:text-gray-900"
                 title="Scroll to bottom"
             >
                 <ArrowDown class="h-4 w-4" />
             </button>
 
-            <!-- Bottom Input Tray -->
+            <!-- Bottom Input Field -->
             <div
-                class="border-t border-slate-100 bg-white p-3 sm:p-4 dark:border-gray-800 dark:bg-gray-900"
+                class="border-t border-slate-100 bg-white p-3.5 sm:p-4 dark:border-gray-800 dark:bg-gray-900"
             >
-                <!-- Case 1: Permitted to Post -->
+                <!-- Can Post -->
                 <form
                     v-if="canPost"
                     @submit.prevent="sendMessage"
@@ -486,11 +485,11 @@ onUnmounted(() => {
                             :disabled="isSending || cooldownSeconds > 0"
                             placeholder="Type a message..."
                             maxlength="280"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400"
                         />
                         <span
                             v-if="inputContent.length > 200"
-                            class="absolute top-1/2 right-3 -translate-y-1/2 text-[10px] font-medium text-slate-400"
+                            class="absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] font-medium text-slate-400"
                         >
                             {{ 280 - inputContent.length }}
                         </span>
@@ -503,7 +502,7 @@ onUnmounted(() => {
                             isSending ||
                             cooldownSeconds > 0
                         "
-                        class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                        class="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm dark:bg-indigo-500 dark:hover:bg-indigo-600"
                     >
                         <Loader2
                             v-if="isSending"
@@ -519,10 +518,10 @@ onUnmounted(() => {
                     </button>
                 </form>
 
-                <!-- Case 2: Restricted Notice -->
+                <!-- Restricted Notice -->
                 <div
                     v-else
-                    class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-2 text-xs dark:border-gray-800 dark:bg-gray-800/40"
+                    class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5 text-xs dark:border-gray-800 dark:bg-gray-800/40"
                 >
                     <div
                         class="flex items-center gap-2 text-slate-600 dark:text-gray-400"
@@ -544,5 +543,5 @@ onUnmounted(() => {
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 </template>
