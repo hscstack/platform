@@ -534,40 +534,57 @@ onBeforeUnmount(() => {
                         <div class="flex-1 space-y-6 overflow-y-auto px-4 py-4">
                             <!-- User Card or Guest Login CTA -->
                             <div v-if="user">
-                                <Link
-                                    :href="
-                                        user.username
-                                            ? `/u/${user.username}`
-                                            : '/profile'
-                                    "
-                                    @click="closeMobileMenu"
-                                    class="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-900/60 dark:hover:border-gray-700 dark:hover:bg-gray-900"
+                                <div
+                                    class="flex items-center justify-between gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 transition hover:border-slate-300 dark:border-gray-800 dark:bg-gray-900/60 dark:hover:border-gray-700"
                                 >
-                                    <img
-                                        v-if="user.image_url"
-                                        :src="user.image_url"
-                                        :alt="user.name"
-                                        class="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-500/20"
-                                    />
-                                    <div
-                                        v-else
-                                        class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-sm font-black text-white dark:bg-indigo-500"
+                                    <Link
+                                        :href="
+                                            user.username
+                                                ? `/u/${user.username}`
+                                                : '/profile'
+                                        "
+                                        @click="closeMobileMenu"
+                                        class="flex min-w-0 flex-1 items-center gap-3"
                                     >
-                                        {{ user.name.charAt(0).toUpperCase() }}
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p
-                                            class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                        <img
+                                            v-if="user.image_url"
+                                            :src="user.image_url"
+                                            :alt="user.name"
+                                            class="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-500/20"
+                                        />
+                                        <div
+                                            v-else
+                                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-black text-white dark:bg-indigo-500"
                                         >
-                                            {{ user.name }}
-                                        </p>
-                                        <p
-                                            class="truncate text-[11px] text-slate-400 dark:text-gray-500"
-                                        >
-                                            {{ user.email }}
-                                        </p>
-                                    </div>
-                                </Link>
+                                            {{ user.name.charAt(0).toUpperCase() }}
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p
+                                                class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                            >
+                                                {{ user.name }}
+                                            </p>
+                                            <p
+                                                class="truncate text-[11px] text-slate-400 dark:text-gray-500"
+                                            >
+                                                {{ user.email }}
+                                            </p>
+                                        </div>
+                                    </Link>
+
+                                    <!-- Quick Logout Button on Mobile -->
+                                    <Link
+                                        href="/logout"
+                                        method="post"
+                                        as="button"
+                                        @click="closeMobileMenu"
+                                        class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:text-gray-500 dark:hover:bg-rose-950/50 dark:hover:text-rose-400"
+                                        title="Sign out"
+                                        aria-label="Sign out"
+                                    >
+                                        <LogOut class="h-4 w-4" />
+                                    </Link>
+                                </div>
                             </div>
 
                             <div v-else>
