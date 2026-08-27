@@ -282,7 +282,7 @@ const fetchAnalytics = async (refresh = false) => {
                         <p
                             class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            স্বতন্ত্র ভিজিটর সংখ্যা (বিগত ৩০ দিন)
+                            ইউনিক ভিজিটর সংখ্যা (বিগত ৩০ দিন)
                         </p>
                     </div>
                 </div>
