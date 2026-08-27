@@ -135,7 +135,7 @@ const filteredSubjects = computed(() => {
             <div class="mt-4 text-center sm:hidden">
                 <Link
                     href="/blogs"
-                    class="group inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-indigo-600 shadow-2xs transition hover:bg-slate-50 active:scale-98 dark:border-gray-800 dark:bg-gray-900 dark:text-indigo-400 dark:hover:bg-gray-800"
+                    class="group inline-flex items-center gap-1.5 py-1 text-xs font-bold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                     <span>See all articles</span>
                     <span
