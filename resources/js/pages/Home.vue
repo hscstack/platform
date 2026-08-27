@@ -9,6 +9,8 @@ import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
 
+import { globalSearchQuery } from '@/lib/searchStore';
+
 const props = defineProps({
     subjects: Array,
     notice: Object,
@@ -25,10 +27,9 @@ const subjects = props.subjects as Array<{
     icon: string;
     nodes_count?: number;
 }>;
-const searchQuery = ref('');
 
 const filteredSubjects = computed(() => {
-    const q = searchQuery.value.toLowerCase().trim();
+    const q = globalSearchQuery.value.toLowerCase().trim();
 
     if (!q) {
         return subjects;
@@ -65,11 +66,10 @@ const filteredSubjects = computed(() => {
 
     <PwaInstallPrompt v-if="!notice" variant="modal" />
 
-    <HomeHeader v-model="searchQuery" />
+    <HomeHeader />
 
     <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
         <PwaInstallPrompt variant="banner" class="mb-6" />
-        <AIBanner />
         <CourseSwitcher />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SubjectCard
