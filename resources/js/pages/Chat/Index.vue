@@ -167,6 +167,45 @@ const scrollToBottom = (smooth = true) => {
     });
 };
 
+let lastFetchTimestamp = Date.now();
+const fetchLatestMessages = async (force = false) => {
+    // Throttle automatic refreshes to at most once every 15 seconds unless forced
+    const now = Date.now();
+    if (!force && now - lastFetchTimestamp < 15000) {
+        return;
+    }
+    lastFetchTimestamp = now;
+
+    try {
+        const res = await fetch('/chat', {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.messages && Array.isArray(data.messages)) {
+                messages.value = data.messages;
+                if (typeof data.can_post === 'boolean') {
+                    canPost.value = data.can_post;
+                }
+                if (typeof data.can_delete === 'boolean') {
+                    canDelete.value = data.can_delete;
+                }
+                if (data.reason !== undefined) {
+                    restrictionReason.value = data.reason;
+                }
+                if (data.cooldown_seconds !== undefined) {
+                    activeCooldownSeconds.value = data.cooldown_seconds;
+                }
+            }
+        }
+    } catch {
+        // Silently ignore background refresh errors
+    }
+};
+
 const setupRealtime = () => {
     const echo = getEcho(
         props.chatState.pusher_key,
@@ -413,16 +452,29 @@ const shouldShowDateDivider = (index: number) => {
     return prev !== curr;
 };
 
+const handleVisibilityOrFocus = () => {
+    if (document.visibilityState === 'visible') {
+        fetchLatestMessages();
+    }
+};
+
 onMounted(() => {
     initCooldown();
     setupRealtime();
     scrollToBottom(false);
+
+    window.addEventListener('focus', fetchLatestMessages);
+    window.addEventListener('pageshow', fetchLatestMessages);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
 });
 
 onUnmounted(() => {
     if (cooldownInterval) {
         clearInterval(cooldownInterval);
     }
+    window.removeEventListener('focus', fetchLatestMessages);
+    window.removeEventListener('pageshow', fetchLatestMessages);
+    document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
 });
 </script>
 
