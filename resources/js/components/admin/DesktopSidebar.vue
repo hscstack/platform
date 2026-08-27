@@ -74,10 +74,5 @@ const handleClearCache = () => {
             </span>
         </button>
 
-        <div
-            class="border-t border-slate-200/60 px-2 pt-3 text-xs text-slate-400 dark:border-gray-700/60 dark:text-gray-500"
-        >
-            Internal Dashboard
-        </div>
     </div>
 </template>
