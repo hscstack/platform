@@ -8,6 +8,7 @@ import {
     Sun,
     Monitor,
     User,
+    LogOut,
     Menu,
     X,
     BookOpen,
@@ -372,20 +373,34 @@ onBeforeUnmount(() => {
                                 v-if="dropdownOpen"
                                 class="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
                             >
-                                <!-- User Identity Card -->
+                                <!-- User Identity Card with Logout on Right -->
                                 <div
-                                    class="border-b border-slate-100 p-2.5 dark:border-gray-800"
+                                    class="flex items-center justify-between gap-2 border-b border-slate-100 p-2.5 dark:border-gray-800"
                                 >
-                                    <p
-                                        class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                    <div class="min-w-0 flex-1">
+                                        <p
+                                            class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                        >
+                                            {{ user.name }}
+                                        </p>
+                                        <p
+                                            class="truncate text-[11px] font-medium text-slate-400 dark:text-gray-500"
+                                        >
+                                            {{ user.email }}
+                                        </p>
+                                    </div>
+
+                                    <Link
+                                        href="/logout"
+                                        method="post"
+                                        as="button"
+                                        class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:text-gray-500 dark:hover:bg-rose-950/50 dark:hover:text-rose-400"
+                                        title="Sign out"
+                                        aria-label="Sign out"
+                                        @click="closeDropdown"
                                     >
-                                        {{ user.name }}
-                                    </p>
-                                    <p
-                                        class="truncate text-[11px] font-medium text-slate-400 dark:text-gray-500"
-                                    >
-                                        {{ user.email }}
-                                    </p>
+                                        <LogOut class="h-3.5 w-3.5" />
+                                    </Link>
                                 </div>
 
                                 <div class="py-1">
