@@ -312,7 +312,7 @@ const fetchAnalytics = async (refresh = false) => {
                     </div>
                 </div>
 
-                <div class="mt-3.5 max-h-[300px] flex-1 overflow-auto">
+                <div class="mt-3.5 flex-1">
                     <div
                         v-if="stats?.top_sources?.length"
                         class="divide-y divide-slate-100 dark:divide-gray-800"
