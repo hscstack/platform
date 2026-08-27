@@ -261,21 +261,6 @@ onBeforeUnmount(() => {
                                     {{ isAdmin ? 'Home' : 'Staff Panel' }}
                                 </Link>
                             </div>
-
-                            <div
-                                class="border-t border-slate-100 pt-1 dark:border-gray-800"
-                            >
-                                <Link
-                                    href="/logout"
-                                    method="post"
-                                    as="button"
-                                    class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                    @click="closeDropdown"
-                                >
-                                    <LogOut class="h-3.5 w-3.5" />
-                                    Sign Out
-                                </Link>
-                            </div>
                         </div>
                     </Transition>
                 </div>
