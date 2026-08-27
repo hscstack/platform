@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { Pencil, Trash2, Eye, BookOpen } from 'lucide-vue-next';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({
     blog: {
@@ -78,8 +81,13 @@ const deleteBlog = () => {
         </div>
 
         <!-- Right: Actions -->
-        <div class="flex shrink-0 items-center gap-1" @click.stop>
+        <div
+            v-if="can('edit blogs') || can('delete blogs')"
+            class="flex shrink-0 items-center gap-1"
+            @click.stop
+        >
             <Link
+                v-if="can('edit blogs')"
                 :href="`/admin/blogs/edit/${blog.slug}`"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                 title="Edit blog"
@@ -88,6 +96,7 @@ const deleteBlog = () => {
             </Link>
 
             <button
+                v-if="can('delete blogs')"
                 @click="deleteBlog"
                 type="button"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"

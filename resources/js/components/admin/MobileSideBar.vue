@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { X, LogOut, Database } from 'lucide-vue-next';
+import { X, Database } from 'lucide-vue-next';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 defineProps({
     navigation: Array,
     isOpen: Boolean,
 });
 
-defineEmits(['close', 'logout']);
+defineEmits(['close']);
 </script>
 
 <template>
@@ -56,6 +59,7 @@ defineEmits(['close', 'logout']);
 
             <div class="space-y-3">
                 <Link
+                    v-if="can('clear cache')"
                     method="post"
                     href="/admin/clear-cache"
                     as="button"
@@ -63,15 +67,6 @@ defineEmits(['close', 'logout']);
                 >
                     <Database class="h-4 w-4" />
                     Clear Cache
-                </Link>
-                <Link
-                    method="post"
-                    href="/logout"
-                    as="button"
-                    class="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50/60 dark:text-rose-400 dark:hover:bg-rose-500/10"
-                >
-                    <LogOut class="h-4 w-4" />
-                    Logout
                 </Link>
 
                 <div

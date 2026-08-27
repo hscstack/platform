@@ -14,6 +14,9 @@ import {
     Pencil,
     Trash2,
 } from 'lucide-vue-next';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 const { subject } = defineProps({
     subject: Object,
@@ -83,8 +86,13 @@ const handleDelete = () => {
         </div>
 
         <!-- Right: Actions -->
-        <div class="flex shrink-0 items-center gap-1" @click.stop>
+        <div
+            v-if="can('edit subjects') || can('delete subjects')"
+            class="flex shrink-0 items-center gap-1"
+            @click.stop
+        >
             <Link
+                v-if="can('edit subjects')"
                 :href="`/admin/subjects/edit/${subject.id}`"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                 title="Edit Subject"
@@ -93,6 +101,7 @@ const handleDelete = () => {
             </Link>
 
             <button
+                v-if="can('delete subjects')"
                 type="button"
                 @click="handleDelete"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"

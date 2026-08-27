@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Subject;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -85,7 +86,7 @@ test('authenticated user can update their profile without changing email', funct
         ->and($user->fresh()->email)->toBe('original@example.com');
 });
 
-test('non-manage-users cannot access admin user edit route', function () {
+test('non-authorized users cannot access admin user edit route without edit users permission', function () {
     $admin = adminUserWithPermissions(['view admin']);
     $targetUser = User::factory()->create();
 
@@ -95,11 +96,62 @@ test('non-manage-users cannot access admin user edit route', function () {
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');
 });
 
-test('users with manage users permission can access admin user edit route', function () {
-    $admin = adminUserWithPermissions(['view admin', 'manage users']);
+test('users with edit users permission can access admin user edit route', function () {
+    $admin = adminUserWithPermissions(['view admin', 'edit users']);
     $targetUser = User::factory()->create();
 
     $response = $this->actingAs($admin)->get("/admin/users/edit/{$targetUser->id}");
 
     $response->assertStatus(200);
+});
+
+test('users without view users permission cannot access admin users list', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+
+    $response = $this->actingAs($admin)->get('/admin/users');
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
+});
+
+test('users with view users permission can access admin users list', function () {
+    $admin = adminUserWithPermissions(['view admin', 'view users']);
+
+    $response = $this->actingAs($admin)->get('/admin/users');
+
+    $response->assertStatus(200);
+});
+
+test('users without create subjects permission cannot view subject create page', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+
+    $response = $this->actingAs($admin)->get('/admin/subjects/create');
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
+});
+
+test('users without create blogs permission cannot view blog create page', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+
+    $response = $this->actingAs($admin)->get('/admin/blogs/create');
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
+});
+
+test('users without create nodes permission cannot view node create page', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+    $subject = Subject::create([
+        'name' => 'Chemistry',
+        'slug' => 'chemistry',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-emerald-500',
+        'icon' => 'flask',
+    ]);
+
+    $response = $this->actingAs($admin)->get("/admin/subjects/{$subject->slug}/nodes/create");
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
 });

@@ -26,7 +26,7 @@ test('creating user in admin queues welcome mail', function () {
     Mail::fake();
 
     Permission::findOrCreate('view admin', 'web');
-    Permission::findOrCreate('manage users', 'web');
+    Permission::findOrCreate('create users', 'web');
     $perm = Permission::findOrCreate('create blogs', 'web');
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->syncPermissions(Permission::all());

@@ -5,6 +5,9 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({
     subject: Object,
@@ -90,6 +93,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
 
             <div class="flex items-center gap-2">
                 <Link
+                    v-if="can('create nodes')"
                     :href="
                         parent
                             ? `/admin/subjects/${subject.slug}/nodes/create?parent_id=${parent.id}`

@@ -6,12 +6,12 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
-    Permission::findOrCreate('manage users', 'web');
+    Permission::findOrCreate('impersonate users', 'web');
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->syncPermissions(Permission::all());
 });
 
-test('admin with manage users permission can log in as another user', function () {
+test('admin with impersonate users permission can log in as another user', function () {
     $admin = User::factory()->create(['name' => 'Admin User']);
     $admin->assignRole('admin');
 

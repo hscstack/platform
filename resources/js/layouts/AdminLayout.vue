@@ -7,22 +7,45 @@ import {
     Book,
     Mail,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
 import MobileSideBar from '@/components/admin/MobileSideBar.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import NavBar from '@/components/NavBar.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 const isMobileSidebarOpen = ref(false);
-const navigation = [
+
+const allNavigation = [
     { name: 'Dashboard', to: '/admin', icon: LayoutDashboard },
     { name: 'Manage Contents', to: '/admin/subjects', icon: BookOpen },
     { name: 'Manage Blogs', to: '/admin/blogs', icon: Book },
-    { name: 'Site Notice', to: '/admin/notice', icon: Bell },
-    { name: 'Users', to: '/admin/users', icon: Users },
-    { name: 'Send Emails', to: '/admin/emails/send', icon: Mail },
+    {
+        name: 'Site Notice',
+        to: '/admin/notice',
+        icon: Bell,
+        permission: 'edit notice',
+    },
+    {
+        name: 'Users',
+        to: '/admin/users',
+        icon: Users,
+        permission: 'view users',
+    },
+    {
+        name: 'Send Emails',
+        to: '/admin/emails/send',
+        icon: Mail,
+        permission: 'send email',
+    },
 ];
+
+const navigation = computed(() =>
+    allNavigation.filter((item) => !item.permission || can(item.permission)),
+);
 
 const openMobileSidebar = () => {
     isMobileSidebarOpen.value = true;
