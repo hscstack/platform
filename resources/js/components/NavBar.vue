@@ -118,40 +118,38 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Center/Desktop Navigation (md and up) -->
-            <div class="hidden items-center gap-1.5 md:flex">
+            <nav class="hidden items-center gap-6 md:flex">
                 <Link
-                    href="/projects"
-                    class="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all"
+                    href="/"
+                    class="text-sm font-medium transition-colors"
                     :class="
-                        isProjectsActive
-                            ? 'bg-slate-100 text-indigo-600 dark:bg-gray-800 dark:text-indigo-400'
-                            : 'text-slate-600 hover:bg-slate-100/60 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-100'
+                        isHomeActive
+                            ? 'font-semibold text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100'
                     "
                 >
-                    <FolderGit2 class="h-3.5 w-3.5" />
-                    <span>Projects</span>
+                    Home
                 </Link>
 
                 <Link
                     href="/blogs"
-                    class="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all"
+                    class="text-sm font-medium transition-colors"
                     :class="
                         isBlogsActive
-                            ? 'bg-slate-100 text-indigo-600 dark:bg-gray-800 dark:text-indigo-400'
-                            : 'text-slate-600 hover:bg-slate-100/60 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-100'
+                            ? 'font-semibold text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100'
                     "
                 >
-                    <BookOpen class="h-3.5 w-3.5" />
-                    <span>Blogs</span>
+                    Blogs
                 </Link>
-            </div>
+            </nav>
 
             <!-- Right: Controls & Profile Cluster -->
-            <div class="hidden items-center gap-3 md:flex">
-                <!-- Dark Mode Toggle Button -->
+            <div class="hidden items-center gap-2.5 md:flex">
+                <!-- Dark Mode Toggle Button (Minimal Ghost) -->
                 <button
                     @click="toggle"
-                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                     :title="
                         theme === 'system'
                             ? 'System theme (click to cycle)'
@@ -165,23 +163,21 @@ onBeforeUnmount(() => {
                     <Moon v-else class="h-4 w-4" />
                 </button>
 
-                <div class="h-5 w-px bg-slate-200 dark:bg-gray-800"></div>
-
                 <!-- Guest: Login CTA -->
                 <Link
                     v-if="!user"
                     href="/login"
-                    class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-slate-800 hover:shadow-md active:scale-95 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-slate-800 active:scale-95 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                 >
                     <LogIn class="h-3.5 w-3.5" />
                     <span>Login</span>
                 </Link>
 
-                <!-- Authenticated: User Dropdown -->
+                <!-- Authenticated: User Dropdown Trigger -->
                 <div v-else ref="dropdownRef" class="relative">
                     <button
                         @click="toggleDropdown"
-                        class="flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-white py-1 pr-3 pl-1 shadow-2xs transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-98 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 dark:hover:bg-gray-800"
+                        class="flex items-center gap-2 rounded-full py-0.5 pr-2 pl-0.5 transition-all hover:opacity-90 active:scale-98"
                     >
                         <img
                             v-if="user.image_url"
@@ -197,13 +193,13 @@ onBeforeUnmount(() => {
                         </span>
 
                         <span
-                            class="max-w-[130px] truncate text-xs font-bold text-slate-800 dark:text-gray-200"
+                            class="max-w-[120px] truncate text-xs font-semibold text-slate-800 dark:text-gray-200"
                         >
                             {{ user.name }}
                         </span>
 
                         <ChevronDown
-                            class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200"
+                            class="h-3 w-3 text-slate-400 transition-transform duration-200"
                             :class="{ 'rotate-180': dropdownOpen }"
                         />
                     </button>
@@ -415,20 +411,6 @@ onBeforeUnmount(() => {
                                     >
                                         <Home class="h-4 w-4" />
                                         <span>Home</span>
-                                    </Link>
-
-                                    <Link
-                                        href="/projects"
-                                        @click="closeMobileMenu"
-                                        class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all"
-                                        :class="
-                                            isProjectsActive
-                                                ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
-                                                : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200'
-                                        "
-                                    >
-                                        <FolderGit2 class="h-4 w-4" />
-                                        <span>Projects</span>
                                     </Link>
 
                                     <Link
