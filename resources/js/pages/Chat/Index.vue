@@ -1,16 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import {
-    Send,
-    Trash2,
-    Lock,
-    Loader2,
-    Clock,
-    LogIn,
-    ShieldAlert,
-    Info,
-    Sparkles,
-} from 'lucide-vue-next';
+import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
@@ -58,8 +48,9 @@ const canDelete = ref(props.chatState.can_delete);
 const activeCooldownSeconds = ref(props.chatState.cooldown_seconds ?? 30);
 
 const messagesContainerRef = ref<HTMLElement | null>(null);
+const showScrollButton = ref(false);
 
-// Cooldown timer logic
+// Cooldown logic
 const cooldownSeconds = ref(0);
 let cooldownInterval: ReturnType<typeof setInterval> | null = null;
 const COOLDOWN_KEY = 'hscstack_chat_cooldown_until';
@@ -116,6 +107,17 @@ const startCooldown = (seconds: number) => {
     }, 1000);
 };
 
+const handleScroll = () => {
+    if (!messagesContainerRef.value) {
+        return;
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } =
+        messagesContainerRef.value;
+    const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+    showScrollButton.value = distanceToBottom > 150;
+};
+
 const scrollToBottom = (smooth = true) => {
     nextTick(() => {
         if (messagesContainerRef.value) {
@@ -123,6 +125,7 @@ const scrollToBottom = (smooth = true) => {
                 top: messagesContainerRef.value.scrollHeight,
                 behavior: smooth ? 'smooth' : 'auto',
             });
+            showScrollButton.value = false;
         }
     });
 };
@@ -227,7 +230,7 @@ const sendMessage = async () => {
 };
 
 const deleteMessage = async (messageId: number) => {
-    if (!confirm('Delete this message?')) {
+    if (!confirm('Are you sure you want to delete this message?')) {
         return;
     }
 
@@ -265,6 +268,30 @@ const formatTime = (isoString: string) => {
     }
 };
 
+const formatDateDivider = (isoString: string) => {
+    try {
+        const date = new Date(isoString);
+
+        return date.toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+        });
+    } catch {
+        return '';
+    }
+};
+
+const shouldShowDateDivider = (index: number) => {
+    if (index === 0) {
+        return true;
+    }
+
+    const prev = new Date(messages.value[index - 1].created_at).toDateString();
+    const curr = new Date(messages.value[index].created_at).toDateString();
+
+    return prev !== curr;
+};
+
 onMounted(() => {
     initCooldown();
     setupRealtime();
@@ -280,104 +307,88 @@ onUnmounted(() => {
 
 <template>
     <Head>
-        <title>Student Lounge - Live Global Chat</title>
+        <title>Student Lounge</title>
         <meta
             name="description"
-            content="Talk, discuss studies, and connect with fellow HSC and SSC students in real-time."
+            content="Real-time public discussion space for HSC and SSC students."
         />
     </Head>
 
-    <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <!-- Minimal Platform Header -->
+    <div class="mx-auto max-w-3xl px-3 py-6 sm:px-6 sm:py-8">
+        <!-- Minimal Stream Container -->
         <div
-            class="mb-6 flex flex-col gap-3 border-b border-slate-200/80 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
+            class="flex h-[calc(100vh-10rem)] max-h-[780px] min-h-[500px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
-            <div>
+            <!-- Compact Header -->
+            <div
+                class="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3 sm:px-5 dark:border-gray-800/80 dark:bg-gray-900"
+            >
                 <div class="flex items-center gap-2.5">
                     <h1
-                        class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                        class="text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
                     >
                         Student Lounge
                     </h1>
                     <span
-                        class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                        class="flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-300"
                     >
                         <span
-                            class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
+                            class="h-1.5 w-1.5 rounded-full bg-emerald-500"
                         ></span>
                         Live
                     </span>
                 </div>
-                <p
-                    class="mt-1 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
-                >
-                    এইচএসসি ও এসএসসি শিক্ষার্থীদের জন্য রিয়েল-টাইম আলোচনার
-                    উন্মুক্ত প্ল্যাটফর্ম।
-                </p>
-            </div>
 
-            <!-- Meta badge -->
-            <div class="flex items-center gap-2">
-                <span
-                    v-if="activeCooldownSeconds > 0"
-                    class="inline-flex items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-400"
-                >
-                    <Clock class="h-3.5 w-3.5 text-slate-400" />
-                    {{ activeCooldownSeconds }}s interval
-                </span>
-            </div>
-        </div>
-
-        <!-- Chat Frame Grid: Main Stream + Sidebar Info -->
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <!-- Left 8 cols: Chat Stream Window -->
-            <div
-                class="flex h-[680px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xs lg:col-span-8 dark:border-gray-800 dark:bg-gray-900"
-            >
-                <!-- Message Feed -->
-                <div
-                    ref="messagesContainerRef"
-                    class="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6"
-                >
-                    <!-- Empty State -->
-                    <div
-                        v-if="messages.length === 0"
-                        class="flex h-full flex-col items-center justify-center p-8 text-center text-slate-400"
+                <div class="text-[11px] text-slate-400 dark:text-gray-500">
+                    <span v-if="activeCooldownSeconds > 0"
+                        >{{ activeCooldownSeconds }}s delay</span
                     >
-                        <Sparkles
-                            class="mb-2 h-8 w-8 text-indigo-400 opacity-60"
-                        />
-                        <p
-                            class="text-sm font-bold text-slate-700 dark:text-gray-300"
+                </div>
+            </div>
+
+            <!-- Messages Stream (Clean linear feed matching comment threads) -->
+            <div
+                ref="messagesContainerRef"
+                @scroll="handleScroll"
+                class="relative flex-1 divide-y divide-slate-100/70 overflow-y-auto p-4 sm:p-5 dark:divide-gray-800/50"
+            >
+                <!-- Empty State -->
+                <div
+                    v-if="messages.length === 0"
+                    class="flex h-full flex-col items-center justify-center p-8 text-center text-slate-400"
+                >
+                    <p
+                        class="text-sm font-semibold text-slate-600 dark:text-gray-400"
+                    >
+                        No messages yet
+                    </p>
+                    <p class="mt-1 text-xs text-slate-400 dark:text-gray-500">
+                        Send a message to start the lounge conversation.
+                    </p>
+                </div>
+
+                <!-- Messages -->
+                <template v-for="(msg, idx) in messages" :key="msg.id">
+                    <!-- Date Divider -->
+                    <div
+                        v-if="shouldShowDateDivider(idx)"
+                        class="sticky top-0 z-10 my-3 flex justify-center"
+                    >
+                        <span
+                            class="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
                         >
-                            No messages yet
-                        </p>
-                        <p
-                            class="mt-0.5 text-xs text-slate-400 dark:text-gray-500"
-                        >
-                            Say hello to everyone and start the conversation!
-                        </p>
+                            {{ formatDateDivider(msg.created_at) }}
+                        </span>
                     </div>
 
-                    <!-- Stream Messages -->
+                    <!-- Message Row -->
                     <div
-                        v-for="msg in messages"
-                        :key="msg.id"
-                        class="group flex items-start gap-3 text-left transition-all"
-                        :class="{
-                            'flex-row-reverse':
-                                currentUser && currentUser.id === msg.user.id,
-                        }"
+                        class="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-slate-50/50 dark:hover:bg-gray-800/20"
                     >
-                        <!-- Author Avatar -->
+                        <!-- User Avatar -->
                         <Link
                             :href="`/u/${msg.user.username}`"
-                            class="flex h-8.5 w-8.5 shrink-0 items-center justify-center overflow-hidden rounded-full font-bold transition hover:ring-2 hover:ring-indigo-400"
-                            :class="
-                                currentUser && currentUser.id === msg.user.id
-                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                                    : 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300'
-                            "
+                            class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 font-semibold text-indigo-700 transition hover:ring-2 hover:ring-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300"
                         >
                             <img
                                 v-if="msg.user.image_url"
@@ -386,200 +397,150 @@ onUnmounted(() => {
                                 class="h-full w-full object-cover"
                             />
                             <span v-else class="text-xs uppercase">
-                                {{ msg.user.name.charAt(0) }}
+                                {{ msg.user.name?.charAt(0) || 'U' }}
                             </span>
                         </Link>
 
-                        <!-- Content Block -->
-                        <div
-                            class="max-w-[85%] min-w-0 sm:max-w-[75%]"
-                            :class="{
-                                'items-end text-right':
-                                    currentUser &&
-                                    currentUser.id === msg.user.id,
-                            }"
-                        >
-                            <!-- Metadata Header -->
+                        <!-- Content -->
+                        <div class="min-w-0 flex-1">
+                            <!-- User Meta Line -->
                             <div
-                                class="mb-1 flex items-center gap-1.5 text-xs"
-                                :class="{
-                                    'justify-end':
-                                        currentUser &&
-                                        currentUser.id === msg.user.id,
-                                }"
+                                class="flex items-center justify-between gap-2"
                             >
-                                <Link
-                                    :href="`/u/${msg.user.username}`"
-                                    class="font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
-                                >
-                                    {{ msg.user.name }}
-                                </Link>
-                                <VerifiedBadge v-if="msg.user.is_verified" />
-                                <span
-                                    class="text-[10px] text-slate-400 dark:text-gray-500"
-                                >
-                                    {{ formatTime(msg.created_at) }}
-                                </span>
+                                <div class="flex min-w-0 items-center gap-1.5">
+                                    <Link
+                                        :href="`/u/${msg.user.username}`"
+                                        class="truncate text-xs font-semibold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                                    >
+                                        {{ msg.user.name }}
+                                    </Link>
+                                    <VerifiedBadge
+                                        v-if="msg.user.is_verified"
+                                    />
+                                    <span
+                                        v-if="msg.user.institution"
+                                        class="hidden truncate text-[11px] text-slate-400 sm:inline dark:text-gray-500"
+                                    >
+                                        • {{ msg.user.institution }}
+                                    </span>
+                                </div>
+
+                                <div class="flex shrink-0 items-center gap-2">
+                                    <span
+                                        class="text-[11px] text-slate-400 dark:text-gray-500"
+                                    >
+                                        {{ formatTime(msg.created_at) }}
+                                    </span>
+
+                                    <!-- Delete Button (Only for Admin or Author) -->
+                                    <button
+                                        v-if="
+                                            canDelete ||
+                                            (currentUser &&
+                                                currentUser.id === msg.user.id)
+                                        "
+                                        @click="deleteMessage(msg.id)"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                        title="Delete message"
+                                    >
+                                        <Trash2 class="h-3 w-3" />
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Bubble -->
-                            <div
-                                class="relative rounded-2xl px-4 py-2.5 text-xs leading-relaxed break-words sm:text-sm"
-                                :class="
-                                    currentUser &&
-                                    currentUser.id === msg.user.id
-                                        ? 'rounded-tr-xs bg-indigo-600 text-white dark:bg-indigo-500'
-                                        : 'rounded-tl-xs border border-slate-100 bg-slate-50 text-slate-800 dark:border-gray-800/80 dark:bg-gray-800/80 dark:text-gray-100'
-                                "
+                            <!-- Text Message Content -->
+                            <p
+                                class="mt-1 text-xs leading-relaxed break-words whitespace-pre-wrap text-slate-700 sm:text-sm dark:text-gray-300"
                             >
-                                <p class="whitespace-pre-wrap">
-                                    {{ msg.content }}
-                                </p>
-
-                                <!-- Delete button for admin or author -->
-                                <button
-                                    v-if="
-                                        canDelete ||
-                                        (currentUser &&
-                                            currentUser.id === msg.user.id)
-                                    "
-                                    @click="deleteMessage(msg.id)"
-                                    class="absolute -right-2 -bottom-2 hidden h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-rose-50 text-rose-600 shadow-xs ring-1 ring-rose-200 transition group-hover:flex hover:bg-rose-100 dark:bg-rose-950 dark:text-rose-400 dark:ring-rose-800"
-                                    title="Delete message"
-                                >
-                                    <Trash2 class="h-3 w-3" />
-                                </button>
-                            </div>
+                                {{ msg.content }}
+                            </p>
                         </div>
                     </div>
-                </div>
-
-                <!-- Chat Input Section / Lock Notice -->
-                <div
-                    class="border-t border-slate-100 bg-white p-3.5 sm:p-4 dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <!-- Allowed To Post -->
-                    <form
-                        v-if="canPost"
-                        @submit.prevent="sendMessage"
-                        class="flex items-center gap-2.5"
-                    >
-                        <div class="relative flex-1">
-                            <input
-                                v-model="inputContent"
-                                type="text"
-                                :disabled="isSending || cooldownSeconds > 0"
-                                placeholder="Type a message (max 280 chars)..."
-                                maxlength="280"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400"
-                            />
-                            <span
-                                v-if="inputContent.length > 200"
-                                class="absolute top-1/2 right-3 -translate-y-1/2 text-[10px] font-bold text-slate-400"
-                            >
-                                {{ 280 - inputContent.length }}
-                            </span>
-                        </div>
-
-                        <button
-                            type="submit"
-                            :disabled="
-                                !inputContent.trim() ||
-                                isSending ||
-                                cooldownSeconds > 0
-                            "
-                            class="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                        >
-                            <Loader2
-                                v-if="isSending"
-                                class="h-4 w-4 animate-spin"
-                            />
-                            <template v-else-if="cooldownSeconds > 0">
-                                <Clock class="h-3.5 w-3.5" />
-                                <span>{{ cooldownSeconds }}s</span>
-                            </template>
-                            <template v-else>
-                                <Send class="h-3.5 w-3.5" />
-                                <span class="hidden sm:inline">Send</span>
-                            </template>
-                        </button>
-                    </form>
-
-                    <!-- Restricted Access Notice -->
-                    <div
-                        v-else
-                        class="rounded-xl border border-slate-200/80 bg-slate-50 p-3.5 text-center dark:border-gray-800 dark:bg-gray-800/60"
-                    >
-                        <div
-                            class="flex items-center justify-center gap-2 text-xs font-bold text-slate-700 sm:text-sm dark:text-gray-300"
-                        >
-                            <Lock class="h-4 w-4 shrink-0 text-amber-500" />
-                            <span>{{
-                                restrictionReason || 'Chat access is restricted'
-                            }}</span>
-                        </div>
-                        <div class="mt-2.5" v-if="!currentUser">
-                            <Link
-                                href="/login"
-                                class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700"
-                            >
-                                <LogIn class="h-3.5 w-3.5" />
-                                <span>Sign in to chat</span>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                </template>
             </div>
 
-            <!-- Right 4 cols: Community Guidelines & Lounge Info Sidebar -->
-            <div class="space-y-4 lg:col-span-4">
-                <!-- Guidelines Card -->
-                <div
-                    class="rounded-3xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div
-                        class="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        <Info class="h-4 w-4 text-indigo-500" />
-                        <span>Community Guidelines</span>
-                    </div>
-                    <ul
-                        class="list-inside list-disc space-y-2 text-xs leading-relaxed text-slate-600 dark:text-gray-400"
-                    >
-                        <li>
-                            Be respectful and supportive to fellow students.
-                        </li>
-                        <li>
-                            No spamming, promotional links, or commercial ads.
-                        </li>
-                        <li>
-                            Keep discussions focused on academic & student life
-                            topics.
-                        </li>
-                        <li>
-                            Respect the {{ activeCooldownSeconds }}s anti-spam
-                            interval.
-                        </li>
-                    </ul>
-                </div>
+            <!-- Scroll to bottom float button -->
+            <button
+                v-if="showScrollButton"
+                @click="scrollToBottom(true)"
+                class="absolute right-8 bottom-20 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-md transition hover:bg-slate-800 active:scale-95 dark:bg-gray-100 dark:text-gray-900"
+                title="Scroll to bottom"
+            >
+                <ArrowDown class="h-4 w-4" />
+            </button>
 
-                <!-- Storage Policy Card -->
+            <!-- Bottom Input Tray -->
+            <div
+                class="border-t border-slate-100 bg-white p-3 sm:p-4 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <!-- Case 1: Permitted to Post -->
+                <form
+                    v-if="canPost"
+                    @submit.prevent="sendMessage"
+                    class="flex items-center gap-2"
+                >
+                    <div class="relative flex-1">
+                        <input
+                            v-model="inputContent"
+                            type="text"
+                            :disabled="isSending || cooldownSeconds > 0"
+                            placeholder="Type a message..."
+                            maxlength="280"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400"
+                        />
+                        <span
+                            v-if="inputContent.length > 200"
+                            class="absolute top-1/2 right-3 -translate-y-1/2 text-[10px] font-medium text-slate-400"
+                        >
+                            {{ 280 - inputContent.length }}
+                        </span>
+                    </div>
+
+                    <button
+                        type="submit"
+                        :disabled="
+                            !inputContent.trim() ||
+                            isSending ||
+                            cooldownSeconds > 0
+                        "
+                        class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                    >
+                        <Loader2
+                            v-if="isSending"
+                            class="h-3.5 w-3.5 animate-spin"
+                        />
+                        <template v-else-if="cooldownSeconds > 0">
+                            <span>{{ cooldownSeconds }}s</span>
+                        </template>
+                        <template v-else>
+                            <Send class="h-3.5 w-3.5" />
+                            <span class="hidden sm:inline">Send</span>
+                        </template>
+                    </button>
+                </form>
+
+                <!-- Case 2: Restricted Notice -->
                 <div
-                    class="rounded-3xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                    v-else
+                    class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-2 text-xs dark:border-gray-800 dark:bg-gray-800/40"
                 >
                     <div
-                        class="mb-2 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                        class="flex items-center gap-2 text-slate-600 dark:text-gray-400"
                     >
-                        <ShieldAlert class="h-4 w-4 text-emerald-500" />
-                        <span>Ephemeral Lounge</span>
+                        <Lock class="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                        <span>{{
+                            restrictionReason || 'Posting is restricted'
+                        }}</span>
                     </div>
-                    <p
-                        class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+
+                    <Link
+                        v-if="!currentUser"
+                        href="/login"
+                        class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
                     >
-                        To maintain high performance and user privacy, the
-                        student lounge maintains a rolling buffer of the latest
-                        200 messages. Older messages are automatically pruned.
-                    </p>
+                        <LogIn class="h-3.5 w-3.5" />
+                        <span>Sign in</span>
+                    </Link>
                 </div>
             </div>
         </div>
