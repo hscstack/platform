@@ -69,7 +69,7 @@ class ChatController extends Controller
                     'cooldown_seconds' => $cooldownSeconds,
                     'can_post' => $canPost,
                     'reason' => $reason,
-                    'can_delete' => (bool) $user?->can('delete chat messages'),
+                    'can_delete' => (bool) $user?->can('manage chat'),
                     'messages' => $messages,
                     'pusher_key' => config('broadcasting.connections.pusher.key'),
                     'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
@@ -83,7 +83,7 @@ class ChatController extends Controller
             'cooldown_seconds' => $cooldownSeconds,
             'can_post' => $canPost,
             'reason' => $reason,
-            'can_delete' => (bool) $user?->can('delete chat messages'),
+            'can_delete' => (bool) $user?->can('manage chat'),
             'messages' => $messages,
             'pusher_key' => config('broadcasting.connections.pusher.key'),
             'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
@@ -169,8 +169,8 @@ class ChatController extends Controller
         $user = $request->user();
         abort_unless($user, 401);
 
-        // Can delete if own message or has delete chat messages permission
-        if ($message->user_id !== $user->id && ! $user->can('delete chat messages')) {
+        // Can delete if own message or has manage chat permission
+        if ($message->user_id !== $user->id && ! $user->can('manage chat')) {
             abort(403, 'Unauthorized');
         }
 
