@@ -96,7 +96,7 @@ const filteredSubjects = computed(() => {
 
         <div
             v-if="featured_blogs?.length"
-            class="mt-16 border-t border-slate-100 pt-12 dark:border-gray-800"
+            class="mt-6 border-t border-slate-100 pt-6 sm:mt-12 sm:pt-10 dark:border-gray-800"
         >
             <div class="mb-6 flex items-center justify-between">
                 <div>
