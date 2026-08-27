@@ -45,7 +45,7 @@ const setCoursePreference = (course: 'hsc' | 'ssc') => {
                         Active Repository
                     </span>
                     <p
-                        class="truncate text-xs leading-snug font-extrabold text-slate-900 sm:text-base sm:whitespace-normal dark:text-gray-100"
+                        class="text-xs leading-snug font-extrabold text-slate-900 sm:text-base dark:text-gray-100"
                     >
                         আপনি <span>{{ isSsc ? 'SSC' : 'HSC' }}</span> এর
                         কন্টেন্টগুলো দেখছেন
