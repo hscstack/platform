@@ -314,18 +314,20 @@ onUnmounted(() => {
         />
     </Head>
 
-    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <!-- Page Title & Subtitle Matching Journal / Standard Page Structure -->
+    <main class="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <!-- Compact Page Title & Subtitle -->
         <div
-            class="mb-6 flex flex-col gap-2 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-gray-800"
+            class="mb-3 flex flex-col gap-1 border-b border-slate-100 pb-3 sm:flex-row sm:items-end sm:justify-between dark:border-gray-800"
         >
             <div>
                 <h1
-                    class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-gray-100"
+                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                 >
                     Global Chat
                 </h1>
-                <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                <p
+                    class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
+                >
                     অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
                     করুন।
                 </p>
@@ -333,7 +335,7 @@ onUnmounted(() => {
 
             <div
                 v-if="activeCooldownSeconds > 0"
-                class="text-xs text-slate-400 dark:text-gray-500"
+                class="text-[11px] text-slate-400 dark:text-gray-500"
             >
                 <span>{{ activeCooldownSeconds }}s delay between messages</span>
             </div>
@@ -341,13 +343,13 @@ onUnmounted(() => {
 
         <!-- Chat Container Window -->
         <div
-            class="flex h-[620px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            class="flex h-[calc(100vh-14rem)] max-h-[740px] min-h-[520px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
             <!-- Messages Stream -->
             <div
                 ref="messagesContainerRef"
                 @scroll="handleScroll"
-                class="relative flex-1 divide-y divide-slate-100 overflow-y-auto p-4 sm:p-6 dark:divide-gray-800/60"
+                class="relative flex-1 divide-y divide-slate-100/80 overflow-y-auto p-3 sm:p-5 dark:divide-gray-800/60"
             >
                 <!-- Empty State -->
                 <div
@@ -370,23 +372,35 @@ onUnmounted(() => {
                     <!-- Date Divider -->
                     <div
                         v-if="shouldShowDateDivider(idx)"
-                        class="sticky top-0 z-10 my-3 flex justify-center"
+                        class="sticky top-0 z-10 my-2 flex justify-center"
                     >
                         <span
-                            class="rounded-full bg-slate-100 px-3 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-gray-800 dark:text-gray-300"
+                            class="rounded-full bg-slate-100 px-3 py-0.5 text-[10px] font-medium text-slate-600 shadow-2xs dark:bg-gray-800 dark:text-gray-300"
                         >
                             {{ formatDateDivider(msg.created_at) }}
                         </span>
                     </div>
 
-                    <!-- Individual Message Row -->
+                    <!-- Individual Message Row (Distinctly Highlighted for currentUser) -->
                     <div
-                        class="group -mx-2 flex items-start gap-3.5 rounded-xl px-2 py-3.5 text-left transition hover:bg-slate-50/60 dark:hover:bg-gray-800/30"
+                        class="group -mx-1.5 flex items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition sm:-mx-2 sm:px-3 sm:py-3"
+                        :class="
+                            currentUser &&
+                            Number(currentUser.id) === Number(msg.user.id)
+                                ? 'bg-indigo-50/50 hover:bg-indigo-50/80 dark:bg-indigo-950/25 dark:hover:bg-indigo-950/40'
+                                : 'hover:bg-slate-50/60 dark:hover:bg-gray-800/30'
+                        "
                     >
                         <!-- User Avatar -->
                         <Link
                             :href="`/u/${msg.user.username}`"
-                            class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 font-semibold text-indigo-700 transition hover:ring-2 hover:ring-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300"
+                            class="flex h-8.5 w-8.5 shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:ring-2 hover:ring-indigo-400 sm:h-9 sm:w-9"
+                            :class="
+                                currentUser &&
+                                Number(currentUser.id) === Number(msg.user.id)
+                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
+                                    : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+                            "
                         >
                             <img
                                 v-if="msg.user.image_url"
@@ -412,6 +426,19 @@ onUnmounted(() => {
                                     >
                                         {{ msg.user.name }}
                                     </Link>
+
+                                    <!-- You Badge -->
+                                    <span
+                                        v-if="
+                                            currentUser &&
+                                            Number(currentUser.id) ===
+                                                Number(msg.user.id)
+                                        "
+                                        class="py-0.2 rounded-md bg-indigo-100 px-1.5 text-[9px] font-bold text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300"
+                                    >
+                                        You
+                                    </span>
+
                                     <VerifiedBadge
                                         v-if="msg.user.is_verified"
                                     />
@@ -423,9 +450,9 @@ onUnmounted(() => {
                                     </span>
                                 </div>
 
-                                <div class="flex shrink-0 items-center gap-2.5">
+                                <div class="flex shrink-0 items-center gap-2">
                                     <span
-                                        class="text-[11px] text-slate-400 dark:text-gray-500"
+                                        class="text-[10px] text-slate-400 sm:text-[11px] dark:text-gray-500"
                                     >
                                         {{ formatTime(msg.created_at) }}
                                     </span>
@@ -435,7 +462,8 @@ onUnmounted(() => {
                                         v-if="
                                             canDelete ||
                                             (currentUser &&
-                                                currentUser.id === msg.user.id)
+                                                Number(currentUser.id) ===
+                                                    Number(msg.user.id))
                                         "
                                         @click="deleteMessage(msg.id)"
                                         class="cursor-pointer rounded-md p-1 text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
@@ -448,7 +476,14 @@ onUnmounted(() => {
 
                             <!-- Message Text -->
                             <p
-                                class="mt-1 text-xs leading-relaxed break-words whitespace-pre-wrap text-slate-700 sm:text-sm dark:text-gray-300"
+                                class="mt-1 text-xs leading-relaxed break-words whitespace-pre-wrap sm:text-sm"
+                                :class="
+                                    currentUser &&
+                                    Number(currentUser.id) ===
+                                        Number(msg.user.id)
+                                        ? 'text-slate-900 dark:text-gray-100'
+                                        : 'text-slate-700 dark:text-gray-300'
+                                "
                             >
                                 {{ msg.content }}
                             </p>
