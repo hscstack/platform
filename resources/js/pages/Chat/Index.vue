@@ -454,7 +454,7 @@ onUnmounted(() => {
                                                     Number(msg.user.id))
                                         "
                                         @click="deleteMessage(msg.id)"
-                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                                         title="Delete message"
                                     >
                                         <Trash2 class="h-3 w-3" />
