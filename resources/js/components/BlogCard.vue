@@ -44,6 +44,7 @@ defineProps({
                         {{ blog.category }}
                     </span>
 
+                    <span class="text-slate-400 dark:text-gray-500">By</span>
                     <Link
                         v-if="blog.user?.username"
                         :href="`/u/${blog.user.username}`"
