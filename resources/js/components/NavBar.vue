@@ -18,6 +18,7 @@ import {
     Users,
     HeartHandshake,
     Search,
+    MessageCircle,
 } from 'lucide-vue-next';
 import {
     computed,
