@@ -20,6 +20,7 @@ interface ChatSettingsProps {
         audience: string;
         cooldown_seconds: number;
         max_messages: number;
+        max_length: number;
     };
     totalMessages: number;
     recentMessagesCount: number;
@@ -33,6 +34,7 @@ const form = useForm({
     audience: props.settings.audience,
     cooldown_seconds: props.settings.cooldown_seconds,
     max_messages: props.settings.max_messages ?? 200,
+    max_length: props.settings.max_length ?? 280,
 });
 
 const submitSettings = () => {
@@ -66,6 +68,13 @@ const messageLimitPresets = [
     { label: '200 Messages (Default)', value: 200 },
     { label: '500 Messages', value: 500 },
     { label: '1000 Messages', value: 1000 },
+];
+
+const lengthPresets = [
+    { label: '140 Characters', value: 140 },
+    { label: '280 Characters (Default)', value: 280 },
+    { label: '500 Characters', value: 500 },
+    { label: '1000 Characters', value: 1000 },
 ];
 </script>
 
@@ -477,6 +486,64 @@ const messageLimitPresets = [
                             class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
                         >
                             messages
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Maximum Message Character Limit -->
+            <div
+                class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
+            >
+                <div>
+                    <label
+                        class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        <MessageCircle class="h-4 w-4 text-indigo-500" />
+                        Per-Message Character Length Limit
+                    </label>
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
+                        Control the maximum length allowed for any single student message.
+                    </p>
+                </div>
+
+                <!-- Quick Preset Buttons -->
+                <div class="flex flex-wrap gap-2">
+                    <button
+                        v-for="preset in lengthPresets"
+                        :key="preset.value"
+                        type="button"
+                        @click="form.max_length = preset.value"
+                        class="cursor-pointer rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95"
+                        :class="
+                            form.max_length === preset.value
+                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                        "
+                    >
+                        {{ preset.label }}
+                    </button>
+                </div>
+
+                <!-- Custom Length Input -->
+                <div class="max-w-xs">
+                    <label
+                        class="mb-1 block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                    >
+                        Custom Length Limit (50 - 1000 characters):
+                    </label>
+                    <div class="relative">
+                        <input
+                            v-model.number="form.max_length"
+                            type="number"
+                            min="50"
+                            max="1000"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400"
+                        />
+                        <span
+                            class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
+                        >
+                            chars
                         </span>
                     </div>
                 </div>

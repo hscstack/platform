@@ -31,6 +31,7 @@ const props = defineProps<{
         audience: string;
         cooldown_seconds: number;
         max_messages?: number;
+        max_length?: number;
         can_post: boolean;
         reason: string | null;
         can_delete: boolean;
@@ -45,6 +46,7 @@ const { can } = usePermissions();
 const currentUser = computed(() => page.props.auth?.user);
 
 const maxMessagesLimit = computed(() => props.chatState.max_messages ?? 200);
+const maxLengthLimit = computed(() => props.chatState.max_length ?? 280);
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
 const inputContent = ref('');
 const isSending = ref(false);
@@ -211,7 +213,7 @@ const sendMessage = async () => {
 
     const content = inputContent.value.trim();
 
-    if (content.length > 280) {
+    if (content.length > maxLengthLimit.value) {
         return;
     }
 
@@ -698,14 +700,14 @@ onUnmounted(() => {
                             type="text"
                             :disabled="isSending || cooldownSeconds > 0"
                             :placeholder="activeReplyTo ? `Reply to ${activeReplyTo.user.name}...` : 'Type a message...'"
-                            maxlength="280"
+                            :maxlength="maxLengthLimit"
                             class="dark:border-gray-750 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
                         <span
-                            v-if="inputContent.length > 200"
+                            v-if="inputContent.length > (maxLengthLimit - 80)"
                             class="absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
                         >
-                            {{ 280 - inputContent.length }}
+                            {{ maxLengthLimit - inputContent.length }}
                         </span>
                     </div>
 

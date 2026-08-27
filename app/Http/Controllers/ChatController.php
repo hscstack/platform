@@ -22,6 +22,7 @@ class ChatController extends Controller
         $audience = AppSetting::get('global_chat_audience', 'verified_members'); // 'verified_members', 'all', 'disabled'
         $cooldownSeconds = (int) AppSetting::get('global_chat_cooldown_seconds', 30);
         $maxMessages = (int) AppSetting::get('global_chat_max_messages', 200);
+        $maxLength = (int) AppSetting::get('global_chat_max_length', 280);
 
         // Determine if user can post
         $canPost = false;
@@ -75,6 +76,7 @@ class ChatController extends Controller
                     'audience' => $audience,
                     'cooldown_seconds' => $cooldownSeconds,
                     'max_messages' => $maxMessages,
+                    'max_length' => $maxLength,
                     'can_post' => $canPost,
                     'reason' => $reason,
                     'can_delete' => (bool) $user?->can('manage chat'),
@@ -90,6 +92,7 @@ class ChatController extends Controller
             'audience' => $audience,
             'cooldown_seconds' => $cooldownSeconds,
             'max_messages' => $maxMessages,
+            'max_length' => $maxLength,
             'can_post' => $canPost,
             'reason' => $reason,
             'can_delete' => (bool) $user?->can('manage chat'),
@@ -108,6 +111,7 @@ class ChatController extends Controller
         $audience = AppSetting::get('global_chat_audience', 'verified_members');
         $cooldownSeconds = (int) AppSetting::get('global_chat_cooldown_seconds', 30);
         $maxMessages = (int) AppSetting::get('global_chat_max_messages', 200);
+        $maxLength = (int) AppSetting::get('global_chat_max_length', 280);
 
         // Check if chat is enabled
         if (! $isEnabled || $audience === 'disabled') {
@@ -140,7 +144,7 @@ class ChatController extends Controller
         }
 
         $validated = $request->validate([
-            'content' => ['required', 'string', 'max:280'],
+            'content' => ['required', 'string', "max:{$maxLength}"],
             'reply_to_id' => ['nullable', 'integer'],
         ]);
 
