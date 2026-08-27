@@ -122,7 +122,7 @@ const filteredSubjects = computed(() => {
                 </Link>
             </div>
 
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 <BlogCard
                     v-for="blog in featured_blogs"
                     :key="blog.id"
