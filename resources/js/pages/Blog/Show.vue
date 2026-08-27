@@ -4,7 +4,6 @@ import {
     Calendar,
     User,
     Eye,
-    ArrowLeft,
     ArrowRight,
     PenLine,
     Heart,
@@ -214,10 +213,6 @@ const formatTimeAgo = (dateStr: string) => {
         year: 'numeric',
     }).format(date);
 };
-
-const goBack = () => {
-    window.history.back();
-};
 </script>
 
 <template>
@@ -252,16 +247,6 @@ const goBack = () => {
     </Head>
 
     <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <div class="mb-8">
-            <button
-                @click="goBack"
-                class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-            >
-                <ArrowLeft class="h-4 w-4" />
-                <span>Back to journal</span>
-            </button>
-        </div>
-
         <article>
             <div
                 class="mb-6 flex flex-wrap items-center gap-4 text-xs sm:text-sm"
