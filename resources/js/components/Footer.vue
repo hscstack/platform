@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     Github,
     Facebook,
@@ -10,11 +10,23 @@ import {
     Heart,
     Instagram,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
+
+const page = usePage();
+const currentUrl = computed(() => page.url);
+
+// Full marketing footer on primary landing/home views; sleek minimal footer elsewhere
+const isFullFooter = computed(() => {
+    const path = currentUrl.value.split('?')[0];
+    return path === '/' || path === '/ssc';
+});
 </script>
 
 <template>
+    <!-- Full 12-column Marketing Footer (Home / SSC) -->
     <footer
+        v-if="isFullFooter"
         class="mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900"
     >
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
@@ -54,8 +66,8 @@ import AppLogo from './AppLogo.vue';
                             href="https://instagram.com/hscstack"
                             rel="noopener noreferrer"
                             target="_blank"
-                            class="text-slate-400 transition-colors duration-150 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400"
-                            aria-label="Facebook Page"
+                            class="text-slate-400 transition-colors duration-150 hover:text-rose-600 dark:text-gray-500 dark:hover:text-rose-400"
+                            aria-label="Instagram Profile"
                         >
                             <Instagram class="h-5 w-5" />
                         </a>
@@ -214,6 +226,83 @@ import AppLogo from './AppLogo.vue';
                         {{ $page.props.app_version }}
                     </a>
                 </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Minimal, Sleek Footer (Public User Profile, Content, Reader, & Explorer Pages) -->
+    <footer
+        v-else
+        class="mt-auto border-t border-slate-200/70 bg-white/70 py-6 backdrop-blur-md dark:border-gray-800/70 dark:bg-gray-950/70"
+    >
+        <div
+            class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8"
+        >
+            <!-- Left: Brand & Copyright -->
+            <div class="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500 sm:justify-start dark:text-gray-400">
+                <AppLogo />
+                <span class="hidden text-slate-300 sm:inline dark:text-gray-700">&bull;</span>
+                <span>&copy; 2026 HSCStack</span>
+            </div>
+
+            <!-- Center: Essential Links -->
+            <div class="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600 dark:text-gray-400">
+                <Link
+                    href="/about-us"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    About
+                </Link>
+                <Link
+                    href="/privacy-policy"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    Privacy
+                </Link>
+                <Link
+                    href="/terms-service"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    Terms
+                </Link>
+                <Link
+                    href="/support"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    Support
+                </Link>
+            </div>
+
+            <!-- Right: Minimal Social & Version -->
+            <div class="flex items-center gap-3">
+                <a
+                    href="https://github.com/hscstack"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-slate-400 transition hover:text-slate-900 dark:text-gray-500 dark:hover:text-gray-100"
+                    aria-label="GitHub Repository"
+                >
+                    <Github class="h-4 w-4" />
+                </a>
+                <a
+                    href="https://facebook.com/hscstackbd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-slate-400 transition hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400"
+                    aria-label="Facebook Page"
+                >
+                    <Facebook class="h-4 w-4" />
+                </a>
+
+                <a
+                    v-if="$page.props.app_version"
+                    :href="`https://github.com/hscstack/platform/releases/tag/${$page.props.app_version}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-900 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:text-gray-200"
+                >
+                    {{ $page.props.app_version }}
+                </a>
             </div>
         </div>
     </footer>
