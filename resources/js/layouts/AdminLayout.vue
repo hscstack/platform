@@ -6,6 +6,7 @@ import {
     Bell,
     Book,
     Mail,
+    MessageCircle,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
@@ -28,6 +29,12 @@ const allNavigation = [
         to: '/admin/notice',
         icon: Bell,
         permission: 'edit notice',
+    },
+    {
+        name: 'Global Chat',
+        to: '/admin/chat',
+        icon: MessageCircle,
+        permission: 'manage chat',
     },
     {
         name: 'Users',

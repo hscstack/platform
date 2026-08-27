@@ -18,6 +18,7 @@ import {
     Users,
     HeartHandshake,
     Search,
+    MessageCircle,
 } from 'lucide-vue-next';
 import {
     computed,
@@ -47,6 +48,7 @@ const canAccessAdmin = computed(() => page.props.auth?.can_access_admin);
 const currentUrl = computed(() => page.url);
 
 const isBlogsActive = computed(() => currentUrl.value.startsWith('/blogs'));
+const isChatActive = computed(() => currentUrl.value.startsWith('/chat'));
 const isHomeActive = computed(
     () =>
         currentUrl.value === '/' ||
@@ -292,6 +294,18 @@ onBeforeUnmount(() => {
                         "
                     >
                         Blogs
+                    </Link>
+
+                    <Link
+                        href="/chat"
+                        class="text-sm font-medium transition-colors"
+                        :class="
+                            isChatActive
+                                ? 'font-semibold text-indigo-600 dark:text-indigo-400'
+                                : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100'
+                        "
+                    >
+                        Global Chat
                     </Link>
                 </nav>
 
@@ -561,7 +575,11 @@ onBeforeUnmount(() => {
                                             v-else
                                             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-black text-white dark:bg-indigo-500"
                                         >
-                                            {{ user.name.charAt(0).toUpperCase() }}
+                                            {{
+                                                user.name
+                                                    .charAt(0)
+                                                    .toUpperCase()
+                                            }}
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <p
@@ -635,6 +653,20 @@ onBeforeUnmount(() => {
                                     >
                                         <BookOpen class="h-4 w-4" />
                                         <span>Blogs</span>
+                                    </Link>
+
+                                    <Link
+                                        href="/chat"
+                                        @click="closeMobileMenu"
+                                        class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all"
+                                        :class="
+                                            isChatActive
+                                                ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
+                                                : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200'
+                                        "
+                                    >
+                                        <MessageCircle class="h-4 w-4" />
+                                        <span>Global Chat</span>
                                     </Link>
                                 </div>
                             </div>
@@ -824,8 +856,8 @@ onBeforeUnmount(() => {
                         Sign out of your account?
                     </h3>
                     <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        Are you sure you want to log out of HSCStack? You will need
-                        to sign in again to access your account features.
+                        Are you sure you want to log out of HSCStack? You will
+                        need to sign in again to access your account features.
                     </p>
 
                     <div class="mt-5 flex gap-2.5">

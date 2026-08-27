@@ -3,6 +3,7 @@
 use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
@@ -29,12 +30,18 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
     Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
-    
-    Route::get('/me', function (Request $request){
+
+    Route::get('/me', function (Request $request) {
         return redirect()->route('user.profile', ['username' => $request->user()->username]);
     })->name('me');
-    
+
+    // Global Chat Actions
+    Route::post('/api/chat/messages', [ChatController::class, 'store'])->name('chat.messages.store');
+    Route::delete('/api/chat/messages/{message}', [ChatController::class, 'destroy'])->name('chat.messages.destroy');
 });
+
+// Global Chat Messages List (Public Read)
+Route::middleware('throttle:60,1')->get('/api/chat/messages', [ChatController::class, 'index'])->name('chat.messages.index');
 
 Route::prefix('admin')
     ->middleware(['throttle:45,1', 'auth', 'verified', 'permission:view admin'])
@@ -66,6 +73,7 @@ Route::middleware('throttle:60,1')->group(function () {
 
     Route::get('/blogs', [BlogController::class, 'index']);
     Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
     Route::get('/', [SubjectController::class, 'index'])
