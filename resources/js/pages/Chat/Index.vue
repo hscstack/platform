@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown } from 'lucide-vue-next';
+import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
+import { usePermissions } from '@/lib/usePermissions';
 
 interface ChatUser {
     id: number;
@@ -37,6 +38,7 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
+const { can } = usePermissions();
 const currentUser = computed(() => page.props.auth?.user);
 
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
@@ -438,12 +440,22 @@ onUnmounted(() => {
                                     </span>
                                 </div>
 
-                                <div class="flex shrink-0 items-center gap-2">
+                                <div class="flex shrink-0 items-center gap-1.5">
                                     <span
                                         class="text-[10px] text-slate-400 sm:text-[11px] dark:text-gray-500"
                                     >
                                         {{ formatTime(msg.created_at) }}
                                     </span>
+
+                                    <!-- Quick Admin Edit / Ban User Button -->
+                                    <Link
+                                        v-if="can('edit users')"
+                                        :href="`/admin/users/edit/${msg.user.id}`"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-indigo-50 hover:text-indigo-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                        :title="`Manage / Ban ${msg.user.name}`"
+                                    >
+                                        <Pencil class="h-3 w-3" />
+                                    </Link>
 
                                     <!-- Delete Button -->
                                     <button

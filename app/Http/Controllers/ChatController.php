@@ -29,6 +29,9 @@ class ChatController extends Controller
             $reason = 'Global chat is currently disabled for maintenance.';
         } elseif (! $user) {
             $reason = 'Please sign in to join the conversation.';
+        } elseif ($user->isChatBanned()) {
+            $bannedUntilFormatted = $user->chat_banned_until->diffForHumans();
+            $reason = "You are temporarily banned from chat until {$user->chat_banned_until->toDateTimeString()} ({$bannedUntilFormatted}).";
         } elseif ($audience === 'verified_members') {
             if ($user->is_verified || $user->can('view admin')) {
                 $canPost = true;
@@ -102,6 +105,15 @@ class ChatController extends Controller
         // Check if chat is enabled
         if (! $isEnabled || $audience === 'disabled') {
             return response()->json(['message' => 'Global chat is currently disabled.'], 403);
+        }
+
+        // Check if user is chat banned
+        if ($user->isChatBanned()) {
+            $bannedUntilFormatted = $user->chat_banned_until->diffForHumans();
+
+            return response()->json([
+                'message' => "You are banned from sending messages until {$user->chat_banned_until->toDateTimeString()} ({$bannedUntilFormatted}).",
+            ], 403);
         }
 
         // Check audience permission
