@@ -19,6 +19,7 @@ interface ChatSettingsProps {
     settings: {
         enabled: boolean;
         audience: string;
+        disabled_reason?: string;
         cooldown_seconds: number;
         max_messages: number;
         max_length: number;
@@ -35,6 +36,7 @@ const props = defineProps<ChatSettingsProps>();
 const form = useForm({
     enabled: props.settings.enabled,
     audience: props.settings.audience,
+    disabled_reason: props.settings.disabled_reason ?? '',
     cooldown_seconds: props.settings.cooldown_seconds,
     max_messages: props.settings.max_messages ?? 200,
     max_length: props.settings.max_length ?? 280,
@@ -115,7 +117,7 @@ const lengthPresets = [
                 <span
                     class="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold"
                     :class="
-                        form.enabled && form.audience !== 'disabled'
+                        form.audience !== 'disabled'
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
                     "
@@ -123,13 +125,13 @@ const lengthPresets = [
                     <span
                         class="h-2 w-2 rounded-full"
                         :class="
-                            form.enabled && form.audience !== 'disabled'
+                            form.audience !== 'disabled'
                                 ? 'animate-pulse bg-emerald-500'
                                 : 'bg-rose-500'
                         "
                     ></span>
                     {{
-                        form.enabled && form.audience !== 'disabled'
+                        form.audience !== 'disabled'
                             ? 'Chat Live'
                             : 'Chat Inactive'
                     }}
@@ -220,59 +222,17 @@ const lengthPresets = [
                     {{ form.cooldown_seconds }}s
                 </p>
                 <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Per-user delay between messages</span
+                    >Interval per student</span
                 >
             </div>
         </div>
 
-        <!-- Chat Configuration Form -->
+        <!-- Settings Form -->
         <form
             @submit.prevent="submitSettings"
-            class="space-y-6 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7 dark:border-gray-800 dark:bg-gray-900"
+            class="space-y-6 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs sm:p-8 dark:border-gray-800 dark:bg-gray-900"
         >
-            <!-- 1. Master Toggle -->
-            <div
-                class="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
-            >
-                <div>
-                    <label
-                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        Enable Global Chat Service
-                    </label>
-                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Turn the global student chat completely on or off
-                        globally.
-                    </p>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <button
-                        type="button"
-                        @click="form.enabled = !form.enabled"
-                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                        :class="
-                            form.enabled
-                                ? 'bg-indigo-600 dark:bg-indigo-500'
-                                : 'bg-slate-200 dark:bg-gray-700'
-                        "
-                    >
-                        <span
-                            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                            :class="
-                                form.enabled ? 'translate-x-5' : 'translate-x-0'
-                            "
-                        ></span>
-                    </button>
-                    <span
-                        class="text-xs font-bold text-slate-700 dark:text-gray-300"
-                    >
-                        {{ form.enabled ? 'Enabled' : 'Disabled' }}
-                    </span>
-                </div>
-            </div>
-
-            <!-- 2. Audience Eligibility -->
+            <!-- 1. Audience Eligibility & Status -->
             <div
                 class="space-y-3 border-b border-slate-100 pb-6 dark:border-gray-800"
             >
@@ -281,11 +241,10 @@ const lengthPresets = [
                         class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
                     >
                         <Users class="h-4 w-4 text-indigo-500" />
-                        Target Audience & Rollout Eligibility
+                        Target Audience & Chat Status
                     </label>
                     <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Choose who is permitted to send messages in the student
-                        lounge without code changes.
+                        Choose who is permitted to send messages in the student lounge, or pause posting.
                     </p>
                 </div>
 
@@ -359,7 +318,7 @@ const lengthPresets = [
                         <div class="mb-1.5 flex items-center justify-between">
                             <span
                                 class="text-xs font-bold text-slate-900 dark:text-gray-100"
-                                >Read-Only Mode</span
+                                >Disabled (Read-Only)</span
                             >
                             <input
                                 type="radio"
@@ -375,6 +334,22 @@ const lengthPresets = [
                             exams.
                         </p>
                     </label>
+                </div>
+
+                <!-- Custom Disabled / Maintenance Notice Input -->
+                <div v-if="form.audience === 'disabled'" class="mt-3 rounded-2xl border border-rose-200/80 bg-rose-50/40 p-4 dark:border-rose-900/40 dark:bg-rose-950/20">
+                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-300">
+                        Custom Notice Message for Students (Optional):
+                    </label>
+                    <input
+                        v-model="form.disabled_reason"
+                        type="text"
+                        placeholder="e.g. Chat is temporarily paused during HSC ICT exam. Will resume at 4:00 PM."
+                        class="mt-1.5 w-full rounded-xl border border-rose-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus:border-rose-500 focus:outline-none dark:border-rose-800/80 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-rose-400"
+                    />
+                    <p class="mt-1 text-[11px] text-rose-700/80 dark:text-rose-400/80">
+                        Leave blank to show the default notice: <em>"Global chat is currently disabled for maintenance."</em>
+                    </p>
                 </div>
             </div>
 
@@ -426,10 +401,10 @@ const lengthPresets = [
                             type="number"
                             min="0"
                             max="3600"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 pr-20 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span
-                            class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
+                            class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
                         >
                             seconds
                         </span>
@@ -485,10 +460,10 @@ const lengthPresets = [
                             type="number"
                             min="20"
                             max="1000"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 pr-20 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span
-                            class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
+                            class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
                         >
                             messages
                         </span>
@@ -543,10 +518,10 @@ const lengthPresets = [
                             type="number"
                             min="50"
                             max="1000"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 pr-14 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span
-                            class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
+                            class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
                         >
                             chars
                         </span>

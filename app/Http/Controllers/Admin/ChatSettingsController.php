@@ -20,6 +20,7 @@ class ChatSettingsController extends Controller
             'settings' => [
                 'enabled' => (bool) AppSetting::get('global_chat_enabled', true),
                 'audience' => AppSetting::get('global_chat_audience', 'verified_members'),
+                'disabled_reason' => (string) AppSetting::get('global_chat_disabled_reason', ''),
                 'cooldown_seconds' => (int) AppSetting::get('global_chat_cooldown_seconds', 30),
                 'max_messages' => (int) AppSetting::get('global_chat_max_messages', 200),
                 'max_length' => (int) AppSetting::get('global_chat_max_length', 280),
@@ -74,8 +75,9 @@ class ChatSettingsController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'enabled' => ['required', 'boolean'],
+            'enabled' => ['nullable', 'boolean'],
             'audience' => ['required', 'string', 'in:verified_members,all,disabled'],
+            'disabled_reason' => ['nullable', 'string', 'max:255'],
             'cooldown_seconds' => ['required', 'integer', 'min:0', 'max:3600'],
             'max_messages' => ['required', 'integer', 'min:20', 'max:1000'],
             'max_length' => ['required', 'integer', 'min:50', 'max:1000'],
@@ -83,8 +85,10 @@ class ChatSettingsController extends Controller
             'banned_words' => ['nullable', 'string'],
         ]);
 
-        AppSetting::set('global_chat_enabled', $validated['enabled'], 'boolean');
+        $isEnabled = $validated['audience'] !== 'disabled';
+        AppSetting::set('global_chat_enabled', $isEnabled, 'boolean');
         AppSetting::set('global_chat_audience', $validated['audience'], 'string');
+        AppSetting::set('global_chat_disabled_reason', $validated['disabled_reason'] ?? '', 'string');
         AppSetting::set('global_chat_cooldown_seconds', $validated['cooldown_seconds'], 'integer');
         AppSetting::set('global_chat_max_messages', $validated['max_messages'], 'integer');
         AppSetting::set('global_chat_max_length', $validated['max_length'], 'integer');

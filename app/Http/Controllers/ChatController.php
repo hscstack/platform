@@ -30,7 +30,8 @@ class ChatController extends Controller
         $reason = null;
 
         if (! $isEnabled || $audience === 'disabled') {
-            $reason = 'Global chat is currently disabled for maintenance.';
+            $customReason = trim((string) AppSetting::get('global_chat_disabled_reason', ''));
+            $reason = ! empty($customReason) ? $customReason : 'Global chat is currently disabled for maintenance.';
         } elseif (! $user) {
             $reason = 'Please sign in to join the conversation.';
         } elseif ($user->isChatBanned()) {
@@ -116,7 +117,10 @@ class ChatController extends Controller
 
         // Check if chat is enabled
         if (! $isEnabled || $audience === 'disabled') {
-            return response()->json(['message' => 'Global chat is currently disabled.'], 403);
+            $customReason = trim((string) AppSetting::get('global_chat_disabled_reason', ''));
+            $msg = ! empty($customReason) ? $customReason : 'Global chat is currently disabled.';
+
+            return response()->json(['message' => $msg], 403);
         }
 
         // Check if user is chat banned
@@ -281,6 +285,22 @@ class ChatController extends Controller
             'reason' => $validated['reason'] ?? 'Inappropriate message',
             'status' => 'pending',
         ]);
+
+        // Auto-ban logic: If the reported user has 5 or more reports on this message/content, auto-ban for 1 day
+        if (! empty($validated['reported_user_id'])) {
+            $reportedUser = \App\Models\User::find($validated['reported_user_id']);
+            if ($reportedUser && ! $reportedUser->can('view admin')) {
+                $totalReportsForMessage = \App\Models\ChatReport::where('reported_user_id', $reportedUser->id)
+                    ->where('message_content', $validated['message_content'])
+                    ->count();
+
+                if ($totalReportsForMessage >= 5) {
+                    $reportedUser->update([
+                        'chat_banned_until' => now()->addDay(),
+                    ]);
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Message reported successfully. Our team will review it.',

@@ -269,7 +269,9 @@ const setupRealtime = () => {
                     if (!e.settings.enabled || e.settings.audience === 'disabled') {
                         canPost.value = false;
                         restrictionReason.value =
-                            'Global chat is currently disabled for maintenance.';
+                            e.settings.disabled_reason && e.settings.disabled_reason.trim() !== ''
+                                ? e.settings.disabled_reason.trim()
+                                : 'Global chat is currently disabled for maintenance.';
                     } else if (!user) {
                         canPost.value = false;
                         restrictionReason.value =
@@ -1072,10 +1074,10 @@ onUnmounted(() => {
                 <div class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
                     <div class="flex items-center gap-1.5 font-bold">
                         <AlertCircle class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                        <span>শাস্তি ও এনফোর্সমেন্ট:</span>
+                        <span>অটো-ব্যান ও এনফোর্সমেন্ট পলিসি:</span>
                     </div>
-                    <p class="mt-1">
-                        চ্যাটের নিয়ম ভঙ্গ করলে মেসেজ ডিলিট হওয়ার পাশাপাশি অ্যাকাউন্টে সাময়িক বা স্থায়ী চ্যাট ব্যান (Chat Ban) হতে পারে।
+                    <p class="mt-1 leading-relaxed">
+                        একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports) পড়লে সংশ্লিষ্ট ব্যবহারকারী <strong>স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট ব্যান</strong> হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী ব্যান দিতে পারেন।
                     </p>
                 </div>
 
