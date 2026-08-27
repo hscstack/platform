@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
+use App\Http\Controllers\Admin\ChatSettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailController as AdminEmailController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
@@ -110,3 +111,8 @@ Route::middleware('permission:send email')->group(function () {
     Route::get('/emails/send', [AdminEmailController::class, 'create'])->name('emails.create');
     Route::post('/emails/send', [AdminEmailController::class, 'store'])->name('emails.store');
 });
+
+// Chat Settings
+Route::post('/chat/settings', [ChatSettingsController::class, 'update'])
+    ->middleware('permission:manage chat')
+    ->name('chat.settings.update');

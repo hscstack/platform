@@ -561,7 +561,11 @@ onBeforeUnmount(() => {
                                             v-else
                                             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-black text-white dark:bg-indigo-500"
                                         >
-                                            {{ user.name.charAt(0).toUpperCase() }}
+                                            {{
+                                                user.name
+                                                    .charAt(0)
+                                                    .toUpperCase()
+                                            }}
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <p
@@ -824,8 +828,8 @@ onBeforeUnmount(() => {
                         Sign out of your account?
                     </h3>
                     <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        Are you sure you want to log out of HSCStack? You will need
-                        to sign in again to access your account features.
+                        Are you sure you want to log out of HSCStack? You will
+                        need to sign in again to access your account features.
                     </p>
 
                     <div class="mt-5 flex gap-2.5">

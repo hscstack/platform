@@ -80,6 +80,12 @@ class RolePermissionSeeder extends Seeder
          */
         Permission::findOrCreate('clear cache');
 
+        /*
+         * Global Chat management
+         */
+        Permission::findOrCreate('manage chat');
+        Permission::findOrCreate('delete chat messages');
+
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
 

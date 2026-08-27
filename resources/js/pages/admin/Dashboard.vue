@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     Sparkles,
@@ -11,8 +11,37 @@ import {
     Zap,
     RefreshCw,
     BarChart3,
+    MessageCircle,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+const props = defineProps<{
+    chatSettings?: {
+        enabled: boolean;
+        audience: string;
+    };
+}>();
+
+const page = usePage();
+const permissions = computed<string[]>(
+    () => page.props.auth?.permissions || [],
+);
+const canManageChat = computed(
+    () =>
+        permissions.value.includes('manage chat') ||
+        page.props.auth?.user?.roles?.includes('admin'),
+);
+
+const chatForm = useForm({
+    enabled: props.chatSettings?.enabled ?? true,
+    audience: props.chatSettings?.audience ?? 'verified_members',
+});
+
+const saveChatSettings = () => {
+    chatForm.post('/admin/chat/settings', {
+        preserveScroll: true,
+    });
+};
 
 const stats = ref<any>(null);
 const isLoading = ref(false);
@@ -138,6 +167,84 @@ const fetchAnalytics = async (refresh = false) => {
                         class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
                     />
                 </Link>
+            </div>
+        </div>
+
+        <!-- Global Chat Access Control (Only if has 'manage chat' permission) -->
+        <div
+            v-if="canManageChat"
+            class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <div
+                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+                <div class="flex items-start gap-3.5">
+                    <div
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                    >
+                        <MessageCircle class="h-4.5 w-4.5" />
+                    </div>
+                    <div>
+                        <h2
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Global Student Chat Control
+                        </h2>
+                        <p
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Manage access and audience restriction without
+                            redeploying.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Chat Settings Controls -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <label
+                            class="text-xs font-semibold text-slate-600 dark:text-gray-400"
+                            >Audience:</label
+                        >
+                        <select
+                            v-model="chatForm.audience"
+                            @change="saveChatSettings"
+                            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                            <option value="verified_members">
+                                Verified Members Only
+                            </option>
+                            <option value="all">Everyone (All Students)</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>
+
+                    <button
+                        type="button"
+                        @click="
+                            chatForm.enabled = !chatForm.enabled;
+                            saveChatSettings();
+                        "
+                        class="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                        :class="
+                            chatForm.enabled
+                                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : 'border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-950/60 dark:text-rose-300'
+                        "
+                    >
+                        <span
+                            class="h-2 w-2 rounded-full"
+                            :class="
+                                chatForm.enabled
+                                    ? 'bg-emerald-500'
+                                    : 'bg-rose-500'
+                            "
+                        ></span>
+                        <span>{{
+                            chatForm.enabled ? 'Chat Active' : 'Chat Paused'
+                        }}</span>
+                    </button>
+                </div>
             </div>
         </div>
 
