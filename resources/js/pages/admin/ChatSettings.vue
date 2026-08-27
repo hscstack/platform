@@ -426,7 +426,7 @@ const lengthPresets = [
                             type="number"
                             min="0"
                             max="3600"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
                         <span
                             class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
@@ -485,7 +485,7 @@ const lengthPresets = [
                             type="number"
                             min="20"
                             max="1000"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
                         <span
                             class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
@@ -543,7 +543,7 @@ const lengthPresets = [
                             type="number"
                             min="50"
                             max="1000"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
                         <span
                             class="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
@@ -605,11 +605,11 @@ const lengthPresets = [
                     <textarea
                         v-model="form.banned_words"
                         rows="4"
-                        placeholder="e.g. fuck, bitch, chuda, khanki, etc."
-                        class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 font-mono"
+                        placeholder="Enter offensive words or roots separated by commas or new lines..."
+                        class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 font-mono"
                     ></textarea>
                     <p class="text-[11px] text-slate-400 dark:text-gray-500">
-                        The filter collapses repeated letters (e.g. "fuuuuck" &rarr; "fuck") and replaces common leet-speak (e.g. @ &rarr; a, $ &rarr; s, 0 &rarr; o).
+                        The filter automatically collapses repeated letters and replaces common leet-speak substitutions (e.g. @ &rarr; a, $ &rarr; s, 0 &rarr; o).
                     </p>
                 </div>
             </div>

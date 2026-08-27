@@ -558,7 +558,7 @@ onUnmounted(() => {
             <button
                 type="button"
                 @click="showRulesModal = true"
-                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-750"
+                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700"
                 title="Chat Rules & Guidelines"
             >
                 <Info class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -817,7 +817,7 @@ onUnmounted(() => {
                             :disabled="isSending || cooldownSeconds > 0"
                             :placeholder="activeReplyTo ? `Reply to ${activeReplyTo.user.name}...` : 'Type a message...'"
                             :maxlength="maxLengthLimit"
-                            class="dark:border-gray-750 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
                         <span
                             v-if="inputContent.length > (maxLengthLimit - 80)"
@@ -1012,7 +1012,7 @@ onUnmounted(() => {
                                 Global Chat Rules & Guidelines
                             </h3>
                             <p class="text-xs text-slate-500 dark:text-gray-400">
-                                Please follow these standards to keep the space helpful and safe for all students.
+                                সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে নিচের নিয়মগুলো মেনে চলুন।
                             </p>
                         </div>
                     </div>
@@ -1032,8 +1032,8 @@ onUnmounted(() => {
                             1
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">Be Respectful & Constructive:</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Treat fellow students, teachers, and moderators with dignity. Harassment, personal attacks, and hate speech are strictly prohibited.</p>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">পরস্পরকে সম্মান করুন (Respectful Environment):</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">অন্য শিক্ষার্থী ও মডারেটরদের সাথে শালীন আচরণ বজায় রাখুন। কোনো ধরনের ব্যক্তিগত আক্রমণ, বুলিং বা হেট স্পিচ কঠোরভাবে নিষিদ্ধ।</p>
                         </div>
                     </div>
 
@@ -1042,8 +1042,8 @@ onUnmounted(() => {
                             2
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">No Vulgar or Abusive Language:</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Avoid profanity, slang abuse, or bypass attempts in English, Bangla, or Banglish. Automated filters will block abusive messages.</p>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">খারাপ ভাষা ও গালিগালাজ নিষেধ (No Abuse / Slang):</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই গালাগালি বা অশালীন শব্দ ব্যবহার করা যাবে না। এমন মেসেজ অটোমেটিক ব্লক হবে।</p>
                         </div>
                     </div>
 
@@ -1052,8 +1052,8 @@ onUnmounted(() => {
                             3
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">No Spamming or Flooding:</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Do not send identical messages repeatedly, flood the chat, or post unsolicited advertisements and external links.</p>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">স্প্যামিং ও অ্যাডভার্টাইজিং নিষেধ (No Spam):</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">একই মেসেজ বারবার পাঠানো, চ্যাট ফ্লাড করা বা অনুমতি ছাড়া কোনো প্রোমোশন বা অপ্রাসঙ্গিক লিংক শেয়ার করা যাবে না।</p>
                         </div>
                     </div>
 
@@ -1062,8 +1062,8 @@ onUnmounted(() => {
                             4
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">Report Inappropriate Content:</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Use the flag/report button on any message that violates these guidelines. Moderators review reported content regularly.</p>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">অনুপযুক্ত মেসেজ রিপোর্ট করুন (Report Violations):</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">কারো মেসেজে নিয়ম লঙ্ঘন দেখতে পেলে মেসেজের ডানপাশে থাকা ফ্ল্যাগ/রিপোর্ট বাটনে ক্লিক করে মডারেটরদের জানান।</p>
                         </div>
                     </div>
                 </div>
@@ -1072,10 +1072,10 @@ onUnmounted(() => {
                 <div class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
                     <div class="flex items-center gap-1.5 font-bold">
                         <AlertCircle class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                        <span>Enforcement Policy:</span>
+                        <span>শাস্তি ও এনফোর্সমেন্ট:</span>
                     </div>
                     <p class="mt-1">
-                        Violating chat rules will lead to immediate message deletion and temporary or permanent chat bans.
+                        চ্যাটের নিয়ম ভঙ্গ করলে মেসেজ ডিলিট হওয়ার পাশাপাশি অ্যাকাউন্টে সাময়িক বা স্থায়ী চ্যাট ব্যান (Chat Ban) হতে পারে।
                     </p>
                 </div>
 
@@ -1086,7 +1086,7 @@ onUnmounted(() => {
                         @click="showRulesModal = false"
                         class="cursor-pointer rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                     >
-                        I Understand
+                        বুঝেছি (Close)
                     </button>
                 </div>
             </div>
