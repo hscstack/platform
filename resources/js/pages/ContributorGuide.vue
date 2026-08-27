@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     UserPlus,
@@ -11,6 +11,9 @@ import {
     ChevronDown,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 
 const quickLinks = [
     { num: '00', id: 'faq', label: 'FAQ' },
@@ -412,7 +415,9 @@ onUnmounted(() => {
                     কোনো technical জ্ঞানের প্রয়োজন নেই।
                 </p>
 
+                <!-- Become Contributor CTA (Only for guests) -->
                 <div
+                    v-if="!user"
                     class="flex flex-col items-start justify-between gap-4 rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 sm:flex-row sm:items-center sm:p-6 dark:border-indigo-500/30 dark:bg-indigo-500/10"
                 >
                     <div class="flex items-start gap-3.5">
