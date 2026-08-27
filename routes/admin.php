@@ -90,15 +90,20 @@ Route::post('/clear-cache', function () {
 })->middleware('permission:clear cache');
 
 // Users
-Route::middleware('permission:manage users')->group(function () {
-    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+Route::get('/users', [AdminUserController::class, 'index'])->middleware('permission:view users')->name('users.index');
+
+Route::middleware('permission:create users')->group(function () {
     Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
-    Route::get('/users/edit/{user}', [AdminUserController::class, 'edit'])->name('users.edit');
     Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-    Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-    Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->name('users.login-as');
 });
+
+Route::middleware('permission:edit users')->group(function () {
+    Route::get('/users/edit/{user}', [AdminUserController::class, 'edit'])->name('users.edit');
+    Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+});
+
+Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->middleware('permission:delete users')->name('users.destroy');
+Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->middleware('permission:impersonate users')->name('users.login-as');
 
 // Emails
 Route::middleware('permission:send email')->group(function () {

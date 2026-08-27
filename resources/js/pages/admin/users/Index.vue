@@ -3,6 +3,9 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import UserRow from '@/components/admin/UserRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 defineProps({
     users: Array,
@@ -31,7 +34,7 @@ defineProps({
                 </span>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div v-if="can('create users')" class="flex items-center gap-2">
                 <Link
                     href="/admin/users/create"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700"

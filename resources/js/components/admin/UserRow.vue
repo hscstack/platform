@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { LogIn, Pencil, Trash2 } from 'lucide-vue-next';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 defineProps({
     user: Object,
@@ -89,9 +92,17 @@ const deleteUser = (id: number) => {
         </div>
 
         <!-- Right: Actions -->
-        <div class="flex shrink-0 items-center gap-1" @click.stop>
+        <div
+            v-if="
+                (user.id !== userId && can('impersonate users')) ||
+                can('edit users') ||
+                (user.id !== userId && can('delete users'))
+            "
+            class="flex shrink-0 items-center gap-1"
+            @click.stop
+        >
             <button
-                v-if="user.id !== userId"
+                v-if="user.id !== userId && can('impersonate users')"
                 type="button"
                 @click="loginAsUser(user)"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600 dark:text-gray-500 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
@@ -101,6 +112,7 @@ const deleteUser = (id: number) => {
             </button>
 
             <Link
+                v-if="can('edit users')"
                 :href="`/admin/users/edit/${user.id}`"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                 title="Edit user"
@@ -109,7 +121,7 @@ const deleteUser = (id: number) => {
             </Link>
 
             <button
-                v-if="user.id !== userId"
+                v-if="user.id !== userId && can('delete users')"
                 @click="deleteUser(user.id)"
                 type="button"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"

@@ -63,10 +63,12 @@ class RolePermissionSeeder extends Seeder
 
         /*
          * User management.
-         * Includes creating, editing, deleting users,
-         * assigning roles, and assigning permissions.
          */
-        Permission::findOrCreate('manage users');
+        Permission::findOrCreate('view users');
+        Permission::findOrCreate('create users');
+        Permission::findOrCreate('edit users');
+        Permission::findOrCreate('delete users');
+        Permission::findOrCreate('impersonate users');
 
         /*
          * Email management

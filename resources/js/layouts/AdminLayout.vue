@@ -33,7 +33,7 @@ const allNavigation = [
         name: 'Users',
         to: '/admin/users',
         icon: Users,
-        permission: 'manage users',
+        permission: 'view users',
     },
     {
         name: 'Send Emails',
