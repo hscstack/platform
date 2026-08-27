@@ -112,7 +112,9 @@ Route::middleware('permission:send email')->group(function () {
     Route::post('/emails/send', [AdminEmailController::class, 'store'])->name('emails.store');
 });
 
-// Chat Settings
-Route::post('/chat/settings', [ChatSettingsController::class, 'update'])
-    ->middleware('permission:manage chat')
-    ->name('chat.settings.update');
+// Chat Management & Settings
+Route::middleware('permission:manage chat')->group(function () {
+    Route::get('/chat', [ChatSettingsController::class, 'edit'])->name('chat.edit');
+    Route::post('/chat/settings', [ChatSettingsController::class, 'update'])->name('chat.settings.update');
+    Route::post('/chat/clear', [ChatSettingsController::class, 'clearMessages'])->name('chat.clear');
+});

@@ -19,6 +19,7 @@ class ChatController extends Controller
         // Get Chat Config Status
         $isEnabled = AppSetting::get('global_chat_enabled', true);
         $audience = AppSetting::get('global_chat_audience', 'verified_members'); // 'verified_members', 'all', 'disabled'
+        $cooldownSeconds = (int) AppSetting::get('global_chat_cooldown_seconds', 30);
 
         // Determine if user can post
         $canPost = false;
@@ -27,12 +28,12 @@ class ChatController extends Controller
         if (! $isEnabled || $audience === 'disabled') {
             $reason = 'Global chat is currently disabled for maintenance.';
         } elseif (! $user) {
-            $reason = 'Please sign in to join the global student chat.';
+            $reason = 'Please sign in to join the conversation.';
         } elseif ($audience === 'verified_members') {
             if ($user->is_verified || $user->can('view admin')) {
                 $canPost = true;
             } else {
-                $reason = 'Global chat is currently open for verified members and contributors.';
+                $reason = 'Global chat is currently in beta for verified members and contributors.';
             }
         } elseif ($audience === 'all') {
             $canPost = true;
@@ -65,6 +66,7 @@ class ChatController extends Controller
                 'chatState' => [
                     'enabled' => (bool) $isEnabled,
                     'audience' => $audience,
+                    'cooldown_seconds' => $cooldownSeconds,
                     'can_post' => $canPost,
                     'reason' => $reason,
                     'can_delete' => (bool) $user?->can('delete chat messages'),
@@ -78,6 +80,7 @@ class ChatController extends Controller
         return response()->json([
             'enabled' => (bool) $isEnabled,
             'audience' => $audience,
+            'cooldown_seconds' => $cooldownSeconds,
             'can_post' => $canPost,
             'reason' => $reason,
             'can_delete' => (bool) $user?->can('delete chat messages'),
@@ -94,6 +97,7 @@ class ChatController extends Controller
 
         $isEnabled = AppSetting::get('global_chat_enabled', true);
         $audience = AppSetting::get('global_chat_audience', 'verified_members');
+        $cooldownSeconds = (int) AppSetting::get('global_chat_cooldown_seconds', 30);
 
         // Check if chat is enabled
         if (! $isEnabled || $audience === 'disabled') {
@@ -105,9 +109,9 @@ class ChatController extends Controller
             return response()->json(['message' => 'Global chat is currently restricted to verified members.'], 403);
         }
 
-        // Strict 30-second rate limiter per user (bypass for admins/staff)
+        // Configurable rate limiter per user (bypass for admins/staff)
         $rateLimitKey = "chat-send:{$user->id}";
-        if (! $user->can('view admin') && RateLimiter::tooManyAttempts($rateLimitKey, 1)) {
+        if (! $user->can('view admin') && $cooldownSeconds > 0 && RateLimiter::tooManyAttempts($rateLimitKey, 1)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
 
             return response()->json([
@@ -127,8 +131,10 @@ class ChatController extends Controller
             'content' => $content,
         ]);
 
-        // Record rate limit for 30 seconds
-        RateLimiter::hit($rateLimitKey, 30);
+        // Record rate limit for configured cooldown seconds
+        if ($cooldownSeconds > 0) {
+            RateLimiter::hit($rateLimitKey, $cooldownSeconds);
+        }
 
         // Keep rolling buffer of latest 200 messages in DB
         ChatMessage::pruneOldMessages(200);
