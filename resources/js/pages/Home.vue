@@ -29,6 +29,7 @@ const searchQuery = ref('');
 
 const filteredSubjects = computed(() => {
     const q = searchQuery.value.toLowerCase().trim();
+
     if (!q) {
         return subjects;
     }

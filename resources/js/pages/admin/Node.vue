@@ -30,12 +30,14 @@ const backUrl = computed(() => {
 
     // If at top-level /admin/subjects/{subject}/nodes -> go to /admin/subjects
     const nodesIndex = segments.indexOf('nodes');
+
     if (nodesIndex === -1 || nodesIndex === segments.length - 1) {
         return '/admin/subjects';
     }
 
     // Step up one folder level
     segments.pop();
+
     return '/' + segments.join('/');
 });
 

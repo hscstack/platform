@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { computed } from 'vue';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 
 const props = withDefaults(
     defineProps<{
