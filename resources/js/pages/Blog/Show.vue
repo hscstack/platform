@@ -697,7 +697,7 @@ const goBack = () => {
             <div
                 class="flex flex-col gap-6 rounded-2xl bg-slate-50 p-6 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-800"
             >
-                <div>
+                <div class="flex flex-col items-start gap-1">
                     <p class="text-sm text-slate-500 dark:text-gray-400">
                         Written by
                     </p>
@@ -708,14 +708,14 @@ const goBack = () => {
                                 ? `/u/${blog.user.username}`
                                 : '#'
                         "
-                        class="mt-1 inline-flex items-center gap-1.5 text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
+                        class="text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
                     >
-                        <span>{{ blog.user?.name }}</span>
+                        {{ blog.user?.name }}
                     </Link>
 
                     <Link
                         :href="`/blogs?q=${encodeURIComponent(blog.user?.name || '')}`"
-                        class="mt-2 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                        class="mt-1 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                         View more articles by {{ blog.user?.name }} →
                     </Link>
