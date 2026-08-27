@@ -29,6 +29,11 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
     Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
+    
+    Route::get('/me', function (Request $request){
+        return redirect()->route('user.profile', ['username' => $request->user()->username]);
+    })->name('me');
+    
 });
 
 Route::prefix('admin')
