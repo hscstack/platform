@@ -109,11 +109,12 @@ const filteredSubjects = computed(() => {
                         Read our latest articles and updates
                     </p>
                 </div>
+                <!-- Desktop Link (sm and up) -->
                 <Link
                     href="/blogs"
-                    class="group inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    class="group hidden items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700 sm:inline-flex dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
-                    See all articles
+                    <span>See all articles</span>
                     <span
                         class="transition-transform duration-200 group-hover:translate-x-1"
                     >
@@ -128,6 +129,21 @@ const filteredSubjects = computed(() => {
                     :key="blog.id"
                     :blog="blog"
                 />
+            </div>
+
+            <!-- Mobile Bottom Link (sm:hidden) -->
+            <div class="mt-4 text-center sm:hidden">
+                <Link
+                    href="/blogs"
+                    class="group inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-indigo-600 shadow-2xs transition hover:bg-slate-50 active:scale-98 dark:border-gray-800 dark:bg-gray-900 dark:text-indigo-400 dark:hover:bg-gray-800"
+                >
+                    <span>See all articles</span>
+                    <span
+                        class="transition-transform duration-200 group-hover:translate-x-1"
+                    >
+                        →
+                    </span>
+                </Link>
             </div>
         </div>
     </main>
