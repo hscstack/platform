@@ -145,11 +145,11 @@ onBeforeUnmount(() => {
             </nav>
 
             <!-- Right: Controls & Profile Cluster -->
-            <div class="hidden items-center gap-2.5 md:flex">
-                <!-- Dark Mode Toggle Button (Minimal Ghost) -->
+            <div class="hidden items-center gap-3 md:flex">
+                <!-- Dark Mode Toggle Button -->
                 <button
                     @click="toggle"
-                    class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                     :title="
                         theme === 'system'
                             ? 'System theme (click to cycle)'
@@ -163,11 +163,13 @@ onBeforeUnmount(() => {
                     <Moon v-else class="h-4 w-4" />
                 </button>
 
+                <div class="h-5 w-px bg-slate-200 dark:bg-gray-800"></div>
+
                 <!-- Guest: Login CTA -->
                 <Link
                     v-if="!user"
                     href="/login"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-slate-800 active:scale-95 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-slate-800 hover:shadow-md active:scale-95 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                 >
                     <LogIn class="h-3.5 w-3.5" />
                     <span>Login</span>
@@ -177,7 +179,7 @@ onBeforeUnmount(() => {
                 <div v-else ref="dropdownRef" class="relative">
                     <button
                         @click="toggleDropdown"
-                        class="flex items-center gap-2 rounded-full py-0.5 pr-2 pl-0.5 transition-all hover:opacity-90 active:scale-98"
+                        class="flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-white py-1 pr-3 pl-1 shadow-2xs transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-98 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 dark:hover:bg-gray-800"
                     >
                         <img
                             v-if="user.image_url"
