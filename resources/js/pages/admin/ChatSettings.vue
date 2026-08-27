@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import {
     MessageCircle,
     Save,
@@ -8,6 +8,7 @@ import {
     Trash2,
     Loader2,
     Activity,
+    Flag,
 } from 'lucide-vue-next';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
@@ -21,6 +22,7 @@ const props = defineProps<{
     };
     totalMessages: number;
     recentMessagesCount: number;
+    pendingReportsCount?: number;
 }>();
 
 const form = useForm({
@@ -109,6 +111,31 @@ const cooldownPresets = [
             </div>
         </div>
 
+        <!-- Global Chat Management Route Tabs -->
+        <div class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800">
+            <Link
+                href="/admin/chat"
+                class="flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-all border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
+            >
+                <MessageCircle class="h-4 w-4" />
+                <span>Chat Configuration</span>
+            </Link>
+
+            <Link
+                href="/admin/chat/reports"
+                class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+                <Flag class="h-4 w-4 text-rose-500" />
+                <span>Reported Messages</span>
+                <span
+                    v-if="pendingReportsCount && pendingReportsCount > 0"
+                    class="rounded-full bg-rose-500 px-1.5 py-0.2 text-[10px] font-bold text-white"
+                >
+                    {{ pendingReportsCount }}
+                </span>
+            </Link>
+        </div>
+
         <!-- Metric Statistics Cards -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div
@@ -172,7 +199,7 @@ const cooldownPresets = [
             </div>
         </div>
 
-        <!-- Main Configuration Form -->
+        <!-- Chat Configuration Form -->
         <form
             @submit.prevent="submitSettings"
             class="space-y-6 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7 dark:border-gray-800 dark:bg-gray-900"

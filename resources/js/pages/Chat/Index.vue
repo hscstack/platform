@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil } from 'lucide-vue-next';
+import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil, Flag, Check, X } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
@@ -257,6 +257,85 @@ const deleteMessage = async (messageId: number) => {
     }
 };
 
+// Report message state & methods
+const reportingMessage = ref<ChatMessageItem | null>(null);
+const reportReason = ref('Inappropriate message or conduct');
+const isSubmittingReport = ref(false);
+const reportSuccessMessage = ref<string | null>(null);
+const reportErrorMessage = ref<string | null>(null);
+
+const reportReasons = [
+    'Inappropriate message or conduct',
+    'Spam or advertisement',
+    'Harassment or hate speech',
+    'False information / Exam leak attempt',
+    'Other',
+];
+
+const openReportModal = (message: ChatMessageItem) => {
+    if (!currentUser.value) {
+        alert('Please sign in to report a message.');
+        return;
+    }
+    reportingMessage.value = message;
+    reportReason.value = 'Inappropriate message or conduct';
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+};
+
+const closeReportModal = () => {
+    reportingMessage.value = null;
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+    isSubmittingReport.value = false;
+};
+
+const submitReport = async () => {
+    if (!reportingMessage.value || isSubmittingReport.value) return;
+
+    isSubmittingReport.value = true;
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+
+    try {
+        const token = (
+            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
+        )?.content;
+
+        const res = await fetch('/api/chat/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': token || '',
+            },
+            body: JSON.stringify({
+                reported_user_id: reportingMessage.value.user.id,
+                reported_user_name: reportingMessage.value.user.name,
+                reported_user_username: reportingMessage.value.user.username,
+                message_content: reportingMessage.value.content,
+                message_sent_at: reportingMessage.value.created_at,
+                reason: reportReason.value,
+            }),
+        });
+
+        if (res.ok) {
+            reportSuccessMessage.value = 'Thank you. The report has been sent to our moderators.';
+            setTimeout(() => {
+                closeReportModal();
+            }, 1800);
+        } else {
+            const err = await res.json();
+            reportErrorMessage.value = err.message || 'Failed to submit report.';
+        }
+    } catch {
+        reportErrorMessage.value = 'Network error. Please try again.';
+    } finally {
+        isSubmittingReport.value = false;
+    }
+};
+
 const formatTime = (isoString: string) => {
     try {
         const date = new Date(isoString);
@@ -457,6 +536,20 @@ onUnmounted(() => {
                                         <Pencil class="h-3 w-3" />
                                     </Link>
 
+                                    <!-- Report Button (for non-author users) -->
+                                    <button
+                                        v-if="
+                                            currentUser &&
+                                            Number(currentUser.id) !==
+                                                Number(msg.user.id)
+                                        "
+                                        @click="openReportModal(msg)"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-amber-50 hover:text-amber-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
+                                        title="Report message"
+                                    >
+                                        <Flag class="h-3 w-3" />
+                                    </button>
+
                                     <!-- Delete Button -->
                                     <button
                                         v-if="
@@ -578,6 +671,114 @@ onUnmounted(() => {
                         <span>Sign in</span>
                     </Link>
                 </div>
+            </div>
+        </div>
+
+        <!-- Report Modal -->
+        <div
+            v-if="reportingMessage"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+            @click.self="closeReportModal"
+        >
+            <div
+                class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-gray-800">
+                    <div class="flex items-center gap-2">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                            <Flag class="h-4 w-4" />
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-gray-100">
+                            Report Message
+                        </h3>
+                    </div>
+                    <button
+                        type="button"
+                        @click="closeReportModal"
+                        class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        <X class="h-4 w-4" />
+                    </button>
+                </div>
+
+                <!-- Success State -->
+                <div
+                    v-if="reportSuccessMessage"
+                    class="my-6 flex flex-col items-center justify-center py-4 text-center"
+                >
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                        <Check class="h-6 w-6" />
+                    </div>
+                    <p class="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                        {{ reportSuccessMessage }}
+                    </p>
+                </div>
+
+                <!-- Form Content -->
+                <form v-else @submit.prevent="submitReport" class="mt-4 space-y-4">
+                    <!-- Error notice if duplicate or validation fails -->
+                    <div
+                        v-if="reportErrorMessage"
+                        class="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300"
+                    >
+                        {{ reportErrorMessage }}
+                    </div>
+
+                    <!-- Message Preview Snapshot -->
+                    <div class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-800/60">
+                        <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400">
+                            <span class="font-semibold text-slate-700 dark:text-gray-300">
+                                {{ reportingMessage.user.name }} (@{{ reportingMessage.user.username }})
+                            </span>
+                            <span>{{ formatTime(reportingMessage.created_at) }}</span>
+                        </div>
+                        <p class="mt-1.5 text-xs text-slate-800 break-words dark:text-gray-200">
+                            "{{ reportingMessage.content }}"
+                        </p>
+                    </div>
+
+                    <!-- Reason Selection -->
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300">
+                            Why are you reporting this message?
+                        </label>
+                        <select
+                            v-model="reportReason"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-medium text-slate-800 transition outline-none focus:border-indigo-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                        >
+                            <option
+                                v-for="reason in reportReasons"
+                                :key="reason"
+                                :value="reason"
+                                class="bg-white text-slate-800 dark:bg-gray-800 dark:text-gray-200"
+                            >
+                                {{ reason }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button
+                            type="button"
+                            @click="closeReportModal"
+                            class="cursor-pointer rounded-xl border border-slate-200 bg-transparent px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="isSubmittingReport"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-rose-700 active:scale-95 disabled:opacity-50 dark:bg-rose-500 dark:hover:bg-rose-600"
+                        >
+                            <Loader2
+                                v-if="isSubmittingReport"
+                                class="h-3.5 w-3.5 animate-spin"
+                            />
+                            <span>Submit Report</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </main>

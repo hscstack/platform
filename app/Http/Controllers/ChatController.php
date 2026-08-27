@@ -197,4 +197,47 @@ class ChatController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function report(Request $request)
+    {
+        $user = $request->user();
+        abort_unless($user, 401, 'Unauthenticated');
+
+        $validated = $request->validate([
+            'reported_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'reported_user_name' => ['nullable', 'string', 'max:255'],
+            'reported_user_username' => ['nullable', 'string', 'max:255'],
+            'message_content' => ['required', 'string', 'max:1000'],
+            'message_sent_at' => ['nullable', 'date'],
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        // Prevent duplicate reporting of the exact same message content by the same user
+        $alreadyReported = \App\Models\ChatReport::where('reporter_id', $user->id)
+            ->where('message_content', $validated['message_content'])
+            ->where('reported_user_id', $validated['reported_user_id'] ?? null)
+            ->exists();
+
+        if ($alreadyReported) {
+            return response()->json([
+                'message' => 'You have already reported this message.',
+            ], 422);
+        }
+
+        $report = \App\Models\ChatReport::create([
+            'reporter_id' => $user->id,
+            'reported_user_id' => $validated['reported_user_id'] ?? null,
+            'reported_user_name' => $validated['reported_user_name'] ?? null,
+            'reported_user_username' => $validated['reported_user_username'] ?? null,
+            'message_content' => $validated['message_content'],
+            'message_sent_at' => $validated['message_sent_at'] ?? null,
+            'reason' => $validated['reason'] ?? 'Inappropriate message',
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Message reported successfully. Our team will review it.',
+            'report_id' => $report->id,
+        ], 201);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
+use App\Models\ChatReport;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,6 +21,46 @@ class ChatSettingsController extends Controller
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
+            'pendingReportsCount' => ChatReport::where('status', 'pending')->count(),
+        ]);
+    }
+
+    public function reports()
+    {
+        $reports = ChatReport::with(['reporter:id,name,username', 'reportedUser:id,name,username,chat_banned_until'])
+            ->latest('id')
+            ->take(100)
+            ->get()
+            ->map(fn ($report) => [
+                'id' => $report->id,
+                'reporter_id' => $report->reporter_id,
+                'reporter' => $report->reporter ? [
+                    'id' => $report->reporter->id,
+                    'name' => $report->reporter->name,
+                    'username' => $report->reporter->username,
+                ] : null,
+                'reported_user_id' => $report->reported_user_id,
+                'reported_user_name' => $report->reported_user_name,
+                'reported_user_username' => $report->reported_user_username,
+                'reported_user' => $report->reportedUser ? [
+                    'id' => $report->reportedUser->id,
+                    'name' => $report->reportedUser->name,
+                    'username' => $report->reportedUser->username,
+                    'chat_banned_until' => $report->reportedUser->chat_banned_until?->toIso8601String(),
+                    'is_chat_banned' => $report->reportedUser->isChatBanned(),
+                ] : null,
+                'message_content' => $report->message_content,
+                'message_sent_at' => $report->message_sent_at?->toIso8601String(),
+                'reason' => $report->reason,
+                'status' => $report->status,
+                'created_at' => $report->created_at->toIso8601String(),
+            ]);
+
+        return Inertia::render('admin/chat/Reports', [
+            'reports' => $reports,
+            'pendingCount' => ChatReport::where('status', 'pending')->count(),
+            'reviewedCount' => ChatReport::where('status', 'reviewed')->count(),
+            'dismissedCount' => ChatReport::where('status', 'dismissed')->count(),
         ]);
     }
 
@@ -43,5 +84,23 @@ class ChatSettingsController extends Controller
         ChatMessage::truncate();
 
         return back()->with('success', 'All chat messages have been cleared.');
+    }
+
+    public function updateReportStatus(Request $request, ChatReport $report)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:pending,reviewed,dismissed'],
+        ]);
+
+        $report->update(['status' => $validated['status']]);
+
+        return back()->with('success', 'Report status updated.');
+    }
+
+    public function deleteReport(ChatReport $report)
+    {
+        $report->delete();
+
+        return back()->with('success', 'Report deleted successfully.');
     }
 }
