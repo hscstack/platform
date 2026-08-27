@@ -21,6 +21,10 @@ const page = usePage();
 const user = computed(() => props.user || page.props.auth?.user);
 
 const hasNoRole = computed(() => {
+    if (typeof user.value?.is_verified === 'boolean') {
+        return !user.value.is_verified;
+    }
+
     const roles = user.value?.roles;
 
     return !roles || roles.length === 0;

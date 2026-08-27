@@ -62,7 +62,7 @@ class BlogController extends Controller
         $reactionsCount = $blog->reactions()->count();
 
         $reactors = $blog->reactions()
-            ->with(['user:id,name,username,image_path,institution', 'user.roles:id,name'])
+            ->with(['user:id,name,username,image_path,institution'])
             ->latest('id')
             ->limit(50)
             ->get()
@@ -71,7 +71,7 @@ class BlogController extends Controller
             ->values();
 
         $comments = $blog->comments()
-            ->with(['user:id,name,username,image_path,institution', 'user.roles:id,name'])
+            ->with(['user:id,name,username,image_path,institution'])
             ->latest()
             ->get();
 

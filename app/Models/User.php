@@ -64,7 +64,15 @@ class User extends Authenticatable
 
     protected $appends = [
         'image_url',
+        'is_verified',
     ];
+
+    public function getIsVerifiedAttribute(): bool
+    {
+        return $this->relationLoaded('roles')
+            ? $this->roles->isNotEmpty()
+            : $this->roles()->exists();
+    }
 
     public function getImageUrlAttribute()
     {
