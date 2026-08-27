@@ -18,8 +18,12 @@ class StoreSubjectRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $slug = $this->filled('slug')
+            ? Str::slug($this->slug)
+            : Str::slug($this->course.'-'.($this->english_name ?: $this->name));
+
         $this->merge([
-            'slug' => Str::slug($this->course.'-'.$this->name),
+            'slug' => $slug,
         ]);
     }
 
@@ -32,7 +36,8 @@ class StoreSubjectRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100', 'min:3', 'unique:subjects,name'],
-            'slug' => ['required', 'string', 'unique:subjects,slug'],
+            'english_name' => ['nullable', 'string', 'max:100'],
+            'slug' => ['required', 'string', 'max:100', 'unique:subjects,slug'],
             'tailwind_format' => ['required', 'string', 'max:100'],
             'icon' => ['required', 'string', 'max:50'],
             'sort_order' => ['required', 'integer'],
