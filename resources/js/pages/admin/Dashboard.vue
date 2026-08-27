@@ -157,7 +157,7 @@ const fetchAnalytics = async (refresh = false) => {
                 Analytics ডাটা লোড করার জন্য প্রস্তুত
             </h3>
             <p class="mt-1 max-w-sm text-xs text-slate-500 dark:text-gray-400">
-                পেজ লোড দ্রুত রাখতে অ্যানালিটিক্স ডাটা ডিমান্ড অনুযায়ী লোড হয়। PostHog থেকে লাইভ মেট্রিক্স দেখতে নিচে ক্লিক করুন।
+                পেজ লোড দ্রুত রাখতে অ্যানালিটিক্স ডাটা ডিমান্ড অনুযায়ী লোড হয়। লাইভ মেট্রিক্স দেখতে নিচে ক্লিক করুন।
             </p>
             <button
                 type="button"
@@ -180,7 +180,7 @@ const fetchAnalytics = async (refresh = false) => {
             <p
                 class="mt-3 text-xs font-medium text-slate-500 dark:text-gray-400"
             >
-                PostHog এর সাথে কানেক্ট করে বিগত ৩০ দিনের অ্যানালিটিক্স লোড হচ্ছে...
+                বিগত ৩০ দিনের অ্যানালিটিক্স লোড হচ্ছে...
             </p>
         </div>
 
