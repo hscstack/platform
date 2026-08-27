@@ -18,6 +18,7 @@ import {
     Heart,
     Instagram,
     LogIn,
+    LogOut,
     MessageSquare,
     UploadCloud,
     Users,
@@ -404,18 +405,30 @@ const handleAppreciate = () => {
                         </div>
                     </div>
 
-                    <!-- Right Actions: Edit (For Profile Owner) or Appreciate (For Others) -->
+                    <!-- Right Actions: Edit & Logout (For Profile Owner) or Appreciate (For Others) -->
                     <div
-                        class="flex shrink-0 items-center self-start pt-1 sm:self-auto sm:pt-0"
+                        class="flex shrink-0 items-center gap-1.5 self-start pt-1 sm:self-auto sm:pt-0"
                     >
-                        <Link
-                            v-if="isOwnProfile"
-                            href="/profile"
-                            class="inline-flex h-8 items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 active:scale-95 sm:h-8.5 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
-                        >
-                            <Edit3 class="h-3.5 w-3.5" />
-                            <span>Edit</span>
-                        </Link>
+                        <template v-if="isOwnProfile">
+                            <Link
+                                href="/profile"
+                                class="inline-flex h-8 items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 active:scale-95 sm:h-8.5 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                            >
+                                <Edit3 class="h-3.5 w-3.5" />
+                                <span>Edit</span>
+                            </Link>
+
+                            <Link
+                                href="/logout"
+                                method="post"
+                                as="button"
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-2xs transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 active:scale-95 sm:h-8.5 sm:w-8.5 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-rose-900/60 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                title="Sign out"
+                                aria-label="Sign out"
+                            >
+                                <LogOut class="h-3.5 w-3.5" />
+                            </Link>
+                        </template>
 
                         <button
                             v-else
