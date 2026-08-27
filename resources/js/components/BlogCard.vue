@@ -83,21 +83,8 @@ defineProps({
                 <div
                     class="flex items-center gap-3 text-[11px] text-slate-400 sm:text-xs dark:text-gray-500"
                 >
-                    <span
-                        class="inline-flex items-center gap-1"
-                        :class="{
-                            'font-medium text-rose-500 dark:text-rose-400':
-                                blog.reactions_count > 0,
-                        }"
-                    >
-                        <Heart
-                            class="h-3.5 w-3.5"
-                            :class="
-                                blog.reactions_count > 0
-                                    ? 'fill-rose-500 text-rose-500'
-                                    : 'text-slate-400 dark:text-gray-500'
-                            "
-                        />
+                    <span class="inline-flex items-center gap-1">
+                        <Heart class="h-3.5 w-3.5" />
                         <span>{{ blog.reactions_count || 0 }}</span>
                     </span>
 
