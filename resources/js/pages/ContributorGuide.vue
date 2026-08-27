@@ -215,16 +215,7 @@ onUnmounted(() => {
         />
     </Head>
 
-    <header class="mx-auto max-w-4xl px-4 pt-8 pb-4 text-center sm:pt-12">
-        <Link
-            href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-4 w-4 transition-transform group-hover:-translate-x-1"
-            />
-            Back to Home
-        </Link>
+    <header class="mx-auto max-w-4xl px-4 pt-6 pb-4 text-center sm:pt-10">
         <h1
             class="mb-3 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
