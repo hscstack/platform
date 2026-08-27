@@ -8,6 +8,7 @@ use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ChatController extends Controller
@@ -52,6 +53,8 @@ class ChatController extends Controller
             ->map(fn (ChatMessage $msg) => [
                 'id' => $msg->id,
                 'content' => $msg->content,
+                'reply_to_id' => $msg->reply_to_id,
+                'reply_to_content' => $msg->reply_to_content,
                 'created_at' => $msg->created_at->toIso8601String(),
                 'user' => [
                     'id' => $msg->user->id,
@@ -134,13 +137,27 @@ class ChatController extends Controller
 
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:280'],
+            'reply_to_id' => ['nullable', 'integer'],
         ]);
 
         $content = trim($validated['content']);
+        $replyToId = $validated['reply_to_id'] ?? null;
+        $replyToContent = null;
+
+        if ($replyToId) {
+            $parentMessage = ChatMessage::find($replyToId);
+            if ($parentMessage) {
+                $replyToContent = Str::limit($parentMessage->content, 97, '...');
+            } else {
+                $replyToId = null;
+            }
+        }
 
         $message = ChatMessage::create([
             'user_id' => $user->id,
             'content' => $content,
+            'reply_to_id' => $replyToId,
+            'reply_to_content' => $replyToContent,
         ]);
 
         // Record rate limit for configured cooldown seconds
@@ -163,6 +180,8 @@ class ChatController extends Controller
         return response()->json([
             'id' => $message->id,
             'content' => $message->content,
+            'reply_to_id' => $message->reply_to_id,
+            'reply_to_content' => $message->reply_to_content,
             'created_at' => $message->created_at->toIso8601String(),
             'user' => [
                 'id' => $message->user->id,

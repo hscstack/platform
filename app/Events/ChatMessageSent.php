@@ -25,6 +25,8 @@ class ChatMessageSent implements ShouldBroadcastNow
         $this->message = [
             'id' => $chatMessage->id,
             'content' => $chatMessage->content,
+            'reply_to_id' => $chatMessage->reply_to_id,
+            'reply_to_content' => $chatMessage->reply_to_content,
             'created_at' => $chatMessage->created_at->toIso8601String(),
             'user' => [
                 'id' => $chatMessage->user->id,

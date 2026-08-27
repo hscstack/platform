@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil, Flag, Check, X } from 'lucide-vue-next';
+import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil, Flag, Check, X, Reply } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
@@ -19,6 +19,8 @@ interface ChatUser {
 interface ChatMessageItem {
     id: number;
     content: string;
+    reply_to_id?: number | null;
+    reply_to_content?: string | null;
     created_at: string;
     user: ChatUser;
 }
@@ -50,7 +52,36 @@ const canDelete = ref(props.chatState.can_delete);
 const activeCooldownSeconds = ref(props.chatState.cooldown_seconds ?? 30);
 
 const messagesContainerRef = ref<HTMLElement | null>(null);
+const messageInputRef = ref<HTMLInputElement | null>(null);
 const showScrollButton = ref(false);
+const highlightedMessageId = ref<number | null>(null);
+
+// Reply State
+const activeReplyTo = ref<ChatMessageItem | null>(null);
+
+const startReply = (msg: ChatMessageItem) => {
+    activeReplyTo.value = msg;
+    nextTick(() => {
+        messageInputRef.value?.focus();
+    });
+};
+
+const cancelReply = () => {
+    activeReplyTo.value = null;
+};
+
+const scrollToMessage = (messageId: number) => {
+    const el = document.getElementById(`chat-msg-${messageId}`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        highlightedMessageId.value = messageId;
+        setTimeout(() => {
+            if (highlightedMessageId.value === messageId) {
+                highlightedMessageId.value = null;
+            }
+        }, 2000);
+    }
+};
 
 // Cooldown logic
 const cooldownSeconds = ref(0);
@@ -188,6 +219,7 @@ const sendMessage = async () => {
         const token = (
             document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
         )?.content;
+        const replyToId = activeReplyTo.value ? activeReplyTo.value.id : null;
         const res = await fetch('/api/chat/messages', {
             method: 'POST',
             headers: {
@@ -196,7 +228,10 @@ const sendMessage = async () => {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': token || '',
             },
-            body: JSON.stringify({ content }),
+            body: JSON.stringify({
+                content,
+                reply_to_id: replyToId,
+            }),
         });
 
         if (res.ok) {
@@ -211,6 +246,7 @@ const sendMessage = async () => {
             }
 
             inputContent.value = '';
+            activeReplyTo.value = null;
 
             if (activeCooldownSeconds.value > 0) {
                 startCooldown(activeCooldownSeconds.value);
@@ -452,18 +488,22 @@ onUnmounted(() => {
 
                     <!-- Individual Message Row (Distinctly Highlighted for currentUser) -->
                     <div
-                        class="group -mx-1.5 flex items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition sm:-mx-2 sm:px-3 sm:py-3"
-                        :class="
+                        :id="`chat-msg-${msg.id}`"
+                        class="group flex items-start gap-3 rounded-2xl p-2.5 transition-all duration-300 sm:p-3"
+                        :class="[
                             currentUser &&
                             Number(currentUser.id) === Number(msg.user.id)
-                                ? 'bg-indigo-50/60 hover:bg-indigo-50/90 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/45'
-                                : 'hover:bg-slate-50/60 dark:hover:bg-gray-800/35'
-                        "
+                                ? 'bg-indigo-50/50 dark:bg-indigo-950/20'
+                                : 'hover:bg-slate-50 dark:hover:bg-gray-800/40',
+                            highlightedMessageId === msg.id
+                                ? 'ring-2 ring-indigo-500 bg-indigo-100/70 dark:bg-indigo-950/60'
+                                : '',
+                        ]"
                     >
                         <!-- User Avatar -->
                         <Link
                             :href="`/u/${msg.user.username}`"
-                            class="flex h-8.5 w-8.5 shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:ring-2 hover:ring-indigo-400 sm:h-9 sm:w-9"
+                            class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:ring-2 hover:ring-indigo-400 sm:h-9 sm:w-9"
                             :class="
                                 currentUser &&
                                 Number(currentUser.id) === Number(msg.user.id)
@@ -519,12 +559,23 @@ onUnmounted(() => {
                                     </span>
                                 </div>
 
-                                <div class="flex shrink-0 items-center gap-1.5">
+                                <div class="flex shrink-0 items-center gap-1">
                                     <span
                                         class="text-[10px] text-slate-400 sm:text-[11px] dark:text-gray-500"
                                     >
                                         {{ formatTime(msg.created_at) }}
                                     </span>
+
+                                    <!-- Reply Button -->
+                                    <button
+                                        v-if="currentUser && canPost"
+                                        type="button"
+                                        @click="startReply(msg)"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-indigo-50 hover:text-indigo-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                        title="Reply to message"
+                                    >
+                                        <Reply class="h-3 w-3" />
+                                    </button>
 
                                     <!-- Quick Admin Edit / Ban User Button -->
                                     <Link
@@ -567,6 +618,20 @@ onUnmounted(() => {
                                 </div>
                             </div>
 
+                            <!-- Quoted Parent Snapshot (If Reply) -->
+                            <div
+                                v-if="msg.reply_to_content"
+                                @click="msg.reply_to_id ? scrollToMessage(msg.reply_to_id) : null"
+                                class="mt-1.5 flex items-center gap-1.5 rounded-lg border-l-2 border-indigo-500 bg-slate-100/70 px-2.5 py-1 text-[11px] text-slate-600 transition dark:border-indigo-400 dark:bg-gray-800/60 dark:text-gray-300"
+                                :class="msg.reply_to_id ? 'cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30' : ''"
+                                :title="msg.reply_to_id ? 'Click to jump to original message' : ''"
+                            >
+                                <Reply class="h-3 w-3 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                                <span class="truncate italic">
+                                    "{{ msg.reply_to_content }}"
+                                </span>
+                            </div>
+
                             <!-- Message Text -->
                             <p
                                 class="mt-1 text-xs leading-relaxed break-words whitespace-pre-wrap sm:text-sm"
@@ -600,6 +665,28 @@ onUnmounted(() => {
             <div
                 class="border-t border-slate-100 bg-white p-3.5 sm:p-4 dark:border-gray-800 dark:bg-gray-900"
             >
+                <!-- Active Reply Banner -->
+                <div
+                    v-if="activeReplyTo"
+                    class="mb-2 flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-1.5 text-xs text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-200"
+                >
+                    <div class="flex min-w-0 items-center gap-1.5 truncate">
+                        <Reply class="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                        <span class="truncate">
+                            Replying to <strong class="font-semibold">{{ activeReplyTo.user.name }}</strong>:
+                            <span class="opacity-80 italic">"{{ activeReplyTo.content }}"</span>
+                        </span>
+                    </div>
+                    <button
+                        type="button"
+                        @click="cancelReply"
+                        class="cursor-pointer rounded-lg p-0.5 text-indigo-500 transition hover:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/60"
+                        title="Cancel reply"
+                    >
+                        <X class="h-3.5 w-3.5" />
+                    </button>
+                </div>
+
                 <!-- Can Post -->
                 <form
                     v-if="canPost"
@@ -608,10 +695,11 @@ onUnmounted(() => {
                 >
                     <div class="relative flex-1">
                         <input
+                            ref="messageInputRef"
                             v-model="inputContent"
                             type="text"
                             :disabled="isSending || cooldownSeconds > 0"
-                            placeholder="Type a message..."
+                            :placeholder="activeReplyTo ? `Reply to ${activeReplyTo.user.name}...` : 'Type a message...'"
                             maxlength="280"
                             class="dark:border-gray-750 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
