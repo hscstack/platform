@@ -43,7 +43,7 @@ const fetchAnalytics = async (refresh = false) => {
 </script>
 
 <template>
-    <Head title="Staff Dashboard" />
+    <Head title="Staff Panel" />
 
     <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
         <!-- Main Dashboard Header -->
