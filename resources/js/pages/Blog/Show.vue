@@ -109,11 +109,17 @@ const commentForm = useForm({
     content: '',
 });
 
-const hasUserCommented = computed(() =>
-    currentUser.value
-        ? props.comments.some((c: any) => c.user_id === currentUser.value.id)
-        : false,
-);
+const hasUserCommented = computed(() => {
+    if (!currentUser.value?.id) {
+        return false;
+    }
+    const currentId = Number(currentUser.value.id);
+
+    return props.comments.some((c: any) => {
+        const commentUserId = Number(c.user_id ?? c.user?.id);
+        return commentUserId === currentId;
+    });
+});
 
 const handleCommentInputClick = () => {
     if (!currentUser.value) {
