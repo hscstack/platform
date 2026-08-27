@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
     Atom,
     FlaskConical,
@@ -11,8 +11,10 @@ import {
     BarChart3,
     Search,
     Check,
+    ChevronDown,
+    ChevronRight,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 
 const icons = {
     Atom,
@@ -29,8 +31,12 @@ const props = defineProps({
     subject: Object,
 });
 
+const showAdvanced = ref(false);
+
 const form = useForm({
     name: props.subject?.name || '',
+    english_name: props.subject?.english_name || '',
+    slug: props.subject?.slug || '',
     course: props.subject?.course || 'hsc',
     tailwind_format: props.subject?.tailwind_format || 'bg-red-50 text-red-600',
     icon: props.subject?.icon || 'BookOpen',
@@ -54,10 +60,6 @@ const tailwindPresets = [
 
 const activeIconComponent = computed(() => icons[form.icon] || BookOpen);
 
-const goBack = () => {
-    window.history.back();
-};
-
 const submitForm = () => {
     if (props.subject) {
         form.patch(`/admin/subjects/edit/${props.subject.id}`, {
@@ -80,7 +82,7 @@ const submitForm = () => {
                 <h1
                     class="text-2xl font-bold text-slate-900 dark:text-gray-100"
                 >
-                    {{ props.subject ? 'Edit' : 'Create' }} New Subject
+                    {{ props.subject ? 'Edit' : 'Create New' }} Subject
                 </h1>
                 <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                     {{
@@ -90,17 +92,17 @@ const submitForm = () => {
                     }}
                 </p>
             </div>
-            <button
-                type="button"
-                @click="goBack"
+            <Link
+                href="/admin/subjects"
                 class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
             >
                 &larr; Back
-            </button>
+            </Link>
         </div>
 
         <form @submit.prevent="submitForm" class="space-y-8">
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <!-- Primary Inputs (Clean & Minimal) -->
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                     <label
                         for="name"
@@ -111,12 +113,12 @@ const submitForm = () => {
                         v-model="form.name"
                         type="text"
                         id="name"
-                        placeholder="e.g. Physics..."
+                        placeholder="e.g. পদার্থবিজ্ঞান ১ম পত্র"
                         class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
                         :class="
                             form.errors.name
                                 ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
+                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
                         "
                     />
                     <p
@@ -153,30 +155,147 @@ const submitForm = () => {
                         {{ form.errors.course }}
                     </p>
                 </div>
+            </div>
 
-                <div>
-                    <label
-                        for="sort_order"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                        >Sort Order</label
-                    >
-                    <input
-                        v-model.number="form.sort_order"
-                        type="number"
-                        id="sort_order"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
-                        :class="
+            <!-- Advanced Settings (English Name, Sort Order, Custom Slug) -->
+            <div class="pt-1">
+                <button
+                    type="button"
+                    @click="showAdvanced = !showAdvanced"
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                >
+                    <component
+                        :is="
+                            showAdvanced ||
+                            form.errors.slug ||
+                            form.errors.english_name ||
                             form.errors.sort_order
-                                ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
+                                ? ChevronDown
+                                : ChevronRight
                         "
+                        class="h-3.5 w-3.5"
                     />
-                    <p
-                        v-if="form.errors.sort_order"
-                        class="mt-1 text-sm text-rose-600"
-                    >
-                        {{ form.errors.sort_order }}
-                    </p>
+                    <span>Advanced settings</span>
+                </button>
+
+                <div
+                    v-if="
+                        showAdvanced ||
+                        form.errors.slug ||
+                        form.errors.english_name ||
+                        form.errors.sort_order
+                    "
+                    class="mt-3 space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 sm:p-5 dark:border-gray-700 dark:bg-gray-800/50"
+                >
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <!-- English Name -->
+                        <div>
+                            <label
+                                for="english_name"
+                                class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                English Name (Search Keyword)
+                                <span
+                                    class="font-normal text-slate-400 dark:text-gray-500"
+                                    >(Optional)</span
+                                >
+                            </label>
+                            <input
+                                v-model="form.english_name"
+                                type="text"
+                                id="english_name"
+                                placeholder="e.g. Physics 1st Paper, Bangla"
+                                class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
+                                :class="
+                                    form.errors.english_name
+                                        ? 'border-rose-500 focus:ring-rose-500/20'
+                                        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
+                                "
+                            />
+                            <p
+                                v-if="form.errors.english_name"
+                                class="mt-1 text-xs text-rose-600"
+                            >
+                                {{ form.errors.english_name }}
+                            </p>
+                            <p
+                                class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Optimizes homepage search when students type in
+                                English.
+                            </p>
+                        </div>
+
+                        <!-- Sort Order -->
+                        <div>
+                            <label
+                                for="sort_order"
+                                class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                Sort Order
+                            </label>
+                            <input
+                                v-model.number="form.sort_order"
+                                type="number"
+                                id="sort_order"
+                                class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
+                                :class="
+                                    form.errors.sort_order
+                                        ? 'border-rose-500 focus:ring-rose-500/20'
+                                        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
+                                "
+                            />
+                            <p
+                                v-if="form.errors.sort_order"
+                                class="mt-1 text-xs text-rose-600"
+                            >
+                                {{ form.errors.sort_order }}
+                            </p>
+                            <p
+                                class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Lower numbers appear first in the catalog.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Custom URL Slug -->
+                    <div>
+                        <label
+                            for="slug"
+                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Custom URL Slug
+                            <span
+                                class="font-normal text-slate-400 dark:text-gray-500"
+                                >(Optional)</span
+                            >
+                        </label>
+                        <input
+                            v-model="form.slug"
+                            type="text"
+                            id="slug"
+                            placeholder="e.g., hsc-physics-1st-paper (leave blank to auto-generate)"
+                            class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
+                            :class="
+                                form.errors.slug
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
+                            "
+                        />
+                        <p
+                            v-if="form.errors.slug"
+                            class="mt-1 text-xs text-rose-600"
+                        >
+                            {{ form.errors.slug }}
+                        </p>
+                        <p
+                            class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                        >
+                            Leave empty to automatically generate from the
+                            course and name.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -287,13 +406,12 @@ const submitForm = () => {
             <div
                 class="flex justify-end space-x-3 border-t border-slate-100 pt-4 dark:border-gray-800"
             >
-                <button
-                    type="button"
-                    @click="goBack"
+                <Link
+                    href="/admin/subjects"
                     class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                     Cancel
-                </button>
+                </Link>
                 <button
                     type="submit"
                     :disabled="form.processing"

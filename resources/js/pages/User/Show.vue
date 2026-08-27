@@ -5,7 +5,6 @@ import {
     ArrowBigUp,
     ArrowRight,
     ArrowUpRight,
-    BadgeCheck,
     BookOpen,
     Calendar,
     CheckCircle2,

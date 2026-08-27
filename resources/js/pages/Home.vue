@@ -4,7 +4,6 @@ import { ref, computed } from 'vue';
 import AIBanner from '@/components/AIBanner.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
-import FAQSection from '@/components/FAQSection.vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -16,12 +15,31 @@ const props = defineProps({
     featured_blogs: Array,
 });
 
-const subjects = props.subjects;
+const subjects = props.subjects as Array<{
+    id: number;
+    name: string;
+    english_name?: string | null;
+    slug: string;
+    course?: string;
+    tailwind_format: string;
+    icon: string;
+    nodes_count?: number;
+}>;
 const searchQuery = ref('');
 
 const filteredSubjects = computed(() => {
-    return subjects.filter((subject) =>
-        subject.name.toLowerCase().includes(searchQuery.value.toLowerCase()),
+    const q = searchQuery.value.toLowerCase().trim();
+
+    if (!q) {
+        return subjects;
+    }
+
+    return subjects.filter(
+        (subject) =>
+            (subject.name && subject.name.toLowerCase().includes(q)) ||
+            (subject.english_name &&
+                subject.english_name.toLowerCase().includes(q)) ||
+            (subject.slug && subject.slug.toLowerCase().includes(q)),
     );
 });
 </script>
@@ -113,12 +131,4 @@ const filteredSubjects = computed(() => {
             </div>
         </div>
     </main>
-    <!--
-    <RepositoryStas
-        :total-subjects="subjectCount"
-        :total-resources="resourceCount"
-        :total-users="contributorCount"
-    /> -->
-
-    <FAQSection />
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { UserPlus, Loader2, Save } from 'lucide-vue-next';
 import { watch } from 'vue';
 
@@ -43,10 +43,6 @@ watch(
     },
 );
 
-const goBack = () => {
-    window.history.back();
-};
-
 const submitForm = () => {
     if (props.user) {
         form.post(`/admin/users/${props.user.id}`, {
@@ -81,6 +77,12 @@ const submitForm = () => {
                     }}
                 </p>
             </div>
+            <Link
+                href="/admin/users"
+                class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+            >
+                &larr; Back
+            </Link>
         </div>
 
         <form @submit.prevent="submitForm" class="max-w-3xl space-y-6">
@@ -477,13 +479,12 @@ const submitForm = () => {
             <div
                 class="flex justify-end space-x-3 border-t border-gray-300 pt-6 dark:border-gray-600"
             >
-                <button
-                    type="button"
-                    @click="goBack"
+                <Link
+                    href="/admin/users"
                     class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                     Cancel
-                </button>
+                </Link>
                 <button
                     type="submit"
                     :disabled="form.processing"

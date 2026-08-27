@@ -105,6 +105,12 @@ const submitForm = () => {
                     Upload assets or link content for the curriculum structure.
                 </p>
             </div>
+            <Link
+                :href="redirect || '/admin/subjects'"
+                class="inline-flex items-center self-start rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 sm:self-center dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+            >
+                &larr; Back
+            </Link>
         </div>
 
         <form @submit.prevent="submitForm" class="space-y-6">

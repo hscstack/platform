@@ -8,10 +8,12 @@ import {
     HelpCircle,
     MessageCircle,
     Layers,
+    ChevronDown,
 } from 'lucide-vue-next';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const quickLinks = [
+    { num: '00', id: 'faq', label: 'FAQ' },
     { num: '01', id: 'getting-started', label: 'Start Here' },
     { num: '02', id: 'dashboard', label: 'Dashboard' },
     { num: '03', id: 'manage-contents', label: 'Manage Contents' },
@@ -22,7 +24,103 @@ const quickLinks = [
     { num: '08', id: 'troubleshooting', label: 'Toast Messages' },
 ];
 
-const activeId = ref('getting-started');
+const activeId = ref('faq');
+const openFaqIndex = ref<number | null>(0);
+const INITIAL_FAQ_COUNT = 4;
+const isFaqExpanded = ref(false);
+
+const visibleFaqs = computed(() => {
+    return isFaqExpanded.value ? faqs : faqs.slice(0, INITIAL_FAQ_COUNT);
+});
+
+const toggleFaqExpand = () => {
+    isFaqExpanded.value = !isFaqExpanded.value;
+
+    if (
+        !isFaqExpanded.value &&
+        openFaqIndex.value !== null &&
+        openFaqIndex.value >= INITIAL_FAQ_COUNT
+    ) {
+        openFaqIndex.value = null;
+    }
+};
+
+const toggleFaq = (index: number) => {
+    openFaqIndex.value = openFaqIndex.value === index ? null : index;
+};
+
+const faqs = [
+    {
+        question: 'HSCStack কী এবং এটি কাদের জন্য?',
+        answer: 'HSCStack হলো বাংলাদেশের HSC ও SSC শিক্ষার্থীদের জন্য তৈরি একটি ওপেন রিসোর্স প্ল্যাটফর্ম। এখানে চ্যাপ্টার ও সাবজেক্ট অনুযায়ী প্রয়োজনীয় ক্লাস নোট, পিডিএফ, ছবি, ভিডিও এবং পরীক্ষার প্রশ্নপত্র একসাথে ফ্রি-তে খুঁজে পাওয়া যায়।',
+        type: 'text',
+    },
+    {
+        question: 'ওয়েবসাইট সম্পর্কিত নতুন আপডেট বা ঘোষণা কোথায় পাওয়া যাবে?',
+        answer: 'প্ল্যাটফর্মের সাম্প্রতিক ফিচার, কনটেন্ট আপডেট এবং গুরুত্বপূর্ণ সকল ঘোষণা পেতে ফলো করুন আমাদের অফিশিয়াল ',
+        linkText: 'Facebook পেজ',
+        linkUrl: 'https://facebook.com/hscstackbd',
+        answerAfter: '।',
+        type: 'externalLink',
+    },
+    {
+        question: 'ওয়েবসাইটটি কীভাবে অর্থায়ন করা হয়?',
+        answer: 'এটি একটি অলাভজনক উদ্যোগ। আমাদের কনট্রিবিউটর এবং শিক্ষার্থীরাই মূলত আমাদের আর্থিক অনুদান দিয়ে থাকেন। আমাদের সাপোর্ট করতে ভিজিট করুন ',
+        linkText: 'আমাদের সাপোর্ট পেজ',
+        linkUrl: '/support',
+        answerAfter: '।',
+        type: 'link',
+    },
+    {
+        question: 'এটি কে বা কারা পরিচালনা করে?',
+        answer: 'এটি কোনো বাণিজ্যিক প্রতিষ্ঠান নয়; দেশজুড়ে ছড়িয়ে থাকা একদল উদ্যমী শিক্ষার্থী স্বেচ্ছাশ্রমে প্ল্যাটফর্মটি পরিচালনা ও কনটেন্ট কিউরেট করে থাকে। আমাদের টিম সম্পর্কে আরও জানতে পড়ুন ',
+        linkText: 'আমাদের কথা',
+        linkUrl: '/about-us',
+        answerAfter: '।',
+        type: 'link',
+    },
+    {
+        question: 'HSCStack কি ওপেন সোর্স?',
+        answer: 'হ্যাঁ! HSCStack সম্পূর্ণ ওপেন সোর্স একটি প্ল্যাটফর্ম। কোডবেসে কাজ করা, বাক ফিক্স করা কিংবা নতুন ফিচার যোগ করার জন্য আমাদের ',
+        linkText: 'GitHub রিপোজিটরি',
+        linkUrl: 'https://github.com/hscstack/platform',
+        answerAfter: ' ভিজিট করতে পারো।',
+        type: 'externalLink',
+    },
+    {
+        question: 'রিসোর্স দেখার জন্য কি কোনো অ্যাকাউন্ট তৈরি করতে হবে?',
+        answer: 'না, রিসোর্স খোঁজা, পড়া বা ডাউনলোড করার জন্য কোনো অ্যাকাউন্ট খোলার প্রয়োজন নেই। যেকোনো শিক্ষার্থী ফ্রিতে সরাসরি রিসোর্সগুলো ব্রাউজ ও ব্যবহার করতে পারবে।',
+        type: 'text',
+    },
+    {
+        question: 'আমি কি আমার তৈরি নোট বা রিসোর্স আপলোড করতে পারব?',
+        answer: 'কনটেন্টের মান এবং নির্ভুলতা নিশ্চিত করতে রিসোর্স আপলোডের সুবিধাটি শুধুমাত্র ভেরিফাইড মেম্বারদের জন্য নির্ধারিত। মেম্বারশিপের আবেদন করতে ',
+        linkText: 'এখানে ক্লিক করুন',
+        linkUrl: '/join',
+        answerAfter: '।',
+        type: 'link',
+    },
+    {
+        question: 'এখানে কী কী ধরনের স্টাডি মেটেরিয়াল পাওয়া যাবে?',
+        answer: 'এখানে অধ্যায়ভিত্তিক হ্যান্ডরিটেন নোটস, লেকচার শিট, সাজেস্টভ প্রশ্ন ব্যাঙ্ক, ডায়াগ্রাম এবং বিভিন্ন প্রয়োজনীয় টিউটোরিয়াল ও প্র্যাক্টিক্যাল গাইড পাওয়া যাবে।',
+        type: 'text',
+    },
+    {
+        question: 'ওয়েবসাইটটি ফোনে অ্যাপ হিসেবে ব্যবহার করা যাবে?',
+        answer: 'হ্যাঁ, প্ল্যাটফর্মটি PWA (Progressive Web App) সাপোর্টেড। ব্রাউজারের "Add to Home Screen" বা ইনস্টল পপআপ থেকে এক ক্লিকেই অ্যাপের মতো ফোনে ইনস্টল করে নেওয়া যায়।',
+        type: 'text',
+    },
+    {
+        question:
+            'ডেভেলপমেন্টে সাহায্য করতে বা কোড কন্ট্রিবিউট করতে চাইলে করণীয় কী?',
+        answer: 'HSCStack-এর ওপেন ডেভেলপমেন্ট টিমে যোগ দিতে আমাদের ',
+        linkText: 'আবেদন ফর্মে',
+        linkUrl: '/join',
+        answerAfter:
+            ' অ্যাপ্লাই করতে পারো। আবেদন গৃহীত হলে কোর ডেভেলপার হিসেবে কোডবেসে কাজ করার সুযোগ মিলবে।',
+        type: 'link',
+    },
+];
 let observer: IntersectionObserver | null = null;
 let isManualClick = false;
 let clickTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -159,7 +257,7 @@ onUnmounted(() => {
                 </div>
                 <span
                     class="text-[11px] font-bold text-slate-400 dark:text-gray-500"
-                    >8 Chapters</span
+                    >9 Sections</span
                 >
             </div>
 
@@ -198,6 +296,106 @@ onUnmounted(() => {
         <div
             class="space-y-12 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-10 dark:border-gray-700 dark:bg-gray-900"
         >
+            <!-- Section 00: FAQ (Frequently Asked Questions) -->
+            <section
+                id="faq"
+                class="scroll-mt-44 space-y-5 border-b border-slate-100 pb-12 dark:border-gray-800"
+            >
+                <div class="flex items-center gap-2">
+                    <span
+                        class="inline-flex items-center justify-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-black text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                        >00</span
+                    >
+                    <h2
+                        class="text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
+                    >
+                        Frequently Asked Questions (FAQ)
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
+                >
+                    HSCStack প্ল্যাটফর্ম সম্পর্কিত সাধারণ প্রশ্ন ও উত্তর:
+                </p>
+
+                <div class="space-y-3 pt-2">
+                    <div
+                        v-for="(faq, index) in visibleFaqs"
+                        :key="index"
+                        class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/50 transition-colors dark:border-gray-800 dark:bg-gray-800/40"
+                    >
+                        <button
+                            type="button"
+                            @click="toggleFaq(index)"
+                            class="flex w-full items-center justify-between gap-4 p-4 text-left font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                        >
+                            <span class="text-sm sm:text-base">{{
+                                faq.question
+                            }}</span>
+                            <ChevronDown
+                                class="h-4 w-4 shrink-0 transition-transform duration-200"
+                                :class="{
+                                    'rotate-180 text-indigo-600 dark:text-indigo-400':
+                                        openFaqIndex === index,
+                                }"
+                            />
+                        </button>
+
+                        <div
+                            v-show="openFaqIndex === index"
+                            class="border-t border-slate-100 px-4 pt-3 pb-4 text-sm leading-relaxed text-slate-600 dark:border-gray-800 dark:text-gray-300"
+                        >
+                            <template v-if="faq.type === 'text'">
+                                {{ faq.answer }}
+                            </template>
+                            <template v-else-if="faq.type === 'link'">
+                                {{ faq.answer }}
+                                <Link
+                                    :href="faq.linkUrl"
+                                    class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
+                                >
+                                    {{ faq.linkText }}
+                                </Link>
+                                {{ faq.answerAfter }}
+                            </template>
+                            <template v-else-if="faq.type === 'externalLink'">
+                                {{ faq.answer }}
+                                <a
+                                    :href="faq.linkUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
+                                >
+                                    {{ faq.linkText }}
+                                </a>
+                                {{ faq.answerAfter }}
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Expand / Collapse Toggle -->
+                    <div
+                        v-if="faqs.length > INITIAL_FAQ_COUNT"
+                        class="pt-2 text-center"
+                    >
+                        <button
+                            type="button"
+                            @click="toggleFaqExpand"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300"
+                        >
+                            <span v-if="!isFaqExpanded"
+                                >Show all {{ faqs.length }} questions</span
+                            >
+                            <span v-else>Show less</span>
+                            <ChevronDown
+                                class="h-3.5 w-3.5 transition-transform duration-200"
+                                :class="{ 'rotate-180': isFaqExpanded }"
+                            />
+                        </button>
+                    </div>
+                </div>
+            </section>
+
             <!-- Section 01: Welcome & Getting Started -->
             <section id="getting-started" class="scroll-mt-44 space-y-5">
                 <div class="flex items-center gap-2">

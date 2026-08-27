@@ -62,21 +62,30 @@ class NodeController extends Controller
                 ->firstOrFail();
         }
 
+        $prev = url()->previous();
+        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
+            ? $prev
+            : route('admin.nodes.index', ['subject' => $subject->slug]);
+
         return Inertia::render('admin/NodeCreateOrEdit', [
             'subject' => $subject,
             'parent' => $parent,
-            'redirect' => url()->previous(),
+            'redirect' => $redirect,
         ]);
     }
 
     public function edit(Node $node)
     {
+        $prev = url()->previous();
+        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
+            ? $prev
+            : route('admin.nodes.index', ['subject' => $node->subject->slug]);
 
         return Inertia::render('admin/NodeCreateOrEdit', [
             'subject' => $node->subject,
             'node' => $node,
             'parent' => $node->parent,
-            'redirect' => url()->previous(),
+            'redirect' => $redirect,
         ]);
     }
 
@@ -118,7 +127,9 @@ class NodeController extends Controller
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
 
-        $redirect = $validated['redirect'] ? $validated['redirect'] : explode('/create', url()->previous())[0];
+        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
+            ? $validated['redirect']
+            : route('admin.nodes.index', ['subject' => $subject->slug]);
 
         return redirect($redirect)->with('success', 'Node created successfully.');
     }
@@ -151,12 +162,8 @@ class NodeController extends Controller
 
             $slug = Str::slug($rawSlug);
 
-            $parentId = array_key_exists('parent_id', $validated)
-                ? $validated['parent_id']
-                : $node->parent_id;
-
             $exists = Node::where('subject_id', $subject->id)
-                ->where('parent_id', $parentId)
+                ->where('parent_id', $node->parent_id)
                 ->where('slug', $slug)
                 ->where('id', '!=', $node->id)
                 ->exists();
@@ -176,7 +183,9 @@ class NodeController extends Controller
 
         $node->save();
 
-        $redirect = $validated['redirect'] ?? explode('/edit', url()->previous())[0];
+        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
+            ? $validated['redirect']
+            : route('admin.nodes.index', ['subject' => $subject->slug]);
 
         return redirect($redirect)->with('success', 'Node updated successfully.');
     }
