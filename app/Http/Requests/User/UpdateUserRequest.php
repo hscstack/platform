@@ -37,6 +37,7 @@ class UpdateUserRequest extends FormRequest
             'role' => ['sometimes', 'string'],
             'permissions' => ['sometimes', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
+            'chat_banned_until' => ['sometimes', 'nullable', 'date'],
         ];
 
         return $rules;

@@ -38,6 +38,7 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     // Global Chat Actions
     Route::post('/api/chat/messages', [ChatController::class, 'store'])->name('chat.messages.store');
     Route::delete('/api/chat/messages/{message}', [ChatController::class, 'destroy'])->name('chat.messages.destroy');
+    Route::post('/api/chat/reports', [ChatController::class, 'report'])->name('chat.reports.store');
 });
 
 // Global Chat Messages List (Public Read)

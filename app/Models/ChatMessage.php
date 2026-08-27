@@ -10,6 +10,8 @@ class ChatMessage extends Model
     protected $fillable = [
         'user_id',
         'content',
+        'reply_to_id',
+        'reply_to_content',
     ];
 
     public function user(): BelongsTo

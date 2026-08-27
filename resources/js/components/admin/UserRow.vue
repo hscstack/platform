@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { LogIn, Pencil, Trash2 } from 'lucide-vue-next';
+import { LogIn, Pencil, Trash2, Ban } from 'lucide-vue-next';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
 
-defineProps({
+const props = defineProps({
     user: Object,
 });
 
 const page = usePage();
 const userId = page.props.auth.user.id;
+
+const isChatBanned = (user: any) => {
+    if (!user?.chat_banned_until) return false;
+    return new Date(user.chat_banned_until).getTime() > Date.now();
+};
 
 const getRoleBadgeStyles = (role: string) => {
     switch (role) {
@@ -80,6 +85,15 @@ const deleteUser = (id: number) => {
                         :class="getRoleBadgeStyles(user.roles?.[0]?.name)"
                     >
                         {{ user.roles?.[0]?.name ?? 'no role' }}
+                    </span>
+
+                    <span
+                        v-if="isChatBanned(user)"
+                        class="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 uppercase ring-1 ring-rose-600/20 ring-inset dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30"
+                        title="Chat banned"
+                    >
+                        <Ban class="h-2.5 w-2.5" />
+                        Chat Banned
                     </span>
                 </div>
 

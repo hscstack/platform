@@ -96,7 +96,7 @@ const googleAuthUrl = redirectParam
                 <!-- Main Action Button -->
                 <a
                     :href="googleAuthUrl"
-                    class="group dark:hover:bg-gray-750 flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold text-slate-800 shadow-xs transition-all duration-200 hover:scale-[1.01] hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600"
+                    class="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold text-slate-800 shadow-xs transition-all duration-200 hover:scale-[1.01] hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:hover:bg-gray-700/80"
                 >
                     <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24">
                         <path

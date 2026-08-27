@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown } from 'lucide-vue-next';
+import {
+    Send,
+    Trash2,
+    Lock,
+    Loader2,
+    LogIn,
+    ArrowDown,
+    ShieldAlert,
+    Pencil,
+    Flag,
+    Check,
+    X,
+    Reply,
+    Info,
+    ShieldCheck,
+    AlertCircle,
+} from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
+import { usePermissions } from '@/lib/usePermissions';
 
 interface ChatUser {
     id: number;
@@ -18,6 +35,8 @@ interface ChatUser {
 interface ChatMessageItem {
     id: number;
     content: string;
+    reply_to_id?: number | null;
+    reply_to_content?: string | null;
     created_at: string;
     user: ChatUser;
 }
@@ -27,6 +46,8 @@ const props = defineProps<{
         enabled: boolean;
         audience: string;
         cooldown_seconds: number;
+        max_messages?: number;
+        max_length?: number;
         can_post: boolean;
         reason: string | null;
         can_delete: boolean;
@@ -37,8 +58,11 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
+const { can } = usePermissions();
 const currentUser = computed(() => page.props.auth?.user);
 
+const maxMessagesLimit = ref(props.chatState.max_messages ?? 200);
+const maxLengthLimit = ref(props.chatState.max_length ?? 280);
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
 const inputContent = ref('');
 const isSending = ref(false);
@@ -48,7 +72,37 @@ const canDelete = ref(props.chatState.can_delete);
 const activeCooldownSeconds = ref(props.chatState.cooldown_seconds ?? 30);
 
 const messagesContainerRef = ref<HTMLElement | null>(null);
+const messageInputRef = ref<HTMLInputElement | null>(null);
 const showScrollButton = ref(false);
+const highlightedMessageId = ref<number | null>(null);
+const showRulesModal = ref(false);
+
+// Reply State
+const activeReplyTo = ref<ChatMessageItem | null>(null);
+
+const startReply = (msg: ChatMessageItem) => {
+    activeReplyTo.value = msg;
+    nextTick(() => {
+        messageInputRef.value?.focus();
+    });
+};
+
+const cancelReply = () => {
+    activeReplyTo.value = null;
+};
+
+const scrollToMessage = (messageId: number) => {
+    const el = document.getElementById(`chat-msg-${messageId}`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        highlightedMessageId.value = messageId;
+        setTimeout(() => {
+            if (highlightedMessageId.value === messageId) {
+                highlightedMessageId.value = null;
+            }
+        }, 2000);
+    }
+};
 
 // Cooldown logic
 const cooldownSeconds = ref(0);
@@ -130,6 +184,45 @@ const scrollToBottom = (smooth = true) => {
     });
 };
 
+let lastFetchTimestamp = Date.now();
+const fetchLatestMessages = async (force = false) => {
+    // Throttle automatic refreshes to at most once every 15 seconds unless forced
+    const now = Date.now();
+    if (!force && now - lastFetchTimestamp < 15000) {
+        return;
+    }
+    lastFetchTimestamp = now;
+
+    try {
+        const res = await fetch('/chat', {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.messages && Array.isArray(data.messages)) {
+                messages.value = data.messages;
+                if (typeof data.can_post === 'boolean') {
+                    canPost.value = data.can_post;
+                }
+                if (typeof data.can_delete === 'boolean') {
+                    canDelete.value = data.can_delete;
+                }
+                if (data.reason !== undefined) {
+                    restrictionReason.value = data.reason;
+                }
+                if (data.cooldown_seconds !== undefined) {
+                    activeCooldownSeconds.value = data.cooldown_seconds;
+                }
+            }
+        }
+    } catch {
+        // Silently ignore background refresh errors
+    }
+};
+
 const setupRealtime = () => {
     const echo = getEcho(
         props.chatState.pusher_key,
@@ -143,12 +236,13 @@ const setupRealtime = () => {
     echo.channel('global-chat')
         .stopListening('.message.sent')
         .stopListening('.message.deleted')
+        .stopListening('.settings.updated')
         .listen('.message.sent', (e: { message: ChatMessageItem }) => {
             if (e && e.message) {
                 if (!messages.value.some((m) => m.id === e.message.id)) {
                     messages.value.push(e.message);
 
-                    if (messages.value.length > 200) {
+                    if (messages.value.length > maxMessagesLimit.value) {
                         messages.value.shift();
                     }
 
@@ -162,7 +256,62 @@ const setupRealtime = () => {
                     (m) => m.id !== e.messageId,
                 );
             }
-        });
+        })
+        .listen(
+            '.settings.updated',
+            (e: {
+                settings: {
+                    enabled: boolean;
+                    audience: string;
+                    cooldown_seconds: number;
+                    max_messages: number;
+                    max_length: number;
+                };
+            }) => {
+                if (e && e.settings) {
+                    activeCooldownSeconds.value = e.settings.cooldown_seconds;
+                    maxMessagesLimit.value = e.settings.max_messages;
+                    maxLengthLimit.value = e.settings.max_length;
+
+                    // Automatically trim messages if max_messages decreased
+                    if (messages.value.length > e.settings.max_messages) {
+                        messages.value = messages.value.slice(
+                            -e.settings.max_messages,
+                        );
+                    }
+
+                    // Dynamically update permissions
+                    const user = currentUser.value;
+                    if (
+                        !e.settings.enabled ||
+                        e.settings.audience === 'disabled'
+                    ) {
+                        canPost.value = false;
+                        restrictionReason.value =
+                            e.settings.disabled_reason &&
+                            e.settings.disabled_reason.trim() !== ''
+                                ? e.settings.disabled_reason.trim()
+                                : 'Global chat is currently disabled for maintenance.';
+                    } else if (!user) {
+                        canPost.value = false;
+                        restrictionReason.value =
+                            'Please sign in to join the conversation.';
+                    } else if (e.settings.audience === 'verified_members') {
+                        if (user.is_verified || can('view admin')) {
+                            canPost.value = true;
+                            restrictionReason.value = null;
+                        } else {
+                            canPost.value = false;
+                            restrictionReason.value =
+                                'Global chat is currently in beta for verified members and contributors.';
+                        }
+                    } else if (e.settings.audience === 'all') {
+                        canPost.value = true;
+                        restrictionReason.value = null;
+                    }
+                }
+            },
+        );
 };
 
 const sendMessage = async () => {
@@ -176,7 +325,7 @@ const sendMessage = async () => {
 
     const content = inputContent.value.trim();
 
-    if (content.length > 280) {
+    if (content.length > maxLengthLimit.value) {
         return;
     }
 
@@ -186,6 +335,7 @@ const sendMessage = async () => {
         const token = (
             document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
         )?.content;
+        const replyToId = activeReplyTo.value ? activeReplyTo.value.id : null;
         const res = await fetch('/api/chat/messages', {
             method: 'POST',
             headers: {
@@ -194,7 +344,10 @@ const sendMessage = async () => {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': token || '',
             },
-            body: JSON.stringify({ content }),
+            body: JSON.stringify({
+                content,
+                reply_to_id: replyToId,
+            }),
         });
 
         if (res.ok) {
@@ -203,12 +356,13 @@ const sendMessage = async () => {
             if (!messages.value.some((m) => m.id === newMsg.id)) {
                 messages.value.push(newMsg);
 
-                if (messages.value.length > 200) {
+                if (messages.value.length > maxMessagesLimit.value) {
                     messages.value.shift();
                 }
             }
 
             inputContent.value = '';
+            activeReplyTo.value = null;
 
             if (activeCooldownSeconds.value > 0) {
                 startCooldown(activeCooldownSeconds.value);
@@ -255,6 +409,87 @@ const deleteMessage = async (messageId: number) => {
     }
 };
 
+// Report message state & methods
+const reportingMessage = ref<ChatMessageItem | null>(null);
+const reportReason = ref('Inappropriate message or conduct');
+const isSubmittingReport = ref(false);
+const reportSuccessMessage = ref<string | null>(null);
+const reportErrorMessage = ref<string | null>(null);
+
+const reportReasons = [
+    'Inappropriate message or conduct',
+    'Spam or advertisement',
+    'Harassment or hate speech',
+    'False information / Exam leak attempt',
+    'Other',
+];
+
+const openReportModal = (message: ChatMessageItem) => {
+    if (!currentUser.value) {
+        alert('Please sign in to report a message.');
+        return;
+    }
+    reportingMessage.value = message;
+    reportReason.value = 'Inappropriate message or conduct';
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+};
+
+const closeReportModal = () => {
+    reportingMessage.value = null;
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+    isSubmittingReport.value = false;
+};
+
+const submitReport = async () => {
+    if (!reportingMessage.value || isSubmittingReport.value) return;
+
+    isSubmittingReport.value = true;
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+
+    try {
+        const token = (
+            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
+        )?.content;
+
+        const res = await fetch('/api/chat/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': token || '',
+            },
+            body: JSON.stringify({
+                reported_user_id: reportingMessage.value.user.id,
+                reported_user_name: reportingMessage.value.user.name,
+                reported_user_username: reportingMessage.value.user.username,
+                message_content: reportingMessage.value.content,
+                message_sent_at: reportingMessage.value.created_at,
+                reason: reportReason.value,
+            }),
+        });
+
+        if (res.ok) {
+            reportSuccessMessage.value =
+                'Thank you. The report has been sent to our moderators.';
+            setTimeout(() => {
+                closeReportModal();
+            }, 1800);
+        } else {
+            const err = await res.json();
+            reportErrorMessage.value =
+                err.message || 'Failed to submit report.';
+        }
+    } catch {
+        reportErrorMessage.value = 'Network error. Please try again.';
+    } finally {
+        isSubmittingReport.value = false;
+    }
+};
+
 const formatTime = (isoString: string) => {
     try {
         const date = new Date(isoString);
@@ -292,16 +527,29 @@ const shouldShowDateDivider = (index: number) => {
     return prev !== curr;
 };
 
+const handleVisibilityOrFocus = () => {
+    if (document.visibilityState === 'visible') {
+        fetchLatestMessages();
+    }
+};
+
 onMounted(() => {
     initCooldown();
     setupRealtime();
     scrollToBottom(false);
+
+    window.addEventListener('focus', fetchLatestMessages);
+    window.addEventListener('pageshow', fetchLatestMessages);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
 });
 
 onUnmounted(() => {
     if (cooldownInterval) {
         clearInterval(cooldownInterval);
     }
+    window.removeEventListener('focus', fetchLatestMessages);
+    window.removeEventListener('pageshow', fetchLatestMessages);
+    document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
 });
 </script>
 
@@ -315,18 +563,34 @@ onUnmounted(() => {
     </Head>
 
     <main class="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-        <!-- Compact Page Title & Subtitle -->
-        <div class="mb-3 border-b border-slate-100 pb-3 dark:border-gray-800">
-            <h1
-                class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+        <!-- Compact Page Title & Subtitle + Rules Button -->
+        <div
+            class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-gray-800"
+        >
+            <div>
+                <h1
+                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                >
+                    Global Chat
+                </h1>
+                <p
+                    class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
+                >
+                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
+                    করুন।
+                </p>
+            </div>
+
+            <!-- Rules / Guidelines Trigger Button -->
+            <button
+                type="button"
+                @click="showRulesModal = true"
+                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700"
+                title="Chat Rules & Guidelines"
             >
-                Global Chat
-            </h1>
-            <p
-                class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
-            >
-                অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার করুন।
-            </p>
+                <Info class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span class="hidden sm:inline">Chat Rules</span>
+            </button>
         </div>
 
         <!-- Chat Container Window -->
@@ -371,18 +635,22 @@ onUnmounted(() => {
 
                     <!-- Individual Message Row (Distinctly Highlighted for currentUser) -->
                     <div
-                        class="group -mx-1.5 flex items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition sm:-mx-2 sm:px-3 sm:py-3"
-                        :class="
+                        :id="`chat-msg-${msg.id}`"
+                        class="group flex items-start gap-3 rounded-2xl p-2.5 transition-all duration-300 sm:p-3"
+                        :class="[
                             currentUser &&
                             Number(currentUser.id) === Number(msg.user.id)
-                                ? 'bg-indigo-50/60 hover:bg-indigo-50/90 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/45'
-                                : 'hover:bg-slate-50/60 dark:hover:bg-gray-800/35'
-                        "
+                                ? 'bg-indigo-50/50 dark:bg-indigo-950/20'
+                                : 'hover:bg-slate-50 dark:hover:bg-gray-800/40',
+                            highlightedMessageId === msg.id
+                                ? 'bg-indigo-100/70 ring-2 ring-indigo-500 dark:bg-indigo-950/60'
+                                : '',
+                        ]"
                     >
                         <!-- User Avatar -->
                         <Link
                             :href="`/u/${msg.user.username}`"
-                            class="flex h-8.5 w-8.5 shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:ring-2 hover:ring-indigo-400 sm:h-9 sm:w-9"
+                            class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:ring-2 hover:ring-indigo-400 sm:h-9 sm:w-9"
                             :class="
                                 currentUser &&
                                 Number(currentUser.id) === Number(msg.user.id)
@@ -438,28 +706,87 @@ onUnmounted(() => {
                                     </span>
                                 </div>
 
-                                <div class="flex shrink-0 items-center gap-2">
+                                <div class="flex shrink-0 items-center gap-1">
                                     <span
                                         class="text-[10px] text-slate-400 sm:text-[11px] dark:text-gray-500"
                                     >
                                         {{ formatTime(msg.created_at) }}
                                     </span>
 
-                                    <!-- Delete Button -->
+                                    <!-- Reply Button -->
+                                    <button
+                                        v-if="currentUser && canPost"
+                                        type="button"
+                                        @click="startReply(msg)"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-indigo-50 hover:text-indigo-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                        title="Reply to message"
+                                    >
+                                        <Reply class="h-3 w-3" />
+                                    </button>
+
+                                    <!-- Quick Admin Edit / Ban User Button -->
+                                    <Link
+                                        v-if="can('edit users')"
+                                        :href="`/admin/users/edit/${msg.user.id}`"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-indigo-50 hover:text-indigo-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                        :title="`Manage / Ban ${msg.user.name}`"
+                                    >
+                                        <Pencil class="h-3 w-3" />
+                                    </Link>
+
+                                    <!-- Report Button (for non-author users) -->
                                     <button
                                         v-if="
-                                            canDelete ||
-                                            (currentUser &&
-                                                Number(currentUser.id) ===
-                                                    Number(msg.user.id))
+                                            currentUser &&
+                                            Number(currentUser.id) !==
+                                                Number(msg.user.id)
                                         "
+                                        @click="openReportModal(msg)"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-amber-50 hover:text-amber-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
+                                        title="Report message"
+                                    >
+                                        <Flag class="h-3 w-3" />
+                                    </button>
+
+                                    <!-- Delete Button (Staff Only) -->
+                                    <button
+                                        v-if="canDelete"
+                                        type="button"
                                         @click="deleteMessage(msg.id)"
                                         class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                        title="Delete message"
+                                        title="Delete message (Staff)"
                                     >
                                         <Trash2 class="h-3 w-3" />
                                     </button>
                                 </div>
+                            </div>
+
+                            <!-- Quoted Parent Snapshot (If Reply) -->
+                            <div
+                                v-if="msg.reply_to_content"
+                                @click="
+                                    msg.reply_to_id
+                                        ? scrollToMessage(msg.reply_to_id)
+                                        : null
+                                "
+                                class="mt-1.5 flex items-center gap-1.5 rounded-lg border-l-2 border-indigo-500 bg-slate-100/70 px-2.5 py-1 text-[11px] text-slate-600 transition dark:border-indigo-400 dark:bg-gray-800/60 dark:text-gray-300"
+                                :class="
+                                    msg.reply_to_id
+                                        ? 'cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30'
+                                        : ''
+                                "
+                                :title="
+                                    msg.reply_to_id
+                                        ? 'Click to jump to original message'
+                                        : ''
+                                "
+                            >
+                                <Reply
+                                    class="h-3 w-3 shrink-0 text-indigo-500 dark:text-indigo-400"
+                                />
+                                <span class="truncate italic">
+                                    "{{ msg.reply_to_content }}"
+                                </span>
                             </div>
 
                             <!-- Message Text -->
@@ -495,6 +822,36 @@ onUnmounted(() => {
             <div
                 class="border-t border-slate-100 bg-white p-3.5 sm:p-4 dark:border-gray-800 dark:bg-gray-900"
             >
+                <!-- Active Reply Banner -->
+                <div
+                    v-if="activeReplyTo"
+                    class="mb-2 flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-1.5 text-xs text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-200"
+                >
+                    <div class="flex min-w-0 items-center gap-1.5 truncate">
+                        <Reply
+                            class="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400"
+                        />
+                        <span class="truncate">
+                            Replying to
+                            <strong class="font-semibold">{{
+                                activeReplyTo.user.name
+                            }}</strong
+                            >:
+                            <span class="italic opacity-80"
+                                >"{{ activeReplyTo.content }}"</span
+                            >
+                        </span>
+                    </div>
+                    <button
+                        type="button"
+                        @click="cancelReply"
+                        class="cursor-pointer rounded-lg p-0.5 text-indigo-500 transition hover:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/60"
+                        title="Cancel reply"
+                    >
+                        <X class="h-3.5 w-3.5" />
+                    </button>
+                </div>
+
                 <!-- Can Post -->
                 <form
                     v-if="canPost"
@@ -503,18 +860,23 @@ onUnmounted(() => {
                 >
                     <div class="relative flex-1">
                         <input
+                            ref="messageInputRef"
                             v-model="inputContent"
                             type="text"
                             :disabled="isSending || cooldownSeconds > 0"
-                            placeholder="Type a message..."
-                            maxlength="280"
-                            class="dark:border-gray-750 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                            :placeholder="
+                                activeReplyTo
+                                    ? `Reply to ${activeReplyTo.user.name}...`
+                                    : 'Type a message...'
+                            "
+                            :maxlength="maxLengthLimit"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
                         <span
-                            v-if="inputContent.length > 200"
+                            v-if="inputContent.length > maxLengthLimit - 80"
                             class="absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
                         >
-                            {{ 280 - inputContent.length }}
+                            {{ maxLengthLimit - inputContent.length }}
                         </span>
                     </div>
 
@@ -565,6 +927,309 @@ onUnmounted(() => {
                         <LogIn class="h-3.5 w-3.5" />
                         <span>Sign in</span>
                     </Link>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Modal -->
+        <div
+            v-if="reportingMessage"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+            @click.self="closeReportModal"
+        >
+            <div
+                class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div
+                    class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-gray-800"
+                >
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                        >
+                            <Flag class="h-4 w-4" />
+                        </div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Report Message
+                        </h3>
+                    </div>
+                    <button
+                        type="button"
+                        @click="closeReportModal"
+                        class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        <X class="h-4 w-4" />
+                    </button>
+                </div>
+
+                <!-- Success State -->
+                <div
+                    v-if="reportSuccessMessage"
+                    class="my-6 flex flex-col items-center justify-center py-4 text-center"
+                >
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                    >
+                        <Check class="h-6 w-6" />
+                    </div>
+                    <p
+                        class="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+                    >
+                        {{ reportSuccessMessage }}
+                    </p>
+                </div>
+
+                <!-- Form Content -->
+                <form
+                    v-else
+                    @submit.prevent="submitReport"
+                    class="mt-4 space-y-4"
+                >
+                    <!-- Error notice if duplicate or validation fails -->
+                    <div
+                        v-if="reportErrorMessage"
+                        class="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300"
+                    >
+                        {{ reportErrorMessage }}
+                    </div>
+
+                    <!-- Message Preview Snapshot -->
+                    <div
+                        class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-800/60"
+                    >
+                        <div
+                            class="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400"
+                        >
+                            <span
+                                class="font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                {{ reportingMessage.user.name }} (@{{
+                                    reportingMessage.user.username
+                                }})
+                            </span>
+                            <span>{{
+                                formatTime(reportingMessage.created_at)
+                            }}</span>
+                        </div>
+                        <p
+                            class="mt-1.5 text-xs break-words text-slate-800 dark:text-gray-200"
+                        >
+                            "{{ reportingMessage.content }}"
+                        </p>
+                    </div>
+
+                    <!-- Reason Selection -->
+                    <div>
+                        <label
+                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Why are you reporting this message?
+                        </label>
+                        <select
+                            v-model="reportReason"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-medium text-slate-800 transition outline-none focus:border-indigo-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                        >
+                            <option
+                                v-for="reason in reportReasons"
+                                :key="reason"
+                                :value="reason"
+                                class="bg-white text-slate-800 dark:bg-gray-800 dark:text-gray-200"
+                            >
+                                {{ reason }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button
+                            type="button"
+                            @click="closeReportModal"
+                            class="cursor-pointer rounded-xl border border-slate-200 bg-transparent px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="isSubmittingReport"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-rose-700 active:scale-95 disabled:opacity-50 dark:bg-rose-500 dark:hover:bg-rose-600"
+                        >
+                            <Loader2
+                                v-if="isSubmittingReport"
+                                class="h-3.5 w-3.5 animate-spin"
+                            />
+                            <span>Submit Report</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chat Guidelines & Rules Alert Dialog Modal -->
+        <div
+            v-if="showRulesModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <!-- Backdrop -->
+            <div
+                class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+                @click="showRulesModal = false"
+            ></div>
+
+            <!-- Modal Content -->
+            <div
+                class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <!-- Modal Header -->
+                <div
+                    class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-gray-800"
+                >
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                        >
+                            <ShieldCheck class="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3
+                                class="text-base font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                Global Chat Rules & Guidelines
+                            </h3>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে নিচের
+                                নিয়মগুলো মেনে চলুন।
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        @click="showRulesModal = false"
+                        class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        <X class="h-4 w-4" />
+                    </button>
+                </div>
+
+                <!-- Rules List -->
+                <div
+                    class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-gray-300"
+                >
+                    <div class="flex items-start gap-2.5">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
+                            1
+                        </div>
+                        <div>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >পরস্পরকে সম্মান করুন (Respectful
+                                Environment):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                অন্য শিক্ষার্থী ও মডারেটরদের সাথে শালীন আচরণ
+                                বজায় রাখুন। কোনো ধরনের ব্যক্তিগত আক্রমণ, বুলিং
+                                বা হেট স্পিচ কঠোরভাবে নিষিদ্ধ।
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
+                            2
+                        </div>
+                        <div>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >খারাপ ভাষা ও গালিগালাজ নিষেধ (No Abuse /
+                                Slang):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই গালাগালি বা
+                                অশালীন শব্দ ব্যবহার করা যাবে না। এমন মেসেজ
+                                অটোমেটিক ব্লক হবে।
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
+                            3
+                        </div>
+                        <div>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >স্প্যামিং ও অ্যাডভার্টাইজিং নিষেধ (No
+                                Spam):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                একই মেসেজ বারবার পাঠানো, চ্যাট ফ্লাড করা বা
+                                অনুমতি ছাড়া কোনো প্রোমোশন বা অপ্রাসঙ্গিক লিংক
+                                শেয়ার করা যাবে না।
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
+                            4
+                        </div>
+                        <div>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >অনুপযুক্ত মেসেজ রিপোর্ট করুন (Report
+                                Violations):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                কারো মেসেজে নিয়ম লঙ্ঘন দেখতে পেলে মেসেজের
+                                ডানপাশে থাকা ফ্ল্যাগ/রিপোর্ট বাটনে ক্লিক করে
+                                মডারেটরদের জানান।
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notice -->
+                <div
+                    class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300"
+                >
+                    <div class="flex items-center gap-1.5 font-bold">
+                        <AlertCircle
+                            class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
+                        />
+                        <span>অটো-ব্যান ও এনফোর্সমেন্ট পলিসি:</span>
+                    </div>
+                    <p class="mt-1 leading-relaxed">
+                        একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports) পড়লে
+                        সংশ্লিষ্ট ব্যবহারকারী
+                        <strong
+                            >স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট ব্যান</strong
+                        >
+                        হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী ব্যান
+                        দিতে পারেন।
+                    </p>
+                </div>
+
+                <!-- Footer Close Button -->
+                <div class="mt-5 flex justify-end">
+                    <button
+                        type="button"
+                        @click="showRulesModal = false"
+                        class="cursor-pointer rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                    >
+                        বুঝেছি (Close)
+                    </button>
                 </div>
             </div>
         </div>

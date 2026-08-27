@@ -115,6 +115,9 @@ Route::middleware('permission:send email')->group(function () {
 // Chat Management & Settings
 Route::middleware('permission:manage chat')->group(function () {
     Route::get('/chat', [ChatSettingsController::class, 'edit'])->name('chat.edit');
+    Route::get('/chat/reports', [ChatSettingsController::class, 'reports'])->name('chat.reports.index');
     Route::post('/chat/settings', [ChatSettingsController::class, 'update'])->name('chat.settings.update');
     Route::post('/chat/clear', [ChatSettingsController::class, 'clearMessages'])->name('chat.clear');
+    Route::patch('/chat/reports/{report}/status', [ChatSettingsController::class, 'updateReportStatus'])->name('chat.reports.update-status');
+    Route::delete('/chat/reports/{report}', [ChatSettingsController::class, 'deleteReport'])->name('chat.reports.destroy');
 });
