@@ -113,10 +113,12 @@ const hasUserCommented = computed(() => {
     if (!currentUser.value?.id) {
         return false;
     }
+
     const currentId = Number(currentUser.value.id);
 
     return props.comments.some((c: any) => {
         const commentUserId = Number(c.user_id ?? c.user?.id);
+
         return commentUserId === currentId;
     });
 });
