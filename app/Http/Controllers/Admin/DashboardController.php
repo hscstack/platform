@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -14,12 +13,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return Inertia::render('admin/Dashboard', [
-            'chatSettings' => [
-                'enabled' => AppSetting::get('global_chat_enabled', true),
-                'audience' => AppSetting::get('global_chat_audience', 'verified_members'),
-            ],
-        ]);
+        return Inertia::render('admin/Dashboard');
     }
 
     public function analytics(Request $request)
