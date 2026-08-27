@@ -235,11 +235,13 @@ const isFullFooter = computed(() => {
     <!-- Minimal, Clean Mobile Footer on Non-Home Pages (md:hidden) -->
     <footer
         v-if="!isFullFooter"
-        class="mt-auto border-t border-slate-200/70 bg-white/80 py-5 backdrop-blur-md md:hidden dark:border-gray-800/70 dark:bg-gray-950/80"
+        class="mt-auto border-t border-slate-200/70 bg-white/80 pt-8 pb-6 backdrop-blur-md md:hidden dark:border-gray-800/70 dark:bg-gray-950/80"
     >
-        <div class="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center">
-            <!-- App Logo -->
-            <AppLogo />
+        <div class="mx-auto flex max-w-7xl flex-col items-center gap-3.5 px-4 text-center">
+            <!-- App Logo with top breathing room -->
+            <div class="pt-1">
+                <AppLogo />
+            </div>
 
             <!-- Essential Links -->
             <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs font-medium text-slate-600 dark:text-gray-400">
@@ -270,7 +272,7 @@ const isFullFooter = computed(() => {
             </div>
 
             <!-- Copyright at the bottom -->
-            <p class="pt-1 text-[11px] font-medium text-slate-400 dark:text-gray-500">
+            <p class="pt-1.5 text-[11px] font-medium text-slate-400 dark:text-gray-500">
                 &copy; 2026 HSCStack
             </p>
         </div>
