@@ -48,7 +48,9 @@ const props = defineProps<{
     dismissedCount: number;
 }>();
 
-const currentFilter = ref<'all' | 'pending' | 'reviewed' | 'dismissed'>('pending');
+const currentFilter = ref<'all' | 'pending' | 'reviewed' | 'dismissed'>(
+    'pending',
+);
 
 const filteredReports = computed(() => {
     if (currentFilter.value === 'all') {
@@ -66,7 +68,11 @@ const updateReportStatus = (reportId: number, status: string) => {
 };
 
 const deleteReport = (reportId: number) => {
-    if (confirm('Are you sure you want to permanently delete this report record?')) {
+    if (
+        confirm(
+            'Are you sure you want to permanently delete this report record?',
+        )
+    ) {
         router.delete(`/admin/chat/reports/${reportId}`, {
             preserveScroll: true,
         });
@@ -111,15 +117,17 @@ const formatDate = (isoString?: string | null) => {
                         Reported Chat Messages
                     </h1>
                     <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Review community reports, snapshot of reported messages, and moderate disruptive accounts.
+                        Review community reports, snapshot of reported messages,
+                        and moderate disruptive accounts.
                     </p>
                 </div>
             </div>
-
         </div>
 
         <!-- Global Chat Management Route Tabs -->
-        <div class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800">
+        <div
+            class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800"
+        >
             <Link
                 href="/admin/chat"
                 class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -136,7 +144,7 @@ const formatDate = (isoString?: string | null) => {
                 <span>Reported Messages</span>
                 <span
                     v-if="pendingCount > 0"
-                    class="rounded-full bg-rose-500 px-1.5 py-0.2 text-[10px] font-bold text-white"
+                    class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
                 >
                     {{ pendingCount }}
                 </span>
@@ -155,15 +163,21 @@ const formatDate = (isoString?: string | null) => {
                 "
             >
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-500 dark:text-gray-400">
+                    <span
+                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
+                    >
                         Pending Review
                     </span>
                     <Clock class="h-4 w-4 text-rose-500" />
                 </div>
-                <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100">
+                <p
+                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
+                >
                     {{ pendingCount }}
                 </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500">Requires moderation action</span>
+                <span class="text-[11px] text-slate-400 dark:text-gray-500"
+                    >Requires moderation action</span
+                >
             </div>
 
             <div
@@ -176,15 +190,21 @@ const formatDate = (isoString?: string | null) => {
                 "
             >
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-500 dark:text-gray-400">
+                    <span
+                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
+                    >
                         Resolved
                     </span>
                     <CheckCheck class="h-4 w-4 text-emerald-500" />
                 </div>
-                <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100">
+                <p
+                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
+                >
                     {{ reviewedCount }}
                 </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500">Reviewed & resolved reports</span>
+                <span class="text-[11px] text-slate-400 dark:text-gray-500"
+                    >Reviewed & resolved reports</span
+                >
             </div>
 
             <div
@@ -197,20 +217,30 @@ const formatDate = (isoString?: string | null) => {
                 "
             >
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-500 dark:text-gray-400">
+                    <span
+                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
+                    >
                         Dismissed
                     </span>
-                    <XCircle class="h-4 w-4 text-slate-400 dark:text-gray-400" />
+                    <XCircle
+                        class="h-4 w-4 text-slate-400 dark:text-gray-400"
+                    />
                 </div>
-                <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100">
+                <p
+                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
+                >
                     {{ dismissedCount }}
                 </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500">Ignored or invalid reports</span>
+                <span class="text-[11px] text-slate-400 dark:text-gray-500"
+                    >Ignored or invalid reports</span
+                >
             </div>
         </div>
 
         <!-- Filter Sub-Tabs -->
-        <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-gray-800">
+        <div
+            class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-gray-800"
+        >
             <button
                 type="button"
                 @click="currentFilter = 'all'"
@@ -270,11 +300,17 @@ const formatDate = (isoString?: string | null) => {
                 v-if="filteredReports.length === 0"
                 class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-16 text-center dark:border-gray-800 dark:bg-gray-900/40"
             >
-                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-2xs dark:bg-gray-800 dark:text-gray-400">
+                <div
+                    class="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-2xs dark:bg-gray-800 dark:text-gray-400"
+                >
                     <Flag class="h-6 w-6 text-slate-400 dark:text-gray-500" />
                 </div>
-                <h3 class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200">
-                    No {{ currentFilter !== 'all' ? currentFilter : '' }} reports found
+                <h3
+                    class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
+                >
+                    No
+                    {{ currentFilter !== 'all' ? currentFilter : '' }} reports
+                    found
                 </h3>
                 <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
                     Everything looks clean for this filter criteria.
@@ -292,12 +328,14 @@ const formatDate = (isoString?: string | null) => {
                             : 'border-slate-200/80 bg-slate-50/60 dark:border-gray-800 dark:bg-gray-900/40',
                     ]"
                 >
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div
+                        class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+                    >
                         <!-- Left: Reporter & Reported User info -->
                         <div class="space-y-1.5">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span
-                                    class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                                    class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
                                     :class="
                                         report.status === 'pending'
                                             ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300'
@@ -309,19 +347,38 @@ const formatDate = (isoString?: string | null) => {
                                     {{ report.status }}
                                 </span>
 
-                                <span class="text-xs text-slate-400 dark:text-gray-500">
+                                <span
+                                    class="text-xs text-slate-400 dark:text-gray-500"
+                                >
                                     Reported {{ formatDate(report.created_at) }}
                                 </span>
 
-                                <span v-if="report.reporter" class="text-xs text-slate-500 dark:text-gray-400">
-                                    by <strong class="text-slate-700 dark:text-gray-300">{{ report.reporter.name }}</strong>
-                                    <span v-if="report.reporter.username" class="text-slate-400"> (@{{ report.reporter.username }})</span>
+                                <span
+                                    v-if="report.reporter"
+                                    class="text-xs text-slate-500 dark:text-gray-400"
+                                >
+                                    by
+                                    <strong
+                                        class="text-slate-700 dark:text-gray-300"
+                                        >{{ report.reporter.name }}</strong
+                                    >
+                                    <span
+                                        v-if="report.reporter.username"
+                                        class="text-slate-400"
+                                    >
+                                        (@{{ report.reporter.username }})</span
+                                    >
                                 </span>
                             </div>
 
                             <div class="flex items-center gap-2 pt-0.5">
-                                <span class="text-xs font-semibold text-slate-500 dark:text-gray-400">Reason:</span>
-                                <span class="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                                <span
+                                    class="text-xs font-semibold text-slate-500 dark:text-gray-400"
+                                    >Reason:</span
+                                >
+                                <span
+                                    class="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+                                >
                                     {{ report.reason || 'Not specified' }}
                                 </span>
                             </div>
@@ -344,7 +401,9 @@ const formatDate = (isoString?: string | null) => {
                             <button
                                 v-if="report.status !== 'reviewed'"
                                 type="button"
-                                @click="updateReportStatus(report.id, 'reviewed')"
+                                @click="
+                                    updateReportStatus(report.id, 'reviewed')
+                                "
                                 class="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
                             >
                                 <CheckCircle class="h-3 w-3" />
@@ -354,7 +413,9 @@ const formatDate = (isoString?: string | null) => {
                             <button
                                 v-if="report.status !== 'dismissed'"
                                 type="button"
-                                @click="updateReportStatus(report.id, 'dismissed')"
+                                @click="
+                                    updateReportStatus(report.id, 'dismissed')
+                                "
                                 class="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                             >
                                 <XCircle class="h-3 w-3" />
@@ -374,14 +435,34 @@ const formatDate = (isoString?: string | null) => {
                     </div>
 
                     <!-- Message Snapshot Content Box -->
-                    <div class="mt-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-gray-800 dark:bg-gray-800/60">
-                        <div class="flex items-center justify-between border-b border-slate-200/60 pb-2 text-[11px] text-slate-500 dark:border-gray-700/60 dark:text-gray-400">
+                    <div
+                        class="mt-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-gray-800 dark:bg-gray-800/60"
+                    >
+                        <div
+                            class="flex items-center justify-between border-b border-slate-200/60 pb-2 text-[11px] text-slate-500 dark:border-gray-700/60 dark:text-gray-400"
+                        >
                             <div>
-                                <span class="font-bold text-slate-800 dark:text-gray-200">
-                                    Message Author: {{ report.reported_user_name || report.reported_user?.name || 'Unknown' }}
+                                <span
+                                    class="font-bold text-slate-800 dark:text-gray-200"
+                                >
+                                    Message Author:
+                                    {{
+                                        report.reported_user_name ||
+                                        report.reported_user?.name ||
+                                        'Unknown'
+                                    }}
                                 </span>
-                                <span v-if="report.reported_user_username || report.reported_user?.username" class="ml-1 text-slate-400">
-                                    (@{{ report.reported_user_username || report.reported_user?.username }})
+                                <span
+                                    v-if="
+                                        report.reported_user_username ||
+                                        report.reported_user?.username
+                                    "
+                                    class="ml-1 text-slate-400"
+                                >
+                                    (@{{
+                                        report.reported_user_username ||
+                                        report.reported_user?.username
+                                    }})
                                 </span>
                                 <span
                                     v-if="report.reported_user?.is_chat_banned"
@@ -396,7 +477,9 @@ const formatDate = (isoString?: string | null) => {
                             </span>
                         </div>
 
-                        <p class="mt-2 text-xs leading-relaxed font-medium text-slate-900 break-words dark:text-gray-100">
+                        <p
+                            class="mt-2 text-xs leading-relaxed font-medium break-words text-slate-900 dark:text-gray-100"
+                        >
                             "{{ report.message_content }}"
                         </p>
                     </div>

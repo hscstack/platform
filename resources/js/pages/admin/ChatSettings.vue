@@ -140,10 +140,12 @@ const lengthPresets = [
         </div>
 
         <!-- Global Chat Management Route Tabs -->
-        <div class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800">
+        <div
+            class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800"
+        >
             <Link
                 href="/admin/chat"
-                class="flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-all border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
+                class="flex items-center gap-2 border-b-2 border-indigo-600 px-4 py-2.5 text-xs font-bold text-indigo-600 transition-all dark:border-indigo-400 dark:text-indigo-400"
             >
                 <MessageCircle class="h-4 w-4" />
                 <span>Chat Configuration</span>
@@ -157,7 +159,7 @@ const lengthPresets = [
                 <span>Reported Messages</span>
                 <span
                     v-if="pendingReportsCount && pendingReportsCount > 0"
-                    class="rounded-full bg-rose-500 px-1.5 py-0.2 text-[10px] font-bold text-white"
+                    class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
                 >
                     {{ pendingReportsCount }}
                 </span>
@@ -244,7 +246,8 @@ const lengthPresets = [
                         Target Audience & Chat Status
                     </label>
                     <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Choose who is permitted to send messages in the student lounge, or pause posting.
+                        Choose who is permitted to send messages in the student
+                        lounge, or pause posting.
                     </p>
                 </div>
 
@@ -337,8 +340,13 @@ const lengthPresets = [
                 </div>
 
                 <!-- Custom Disabled / Maintenance Notice Input -->
-                <div v-if="form.audience === 'disabled'" class="mt-3 rounded-2xl border border-rose-200/80 bg-rose-50/40 p-4 dark:border-rose-900/40 dark:bg-rose-950/20">
-                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-300">
+                <div
+                    v-if="form.audience === 'disabled'"
+                    class="mt-3 rounded-2xl border border-rose-200/80 bg-rose-50/40 p-4 dark:border-rose-900/40 dark:bg-rose-950/20"
+                >
+                    <label
+                        class="block text-xs font-semibold text-rose-900 dark:text-rose-300"
+                    >
                         Custom Notice Message for Students (Optional):
                     </label>
                     <input
@@ -347,8 +355,14 @@ const lengthPresets = [
                         placeholder="e.g. Chat is temporarily paused during HSC ICT exam. Will resume at 4:00 PM."
                         class="mt-1.5 w-full rounded-xl border border-rose-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus:border-rose-500 focus:outline-none dark:border-rose-800/80 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-rose-400"
                     />
-                    <p class="mt-1 text-[11px] text-rose-700/80 dark:text-rose-400/80">
-                        Leave blank to show the default notice: <em>"Global chat is currently disabled for maintenance."</em>
+                    <p
+                        class="mt-1 text-[11px] text-rose-700/80 dark:text-rose-400/80"
+                    >
+                        Leave blank to show the default notice:
+                        <em
+                            >"Global chat is currently disabled for
+                            maintenance."</em
+                        >
                     </p>
                 </div>
             </div>
@@ -401,7 +415,7 @@ const lengthPresets = [
                             type="number"
                             min="0"
                             max="3600"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 pr-20 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            class="w-full [appearance:textfield] rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 pr-20 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                         <span
                             class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
@@ -425,7 +439,8 @@ const lengthPresets = [
                     </label>
                     <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
                         Specify how many recent messages to keep in storage.
-                        Older messages beyond this limit are automatically pruned.
+                        Older messages beyond this limit are automatically
+                        pruned.
                     </p>
                 </div>
 
@@ -460,7 +475,7 @@ const lengthPresets = [
                             type="number"
                             min="20"
                             max="1000"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 pr-20 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            class="w-full [appearance:textfield] rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 pr-20 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                         <span
                             class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
@@ -483,7 +498,8 @@ const lengthPresets = [
                         Per-Message Character Length Limit
                     </label>
                     <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Control the maximum length allowed for any single student message.
+                        Control the maximum length allowed for any single
+                        student message.
                     </p>
                 </div>
 
@@ -518,7 +534,7 @@ const lengthPresets = [
                             type="number"
                             min="50"
                             max="1000"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 pr-14 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            class="w-full [appearance:textfield] rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 pr-14 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                         <span
                             class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
@@ -544,14 +560,18 @@ const lengthPresets = [
                         <p
                             class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            Automatically detects and blocks vulgar, abusive, and inappropriate words before they can be sent.
+                            Automatically detects and blocks vulgar, abusive,
+                            and inappropriate words before they can be sent.
                         </p>
                     </div>
 
                     <!-- Toggle Switch -->
                     <button
                         type="button"
-                        @click="form.profanity_filter_enabled = !form.profanity_filter_enabled"
+                        @click="
+                            form.profanity_filter_enabled =
+                                !form.profanity_filter_enabled
+                        "
                         class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
                         :class="
                             form.profanity_filter_enabled
@@ -575,16 +595,19 @@ const lengthPresets = [
                     <label
                         class="block text-xs font-semibold text-slate-600 dark:text-gray-400"
                     >
-                        Banned Words & Offensive Roots (separated by commas or newlines):
+                        Banned Words & Offensive Roots (separated by commas or
+                        newlines):
                     </label>
                     <textarea
                         v-model="form.banned_words"
                         rows="4"
                         placeholder="Enter offensive words or roots separated by commas or new lines..."
-                        class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 font-mono"
+                        class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                     ></textarea>
                     <p class="text-[11px] text-slate-400 dark:text-gray-500">
-                        The filter automatically collapses repeated letters and replaces common leet-speak substitutions (e.g. @ &rarr; a, $ &rarr; s, 0 &rarr; o).
+                        The filter automatically collapses repeated letters and
+                        replaces common leet-speak substitutions (e.g. @ &rarr;
+                        a, $ &rarr; s, 0 &rarr; o).
                     </p>
                 </div>
             </div>

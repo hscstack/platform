@@ -1,6 +1,22 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil, Flag, Check, X, Reply, Info, ShieldCheck, AlertCircle } from 'lucide-vue-next';
+import {
+    Send,
+    Trash2,
+    Lock,
+    Loader2,
+    LogIn,
+    ArrowDown,
+    ShieldAlert,
+    Pencil,
+    Flag,
+    Check,
+    X,
+    Reply,
+    Info,
+    ShieldCheck,
+    AlertCircle,
+} from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
@@ -266,10 +282,14 @@ const setupRealtime = () => {
 
                     // Dynamically update permissions
                     const user = currentUser.value;
-                    if (!e.settings.enabled || e.settings.audience === 'disabled') {
+                    if (
+                        !e.settings.enabled ||
+                        e.settings.audience === 'disabled'
+                    ) {
                         canPost.value = false;
                         restrictionReason.value =
-                            e.settings.disabled_reason && e.settings.disabled_reason.trim() !== ''
+                            e.settings.disabled_reason &&
+                            e.settings.disabled_reason.trim() !== ''
                                 ? e.settings.disabled_reason.trim()
                                 : 'Global chat is currently disabled for maintenance.';
                     } else if (!user) {
@@ -453,13 +473,15 @@ const submitReport = async () => {
         });
 
         if (res.ok) {
-            reportSuccessMessage.value = 'Thank you. The report has been sent to our moderators.';
+            reportSuccessMessage.value =
+                'Thank you. The report has been sent to our moderators.';
             setTimeout(() => {
                 closeReportModal();
             }, 1800);
         } else {
             const err = await res.json();
-            reportErrorMessage.value = err.message || 'Failed to submit report.';
+            reportErrorMessage.value =
+                err.message || 'Failed to submit report.';
         }
     } catch {
         reportErrorMessage.value = 'Network error. Please try again.';
@@ -542,7 +564,9 @@ onUnmounted(() => {
 
     <main class="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
         <!-- Compact Page Title & Subtitle + Rules Button -->
-        <div class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-gray-800">
+        <div
+            class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-gray-800"
+        >
             <div>
                 <h1
                     class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
@@ -552,7 +576,8 @@ onUnmounted(() => {
                 <p
                     class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
                 >
-                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার করুন।
+                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
+                    করুন।
                 </p>
             </div>
 
@@ -618,7 +643,7 @@ onUnmounted(() => {
                                 ? 'bg-indigo-50/50 dark:bg-indigo-950/20'
                                 : 'hover:bg-slate-50 dark:hover:bg-gray-800/40',
                             highlightedMessageId === msg.id
-                                ? 'ring-2 ring-indigo-500 bg-indigo-100/70 dark:bg-indigo-950/60'
+                                ? 'bg-indigo-100/70 ring-2 ring-indigo-500 dark:bg-indigo-950/60'
                                 : '',
                         ]"
                     >
@@ -739,12 +764,26 @@ onUnmounted(() => {
                             <!-- Quoted Parent Snapshot (If Reply) -->
                             <div
                                 v-if="msg.reply_to_content"
-                                @click="msg.reply_to_id ? scrollToMessage(msg.reply_to_id) : null"
+                                @click="
+                                    msg.reply_to_id
+                                        ? scrollToMessage(msg.reply_to_id)
+                                        : null
+                                "
                                 class="mt-1.5 flex items-center gap-1.5 rounded-lg border-l-2 border-indigo-500 bg-slate-100/70 px-2.5 py-1 text-[11px] text-slate-600 transition dark:border-indigo-400 dark:bg-gray-800/60 dark:text-gray-300"
-                                :class="msg.reply_to_id ? 'cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30' : ''"
-                                :title="msg.reply_to_id ? 'Click to jump to original message' : ''"
+                                :class="
+                                    msg.reply_to_id
+                                        ? 'cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30'
+                                        : ''
+                                "
+                                :title="
+                                    msg.reply_to_id
+                                        ? 'Click to jump to original message'
+                                        : ''
+                                "
                             >
-                                <Reply class="h-3 w-3 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                                <Reply
+                                    class="h-3 w-3 shrink-0 text-indigo-500 dark:text-indigo-400"
+                                />
                                 <span class="truncate italic">
                                     "{{ msg.reply_to_content }}"
                                 </span>
@@ -789,10 +828,18 @@ onUnmounted(() => {
                     class="mb-2 flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-1.5 text-xs text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-200"
                 >
                     <div class="flex min-w-0 items-center gap-1.5 truncate">
-                        <Reply class="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                        <Reply
+                            class="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400"
+                        />
                         <span class="truncate">
-                            Replying to <strong class="font-semibold">{{ activeReplyTo.user.name }}</strong>:
-                            <span class="opacity-80 italic">"{{ activeReplyTo.content }}"</span>
+                            Replying to
+                            <strong class="font-semibold">{{
+                                activeReplyTo.user.name
+                            }}</strong
+                            >:
+                            <span class="italic opacity-80"
+                                >"{{ activeReplyTo.content }}"</span
+                            >
                         </span>
                     </div>
                     <button
@@ -817,12 +864,16 @@ onUnmounted(() => {
                             v-model="inputContent"
                             type="text"
                             :disabled="isSending || cooldownSeconds > 0"
-                            :placeholder="activeReplyTo ? `Reply to ${activeReplyTo.user.name}...` : 'Type a message...'"
+                            :placeholder="
+                                activeReplyTo
+                                    ? `Reply to ${activeReplyTo.user.name}...`
+                                    : 'Type a message...'
+                            "
                             :maxlength="maxLengthLimit"
                             class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
                         />
                         <span
-                            v-if="inputContent.length > (maxLengthLimit - 80)"
+                            v-if="inputContent.length > maxLengthLimit - 80"
                             class="absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
                         >
                             {{ maxLengthLimit - inputContent.length }}
@@ -889,12 +940,18 @@ onUnmounted(() => {
             <div
                 class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6 dark:border-gray-800 dark:bg-gray-900"
             >
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-gray-800">
+                <div
+                    class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-gray-800"
+                >
                     <div class="flex items-center gap-2">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                        <div
+                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                        >
                             <Flag class="h-4 w-4" />
                         </div>
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-gray-100">
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
                             Report Message
                         </h3>
                     </div>
@@ -912,16 +969,24 @@ onUnmounted(() => {
                     v-if="reportSuccessMessage"
                     class="my-6 flex flex-col items-center justify-center py-4 text-center"
                 >
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                    >
                         <Check class="h-6 w-6" />
                     </div>
-                    <p class="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    <p
+                        class="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+                    >
                         {{ reportSuccessMessage }}
                     </p>
                 </div>
 
                 <!-- Form Content -->
-                <form v-else @submit.prevent="submitReport" class="mt-4 space-y-4">
+                <form
+                    v-else
+                    @submit.prevent="submitReport"
+                    class="mt-4 space-y-4"
+                >
                     <!-- Error notice if duplicate or validation fails -->
                     <div
                         v-if="reportErrorMessage"
@@ -931,21 +996,35 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Message Preview Snapshot -->
-                    <div class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-800/60">
-                        <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400">
-                            <span class="font-semibold text-slate-700 dark:text-gray-300">
-                                {{ reportingMessage.user.name }} (@{{ reportingMessage.user.username }})
+                    <div
+                        class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-800/60"
+                    >
+                        <div
+                            class="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400"
+                        >
+                            <span
+                                class="font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                {{ reportingMessage.user.name }} (@{{
+                                    reportingMessage.user.username
+                                }})
                             </span>
-                            <span>{{ formatTime(reportingMessage.created_at) }}</span>
+                            <span>{{
+                                formatTime(reportingMessage.created_at)
+                            }}</span>
                         </div>
-                        <p class="mt-1.5 text-xs text-slate-800 break-words dark:text-gray-200">
+                        <p
+                            class="mt-1.5 text-xs break-words text-slate-800 dark:text-gray-200"
+                        >
                             "{{ reportingMessage.content }}"
                         </p>
                     </div>
 
                     <!-- Reason Selection -->
                     <div>
-                        <label class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300">
+                        <label
+                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                        >
                             Why are you reporting this message?
                         </label>
                         <select
@@ -1004,17 +1083,26 @@ onUnmounted(() => {
                 class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
             >
                 <!-- Modal Header -->
-                <div class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-gray-800">
+                <div
+                    class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-gray-800"
+                >
                     <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                        >
                             <ShieldCheck class="h-5 w-5" />
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-slate-900 dark:text-gray-100">
+                            <h3
+                                class="text-base font-bold text-slate-900 dark:text-gray-100"
+                            >
                                 Global Chat Rules & Guidelines
                             </h3>
-                            <p class="text-xs text-slate-500 dark:text-gray-400">
-                                সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে নিচের নিয়মগুলো মেনে চলুন।
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে নিচের
+                                নিয়মগুলো মেনে চলুন।
                             </p>
                         </div>
                     </div>
@@ -1028,56 +1116,108 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Rules List -->
-                <div class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-gray-300">
+                <div
+                    class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-gray-300"
+                >
                     <div class="flex items-start gap-2.5">
-                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
                             1
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">পরস্পরকে সম্মান করুন (Respectful Environment):</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">অন্য শিক্ষার্থী ও মডারেটরদের সাথে শালীন আচরণ বজায় রাখুন। কোনো ধরনের ব্যক্তিগত আক্রমণ, বুলিং বা হেট স্পিচ কঠোরভাবে নিষিদ্ধ।</p>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >পরস্পরকে সম্মান করুন (Respectful
+                                Environment):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                অন্য শিক্ষার্থী ও মডারেটরদের সাথে শালীন আচরণ
+                                বজায় রাখুন। কোনো ধরনের ব্যক্তিগত আক্রমণ, বুলিং
+                                বা হেট স্পিচ কঠোরভাবে নিষিদ্ধ।
+                            </p>
                         </div>
                     </div>
 
                     <div class="flex items-start gap-2.5">
-                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
                             2
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">খারাপ ভাষা ও গালিগালাজ নিষেধ (No Abuse / Slang):</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই গালাগালি বা অশালীন শব্দ ব্যবহার করা যাবে না। এমন মেসেজ অটোমেটিক ব্লক হবে।</p>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >খারাপ ভাষা ও গালিগালাজ নিষেধ (No Abuse /
+                                Slang):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই গালাগালি বা
+                                অশালীন শব্দ ব্যবহার করা যাবে না। এমন মেসেজ
+                                অটোমেটিক ব্লক হবে।
+                            </p>
                         </div>
                     </div>
 
                     <div class="flex items-start gap-2.5">
-                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
                             3
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">স্প্যামিং ও অ্যাডভার্টাইজিং নিষেধ (No Spam):</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">একই মেসেজ বারবার পাঠানো, চ্যাট ফ্লাড করা বা অনুমতি ছাড়া কোনো প্রোমোশন বা অপ্রাসঙ্গিক লিংক শেয়ার করা যাবে না।</p>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >স্প্যামিং ও অ্যাডভার্টাইজিং নিষেধ (No
+                                Spam):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                একই মেসেজ বারবার পাঠানো, চ্যাট ফ্লাড করা বা
+                                অনুমতি ছাড়া কোনো প্রোমোশন বা অপ্রাসঙ্গিক লিংক
+                                শেয়ার করা যাবে না।
+                            </p>
                         </div>
                     </div>
 
                     <div class="flex items-start gap-2.5">
-                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                        <div
+                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                        >
                             4
                         </div>
                         <div>
-                            <strong class="font-semibold text-slate-900 dark:text-gray-100">অনুপযুক্ত মেসেজ রিপোর্ট করুন (Report Violations):</strong>
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">কারো মেসেজে নিয়ম লঙ্ঘন দেখতে পেলে মেসেজের ডানপাশে থাকা ফ্ল্যাগ/রিপোর্ট বাটনে ক্লিক করে মডারেটরদের জানান।</p>
+                            <strong
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                >অনুপযুক্ত মেসেজ রিপোর্ট করুন (Report
+                                Violations):</strong
+                            >
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                                কারো মেসেজে নিয়ম লঙ্ঘন দেখতে পেলে মেসেজের
+                                ডানপাশে থাকা ফ্ল্যাগ/রিপোর্ট বাটনে ক্লিক করে
+                                মডারেটরদের জানান।
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Notice -->
-                <div class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                <div
+                    class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300"
+                >
                     <div class="flex items-center gap-1.5 font-bold">
-                        <AlertCircle class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <AlertCircle
+                            class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
+                        />
                         <span>অটো-ব্যান ও এনফোর্সমেন্ট পলিসি:</span>
                     </div>
                     <p class="mt-1 leading-relaxed">
-                        একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports) পড়লে সংশ্লিষ্ট ব্যবহারকারী <strong>স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট ব্যান</strong> হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী ব্যান দিতে পারেন।
+                        একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports) পড়লে
+                        সংশ্লিষ্ট ব্যবহারকারী
+                        <strong
+                            >স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট ব্যান</strong
+                        >
+                        হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী ব্যান
+                        দিতে পারেন।
                     </p>
                 </div>
 

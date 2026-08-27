@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { UserPlus, Loader2, Save, Ban, Clock, CheckCircle } from 'lucide-vue-next';
+import {
+    UserPlus,
+    Loader2,
+    Save,
+    Ban,
+    Clock,
+    CheckCircle,
+} from 'lucide-vue-next';
 import { watch } from 'vue';
 
 const props = defineProps({
@@ -21,7 +28,9 @@ const formatForDatetimeLocal = (dateString?: string | null) => {
     const d = new Date(dateString);
     if (isNaN(d.getTime())) return '';
     const offset = d.getTimezoneOffset() * 60000;
-    const localISOTime = new Date(d.getTime() - offset).toISOString().slice(0, 16);
+    const localISOTime = new Date(d.getTime() - offset)
+        .toISOString()
+        .slice(0, 16);
     return localISOTime;
 };
 
@@ -278,8 +287,11 @@ const submitForm = () => {
                             <Ban class="h-4 w-4 text-rose-500" />
                             Global Chat Moderation
                         </h3>
-                        <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                            Restrict this user from sending messages in the Global Student Chat until a specified date & time.
+                        <p
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Restrict this user from sending messages in the
+                            Global Student Chat until a specified date & time.
                         </p>
                     </div>
 
@@ -301,7 +313,9 @@ const submitForm = () => {
 
                 <!-- Quick Presets -->
                 <div>
-                    <label class="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-gray-400">
+                    <label
+                        class="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                    >
                         Quick Ban Presets:
                     </label>
                     <div class="flex flex-wrap gap-2">
@@ -354,7 +368,9 @@ const submitForm = () => {
                     >
                         {{ form.errors.chat_banned_until }}
                     </p>
-                    <p class="mt-1 text-[11px] text-slate-500 dark:text-gray-400">
+                    <p
+                        class="mt-1 text-[11px] text-slate-500 dark:text-gray-400"
+                    >
                         Leave blank if the user should not be banned.
                     </p>
                 </div>
