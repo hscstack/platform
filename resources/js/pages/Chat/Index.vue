@@ -601,17 +601,13 @@ onUnmounted(() => {
                                         <Flag class="h-3 w-3" />
                                     </button>
 
-                                    <!-- Delete Button -->
+                                    <!-- Delete Button (Staff Only) -->
                                     <button
-                                        v-if="
-                                            canDelete ||
-                                            (currentUser &&
-                                                Number(currentUser.id) ===
-                                                    Number(msg.user.id))
-                                        "
+                                        v-if="canDelete"
+                                        type="button"
                                         @click="deleteMessage(msg.id)"
                                         class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                        title="Delete message"
+                                        title="Delete message (Staff)"
                                     >
                                         <Trash2 class="h-3 w-3" />
                                     </button>

@@ -200,8 +200,8 @@ class ChatController extends Controller
         $user = $request->user();
         abort_unless($user, 401);
 
-        // Can delete if own message or has manage chat permission
-        if ($message->user_id !== $user->id && ! $user->can('manage chat')) {
+        // Only staff with manage chat permission can delete messages
+        if (! $user->can('manage chat')) {
             abort(403, 'Unauthorized');
         }
 
