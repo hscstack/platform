@@ -141,3 +141,47 @@ test('admin can upload cover image and attach url to queued mail', function () {
             ! empty($mail->imageUrl);
     });
 });
+
+test('admin can queue broadcast emails specifically to students non-staff users', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create(['email' => 'admin@example.com']);
+    $admin->assignRole('admin');
+
+    $editor = User::factory()->create(['email' => 'editor@example.com', 'receive_emails' => true]);
+    $editorRole = Role::findOrCreate('editor', 'web');
+    $editor->assignRole($editorRole);
+
+    $student1 = User::factory()->create(['email' => 'student1@example.com', 'receive_emails' => true]);
+    $student2 = User::factory()->create(['email' => 'student2@example.com', 'receive_emails' => true]);
+    $unsubStudent = User::factory()->create(['email' => 'unsub_student@example.com', 'receive_emails' => false]);
+
+    $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
+        'recipient_type' => 'students',
+        'subject' => 'Student Community Update',
+        'body' => '<p>Special notice for all students.</p>',
+    ]);
+
+    $response->assertRedirect(route('admin.emails.create'));
+    $response->assertSessionHas('success');
+
+    // Students with receive_emails=true should receive the email
+    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($student1) {
+        return $mail->hasTo($student1->email) &&
+            $mail->mailSubject === 'Student Community Update';
+    });
+
+    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($student2) {
+        return $mail->hasTo($student2->email);
+    });
+
+    // Staff/role-assigned users should NOT receive it
+    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($editor) {
+        return $mail->hasTo($editor->email);
+    });
+
+    // Unsubscribed students should NOT receive it
+    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($unsubStudent) {
+        return $mail->hasTo($unsubStudent->email);
+    });
+});

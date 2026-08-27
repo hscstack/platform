@@ -19,22 +19,28 @@ class EmailController extends Controller
      */
     public function create(): Response
     {
-        $recipientCount = User::where('receive_emails', true)
+        $allSubscribersCount = User::where('receive_emails', true)
             ->whereNotNull('email')
             ->count();
 
+        $studentsCount = User::where('receive_emails', true)
+            ->whereNotNull('email')
+            ->doesntHave('roles')
+            ->count();
+
         return Inertia::render('admin/EmailSend', [
-            'recipientCount' => $recipientCount,
+            'recipientCount' => $allSubscribersCount,
+            'studentsCount' => $studentsCount,
         ]);
     }
 
     /**
-     * Dispatch emails to either a single user or all subscribed users in bulk.
+     * Dispatch emails to either a single user or all/student subscribed users in bulk.
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'recipient_type' => ['required', 'in:all,single'],
+            'recipient_type' => ['required', 'in:all,students,single'],
             'recipient_email' => ['required_if:recipient_type,single', 'nullable', 'email', 'max:255'],
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
@@ -70,16 +76,20 @@ class EmailController extends Controller
                 ->with('success', "Email successfully queued for {$recipientEmail}.");
         }
 
-        // Bulk broadcast to all subscribed users
+        // Bulk broadcast query
         $usersQuery = User::where('receive_emails', true)
             ->whereNotNull('email');
+
+        if ($validated['recipient_type'] === 'students') {
+            $usersQuery->doesntHave('roles');
+        }
 
         $totalRecipients = $usersQuery->count();
 
         if ($totalRecipients === 0) {
             return redirect()
                 ->route('admin.emails.create')
-                ->with('error', 'No subscribed recipients found.');
+                ->with('error', 'No subscribed recipients found for the selected target.');
         }
 
         $usersQuery->chunkById(100, function ($users) use ($subject, $body, $imageUrl) {
@@ -95,8 +105,10 @@ class EmailController extends Controller
             }
         });
 
+        $targetLabel = $validated['recipient_type'] === 'students' ? 'students (non-staff)' : 'all subscribed';
+
         return redirect()
             ->route('admin.emails.create')
-            ->with('success', "Email broadcast successfully queued for {$totalRecipients} recipients.");
+            ->with('success', "Email broadcast successfully queued for {$totalRecipients} {$targetLabel} recipients.");
     }
 }
