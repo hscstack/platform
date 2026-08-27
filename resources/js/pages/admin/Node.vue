@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
@@ -8,6 +8,7 @@ import EmptyState from '@/components/EmptyState.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
+const page = usePage();
 
 const props = defineProps({
     subject: Object,
@@ -23,31 +24,20 @@ const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
 );
 
-const handleBack = () => {
-    const url = new URL(window.location.href);
-    const segments = url.pathname.split('/').filter(Boolean);
+const backUrl = computed(() => {
+    const rawPath = (page.url || '').split('?')[0];
+    const segments = rawPath.split('/').filter(Boolean);
 
-    // Already at /admin/subjects
-    if (segments.join('/') === 'admin/subjects') {
-        return;
-    }
-
+    // If at top-level /admin/subjects/{subject}/nodes -> go to /admin/subjects
     const nodesIndex = segments.indexOf('nodes');
-
-    // At /admin/subjects/{subject}/nodes
-    if (nodesIndex === segments.length - 1) {
-        window.location.href = '/admin/subjects';
-
-        return;
+    if (nodesIndex === -1 || nodesIndex === segments.length - 1) {
+        return '/admin/subjects';
     }
 
-    // Remove the last nested node slug
+    // Step up one folder level
     segments.pop();
-
-    window.location.href = '/' + segments.join('/');
-};
-
-const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    return '/' + segments.join('/');
+});
 
 const closeDropdown = (e) => {
     if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
@@ -68,13 +58,13 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
             class="mb-3.5 flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-gray-800"
         >
             <div class="flex min-w-0 items-center gap-2.5">
-                <button
-                    @click="handleBack"
+                <Link
+                    :href="backUrl"
                     class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-2xs transition-colors hover:bg-slate-50 hover:text-slate-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
                     title="Go back"
                 >
                     <ArrowLeft class="h-4 w-4" :stroke-width="2.2" />
-                </button>
+                </Link>
 
                 <div class="flex min-w-0 flex-wrap items-center gap-2">
                     <h3

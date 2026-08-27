@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Loader2, Save, Trash2, Upload } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -44,10 +44,6 @@ const handleRemoveImage = () => {
     if (fileInput.value) {
         fileInput.value.value = '';
     }
-};
-
-const goBack = () => {
-    window.history.back();
 };
 
 const submitForm = () => {
@@ -356,13 +352,12 @@ const submitForm = () => {
             <div
                 class="flex justify-end gap-3 border-t border-slate-100 pt-6 lg:col-span-3 dark:border-gray-800"
             >
-                <button
-                    type="button"
-                    @click="goBack"
+                <Link
+                    href="/admin"
                     class="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                     Cancel
-                </button>
+                </Link>
                 <button
                     type="submit"
                     :disabled="form.processing"

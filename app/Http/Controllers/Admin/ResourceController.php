@@ -22,8 +22,13 @@ class ResourceController extends Controller
     {
         $node = Node::findOrFail($request->node_id);
 
+        $prev = url()->previous();
+        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit') && ! str_contains($prev, '/resources/'))
+            ? $prev
+            : '/admin/subjects';
+
         return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' => url()->previous(),
+            'redirect' => $redirect,
             'node' => $node,
         ]);
     }
@@ -32,8 +37,13 @@ class ResourceController extends Controller
     {
         $node = $resource->node;
 
+        $prev = url()->previous();
+        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit') && ! str_contains($prev, '/resources/'))
+            ? $prev
+            : '/admin/subjects';
+
         return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' => url()->previous(),
+            'redirect' => $redirect,
             'node' => $node,
             'resource' => $resource,
         ]);
@@ -51,7 +61,9 @@ class ResourceController extends Controller
 
         Resource::create($validated);
 
-        $redirect = $validated['redirect'] ?? explode('/resources', url()->previous())[0];
+        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
+            ? $validated['redirect']
+            : '/admin/subjects';
 
         return redirect($redirect)->with('success', 'Resource created successfully.');
     }
@@ -74,7 +86,9 @@ class ResourceController extends Controller
 
         $resource->update($validated);
 
-        $redirect = $validated['redirect'] ?? '/admin/subjects';
+        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
+            ? $validated['redirect']
+            : '/admin/subjects';
 
         return redirect($redirect)
             ->with('success', 'Resource updated successfully.');
@@ -93,7 +107,13 @@ class ResourceController extends Controller
 
     public function createBulkImages(Request $request)
     {
-        $redirect = $request->input('redirect', url()->previous());
+        $redirect = $request->input('redirect');
+        if (empty($redirect) || str_contains($redirect, '/create') || str_contains($redirect, '/edit')) {
+            $prev = url()->previous();
+            $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
+                ? $prev
+                : '/admin/subjects';
+        }
         $node = Node::findOrFail($request->node_id);
 
         return Inertia::render('admin/resources/BulkImageCreate', [
@@ -118,12 +138,22 @@ class ResourceController extends Controller
             }
         });
 
-        return redirect($validated['redirect'])->with('success', 'Bulk images uploaded successfully.');
+        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
+            ? $validated['redirect']
+            : '/admin/subjects';
+
+        return redirect($redirect)->with('success', 'Bulk images uploaded successfully.');
     }
 
     public function createBulkVideos(Request $request)
     {
-        $redirect = $request->input('redirect', url()->previous());
+        $redirect = $request->input('redirect');
+        if (empty($redirect) || str_contains($redirect, '/create') || str_contains($redirect, '/edit')) {
+            $prev = url()->previous();
+            $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
+                ? $prev
+                : '/admin/subjects';
+        }
         $node = Node::findOrFail($request->node_id);
 
         return Inertia::render('admin/resources/BulkVideoCreate', [
@@ -220,6 +250,10 @@ class ResourceController extends Controller
             }
         });
 
-        return redirect($validated['redirect'])->with('success', 'Bulk Videos uploaded successfully.');
+        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
+            ? $validated['redirect']
+            : '/admin/subjects';
+
+        return redirect($redirect)->with('success', 'Bulk Videos uploaded successfully.');
     }
 }
