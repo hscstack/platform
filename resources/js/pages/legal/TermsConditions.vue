@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import {
-    Scale,
-    FileText,
-    HelpCircle,
-    AlertCircle,
-    Ban,
-} from 'lucide-vue-next';
+import { Scale, FileText, HelpCircle, AlertCircle, Ban } from 'lucide-vue-next';
 </script>
 
 <template>

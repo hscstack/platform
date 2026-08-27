@@ -1380,7 +1380,8 @@ const handleAppreciate = () => {
                     Sign out of your account?
                 </h3>
                 <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                    Are you sure you want to log out of HSCStack? You will need to sign in again to access your private data.
+                    Are you sure you want to log out of HSCStack? You will need
+                    to sign in again to access your private data.
                 </p>
 
                 <div class="mt-5 flex gap-2.5">

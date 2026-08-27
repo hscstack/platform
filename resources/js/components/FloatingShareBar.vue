@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import {
-    Share2,
-    Check,
-    Loader2,
-    Link as LinkIcon,
-} from 'lucide-vue-next';
+import { Share2, Check, Loader2, Link as LinkIcon } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import AuthModal from './AuthModal.vue';
 

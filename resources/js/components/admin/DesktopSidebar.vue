@@ -73,6 +73,5 @@ const handleClearCache = () => {
                 Clear cache
             </span>
         </button>
-
     </div>
 </template>

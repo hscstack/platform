@@ -27,11 +27,11 @@ const setCoursePreference = (course: 'hsc' | 'ssc') => {
         class="mb-6 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs transition-all sm:p-5 dark:border-gray-700 dark:bg-gray-900"
     >
         <div
-            class="flex items-center justify-between gap-3 cursor-pointer sm:cursor-default"
+            class="flex cursor-pointer items-center justify-between gap-3 sm:cursor-default"
             @click="toggleMobileExpand"
         >
             <!-- Large Browsing Indicator -->
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex min-w-0 items-center gap-3">
                 <span
                     class="inline-flex shrink-0 items-center justify-center rounded-lg px-2.5 py-1 text-lg font-black text-white shadow-xs sm:px-3.5 sm:py-1.5 sm:text-2xl"
                     :class="isSsc ? 'bg-emerald-600' : 'bg-indigo-600'"
@@ -60,7 +60,10 @@ const setCoursePreference = (course: 'hsc' | 'ssc') => {
             >
                 <ChevronDown
                     class="h-4 w-4 transition-transform duration-200"
-                    :class="{ 'rotate-180 text-slate-700 dark:text-gray-200': isMobileExpanded }"
+                    :class="{
+                        'rotate-180 text-slate-700 dark:text-gray-200':
+                            isMobileExpanded,
+                    }"
                 />
             </div>
 
@@ -89,7 +92,11 @@ const setCoursePreference = (course: 'hsc' | 'ssc') => {
         <!-- Mobile Expandable Switch Action Area (Glitch-Free CSS Grid Accordion) -->
         <div
             class="grid transition-all duration-200 ease-in-out sm:hidden"
-            :class="isMobileExpanded ? 'grid-rows-[1fr] opacity-100 mt-3 pt-3 border-t border-slate-100 dark:border-gray-800' : 'grid-rows-[0fr] opacity-0'"
+            :class="
+                isMobileExpanded
+                    ? 'mt-3 grid-rows-[1fr] border-t border-slate-100 pt-3 opacity-100 dark:border-gray-800'
+                    : 'grid-rows-[0fr] opacity-0'
+            "
         >
             <div class="overflow-hidden">
                 <Link
