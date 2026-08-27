@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
-    ArrowLeft,
     UserPlus,
     CheckCircle2,
     ShieldAlert,
@@ -11,6 +10,9 @@ import {
     ChevronDown,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 
 const quickLinks = [
     { num: '00', id: 'faq', label: 'FAQ' },
@@ -215,16 +217,7 @@ onUnmounted(() => {
         />
     </Head>
 
-    <header class="mx-auto max-w-4xl px-4 pt-8 pb-4 text-center sm:pt-12">
-        <Link
-            href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-4 w-4 transition-transform group-hover:-translate-x-1"
-            />
-            Back to Home
-        </Link>
+    <header class="mx-auto max-w-4xl px-4 pt-6 pb-4 text-center sm:pt-10">
         <h1
             class="mb-3 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
@@ -421,7 +414,9 @@ onUnmounted(() => {
                     কোনো technical জ্ঞানের প্রয়োজন নেই।
                 </p>
 
+                <!-- Become Contributor CTA (Only for guests) -->
                 <div
+                    v-if="!user"
                     class="flex flex-col items-start justify-between gap-4 rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 sm:flex-row sm:items-center sm:p-6 dark:border-indigo-500/30 dark:bg-indigo-500/10"
                 >
                     <div class="flex items-start gap-3.5">

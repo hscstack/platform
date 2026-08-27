@@ -29,13 +29,13 @@ const fetchAnalytics = async (refresh = false) => {
         );
 
         if (!res.ok) {
-            throw new Error('Failed to fetch analytics data');
+            throw new Error('Analytics ডাটা লোড করা যায়নি');
         }
 
         stats.value = await res.json();
         hasFetched.value = true;
     } catch (e: any) {
-        errorMsg.value = e.message || 'Error loading analytics';
+        errorMsg.value = e.message || 'Analytics লোড করতে সমস্যা হয়েছে';
     } finally {
         isLoading.value = false;
     }
@@ -43,7 +43,7 @@ const fetchAnalytics = async (refresh = false) => {
 </script>
 
 <template>
-    <Head title="Staff Dashboard" />
+    <Head title="Staff Panel" />
 
     <div class="animate-fade-in mx-auto max-w-7xl space-y-6 p-1">
         <!-- Main Dashboard Header -->
@@ -71,7 +71,7 @@ const fetchAnalytics = async (refresh = false) => {
                         <p
                             class="mt-0.5 text-xs text-slate-600 dark:text-gray-400"
                         >
-                            Administration workspace overview & analytics.
+                            অ্যাডমিন ওয়ার্কস্পেসের সামগ্রিক তথ্য ও অ্যানালিটিক্স।
                         </p>
                     </div>
                 </div>
@@ -90,10 +90,10 @@ const fetchAnalytics = async (refresh = false) => {
                     <span>{{
                         hasFetched
                             ? isLoading
-                                ? 'Refreshing...'
+                                ? 'রিফ্রেশ হচ্ছে...'
                                 : 'Reload Analytics'
                             : isLoading
-                              ? 'Loading...'
+                              ? 'লোড হচ্ছে...'
                               : 'Load Analytics'
                     }}</span>
                 </button>
@@ -117,13 +117,12 @@ const fetchAnalytics = async (refresh = false) => {
                         <h2
                             class="text-sm font-bold text-slate-900 dark:text-gray-100"
                         >
-                            New to the Contributor Workspace?
+                            কন্ট্রিবিউটর গাইড প্রয়োজন?
                         </h2>
                         <p
                             class="mt-0.5 text-xs text-slate-600 dark:text-gray-400"
                         >
-                            Learn how to manage subjects, upload resources,
-                            create blogs, and navigate panel permissions.
+                            সাবজেক্ট ম্যানেজ, রিসোর্স আপলোড, ব্লগ তৈরি ও প্যানেল পারমিশন সংক্রান্ত বিস্তারিত গাইডলাইন দেখুন।
                         </p>
                     </div>
                 </div>
@@ -132,7 +131,7 @@ const fetchAnalytics = async (refresh = false) => {
                     href="/guide"
                     class="group inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-2xs transition-all hover:bg-indigo-700 active:scale-95"
                 >
-                    <span>Take a Tour</span>
+                    <span>গাইড দেখুন</span>
                     <ArrowRight
                         class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
                     />
@@ -155,11 +154,10 @@ const fetchAnalytics = async (refresh = false) => {
             <h3
                 class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
             >
-                Analytics are Ready to Load
+                Analytics ডাটা লোড করার জন্য প্রস্তুত
             </h3>
             <p class="mt-1 max-w-sm text-xs text-slate-500 dark:text-gray-400">
-                To keep page load instant, analytics data is fetched on demand.
-                Click below to load live metrics from PostHog.
+                পেজ লোড দ্রুত রাখতে অ্যানালিটিক্স ডাটা ডিমান্ড অনুযায়ী লোড হয়। লাইভ মেট্রিক্স দেখতে নিচে ক্লিক করুন।
             </p>
             <button
                 type="button"
@@ -182,7 +180,7 @@ const fetchAnalytics = async (refresh = false) => {
             <p
                 class="mt-3 text-xs font-medium text-slate-500 dark:text-gray-400"
             >
-                Connecting to PostHog & querying 30-day analytics...
+                বিগত ৩০ দিনের অ্যানালিটিক্স লোড হচ্ছে...
             </p>
         </div>
 
@@ -224,7 +222,7 @@ const fetchAnalytics = async (refresh = false) => {
                         <p
                             class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            Active users in the last 5 minutes
+                            গত ৫ মিনিটে একটিভ ইউজার
                         </p>
                     </div>
                 </div>
@@ -254,7 +252,7 @@ const fetchAnalytics = async (refresh = false) => {
                         <p
                             class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            Total page views recorded (Last 30 Days)
+                            সর্বমোট পেজ ভিউ (বিগত ৩০ দিন)
                         </p>
                     </div>
                 </div>
@@ -284,7 +282,7 @@ const fetchAnalytics = async (refresh = false) => {
                         <p
                             class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            Distinct audience reach (Last 30 Days)
+                            ইউনিক ভিজিটর সংখ্যা (বিগত ৩০ দিন)
                         </p>
                     </div>
                 </div>
@@ -306,15 +304,15 @@ const fetchAnalytics = async (refresh = false) => {
                         <h3
                             class="text-sm font-bold text-slate-900 dark:text-gray-100"
                         >
-                            Top Acquisition Sources
+                            Top Traffic Sources
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Distribution by traffic reference origins
+                            যেসব রেফারেল বা সোর্স থেকে ট্রাফিক এসেছে
                         </p>
                     </div>
                 </div>
 
-                <div class="mt-3.5 max-h-[300px] flex-1 overflow-auto">
+                <div class="mt-3.5 flex-1">
                     <div
                         v-if="stats?.top_sources?.length"
                         class="divide-y divide-slate-100 dark:divide-gray-800"
@@ -352,7 +350,7 @@ const fetchAnalytics = async (refresh = false) => {
                         <p
                             class="mt-2 text-xs font-medium text-slate-500 dark:text-gray-400"
                         >
-                            No source data captured yet.
+                            এখনও কোনো সোর্স ডাটা পাওয়া যায়নি।
                         </p>
                     </div>
                 </div>

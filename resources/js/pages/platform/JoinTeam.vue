@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import {
-    ArrowLeft,
     Megaphone,
     FolderHeart,
     MessageSquare,
@@ -89,16 +88,7 @@ const facebookPageUrl = 'https://facebook.com/hscstackbd';
     </Head>
 
     <!-- Header -->
-    <header class="mx-auto max-w-3xl px-4 pt-12 pb-10 text-center sm:pt-16">
-        <Link
-            href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
-            />
-            Back to Home
-        </Link>
+    <header class="mx-auto max-w-3xl px-4 pt-8 pb-8 text-center sm:pt-12">
         <h1
             class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >

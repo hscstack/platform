@@ -1,38 +1,19 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, Heart, MessageSquare } from 'lucide-vue-next';
-import { computed } from 'vue';
 
-const props = defineProps({
+defineProps({
     blog: Object,
-});
-
-const formattedDate = computed(() => {
-    if (!props.blog?.created_at) {
-        return '';
-    }
-
-    const date = new Date(props.blog.created_at);
-
-    if (isNaN(date.getTime())) {
-        return '';
-    }
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(date);
 });
 </script>
 
 <template>
-    <div
-        class="group flex flex-row items-center overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:flex-col sm:p-0 dark:border-gray-700 dark:bg-gray-900 dark:hover:shadow-gray-900/50"
+    <Link
+        :href="'/blogs/' + blog.slug"
+        class="group relative flex flex-row items-center overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:flex-col sm:p-0 dark:border-gray-700 dark:bg-gray-900 dark:hover:shadow-gray-900/50"
     >
         <!-- Featured Image Container -->
-        <Link
-            :href="'/blogs/' + blog.slug"
+        <div
             class="relative block h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:aspect-[16/9] sm:h-auto sm:w-full sm:rounded-none dark:bg-gray-800"
         >
             <img
@@ -47,14 +28,14 @@ const formattedDate = computed(() => {
             >
                 {{ blog.category }}
             </div>
-        </Link>
+        </div>
 
         <!-- Card Body -->
         <div class="flex min-w-0 flex-1 flex-col justify-between pl-3 sm:p-4">
             <div>
-                <!-- News Meta (Author & Date & Mobile Category) -->
+                <!-- Top Row: Category / Author -->
                 <div
-                    class="mb-1 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 sm:mb-1.5 sm:text-xs dark:text-gray-400"
+                    class="mb-1 flex items-center gap-1.5 text-[11px] sm:mb-1.5 sm:text-xs"
                 >
                     <span
                         v-if="blog.category"
@@ -63,46 +44,29 @@ const formattedDate = computed(() => {
                         {{ blog.category }}
                     </span>
 
-                    <span class="text-slate-400 dark:text-gray-500"
-                        >Author</span
-                    >
+                    <span class="text-slate-400 dark:text-gray-500">By</span>
                     <Link
                         v-if="blog.user?.username"
                         :href="`/u/${blog.user.username}`"
-                        class="font-medium text-indigo-600 underline transition-colors hover:underline dark:text-indigo-400"
+                        @click.stop
+                        class="relative z-10 truncate font-semibold text-slate-700 transition-colors hover:text-indigo-600 hover:underline dark:text-gray-300 dark:hover:text-indigo-400"
                     >
                         {{ blog.user?.name }}
                     </Link>
                     <span
                         v-else
-                        class="font-medium text-slate-700 dark:text-gray-300"
+                        class="truncate font-semibold text-slate-700 dark:text-gray-300"
                     >
                         {{ blog.user?.name }}
                     </span>
-
-                    <span
-                        v-if="formattedDate"
-                        class="text-slate-300 dark:text-gray-600"
-                        >•</span
-                    >
-
-                    <time
-                        v-if="formattedDate"
-                        :datetime="blog.created_at"
-                        class="text-slate-400 dark:text-gray-500"
-                    >
-                        {{ formattedDate }}
-                    </time>
                 </div>
 
                 <!-- Title -->
-                <Link :href="'/blogs/' + blog.slug" class="group/title block">
-                    <h3
-                        class="line-clamp-2 text-xs leading-snug font-bold text-slate-900 transition duration-150 group-hover/title:text-indigo-600 sm:text-base dark:text-gray-100 dark:group-hover/title:text-indigo-400"
-                    >
-                        {{ blog.title }}
-                    </h3>
-                </Link>
+                <h3
+                    class="line-clamp-2 text-xs leading-snug font-bold text-slate-900 transition duration-150 group-hover:text-indigo-600 sm:text-base dark:text-gray-100 dark:group-hover:text-indigo-400"
+                >
+                    {{ blog.title }}
+                </h3>
 
                 <!-- Excerpt (hidden on mobile to save vertical space) -->
                 <p
@@ -119,21 +83,8 @@ const formattedDate = computed(() => {
                 <div
                     class="flex items-center gap-3 text-[11px] text-slate-400 sm:text-xs dark:text-gray-500"
                 >
-                    <span
-                        class="inline-flex items-center gap-1"
-                        :class="{
-                            'font-medium text-rose-500 dark:text-rose-400':
-                                blog.reactions_count > 0,
-                        }"
-                    >
-                        <Heart
-                            class="h-3.5 w-3.5"
-                            :class="
-                                blog.reactions_count > 0
-                                    ? 'fill-rose-500 text-rose-500'
-                                    : 'text-slate-400 dark:text-gray-500'
-                            "
-                        />
+                    <span class="inline-flex items-center gap-1">
+                        <Heart class="h-3.5 w-3.5" />
                         <span>{{ blog.reactions_count || 0 }}</span>
                     </span>
 
@@ -143,16 +94,13 @@ const formattedDate = computed(() => {
                     </span>
                 </div>
 
-                <Link
-                    :href="'/blogs/' + blog.slug"
-                    class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 transition hover:text-indigo-700 sm:text-xs dark:text-indigo-400 dark:hover:text-indigo-300"
+                <!-- Bottom-Right Arrow Indicator -->
+                <div
+                    class="flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
                 >
-                    <span>Read</span>
-                    <ArrowRight
-                        class="h-3.5 w-3.5 transform transition-transform duration-200 group-hover:translate-x-1"
-                    />
-                </Link>
+                    <ArrowRight class="h-3.5 w-3.5" />
+                </div>
             </div>
         </div>
-    </div>
+    </Link>
 </template>

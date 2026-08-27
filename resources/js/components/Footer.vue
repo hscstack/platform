@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     Github,
     Facebook,
@@ -10,12 +10,27 @@ import {
     Heart,
     Instagram,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
+
+const page = usePage();
+const currentUrl = computed(() => page.url);
+
+// Full marketing footer on primary landing/home views; sleek minimal footer elsewhere
+const isFullFooter = computed(() => {
+    const path = currentUrl.value.split('?')[0];
+
+    return path === '/' || path === '/ssc';
+});
 </script>
 
 <template>
+    <!-- Desktop: Always Full Footer (md:block) | Mobile: Full Footer on Home/SSC (block md:hidden) -->
     <footer
-        class="mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900"
+        :class="[
+            isFullFooter ? 'block' : 'hidden md:block',
+            'mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900',
+        ]"
     >
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
             <div class="grid grid-cols-1 gap-y-10 md:grid-cols-12 md:gap-x-12">
@@ -54,8 +69,8 @@ import AppLogo from './AppLogo.vue';
                             href="https://instagram.com/hscstack"
                             rel="noopener noreferrer"
                             target="_blank"
-                            class="text-slate-400 transition-colors duration-150 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400"
-                            aria-label="Facebook Page"
+                            class="text-slate-400 transition-colors duration-150 hover:text-rose-600 dark:text-gray-500 dark:hover:text-rose-400"
+                            aria-label="Instagram Profile"
                         >
                             <Instagram class="h-5 w-5" />
                         </a>
@@ -126,7 +141,7 @@ import AppLogo from './AppLogo.vue';
                                     <Heart
                                         class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
                                     />
-                                    <span>Support HSCStack</span>
+                                    <span>Support Us</span>
                                 </Link>
                             </li>
                             <li>
@@ -215,6 +230,52 @@ import AppLogo from './AppLogo.vue';
                     </a>
                 </div>
             </div>
+        </div>
+    </footer>
+
+    <!-- Minimal, Clean Mobile Footer on Non-Home Pages (md:hidden) -->
+    <footer
+        v-if="!isFullFooter"
+        class="mt-auto border-t border-slate-200/70 bg-white/80 pt-8 pb-6 backdrop-blur-md md:hidden dark:border-gray-800/70 dark:bg-gray-950/80"
+    >
+        <div class="mx-auto flex max-w-7xl flex-col items-center gap-3.5 px-4 text-center">
+            <!-- App Logo with top breathing room -->
+            <div class="pt-1">
+                <AppLogo />
+            </div>
+
+            <!-- Essential Links -->
+            <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs font-medium text-slate-600 dark:text-gray-400">
+                <Link
+                    href="/about-us"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    About
+                </Link>
+                <Link
+                    href="/privacy-policy"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    Privacy
+                </Link>
+                <Link
+                    href="/terms-service"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    Terms
+                </Link>
+                <Link
+                    href="/support"
+                    class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    Support Us
+                </Link>
+            </div>
+
+            <!-- Copyright at the bottom -->
+            <p class="pt-1.5 text-[11px] font-medium text-slate-400 dark:text-gray-500">
+                &copy; 2026 HSCStack
+            </p>
         </div>
     </footer>
 </template>
