@@ -711,10 +711,6 @@ const goBack = () => {
                         class="mt-1 inline-flex items-center gap-1.5 text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
                     >
                         <span>{{ blog.user?.name }}</span>
-                        <VerifiedBadge
-                            v-if="blog.user?.is_verified"
-                            size="h-4.5 w-4.5"
-                        />
                     </Link>
 
                     <Link
