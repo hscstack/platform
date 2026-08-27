@@ -6,13 +6,18 @@ use App\Models\Blog;
 use App\Models\Node;
 use App\Models\Notice;
 use App\Models\Subject;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class SubjectController extends Controller
 {
-    public function index($course)
+    public function index(Request $request, $course)
     {
+        // If visiting root '/' and user explicitly preferred 'ssc', redirect cleanly on server side
+        if ($request->path() === '/' && $request->cookie('preferred_course') === 'ssc') {
+            return redirect('/ssc');
+        }
         $subjects = Cache::rememberForever("home_page_subjects_{$course}", function () use ($course) {
             return Subject::orderBy('sort_order', 'asc')
                 ->where('course', $course)

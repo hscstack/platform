@@ -36,14 +36,29 @@ const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const canAccessAdmin = computed(() => page.props.auth?.can_access_admin);
 const currentUrl = computed(() => page.url);
-
 const isProjectsActive = computed(() =>
     currentUrl.value.startsWith('/projects'),
 );
 const isBlogsActive = computed(() => currentUrl.value.startsWith('/blogs'));
 const isHomeActive = computed(
-    () => currentUrl.value === '/' || currentUrl.value.startsWith('/?'),
+    () =>
+        currentUrl.value === '/' ||
+        currentUrl.value.startsWith('/?') ||
+        currentUrl.value === '/ssc' ||
+        currentUrl.value.startsWith('/ssc?'),
 );
+
+const homeHref = computed(() => {
+    if (typeof window !== 'undefined') {
+        try {
+            const pref = localStorage.getItem('preferred_course');
+            if (pref === 'ssc') return '/ssc';
+        } catch {
+            // ignore
+        }
+    }
+    return currentUrl.value.startsWith('/ssc') ? '/ssc' : '/';
+});
 
 const dropdownOpen = ref(false);
 const mobileMenuOpen = ref(false);
@@ -120,7 +135,7 @@ onBeforeUnmount(() => {
             <!-- Center/Desktop Navigation (md and up) -->
             <nav class="hidden items-center gap-6 md:flex">
                 <Link
-                    href="/"
+                    :href="homeHref"
                     class="text-sm font-medium transition-colors"
                     :class="
                         isHomeActive
@@ -387,7 +402,7 @@ onBeforeUnmount(() => {
                                 </p>
                                 <div class="space-y-1">
                                     <Link
-                                        href="/"
+                                        :href="homeHref"
                                         @click="closeMobileMenu"
                                         class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold transition-all"
                                         :class="

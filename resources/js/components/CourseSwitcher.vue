@@ -5,6 +5,16 @@ import { computed } from 'vue';
 
 const page = usePage();
 const isSsc = computed(() => page.url.startsWith('/ssc'));
+
+const setCoursePreference = (course: 'hsc' | 'ssc') => {
+    try {
+        localStorage.setItem('preferred_course', course);
+        // Set cookie valid for 1 year so server can directly render preferred course without double-refresh
+        document.cookie = `preferred_course=${course};path=/;max-age=31536000;SameSite=Lax`;
+    } catch {
+        // ignore storage errors
+    }
+};
 </script>
 
 <template>
@@ -38,6 +48,7 @@ const isSsc = computed(() => page.url.startsWith('/ssc'));
         <Link
             :href="isSsc ? '/' : '/ssc'"
             preserve-scroll
+            @click="setCoursePreference(isSsc ? 'hsc' : 'ssc')"
             :class="[
                 'group inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-bold shadow-xs transition-all active:scale-[0.98] sm:w-auto',
                 isSsc

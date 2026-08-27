@@ -4,10 +4,22 @@ import { computed } from 'vue';
 
 const page = usePage();
 const isSsc = computed(() => page.url.startsWith('/ssc'));
+
+const logoHref = computed(() => {
+    if (typeof window !== 'undefined') {
+        try {
+            const pref = localStorage.getItem('preferred_course');
+            if (pref === 'ssc') return '/ssc';
+        } catch {
+            // ignore
+        }
+    }
+    return isSsc.value ? '/ssc' : '/';
+});
 </script>
 
 <template>
-    <Link href="/" class="flex items-center gap-2.5">
+    <Link :href="logoHref" class="flex items-center gap-2.5">
         <div
             class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm dark:bg-gray-100"
         >
