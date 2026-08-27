@@ -9,6 +9,7 @@ import {
     Loader2,
     Activity,
     Flag,
+    ShieldAlert,
 } from 'lucide-vue-next';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
@@ -21,6 +22,8 @@ interface ChatSettingsProps {
         cooldown_seconds: number;
         max_messages: number;
         max_length: number;
+        profanity_filter_enabled: boolean;
+        banned_words: string;
     };
     totalMessages: number;
     recentMessagesCount: number;
@@ -35,6 +38,8 @@ const form = useForm({
     cooldown_seconds: props.settings.cooldown_seconds,
     max_messages: props.settings.max_messages ?? 200,
     max_length: props.settings.max_length ?? 280,
+    profanity_filter_enabled: props.settings.profanity_filter_enabled ?? true,
+    banned_words: props.settings.banned_words ?? '',
 });
 
 const submitSettings = () => {
@@ -546,6 +551,66 @@ const lengthPresets = [
                             chars
                         </span>
                     </div>
+                </div>
+            </div>
+
+            <!-- 6. Profanity & Abusive Language Filter -->
+            <div
+                class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
+            >
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label
+                            class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            <ShieldAlert class="h-4 w-4 text-rose-500" />
+                            Profanity & Abusive Language Filter
+                        </label>
+                        <p
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Automatically detects and blocks vulgar, abusive, and inappropriate words before they can be sent.
+                        </p>
+                    </div>
+
+                    <!-- Toggle Switch -->
+                    <button
+                        type="button"
+                        @click="form.profanity_filter_enabled = !form.profanity_filter_enabled"
+                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                        :class="
+                            form.profanity_filter_enabled
+                                ? 'bg-indigo-600 dark:bg-indigo-500'
+                                : 'bg-slate-200 dark:bg-gray-700'
+                        "
+                    >
+                        <span
+                            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+                            :class="
+                                form.profanity_filter_enabled
+                                    ? 'translate-x-5'
+                                    : 'translate-x-0'
+                            "
+                        />
+                    </button>
+                </div>
+
+                <!-- Banned Words List (Textarea) -->
+                <div v-if="form.profanity_filter_enabled" class="space-y-2">
+                    <label
+                        class="block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                    >
+                        Banned Words & Offensive Roots (separated by commas or newlines):
+                    </label>
+                    <textarea
+                        v-model="form.banned_words"
+                        rows="4"
+                        placeholder="e.g. fuck, bitch, chuda, khanki, etc."
+                        class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 font-mono"
+                    ></textarea>
+                    <p class="text-[11px] text-slate-400 dark:text-gray-500">
+                        The filter collapses repeated letters (e.g. "fuuuuck" &rarr; "fuck") and replaces common leet-speak (e.g. @ &rarr; a, $ &rarr; s, 0 &rarr; o).
+                    </p>
                 </div>
             </div>
 

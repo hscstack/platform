@@ -13,6 +13,9 @@ class ChatSettingsController extends Controller
 {
     public function edit()
     {
+        $bannedWords = AppSetting::get('global_chat_banned_words', '');
+        $bannedWordsText = is_array($bannedWords) ? implode(', ', $bannedWords) : (string) $bannedWords;
+
         return Inertia::render('admin/ChatSettings', [
             'settings' => [
                 'enabled' => (bool) AppSetting::get('global_chat_enabled', true),
@@ -20,6 +23,8 @@ class ChatSettingsController extends Controller
                 'cooldown_seconds' => (int) AppSetting::get('global_chat_cooldown_seconds', 30),
                 'max_messages' => (int) AppSetting::get('global_chat_max_messages', 200),
                 'max_length' => (int) AppSetting::get('global_chat_max_length', 280),
+                'profanity_filter_enabled' => (bool) AppSetting::get('global_chat_profanity_filter_enabled', true),
+                'banned_words' => $bannedWordsText,
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
@@ -74,6 +79,8 @@ class ChatSettingsController extends Controller
             'cooldown_seconds' => ['required', 'integer', 'min:0', 'max:3600'],
             'max_messages' => ['required', 'integer', 'min:20', 'max:1000'],
             'max_length' => ['required', 'integer', 'min:50', 'max:1000'],
+            'profanity_filter_enabled' => ['required', 'boolean'],
+            'banned_words' => ['nullable', 'string'],
         ]);
 
         AppSetting::set('global_chat_enabled', $validated['enabled'], 'boolean');
@@ -81,6 +88,8 @@ class ChatSettingsController extends Controller
         AppSetting::set('global_chat_cooldown_seconds', $validated['cooldown_seconds'], 'integer');
         AppSetting::set('global_chat_max_messages', $validated['max_messages'], 'integer');
         AppSetting::set('global_chat_max_length', $validated['max_length'], 'integer');
+        AppSetting::set('global_chat_profanity_filter_enabled', $validated['profanity_filter_enabled'], 'boolean');
+        AppSetting::set('global_chat_banned_words', $validated['banned_words'] ?? '', 'string');
 
         // Immediately prune if current count exceeds new limit
         ChatMessage::pruneOldMessages($validated['max_messages']);

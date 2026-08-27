@@ -6,6 +6,7 @@ use App\Events\ChatMessageDeleted;
 use App\Events\ChatMessageSent;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
+use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -149,6 +150,13 @@ class ChatController extends Controller
         ]);
 
         $content = trim($validated['content']);
+
+        // Check for abusive / prohibited language
+        if (ChatProfanityFilter::hasProfanity($content)) {
+            return response()->json([
+                'message' => 'Your message contains inappropriate or prohibited language. If you try again, you may be temporarily banned from chat.',
+            ], 422);
+        }
 
         // Prevent duplicate message sent twice in a streak by the same user
         $lastMessage = ChatMessage::where('user_id', $user->id)
