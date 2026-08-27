@@ -6,6 +6,7 @@ import {
     Send,
     Users,
     User,
+    GraduationCap,
     AlertCircle,
     AtSign,
     Eye,
@@ -22,6 +23,10 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    studentsCount: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const page = usePage();
@@ -34,7 +39,7 @@ const imagePreview = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
-    recipient_type: 'all' as 'all' | 'single',
+    recipient_type: 'all' as 'all' | 'students' | 'single',
     recipient_email: '',
     subject: '',
     body: '',
@@ -168,7 +173,7 @@ const submitForm = () => {
                     Recipient Target
                 </label>
 
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <!-- Bulk to all subscribed -->
                     <button
                         type="button"
@@ -194,13 +199,47 @@ const submitForm = () => {
                             <p
                                 class="text-sm font-bold text-slate-900 dark:text-gray-100"
                             >
-                                All Subscribed Users
+                                All Subscribed
                             </p>
                             <p
                                 class="text-xs text-slate-500 dark:text-gray-400"
                             >
-                                Bulk broadcast ({{ recipientCount }}
-                                recipients)
+                                {{ recipientCount }} recipients
+                            </p>
+                        </div>
+                    </button>
+
+                    <!-- Students (Non-Staff) -->
+                    <button
+                        type="button"
+                        @click="form.recipient_type = 'students'"
+                        class="flex items-center gap-3 rounded-2xl border p-4 text-left transition"
+                        :class="
+                            form.recipient_type === 'students'
+                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/10 dark:border-indigo-500 dark:bg-indigo-500/10'
+                                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-gray-700 dark:bg-gray-950/40 dark:hover:border-gray-600'
+                        "
+                    >
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                            :class="
+                                form.recipient_type === 'students'
+                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
+                                    : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                            "
+                        >
+                            <GraduationCap class="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                            <p
+                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                Students (Non-Staff)
+                            </p>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                {{ studentsCount }} public accounts
                             </p>
                         </div>
                     </button>
@@ -235,7 +274,7 @@ const submitForm = () => {
                             <p
                                 class="text-xs text-slate-500 dark:text-gray-400"
                             >
-                                Send to an individual email address
+                                Specific email address
                             </p>
                         </div>
                     </button>
@@ -716,14 +755,18 @@ const submitForm = () => {
                             {{
                                 form.recipient_type === 'single'
                                     ? 'Confirm Single Email'
-                                    : 'Confirm Email Broadcast'
+                                    : form.recipient_type === 'students'
+                                      ? 'Confirm Students Broadcast'
+                                      : 'Confirm Email Broadcast'
                             }}
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
                             {{
                                 form.recipient_type === 'single'
                                     ? `Direct email to ${form.recipient_email}`
-                                    : `Queue broadcast to ${props.recipientCount} subscribed users`
+                                    : form.recipient_type === 'students'
+                                      ? `Queue broadcast to ${props.studentsCount} students (non-staff)`
+                                      : `Queue broadcast to ${props.recipientCount} subscribed users`
                             }}
                         </p>
                     </div>
@@ -736,6 +779,12 @@ const submitForm = () => {
                         Are you sure you want to send this email to
                         <strong>{{ form.recipient_email }}</strong
                         >?
+                    </span>
+                    <span v-else-if="form.recipient_type === 'students'">
+                        Are you sure you want to send this broadcast? The emails
+                        will be dispatched to
+                        <strong>{{ props.studentsCount }}</strong> students
+                        (public non-staff users) who have enabled email updates.
                     </span>
                     <span v-else>
                         Are you sure you want to send this broadcast? The emails
