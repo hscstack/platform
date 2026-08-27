@@ -141,6 +141,18 @@ class ChatController extends Controller
         ]);
 
         $content = trim($validated['content']);
+
+        // Prevent duplicate message sent twice in a streak by the same user
+        $lastMessage = ChatMessage::where('user_id', $user->id)
+            ->latest('id')
+            ->first();
+
+        if ($lastMessage && mb_strtolower($lastMessage->content) === mb_strtolower($content)) {
+            return response()->json([
+                'message' => 'You cannot send the exact same message twice in a row.',
+            ], 422);
+        }
+
         $replyToId = $validated['reply_to_id'] ?? null;
         $replyToContent = null;
 
