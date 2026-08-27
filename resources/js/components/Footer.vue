@@ -24,10 +24,12 @@ const isFullFooter = computed(() => {
 </script>
 
 <template>
-    <!-- Full 12-column Marketing Footer (Home / SSC) -->
+    <!-- Desktop: Always Full Footer (md:block) | Mobile: Full Footer on Home/SSC (block md:hidden) -->
     <footer
-        v-if="isFullFooter"
-        class="mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900"
+        :class="[
+            isFullFooter ? 'block' : 'hidden md:block',
+            'mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900',
+        ]"
     >
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
             <div class="grid grid-cols-1 gap-y-10 md:grid-cols-12 md:gap-x-12">
@@ -138,7 +140,7 @@ const isFullFooter = computed(() => {
                                     <Heart
                                         class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
                                     />
-                                    <span>Support HSCStack</span>
+                                    <span>Support Us</span>
                                 </Link>
                             </li>
                             <li>
@@ -230,23 +232,17 @@ const isFullFooter = computed(() => {
         </div>
     </footer>
 
-    <!-- Minimal, Sleek Footer (Public User Profile, Content, Reader, & Explorer Pages) -->
+    <!-- Minimal, Clean Mobile Footer on Non-Home Pages (md:hidden) -->
     <footer
-        v-else
-        class="mt-auto border-t border-slate-200/70 bg-white/70 py-6 backdrop-blur-md dark:border-gray-800/70 dark:bg-gray-950/70"
+        v-if="!isFullFooter"
+        class="mt-auto border-t border-slate-200/70 bg-white/80 py-5 backdrop-blur-md md:hidden dark:border-gray-800/70 dark:bg-gray-950/80"
     >
-        <div
-            class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8"
-        >
-            <!-- Left: Brand & Copyright -->
-            <div class="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500 sm:justify-start dark:text-gray-400">
-                <AppLogo />
-                <span class="hidden text-slate-300 sm:inline dark:text-gray-700">&bull;</span>
-                <span>&copy; 2026 HSCStack</span>
-            </div>
+        <div class="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center">
+            <!-- App Logo -->
+            <AppLogo />
 
-            <!-- Center: Essential Links -->
-            <div class="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600 dark:text-gray-400">
+            <!-- Essential Links -->
+            <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs font-medium text-slate-600 dark:text-gray-400">
                 <Link
                     href="/about-us"
                     class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
@@ -269,41 +265,14 @@ const isFullFooter = computed(() => {
                     href="/support"
                     class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
                 >
-                    Support
+                    Support Us
                 </Link>
             </div>
 
-            <!-- Right: Minimal Social & Version -->
-            <div class="flex items-center gap-3">
-                <a
-                    href="https://github.com/hscstack"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-slate-400 transition hover:text-slate-900 dark:text-gray-500 dark:hover:text-gray-100"
-                    aria-label="GitHub Repository"
-                >
-                    <Github class="h-4 w-4" />
-                </a>
-                <a
-                    href="https://facebook.com/hscstackbd"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-slate-400 transition hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400"
-                    aria-label="Facebook Page"
-                >
-                    <Facebook class="h-4 w-4" />
-                </a>
-
-                <a
-                    v-if="$page.props.app_version"
-                    :href="`https://github.com/hscstack/platform/releases/tag/${$page.props.app_version}`"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-900 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:text-gray-200"
-                >
-                    {{ $page.props.app_version }}
-                </a>
-            </div>
+            <!-- Copyright at the bottom -->
+            <p class="pt-1 text-[11px] font-medium text-slate-400 dark:text-gray-500">
+                &copy; 2026 HSCStack
+            </p>
         </div>
     </footer>
 </template>
