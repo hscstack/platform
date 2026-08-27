@@ -106,7 +106,13 @@ const filteredSubjects = computed(() => {
                         Featured Blogs
                     </h2>
                     <p class="text-sm text-slate-500 dark:text-gray-400">
-                        Read our latest articles and updates
+                        <Link
+                            href="/about-us"
+                            class="underline decoration-slate-300 underline-offset-2 transition-colors hover:text-indigo-600 hover:decoration-indigo-400 dark:decoration-gray-600 dark:hover:text-indigo-400"
+                        >
+                            কন্ট্রিবিউটরদের
+                        </Link>
+                        সাম্প্রতিক লেখাগুলো পড়ুন
                     </p>
                 </div>
                 <!-- Desktop Link (sm and up) -->
