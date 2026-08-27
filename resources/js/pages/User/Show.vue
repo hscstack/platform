@@ -13,6 +13,7 @@ import {
     Eye,
     Facebook,
     FileText,
+    Folder,
     Github,
     GraduationCap,
     Heart,
@@ -25,6 +26,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import UserListItem from '@/components/UserListItem.vue';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 
 const props = defineProps<{
     profileUser: {
@@ -39,13 +41,14 @@ const props = defineProps<{
         instagram: string | null;
         github: string | null;
         created_at: string;
-        roles: string[];
-        is_staff: boolean;
+        is_verified?: boolean;
+        is_staff?: boolean;
+        roles?: string[];
     };
     stats: {
         completedResourcesCount: number;
         blogsCount: number;
-        totalBlogLikes: number;
+        upvotesCount: number;
         totalBlogViews: number;
         sharedResourcesCount: number;
     };
@@ -58,7 +61,7 @@ const props = defineProps<{
         username: string;
         image_path?: string | null;
         institution?: string | null;
-        roles?: Array<{ id: number; name: string }>;
+        is_verified?: boolean;
     }>;
     appreciating?: Array<{
         id: number;
@@ -66,7 +69,7 @@ const props = defineProps<{
         username: string;
         image_path?: string | null;
         institution?: string | null;
-        roles?: Array<{ id: number; name: string }>;
+        is_verified?: boolean;
     }>;
     recentCompletions: Array<{
         id: number;
@@ -93,6 +96,14 @@ const props = defineProps<{
         created_at: string;
     }>;
     recentActivities: {
+        folders?: Array<{
+            type: string;
+            title: string;
+            subtitle?: string;
+            url: string | null;
+            created_at: string;
+            timestamp?: number;
+        }>;
         uploads: Array<{
             type: string;
             title: string;
@@ -100,6 +111,7 @@ const props = defineProps<{
             resource_type?: string;
             url: string | null;
             created_at: string;
+            timestamp?: number;
         }>;
         completions: Array<{
             type: string;
@@ -107,12 +119,14 @@ const props = defineProps<{
             subtitle?: string;
             url: string | null;
             created_at: string;
+            timestamp?: number;
         }>;
         reactions: Array<{
             type: string;
             title: string;
             url: string | null;
             created_at: string;
+            timestamp?: number;
         }>;
         comments: Array<{
             type: string;
@@ -120,6 +134,7 @@ const props = defineProps<{
             content?: string;
             url: string | null;
             created_at: string;
+            timestamp?: number;
         }>;
         upvotes?: Array<{
             type: string;
@@ -127,6 +142,7 @@ const props = defineProps<{
             subtitle?: string;
             url: string | null;
             created_at: string;
+            timestamp?: number;
         }>;
         appreciations?: Array<{
             type: string;
@@ -134,6 +150,7 @@ const props = defineProps<{
             username?: string;
             url: string | null;
             created_at: string;
+            timestamp?: number;
         }>;
     };
     suggestedUsers?: Array<{
@@ -145,7 +162,7 @@ const props = defineProps<{
         image_url: string | null;
         image_path: string | null;
         about: string | null;
-        roles?: Array<{ id: number; name: string }>;
+        is_verified?: boolean;
     }>;
 }>();
 
@@ -162,6 +179,34 @@ const activeTab = ref<'completed' | 'blogs' | 'activity'>(
           ? 'blogs'
           : 'completed',
 );
+
+interface ActivityItem {
+    type: string;
+    title?: string | null;
+    subtitle?: string | null;
+    content?: string | null;
+    username?: string | null;
+    resource_type?: string | null;
+    url: string | null;
+    created_at: string;
+    timestamp?: number;
+}
+
+const sortedActivities = computed<ActivityItem[]>(() => {
+    const list: ActivityItem[] = [
+        ...((props.recentActivities.folders || []) as ActivityItem[]),
+        ...((props.recentActivities.uploads || []) as ActivityItem[]),
+        ...((props.recentActivities.completions || []) as ActivityItem[]),
+        ...((props.recentActivities.reactions || []) as ActivityItem[]),
+        ...((props.recentActivities.comments || []) as ActivityItem[]),
+        ...((props.recentActivities.upvotes || []) as ActivityItem[]),
+        ...((props.recentActivities.appreciations || []) as ActivityItem[]),
+    ];
+
+    return list.sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0));
+});
+
+const totalActivitiesCount = computed(() => sortedActivities.value.length);
 
 const localIsAppreciated = ref(props.isAppreciated);
 const localAppreciationsCount = ref(props.appreciationsCount);
@@ -219,45 +264,6 @@ const handleAppreciate = () => {
         },
     );
 };
-
-const getRoleBadge = (roles: string[]) => {
-    if (roles.includes('admin')) {
-        return {
-            label: 'Admin',
-            class: 'bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60',
-        };
-    }
-
-    if (roles.includes('editor')) {
-        return {
-            label: 'Editor',
-            class: 'bg-purple-50 text-purple-700 border-purple-200/80 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60',
-        };
-    }
-
-    if (roles.includes('manager')) {
-        return {
-            label: 'Staff',
-            class: 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60',
-        };
-    }
-
-    return {
-        label: 'Student',
-        class: 'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/60',
-    };
-};
-
-const roleInfo = computed(() => getRoleBadge(props.profileUser.roles));
-
-const totalActivitiesCount = computed(
-    () =>
-        (props.recentActivities.uploads?.length || 0) +
-        (props.recentActivities.reactions?.length || 0) +
-        (props.recentActivities.comments?.length || 0) +
-        (props.recentActivities.upvotes?.length || 0) +
-        (props.recentActivities.appreciations?.length || 0),
-);
 </script>
 
 <template>
@@ -360,13 +366,13 @@ const totalActivitiesCount = computed(
                                     {{ profileUser.name }}
                                 </h1>
 
-                                <!-- Role Pill -->
-                                <span
-                                    class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold"
-                                    :class="roleInfo.class"
-                                >
-                                    {{ roleInfo.label }}
-                                </span>
+                                <VerifiedBadge
+                                    v-if="
+                                        profileUser.is_verified ||
+                                        profileUser.is_staff
+                                    "
+                                    size="h-5 w-5"
+                                />
                             </div>
 
                             <!-- Username Tag -->
@@ -608,26 +614,26 @@ const totalActivitiesCount = computed(
                     </div>
                 </div>
 
-                <!-- Likes Received -->
+                <!-- Upvotes Given -->
                 <div
                     class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div class="flex items-center gap-2.5">
                         <div
-                            class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"
+                            class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-950/60 dark:text-orange-400"
                         >
-                            <Heart class="h-4 w-4 stroke-[2.2]" />
+                            <ArrowBigUp class="h-4.5 w-4.5 stroke-[2.2]" />
                         </div>
                         <div class="min-w-0">
                             <p
                                 class="text-sm font-black text-slate-900 dark:text-gray-100"
                             >
-                                {{ stats.totalBlogLikes }}
+                                {{ stats.upvotesCount }}
                             </p>
                             <p
                                 class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
                             >
-                                Likes Gained
+                                Upvotes Given
                             </p>
                         </div>
                     </div>
@@ -874,96 +880,125 @@ const totalActivitiesCount = computed(
                     </div>
 
                     <div v-else class="space-y-2">
-                        <!-- Uploads -->
                         <div
-                            v-for="(item, idx) in recentActivities.uploads"
-                            :key="'upload-' + idx"
-                            class="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div class="flex min-w-0 items-center gap-2">
-                                <div
-                                    class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                                >
-                                    <UploadCloud class="h-3.5 w-3.5" />
-                                </div>
-                                <div class="min-w-0 flex-1 truncate">
-                                    <span
-                                        class="text-xs text-slate-500 dark:text-gray-400"
-                                        >Uploaded
-                                    </span>
-                                    <Link
-                                        v-if="item.url"
-                                        :href="item.url"
-                                        class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                    >
-                                        {{ item.title }}
-                                    </Link>
-                                    <span
-                                        v-if="item.subtitle"
-                                        class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
-                                    >
-                                        ({{ item.subtitle }})
-                                    </span>
-                                </div>
-                            </div>
-                            <span
-                                class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                {{ item.created_at }}
-                            </span>
-                        </div>
-
-                        <!-- Reactions -->
-                        <div
-                            v-for="(item, idx) in recentActivities.reactions"
-                            :key="'react-' + idx"
-                            class="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div class="flex min-w-0 items-center gap-2">
-                                <div
-                                    class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
-                                >
-                                    <Heart class="h-3.5 w-3.5 fill-rose-500" />
-                                </div>
-                                <div class="min-w-0 flex-1 truncate">
-                                    <span
-                                        class="text-xs text-slate-500 dark:text-gray-400"
-                                        >Liked
-                                    </span>
-                                    <Link
-                                        v-if="item.url"
-                                        :href="item.url"
-                                        class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                    >
-                                        {{ item.title }}
-                                    </Link>
-                                </div>
-                            </div>
-                            <span
-                                class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                {{ item.created_at }}
-                            </span>
-                        </div>
-
-                        <!-- Comments -->
-                        <div
-                            v-for="(item, idx) in recentActivities.comments"
-                            :key="'comm-' + idx"
+                            v-for="(item, idx) in sortedActivities"
+                            :key="item.type + '-' + idx"
                             class="flex flex-col gap-1 rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
                         >
                             <div class="flex items-center justify-between">
                                 <div class="flex min-w-0 items-center gap-2">
+                                    <!-- Folder -->
                                     <div
+                                        v-if="item.type === 'folder'"
+                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                                    >
+                                        <Folder
+                                            class="h-3.5 w-3.5 stroke-[2.2]"
+                                        />
+                                    </div>
+
+                                    <!-- Upload -->
+                                    <div
+                                        v-else-if="item.type === 'upload'"
+                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                                    >
+                                        <UploadCloud class="h-3.5 w-3.5" />
+                                    </div>
+
+                                    <!-- Completion -->
+                                    <div
+                                        v-else-if="item.type === 'completion'"
+                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                                    >
+                                        <CheckCircle2
+                                            class="h-3.5 w-3.5 stroke-[2.2]"
+                                        />
+                                    </div>
+
+                                    <!-- Reaction / Like -->
+                                    <div
+                                        v-else-if="item.type === 'reaction'"
+                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
+                                    >
+                                        <Heart
+                                            class="h-3.5 w-3.5 fill-rose-500"
+                                        />
+                                    </div>
+
+                                    <!-- Comment -->
+                                    <div
+                                        v-else-if="item.type === 'comment'"
                                         class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                                     >
                                         <MessageSquare class="h-3.5 w-3.5" />
                                     </div>
+
+                                    <!-- Upvote -->
+                                    <div
+                                        v-else-if="item.type === 'upvote'"
+                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                                    >
+                                        <ArrowBigUp
+                                            class="h-3.5 w-3.5 fill-indigo-600 text-indigo-600 dark:fill-indigo-400 dark:text-indigo-400"
+                                        />
+                                    </div>
+
+                                    <!-- Appreciation -->
+                                    <div
+                                        v-else-if="item.type === 'appreciation'"
+                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
+                                    >
+                                        <Heart
+                                            class="h-3.5 w-3.5 fill-rose-500"
+                                        />
+                                    </div>
+
                                     <div class="min-w-0 flex-1 truncate">
                                         <span
                                             class="text-xs text-slate-500 dark:text-gray-400"
-                                            >Commented on
+                                        >
+                                            <template
+                                                v-if="item.type === 'folder'"
+                                                >Created folder
+                                            </template>
+                                            <template
+                                                v-else-if="
+                                                    item.type === 'upload'
+                                                "
+                                                >Uploaded
+                                            </template>
+                                            <template
+                                                v-else-if="
+                                                    item.type === 'completion'
+                                                "
+                                                >Completed topic
+                                            </template>
+                                            <template
+                                                v-else-if="
+                                                    item.type === 'reaction'
+                                                "
+                                                >Liked
+                                            </template>
+                                            <template
+                                                v-else-if="
+                                                    item.type === 'comment'
+                                                "
+                                                >Commented on
+                                            </template>
+                                            <template
+                                                v-else-if="
+                                                    item.type === 'upvote'
+                                                "
+                                                >Upvoted folder
+                                            </template>
+                                            <template
+                                                v-else-if="
+                                                    item.type === 'appreciation'
+                                                "
+                                                >Appreciated
+                                            </template>
                                         </span>
+
                                         <Link
                                             v-if="item.url"
                                             :href="item.url"
@@ -971,102 +1006,42 @@ const totalActivitiesCount = computed(
                                         >
                                             {{ item.title }}
                                         </Link>
+                                        <span
+                                            v-else
+                                            class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                        >
+                                            {{ item.title }}
+                                        </span>
+
+                                        <span
+                                            v-if="item.subtitle"
+                                            class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                                        >
+                                            ({{ item.subtitle }})
+                                        </span>
+                                        <span
+                                            v-else-if="item.username"
+                                            class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                                        >
+                                            (@{{ item.username }})
+                                        </span>
                                     </div>
                                 </div>
+
                                 <span
                                     class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
                                 >
                                     {{ item.created_at }}
                                 </span>
                             </div>
+
+                            <!-- Comment quote -->
                             <p
-                                v-if="item.content"
+                                v-if="item.type === 'comment' && item.content"
                                 class="line-clamp-1 pl-8.5 text-xs text-slate-600 italic dark:text-gray-300"
                             >
                                 "{{ item.content }}"
                             </p>
-                        </div>
-
-                        <!-- Upvoted Folders -->
-                        <div
-                            v-for="(item, idx) in recentActivities.upvotes"
-                            :key="'upvote-' + idx"
-                            class="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div class="flex min-w-0 items-center gap-2">
-                                <div
-                                    class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                                >
-                                    <ArrowBigUp
-                                        class="h-3.5 w-3.5 fill-indigo-600 text-indigo-600 dark:fill-indigo-400 dark:text-indigo-400"
-                                    />
-                                </div>
-                                <div class="min-w-0 flex-1 truncate">
-                                    <span
-                                        class="text-xs text-slate-500 dark:text-gray-400"
-                                        >Upvoted folder
-                                    </span>
-                                    <Link
-                                        v-if="item.url"
-                                        :href="item.url"
-                                        class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                    >
-                                        {{ item.title }}
-                                    </Link>
-                                    <span
-                                        v-if="item.subtitle"
-                                        class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
-                                    >
-                                        ({{ item.subtitle }})
-                                    </span>
-                                </div>
-                            </div>
-                            <span
-                                class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                {{ item.created_at }}
-                            </span>
-                        </div>
-
-                        <!-- Appreciations Given -->
-                        <div
-                            v-for="(
-                                item, idx
-                            ) in recentActivities.appreciations"
-                            :key="'apprec-' + idx"
-                            class="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div class="flex min-w-0 items-center gap-2">
-                                <div
-                                    class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
-                                >
-                                    <Heart class="h-3.5 w-3.5 fill-rose-500" />
-                                </div>
-                                <div class="min-w-0 flex-1 truncate">
-                                    <span
-                                        class="text-xs text-slate-500 dark:text-gray-400"
-                                        >Appreciated
-                                    </span>
-                                    <Link
-                                        v-if="item.url"
-                                        :href="item.url"
-                                        class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                    >
-                                        {{ item.title }}
-                                    </Link>
-                                    <span
-                                        v-if="item.username"
-                                        class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
-                                    >
-                                        (@{{ item.username }})
-                                    </span>
-                                </div>
-                            </div>
-                            <span
-                                class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                {{ item.created_at }}
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -1125,18 +1100,7 @@ const totalActivitiesCount = computed(
                                     >
                                         {{ person.name }}
                                     </p>
-                                    <span
-                                        v-if="
-                                            person.roles &&
-                                            person.roles.length > 0
-                                        "
-                                        class="inline-flex items-center text-blue-600 dark:text-blue-400"
-                                        title="Verified HSCStack Contributor"
-                                    >
-                                        <BadgeCheck
-                                            class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] dark:fill-blue-950/60"
-                                        />
-                                    </span>
+                                    <VerifiedBadge v-if="person.is_verified" />
                                 </div>
                                 <p
                                     v-if="person.title || person.institution"
@@ -1219,6 +1183,15 @@ const totalActivitiesCount = computed(
                         theme="rose"
                         @click="showAppreciatorsModal = false"
                     />
+
+                    <div
+                        v-if="localAppreciationsCount > appreciators.length"
+                        class="py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        and
+                        {{ localAppreciationsCount - appreciators.length }}
+                        more...
+                    </div>
                 </div>
 
                 <div
@@ -1284,6 +1257,15 @@ const totalActivitiesCount = computed(
                         theme="indigo"
                         @click="showAppreciatingModal = false"
                     />
+
+                    <div
+                        v-if="appreciatingCount > appreciating.length"
+                        class="py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        and
+                        {{ appreciatingCount - appreciating.length }}
+                        more...
+                    </div>
                 </div>
 
                 <div

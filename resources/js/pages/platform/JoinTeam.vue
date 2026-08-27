@@ -216,14 +216,16 @@ const facebookPageUrl = 'https://facebook.com/hscstackbd';
                             <h4
                                 class="text-xs font-bold text-slate-900 dark:text-gray-100"
                             >
-                                About Us Recognition
+                                About Us Recognition & Verified Badge
                             </h4>
                             <p
                                 class="mt-1 text-xs leading-relaxed font-medium text-slate-800 dark:text-gray-200"
                             >
                                 আমাদের অনুমোদিত প্রমোটর, কিউরেটর, মডারেটর,
-                                রাইটার এবং ডেভেলপারদের অবদানকে সম্মান জানাতে
-                                আমাদের অফিশিয়াল
+                                রাইটার এবং ডেভেলপারদের প্রোফাইলে একটি অফিশিয়াল
+                                <strong>Verified Contributor Badge</strong>
+                                যুক্ত হবে এবং তাদের অবদানকে সম্মান জানাতে আমাদের
+                                অফিশিয়াল
                                 <strong
                                     class="text-blue-800 underline dark:text-blue-300"
                                     ><Link href="/about-us"

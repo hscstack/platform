@@ -21,8 +21,6 @@ class UserProfileController extends Controller
         $user = User::where('username', $username)
             ->firstOrFail();
 
-        $user->load('roles:id,name');
-
         // Study Completions
         $completedResourcesCount = $user->completedResources()->count();
         $recentCompletions = $user->completedResources()
@@ -40,7 +38,7 @@ class UserProfileController extends Controller
             ->get();
         $blogsCount = $user->blogs()->where('is_published', true)->count();
         $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
-        $totalBlogLikes = BlogReaction::whereIn('blog_id', $user->blogs()->where('is_published', true)->select('id'))->count();
+        $upvotesCount = NodeVote::where('user_id', $user->id)->where('type', 'up')->count();
         $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
 
         // Appreciations (Received & Given)
@@ -52,23 +50,45 @@ class UserProfileController extends Controller
 
         $appreciators = $user->appreciators()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.title'])
-            ->with('roles:id,name')
-            ->latest('user_appreciations.id')
-            ->take(50)
+            ->inRandomOrder()
+            ->take(30)
             ->get();
 
         $appreciating = $user->appreciatingUsers()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.title'])
-            ->with('roles:id,name')
-            ->latest('user_appreciations.id')
-            ->take(50)
+            ->inRandomOrder()
+            ->take(30)
             ->get();
 
-        // Recent Community Activities (Uploads, completed topics, comments made, reactions given, upvoted folders, appreciations given)
+        // Recent Community Activities (Folders created, uploads, completed topics, comments made, reactions given, upvoted folders, appreciations given)
+        $recentFolders = Node::where('user_id', $user->id)
+            ->with([
+                'subject:id,name,slug',
+                'parent:id,name,slug',
+                'parent.parent:id,name,slug',
+            ])
+            ->latest('id')
+            ->take(3)
+            ->get()
+            ->map(function ($node) {
+                $url = $this->buildNodeUrl($node);
+
+                return [
+                    'type' => 'folder',
+                    'title' => $node->name,
+                    'subtitle' => $node->subject?->name.($node->parent ? ' · '.$node->parent->name : ''),
+                    'url' => $url,
+                    'created_at' => $node->created_at?->diffForHumans(),
+                    'timestamp' => $node->created_at?->timestamp ?? 0,
+                ];
+            })
+            ->filter()
+            ->values();
+
         $recentUploads = Resource::where('user_id', $user->id)
             ->with(['node:id,name,subject_id', 'node.subject:id,name'])
             ->latest()
-            ->take(4)
+            ->take(3)
             ->get()
             ->map(fn ($item) => [
                 'type' => 'upload',
@@ -77,12 +97,13 @@ class UserProfileController extends Controller
                 'resource_type' => $item->resource_type,
                 'url' => "/resources/{$item->id}",
                 'created_at' => $item->created_at?->diffForHumans(),
+                'timestamp' => $item->created_at?->timestamp ?? 0,
             ]);
 
         $recentCompleted = ResourceCompletion::where('user_id', $user->id)
             ->with(['resource:id,title,node_id', 'resource.node:id,name,subject_id', 'resource.node.subject:id,name'])
             ->latest()
-            ->take(4)
+            ->take(3)
             ->get()
             ->map(fn ($item) => [
                 'type' => 'completion',
@@ -90,26 +111,28 @@ class UserProfileController extends Controller
                 'subtitle' => $item->resource?->node?->subject?->name.' · '.$item->resource?->node?->name,
                 'url' => $item->resource ? "/resources/{$item->resource->id}" : null,
                 'created_at' => $item->created_at?->diffForHumans(),
+                'timestamp' => $item->created_at?->timestamp ?? 0,
             ])
             ->filter(fn ($item) => $item['title'] !== null);
 
         $recentReactions = BlogReaction::where('user_id', $user->id)
             ->with('blog:id,title,slug')
             ->latest()
-            ->take(4)
+            ->take(3)
             ->get()
             ->map(fn ($item) => [
                 'type' => 'reaction',
                 'title' => $item->blog?->title,
                 'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
                 'created_at' => $item->created_at?->diffForHumans(),
+                'timestamp' => $item->created_at?->timestamp ?? 0,
             ])
             ->filter(fn ($item) => $item['title'] !== null);
 
         $recentComments = BlogComment::where('user_id', $user->id)
             ->with('blog:id,title,slug')
             ->latest()
-            ->take(4)
+            ->take(3)
             ->get()
             ->map(fn ($item) => [
                 'type' => 'comment',
@@ -117,6 +140,7 @@ class UserProfileController extends Controller
                 'content' => $item->content,
                 'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
                 'created_at' => $item->created_at?->diffForHumans(),
+                'timestamp' => $item->created_at?->timestamp ?? 0,
             ])
             ->filter(fn ($item) => $item['title'] !== null);
 
@@ -128,7 +152,7 @@ class UserProfileController extends Controller
                 'node.parent.parent:id,name,slug',
             ])
             ->latest('id')
-            ->take(4)
+            ->take(3)
             ->get()
             ->map(function ($item) {
                 $node = $item->node;
@@ -144,6 +168,7 @@ class UserProfileController extends Controller
                     'subtitle' => $node->subject?->name.($node->parent ? ' · '.$node->parent->name : ''),
                     'url' => $url,
                     'created_at' => $item->created_at?->diffForHumans(),
+                    'timestamp' => $item->created_at?->timestamp ?? 0,
                 ];
             })
             ->filter()
@@ -152,7 +177,7 @@ class UserProfileController extends Controller
         $recentAppreciations = UserAppreciation::where('appreciator_id', $user->id)
             ->with('user:id,name,username')
             ->latest('id')
-            ->take(4)
+            ->take(3)
             ->get()
             ->map(fn ($item) => [
                 'type' => 'appreciation',
@@ -160,6 +185,7 @@ class UserProfileController extends Controller
                 'username' => $item->user?->username,
                 'url' => $item->user ? "/u/{$item->user->username}" : null,
                 'created_at' => $item->created_at?->diffForHumans(),
+                'timestamp' => $item->created_at?->timestamp ?? 0,
             ])
             ->filter(fn ($item) => $item['title'] !== null)
             ->values();
@@ -169,7 +195,6 @@ class UserProfileController extends Controller
             ->whereNotNull('username')
             ->whereHas('roles')
             ->select(['id', 'name', 'username', 'title', 'institution', 'image_path', 'about'])
-            ->with('roles:id,name')
             ->inRandomOrder()
             ->take(2)
             ->get();
@@ -180,7 +205,6 @@ class UserProfileController extends Controller
         $randomUsers = User::whereNotIn('id', $excludedIds)
             ->whereNotNull('username')
             ->select(['id', 'name', 'username', 'title', 'institution', 'image_path', 'about'])
-            ->with('roles:id,name')
             ->inRandomOrder()
             ->take($remainingNeeded)
             ->get();
@@ -200,13 +224,13 @@ class UserProfileController extends Controller
                 'instagram' => $user->instagram,
                 'github' => $user->github,
                 'created_at' => $user->created_at?->format('M Y') ?? '2026',
-                'roles' => $user->roles->pluck('name'),
-                'is_staff' => $user->roles->isNotEmpty(),
+                'is_verified' => $user->is_verified,
+                'is_staff' => $user->is_verified,
             ],
             'stats' => [
                 'completedResourcesCount' => $completedResourcesCount,
                 'blogsCount' => $blogsCount,
-                'totalBlogLikes' => (int) $totalBlogLikes,
+                'upvotesCount' => $upvotesCount,
                 'totalBlogViews' => (int) $totalBlogViews,
                 'sharedResourcesCount' => $sharedResourcesCount,
             ],
@@ -218,6 +242,7 @@ class UserProfileController extends Controller
             'recentCompletions' => $recentCompletions,
             'blogs' => $publishedBlogs,
             'recentActivities' => [
+                'folders' => $recentFolders->values(),
                 'uploads' => $recentUploads->values(),
                 'completions' => $recentCompleted->values(),
                 'reactions' => $recentReactions->values(),
