@@ -49,7 +49,7 @@ defineProps({
                         v-if="blog.user?.username"
                         :href="`/u/${blog.user.username}`"
                         @click.stop
-                        class="relative z-10 truncate font-semibold text-indigo-600 underline transition-colors hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        class="relative z-10 truncate font-semibold text-slate-700 transition-colors hover:text-indigo-600 hover:underline dark:text-gray-300 dark:hover:text-indigo-400"
                     >
                         {{ blog.user?.name }}
                     </Link>
