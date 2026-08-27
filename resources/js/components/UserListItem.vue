@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BadgeCheck } from 'lucide-vue-next';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { computed } from 'vue';
 
 const props = withDefaults(
@@ -13,6 +13,7 @@ const props = withDefaults(
             image_path?: string | null;
             institution?: string | null;
             title?: string | null;
+            is_verified?: boolean;
             roles?: Array<{ id?: number; name: string }>;
         };
         theme?: 'indigo' | 'emerald' | 'rose';
@@ -29,7 +30,10 @@ const profileUrl = computed(() => {
 });
 
 const isVerified = computed(() => {
-    return Boolean(props.user.roles && props.user.roles.length > 0);
+    return Boolean(
+        props.user.is_verified ??
+        (props.user.roles && props.user.roles.length > 0),
+    );
 });
 
 const avatarBgClass = computed(() => {
@@ -71,11 +75,7 @@ const avatarBgClass = computed(() => {
                 >
                     {{ user.name }}
                 </p>
-                <BadgeCheck
-                    v-if="isVerified"
-                    class="h-3.5 w-3.5 shrink-0 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
-                    title="Verified Contributor"
-                />
+                <VerifiedBadge v-if="isVerified" />
             </div>
             <p
                 v-if="subtitle || user.institution || user.title"

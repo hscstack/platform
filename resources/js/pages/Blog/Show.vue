@@ -14,10 +14,10 @@ import {
     LogIn,
     X,
     Loader2,
-    BadgeCheck,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import UserListItem from '@/components/UserListItem.vue';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 
 const props = defineProps({
     blog: {
@@ -638,13 +638,8 @@ const goBack = () => {
                                         <span>{{
                                             comment.user?.name || 'Anonymous'
                                         }}</span>
-                                        <BadgeCheck
-                                            v-if="
-                                                comment.user?.roles &&
-                                                comment.user.roles.length > 0
-                                            "
-                                            class="h-3.5 w-3.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
-                                            title="Verified Contributor"
+                                        <VerifiedBadge
+                                            v-if="comment.user?.is_verified"
                                         />
                                     </Link>
                                     <span
@@ -716,12 +711,9 @@ const goBack = () => {
                         class="mt-1 inline-flex items-center gap-1.5 text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
                     >
                         <span>{{ blog.user?.name }}</span>
-                        <BadgeCheck
-                            v-if="
-                                blog.user?.roles && blog.user.roles.length > 0
-                            "
-                            class="h-4.5 w-4.5 fill-blue-50 stroke-[2.2] text-blue-600 dark:fill-blue-950/60 dark:text-blue-400"
-                            title="Verified Contributor"
+                        <VerifiedBadge
+                            v-if="blog.user?.is_verified"
+                            size="h-4.5 w-4.5"
                         />
                     </Link>
 

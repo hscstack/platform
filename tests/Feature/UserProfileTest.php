@@ -158,9 +158,52 @@ test('public profile displays latest upvoted folders in recent activity', functi
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
+        ->where('stats.upvotesCount', 1)
         ->has('recentActivities.upvotes', 1)
         ->where('recentActivities.upvotes.0.title', 'Differentiation Master Notes')
         ->where('recentActivities.upvotes.0.subtitle', 'Higher Math · Calculus')
         ->where('recentActivities.upvotes.0.url', '/higher-math/calculus/diff-notes')
+    );
+});
+
+test('user model computes is_verified attribute based on role presence', function () {
+    $regularUser = User::factory()->create();
+    expect($regularUser->is_verified)->toBeFalse();
+
+    $role = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'web']);
+    $staffUser = User::factory()->create();
+    $staffUser->assignRole($role);
+
+    expect($staffUser->is_verified)->toBeTrue();
+    expect($staffUser->toArray())->toHaveKey('is_verified', true);
+});
+
+test('public profile returns created folders in recent activities', function () {
+    $user = User::factory()->create(['username' => 'folder_creator']);
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-blue-500',
+        'icon' => 'atom',
+    ]);
+
+    Node::create([
+        'user_id' => $user->id,
+        'subject_id' => $subject->id,
+        'name' => 'Thermodynamics Chapter',
+        'slug' => 'thermodynamics-chapter',
+    ]);
+
+    $response = $this->get('/u/folder_creator');
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('User/Show')
+        ->has('recentActivities.folders', 1)
+        ->where('recentActivities.folders.0.title', 'Thermodynamics Chapter')
+        ->where('recentActivities.folders.0.subtitle', 'Physics')
+        ->where('recentActivities.folders.0.url', '/physics/thermodynamics-chapter')
     );
 });
