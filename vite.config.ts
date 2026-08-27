@@ -33,6 +33,9 @@ export default defineConfig({
         }),
         VitePWA({
             registerType: 'autoUpdate',
+            workbox: {
+                mode: 'development',
+            },
             devOptions: {
                 enabled: true,
             },
