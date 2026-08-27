@@ -238,11 +238,7 @@ onBeforeUnmount(() => {
                                         :is="isAdmin ? Home : LayoutDashboard"
                                         class="h-3.5 w-3.5 text-slate-400"
                                     />
-                                    {{
-                                        isAdmin
-                                            ? 'Public Site View'
-                                            : 'Staff Dashboard'
-                                    }}
+                                    {{ isAdmin ? 'Home' : 'Staff Dashboard' }}
                                 </Link>
                             </div>
 
@@ -410,7 +406,7 @@ onBeforeUnmount(() => {
                                 class="h-4 w-4 text-slate-400"
                             />
                             <span>{{
-                                isAdmin ? 'Public Site View' : 'Staff Dashboard'
+                                isAdmin ? 'Home' : 'Staff Dashboard'
                             }}</span>
                         </Link>
 
