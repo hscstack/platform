@@ -45,8 +45,8 @@ const page = usePage();
 const { can } = usePermissions();
 const currentUser = computed(() => page.props.auth?.user);
 
-const maxMessagesLimit = computed(() => props.chatState.max_messages ?? 200);
-const maxLengthLimit = computed(() => props.chatState.max_length ?? 280);
+const maxMessagesLimit = ref(props.chatState.max_messages ?? 200);
+const maxLengthLimit = ref(props.chatState.max_length ?? 280);
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
 const inputContent = ref('');
 const isSending = ref(false);
@@ -219,6 +219,7 @@ const setupRealtime = () => {
     echo.channel('global-chat')
         .stopListening('.message.sent')
         .stopListening('.message.deleted')
+        .stopListening('.settings.updated')
         .listen('.message.sent', (e: { message: ChatMessageItem }) => {
             if (e && e.message) {
                 if (!messages.value.some((m) => m.id === e.message.id)) {
@@ -238,7 +239,56 @@ const setupRealtime = () => {
                     (m) => m.id !== e.messageId,
                 );
             }
-        });
+        })
+        .listen(
+            '.settings.updated',
+            (e: {
+                settings: {
+                    enabled: boolean;
+                    audience: string;
+                    cooldown_seconds: number;
+                    max_messages: number;
+                    max_length: number;
+                };
+            }) => {
+                if (e && e.settings) {
+                    activeCooldownSeconds.value = e.settings.cooldown_seconds;
+                    maxMessagesLimit.value = e.settings.max_messages;
+                    maxLengthLimit.value = e.settings.max_length;
+
+                    // Automatically trim messages if max_messages decreased
+                    if (messages.value.length > e.settings.max_messages) {
+                        messages.value = messages.value.slice(
+                            -e.settings.max_messages,
+                        );
+                    }
+
+                    // Dynamically update permissions
+                    const user = currentUser.value;
+                    if (!e.settings.enabled || e.settings.audience === 'disabled') {
+                        canPost.value = false;
+                        restrictionReason.value =
+                            'Global chat is currently disabled for maintenance.';
+                    } else if (!user) {
+                        canPost.value = false;
+                        restrictionReason.value =
+                            'Please sign in to join the conversation.';
+                    } else if (e.settings.audience === 'verified_members') {
+                        if (user.is_verified || can('view admin')) {
+                            canPost.value = true;
+                            restrictionReason.value = null;
+                        } else {
+                            canPost.value = false;
+                            restrictionReason.value =
+                                'Global chat is currently in beta for verified members and contributors.';
+                        }
+                    } else if (e.settings.audience === 'all') {
+                        canPost.value = true;
+                        restrictionReason.value = null;
+                    }
+                }
+            },
+        );
 };
 
 const sendMessage = async () => {

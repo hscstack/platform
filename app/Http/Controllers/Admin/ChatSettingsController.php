@@ -94,6 +94,13 @@ class ChatSettingsController extends Controller
         // Immediately prune if current count exceeds new limit
         ChatMessage::pruneOldMessages($validated['max_messages']);
 
+        // Broadcast settings update to global-chat channel
+        try {
+            broadcast(new \App\Events\ChatSettingsUpdated());
+        } catch (\Throwable $e) {
+            // Log without failing response
+        }
+
         return back()->with('success', 'Global chat settings updated successfully.');
     }
 
