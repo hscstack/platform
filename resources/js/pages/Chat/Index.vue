@@ -316,29 +316,17 @@ onUnmounted(() => {
 
     <main class="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
         <!-- Compact Page Title & Subtitle -->
-        <div
-            class="mb-3 flex flex-col gap-1 border-b border-slate-100 pb-3 sm:flex-row sm:items-end sm:justify-between dark:border-gray-800"
-        >
-            <div>
-                <h1
-                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
-                >
-                    Global Chat
-                </h1>
-                <p
-                    class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
-                >
-                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
-                    করুন।
-                </p>
-            </div>
-
-            <div
-                v-if="activeCooldownSeconds > 0"
-                class="text-[11px] text-slate-400 dark:text-gray-500"
+        <div class="mb-3 border-b border-slate-100 pb-3 dark:border-gray-800">
+            <h1
+                class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
             >
-                <span>{{ activeCooldownSeconds }}s delay between messages</span>
-            </div>
+                Global Chat
+            </h1>
+            <p
+                class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
+            >
+                অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার করুন।
+            </p>
         </div>
 
         <!-- Chat Container Window -->
