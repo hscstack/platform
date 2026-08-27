@@ -11,8 +11,8 @@ const logoHref = computed(() => {
             const pref = localStorage.getItem('preferred_course');
 
             if (pref === 'ssc') {
-return '/ssc';
-}
+                return '/ssc';
+            }
         } catch {
             // ignore
         }

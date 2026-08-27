@@ -18,7 +18,14 @@ import {
     HeartHandshake,
     Search,
 } from 'lucide-vue-next';
-import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import {
+    computed,
+    ref,
+    onMounted,
+    onBeforeUnmount,
+    watch,
+    nextTick,
+} from 'vue';
 import { globalSearchQuery } from '@/lib/searchStore';
 import { useDarkMode } from '@/lib/useDarkMode';
 import AppLogo from './AppLogo.vue';
@@ -63,7 +70,8 @@ const searchInputRef = ref<HTMLInputElement | null>(null);
 
 const triggerSearch = () => {
     if (!user.value) {
-        authModalMessage.value = 'অনুগ্রহ করে বিষয় ও কনটেন্ট সার্চ করতে প্রথমে লগইন করুন।';
+        authModalMessage.value =
+            'অনুগ্রহ করে বিষয় ও কনটেন্ট সার্চ করতে প্রথমে লগইন করুন।';
         showAuthModal.value = true;
 
         return;
@@ -90,8 +98,8 @@ const homeHref = computed(() => {
             const pref = localStorage.getItem('preferred_course');
 
             if (pref === 'ssc') {
-return '/ssc';
-}
+                return '/ssc';
+            }
         } catch {
             // ignore
         }
@@ -194,7 +202,7 @@ onBeforeUnmount(() => {
             <div
                 v-if="searchActive"
                 ref="searchContainerRef"
-                class="flex h-full w-full items-center gap-3 animate-in fade-in duration-150"
+                class="animate-in fade-in flex h-full w-full items-center gap-3 duration-150"
             >
                 <div class="relative flex-1">
                     <input
@@ -205,10 +213,12 @@ onBeforeUnmount(() => {
                         class="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-20 pl-10 text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-900"
                     />
                     <Search
-                        class="pointer-events-none absolute top-1/2 -translate-y-1/2 left-3 h-4 w-4 text-slate-400"
+                        class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
                     />
 
-                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                    <div
+                        class="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1.5"
+                    >
                         <button
                             v-if="globalSearchQuery"
                             @click="clearSearch"
@@ -250,7 +260,7 @@ onBeforeUnmount(() => {
 
                 <!-- Center/Desktop Navigation (md and up) - Perfectly centered -->
                 <nav
-                    class="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-6"
+                    class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex"
                 >
                     <Link
                         :href="homeHref"
@@ -388,7 +398,9 @@ onBeforeUnmount(() => {
                                         class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
                                         @click="closeDropdown"
                                     >
-                                        <User class="h-3.5 w-3.5 text-slate-400" />
+                                        <User
+                                            class="h-3.5 w-3.5 text-slate-400"
+                                        />
                                         Profile
                                     </Link>
 
@@ -399,7 +411,9 @@ onBeforeUnmount(() => {
                                         @click="closeDropdown"
                                     >
                                         <component
-                                            :is="isAdmin ? Home : LayoutDashboard"
+                                            :is="
+                                                isAdmin ? Home : LayoutDashboard
+                                            "
                                             class="h-3.5 w-3.5 text-slate-400"
                                         />
                                         {{ isAdmin ? 'Home' : 'Staff Panel' }}
@@ -488,7 +502,9 @@ onBeforeUnmount(() => {
                         class="relative flex h-full w-full max-w-xs flex-col justify-between border-l border-slate-200/80 bg-white/95 shadow-2xl backdrop-blur-2xl dark:border-gray-800 dark:bg-gray-950/95"
                     >
                         <!-- Top Header in Drawer -->
-                        <div class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-gray-800/80">
+                        <div
+                            class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-gray-800/80"
+                        >
                             <AppLogo />
                             <button
                                 @click="closeMobileMenu"
@@ -500,11 +516,15 @@ onBeforeUnmount(() => {
                         </div>
 
                         <!-- Scrollable Drawer Body -->
-                        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+                        <div class="flex-1 space-y-6 overflow-y-auto px-4 py-4">
                             <!-- User Card or Guest Login CTA -->
                             <div v-if="user">
                                 <Link
-                                    :href="user.username ? `/u/${user.username}` : '/profile'"
+                                    :href="
+                                        user.username
+                                            ? `/u/${user.username}`
+                                            : '/profile'
+                                    "
                                     @click="closeMobileMenu"
                                     class="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-900/60 dark:hover:border-gray-700 dark:hover:bg-gray-900"
                                 >
@@ -521,10 +541,14 @@ onBeforeUnmount(() => {
                                         {{ user.name.charAt(0).toUpperCase() }}
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <p class="truncate text-xs font-bold text-slate-900 dark:text-gray-100">
+                                        <p
+                                            class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                        >
                                             {{ user.name }}
                                         </p>
-                                        <p class="truncate text-[11px] text-slate-400 dark:text-gray-500">
+                                        <p
+                                            class="truncate text-[11px] text-slate-400 dark:text-gray-500"
+                                        >
                                             {{ user.email }}
                                         </p>
                                     </div>
@@ -544,7 +568,9 @@ onBeforeUnmount(() => {
 
                             <!-- Main Exploration Navigation -->
                             <div>
-                                <p class="mb-2 px-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500">
+                                <p
+                                    class="mb-2 px-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                                >
                                     Explore
                                 </p>
                                 <div class="space-y-1">
@@ -580,12 +606,18 @@ onBeforeUnmount(() => {
 
                             <!-- Account / Admin Links (if logged in, placed above platform) -->
                             <div v-if="user">
-                                <p class="mb-2 px-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500">
+                                <p
+                                    class="mb-2 px-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                                >
                                     Account
                                 </p>
                                 <div class="space-y-1">
                                     <Link
-                                        :href="user.username ? `/u/${user.username}` : '/profile'"
+                                        :href="
+                                            user.username
+                                                ? `/u/${user.username}`
+                                                : '/profile'
+                                        "
                                         @click="closeMobileMenu"
                                         class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200"
                                     >
@@ -600,17 +632,23 @@ onBeforeUnmount(() => {
                                         class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200"
                                     >
                                         <component
-                                            :is="isAdmin ? Home : LayoutDashboard"
+                                            :is="
+                                                isAdmin ? Home : LayoutDashboard
+                                            "
                                             class="h-4 w-4 text-slate-400"
                                         />
-                                        <span>{{ isAdmin ? 'Home' : 'Staff Panel' }}</span>
+                                        <span>{{
+                                            isAdmin ? 'Home' : 'Staff Panel'
+                                        }}</span>
                                     </Link>
                                 </div>
                             </div>
 
                             <!-- Platform Links -->
                             <div>
-                                <p class="mb-2 px-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500">
+                                <p
+                                    class="mb-2 px-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                                >
                                     Platform
                                 </p>
                                 <div class="space-y-1">
@@ -619,7 +657,9 @@ onBeforeUnmount(() => {
                                         @click="closeMobileMenu"
                                         class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200"
                                     >
-                                        <Sparkles class="h-4 w-4 text-amber-500" />
+                                        <Sparkles
+                                            class="h-4 w-4 text-amber-500"
+                                        />
                                         <span>AI Assistant</span>
                                     </Link>
 
@@ -646,7 +686,9 @@ onBeforeUnmount(() => {
                                         @click="closeMobileMenu"
                                         class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200"
                                     >
-                                        <HeartHandshake class="h-4 w-4 text-rose-500" />
+                                        <HeartHandshake
+                                            class="h-4 w-4 text-rose-500"
+                                        />
                                         <span>Support HSCStack</span>
                                     </Link>
                                 </div>
@@ -654,13 +696,19 @@ onBeforeUnmount(() => {
                         </div>
 
                         <!-- Footer Actions in Drawer -->
-                        <div class="border-t border-slate-100 p-4 dark:border-gray-800/80">
+                        <div
+                            class="border-t border-slate-100 p-4 dark:border-gray-800/80"
+                        >
                             <!-- Theme Preference Switcher -->
                             <div>
-                                <p class="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500">
+                                <p
+                                    class="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                                >
                                     Appearance
                                 </p>
-                                <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-gray-900">
+                                <div
+                                    class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-gray-900"
+                                >
                                     <button
                                         type="button"
                                         @click="theme = 'light'"
@@ -709,5 +757,3 @@ onBeforeUnmount(() => {
         </Teleport>
     </nav>
 </template>
-
-
