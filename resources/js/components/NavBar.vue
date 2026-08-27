@@ -287,17 +287,6 @@ onBeforeUnmount(() => {
 
             <!-- Mobile Bar Controls (md:hidden) -->
             <div class="flex items-center gap-2 md:hidden">
-                <!-- Theme Toggle Button -->
-                <button
-                    @click="toggle"
-                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-600 transition-colors hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800"
-                    aria-label="Toggle theme"
-                >
-                    <Monitor v-if="theme === 'system'" class="h-4 w-4" />
-                    <Sun v-else-if="theme === 'light'" class="h-4 w-4" />
-                    <Moon v-else class="h-4 w-4" />
-                </button>
-
                 <!-- Mobile Menu Hamburger Button -->
                 <button
                     @click="toggleMobileMenu"
@@ -540,7 +529,56 @@ onBeforeUnmount(() => {
                         </div>
 
                         <!-- Footer Actions in Drawer -->
-                        <div class="border-t border-slate-100 p-4 dark:border-gray-800/80 space-y-2">
+                        <div class="border-t border-slate-100 p-4 dark:border-gray-800/80 space-y-3">
+                            <!-- Theme Preference Switcher -->
+                            <div>
+                                <p class="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500">
+                                    Appearance
+                                </p>
+                                <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-gray-900">
+                                    <button
+                                        type="button"
+                                        @click="theme = 'light'"
+                                        class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all"
+                                        :class="
+                                            theme === 'light'
+                                                ? 'bg-white text-slate-900 shadow-2xs dark:bg-gray-800 dark:text-white'
+                                                : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200'
+                                        "
+                                    >
+                                        <Sun class="h-3.5 w-3.5" />
+                                        <span>Light</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="theme = 'dark'"
+                                        class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all"
+                                        :class="
+                                            theme === 'dark'
+                                                ? 'bg-white text-slate-900 shadow-2xs dark:bg-gray-800 dark:text-white'
+                                                : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200'
+                                        "
+                                    >
+                                        <Moon class="h-3.5 w-3.5" />
+                                        <span>Dark</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="theme = 'system'"
+                                        class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all"
+                                        :class="
+                                            theme === 'system'
+                                                ? 'bg-white text-slate-900 shadow-2xs dark:bg-gray-800 dark:text-white'
+                                                : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200'
+                                        "
+                                    >
+                                        <Monitor class="h-3.5 w-3.5" />
+                                        <span>System</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Logout Button (if logged in) -->
                             <Link
                                 v-if="user"
                                 href="/logout"
@@ -563,4 +601,5 @@ onBeforeUnmount(() => {
         </Teleport>
     </nav>
 </template>
+
 
