@@ -3,7 +3,6 @@
 import { Head, Link } from '@inertiajs/vue3';
 import {
     FileText,
-    ArrowLeft,
     Users,
     ShieldAlert,
     Share2,

@@ -19,6 +19,7 @@ const currentUrl = computed(() => page.url);
 // Full marketing footer on primary landing/home views; sleek minimal footer elsewhere
 const isFullFooter = computed(() => {
     const path = currentUrl.value.split('?')[0];
+
     return path === '/' || path === '/ssc';
 });
 </script>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import {
-    LogOut,
     LayoutDashboard,
     Home,
     ChevronDown,
@@ -11,7 +10,6 @@ import {
     User,
     Menu,
     X,
-    FolderGit2,
     BookOpen,
     LogIn,
     Info,
@@ -21,8 +19,8 @@ import {
     Search,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import { useDarkMode } from '@/lib/useDarkMode';
 import { globalSearchQuery } from '@/lib/searchStore';
+import { useDarkMode } from '@/lib/useDarkMode';
 import AppLogo from './AppLogo.vue';
 import AuthModal from './AuthModal.vue';
 
@@ -40,9 +38,6 @@ const user = computed(() => page.props.auth?.user);
 const canAccessAdmin = computed(() => page.props.auth?.can_access_admin);
 const currentUrl = computed(() => page.url);
 
-const isProjectsActive = computed(() =>
-    currentUrl.value.startsWith('/projects'),
-);
 const isBlogsActive = computed(() => currentUrl.value.startsWith('/blogs'));
 const isHomeActive = computed(
     () =>
@@ -70,6 +65,7 @@ const triggerSearch = () => {
     if (!user.value) {
         authModalMessage.value = 'অনুগ্রহ করে বিষয় ও কনটেন্ট সার্চ করতে প্রথমে লগইন করুন।';
         showAuthModal.value = true;
+
         return;
     }
 
@@ -92,11 +88,15 @@ const homeHref = computed(() => {
     if (typeof window !== 'undefined') {
         try {
             const pref = localStorage.getItem('preferred_course');
-            if (pref === 'ssc') return '/ssc';
+
+            if (pref === 'ssc') {
+return '/ssc';
+}
         } catch {
             // ignore
         }
     }
+
     return currentUrl.value.startsWith('/ssc') ? '/ssc' : '/';
 });
 
@@ -143,6 +143,7 @@ const handleClickOutside = (e: MouseEvent) => {
     if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
         closeDropdown();
     }
+
     // If search is active and click is completely outside the search container
     if (
         searchActive.value &&

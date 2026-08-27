@@ -2,7 +2,6 @@
 import { Head, Link } from '@inertiajs/vue3';
 import {
     Scale,
-    ArrowLeft,
     FileText,
     HelpCircle,
     AlertCircle,

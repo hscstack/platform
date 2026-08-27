@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import AIBanner from '@/components/AIBanner.vue';
+import { computed } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
 import HomeHeader from '@/components/HomeHeader.vue';

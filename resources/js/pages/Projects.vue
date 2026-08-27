@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, ExternalLink, ArrowRight, Users } from 'lucide-vue-next';
+import { ExternalLink, ArrowRight, Users } from 'lucide-vue-next';
 </script>
 
 <template>

@@ -9,11 +9,15 @@ const logoHref = computed(() => {
     if (typeof window !== 'undefined') {
         try {
             const pref = localStorage.getItem('preferred_course');
-            if (pref === 'ssc') return '/ssc';
+
+            if (pref === 'ssc') {
+return '/ssc';
+}
         } catch {
             // ignore
         }
     }
+
     return isSsc.value ? '/ssc' : '/';
 });
 </script>
