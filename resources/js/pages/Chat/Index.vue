@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil, Flag, Check, X, Reply } from 'lucide-vue-next';
+import { Send, Trash2, Lock, Loader2, LogIn, ArrowDown, ShieldAlert, Pencil, Flag, Check, X, Reply, Info, ShieldCheck, AlertCircle } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
@@ -59,6 +59,7 @@ const messagesContainerRef = ref<HTMLElement | null>(null);
 const messageInputRef = ref<HTMLInputElement | null>(null);
 const showScrollButton = ref(false);
 const highlightedMessageId = ref<number | null>(null);
+const showRulesModal = ref(false);
 
 // Reply State
 const activeReplyTo = ref<ChatMessageItem | null>(null);
@@ -538,18 +539,31 @@ onUnmounted(() => {
     </Head>
 
     <main class="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-        <!-- Compact Page Title & Subtitle -->
-        <div class="mb-3 border-b border-slate-100 pb-3 dark:border-gray-800">
-            <h1
-                class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+        <!-- Compact Page Title & Subtitle + Rules Button -->
+        <div class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-gray-800">
+            <div>
+                <h1
+                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                >
+                    Global Chat
+                </h1>
+                <p
+                    class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
+                >
+                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার করুন।
+                </p>
+            </div>
+
+            <!-- Rules / Guidelines Trigger Button -->
+            <button
+                type="button"
+                @click="showRulesModal = true"
+                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-750"
+                title="Chat Rules & Guidelines"
             >
-                Global Chat
-            </h1>
-            <p
-                class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
-            >
-                অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার করুন।
-            </p>
+                <Info class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span class="hidden sm:inline">Chat Rules</span>
+            </button>
         </div>
 
         <!-- Chat Container Window -->
@@ -969,6 +983,112 @@ onUnmounted(() => {
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Chat Guidelines & Rules Alert Dialog Modal -->
+        <div
+            v-if="showRulesModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <!-- Backdrop -->
+            <div
+                class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+                @click="showRulesModal = false"
+            ></div>
+
+            <!-- Modal Content -->
+            <div
+                class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <!-- Modal Header -->
+                <div class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-gray-800">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                            <ShieldCheck class="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-gray-100">
+                                Global Chat Rules & Guidelines
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-gray-400">
+                                Please follow these standards to keep the space helpful and safe for all students.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        @click="showRulesModal = false"
+                        class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        <X class="h-4 w-4" />
+                    </button>
+                </div>
+
+                <!-- Rules List -->
+                <div class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-gray-300">
+                    <div class="flex items-start gap-2.5">
+                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                            1
+                        </div>
+                        <div>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">Be Respectful & Constructive:</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Treat fellow students, teachers, and moderators with dignity. Harassment, personal attacks, and hate speech are strictly prohibited.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                            2
+                        </div>
+                        <div>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">No Vulgar or Abusive Language:</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Avoid profanity, slang abuse, or bypass attempts in English, Bangla, or Banglish. Automated filters will block abusive messages.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                            3
+                        </div>
+                        <div>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">No Spamming or Flooding:</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Do not send identical messages repeatedly, flood the chat, or post unsolicited advertisements and external links.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                        <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-[11px] text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                            4
+                        </div>
+                        <div>
+                            <strong class="font-semibold text-slate-900 dark:text-gray-100">Report Inappropriate Content:</strong>
+                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">Use the flag/report button on any message that violates these guidelines. Moderators review reported content regularly.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notice -->
+                <div class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                    <div class="flex items-center gap-1.5 font-bold">
+                        <AlertCircle class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Enforcement Policy:</span>
+                    </div>
+                    <p class="mt-1">
+                        Violating chat rules will lead to immediate message deletion and temporary or permanent chat bans.
+                    </p>
+                </div>
+
+                <!-- Footer Close Button -->
+                <div class="mt-5 flex justify-end">
+                    <button
+                        type="button"
+                        @click="showRulesModal = false"
+                        class="cursor-pointer rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                    >
+                        I Understand
+                    </button>
+                </div>
             </div>
         </div>
     </main>
