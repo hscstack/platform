@@ -305,7 +305,7 @@ onBeforeUnmount(() => {
                                 : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100'
                         "
                     >
-                        Chat
+                        Global Chat
                     </Link>
                 </nav>
 
@@ -666,7 +666,7 @@ onBeforeUnmount(() => {
                                         "
                                     >
                                         <MessageCircle class="h-4 w-4" />
-                                        <span>Chat</span>
+                                        <span>Global Chat</span>
                                     </Link>
                                 </div>
                             </div>
