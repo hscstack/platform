@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChatMessage extends Model
 {
@@ -24,9 +25,37 @@ class ChatMessage extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(ChatMessageReaction::class);
+    }
+
     public function isDeleted(): bool
     {
         return $this->deleted_at !== null;
+    }
+
+    /**
+     * Format reactions as an aggregated array.
+     */
+    public function getFormattedReactions(?int $currentUserId = null): array
+    {
+        $reactions = $this->relationLoaded('reactions')
+            ? $this->reactions
+            : $this->reactions()->with('user:id,name,username')->get();
+
+        return $reactions
+            ->groupBy('emoji')
+            ->map(function ($group, $emoji) use ($currentUserId) {
+                return [
+                    'emoji' => $emoji,
+                    'count' => $group->count(),
+                    'reacted' => $currentUserId ? $group->contains('user_id', $currentUserId) : false,
+                    'users' => $group->map(fn ($r) => $r->user?->username ?? $r->user?->name)->filter()->values()->toArray(),
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 
     /**

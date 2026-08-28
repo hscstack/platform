@@ -12,6 +12,7 @@ import {
     Check,
     X,
     Reply,
+    Smile,
     Info,
     ShieldCheck,
     AlertCircle,
@@ -33,6 +34,13 @@ interface ChatUser {
     roles: string[];
 }
 
+export interface ChatMessageReactionItem {
+    emoji: string;
+    count: number;
+    reacted: boolean;
+    users?: string[];
+}
+
 interface ChatMessageItem {
     id: number;
     content: string;
@@ -40,6 +48,7 @@ interface ChatMessageItem {
     deleted_at?: string | null;
     reply_to_id?: number | null;
     reply_to_content?: string | null;
+    reactions?: ChatMessageReactionItem[];
     created_at: string;
     user: ChatUser;
 }
@@ -54,6 +63,7 @@ const props = defineProps<{
         can_post: boolean;
         reason: string | null;
         can_delete: boolean;
+        reaction_emojis?: string[];
         messages: ChatMessageItem[];
         pusher_key?: string;
         pusher_cluster?: string;
@@ -248,6 +258,7 @@ const setupRealtime = () => {
     echo.channel('global-chat')
         .stopListening('.message.sent')
         .stopListening('.message.deleted')
+        .stopListening('.message.reacted')
         .stopListening('.settings.updated')
         .listen('.message.sent', (e: { message: ChatMessageItem }) => {
             if (e && e.message) {
@@ -281,6 +292,33 @@ const setupRealtime = () => {
             },
         )
         .listen(
+            '.message.reacted',
+            (e: {
+                messageId: number;
+                reactions: ChatMessageReactionItem[];
+            }) => {
+                if (e && e.messageId) {
+                    const target = messages.value.find(
+                        (m) => m.id === e.messageId,
+                    );
+
+                    if (target) {
+                        const currentReactedMap = new Map(
+                            (target.reactions || []).map((r) => [
+                                r.emoji,
+                                r.reacted,
+                            ]),
+                        );
+
+                        target.reactions = (e.reactions || []).map((r) => ({
+                            ...r,
+                            reacted: currentReactedMap.get(r.emoji) || false,
+                        }));
+                    }
+                }
+            },
+        )
+        .listen(
             '.settings.updated',
             (e: {
                 settings: {
@@ -289,9 +327,14 @@ const setupRealtime = () => {
                     cooldown_seconds: number;
                     max_messages: number;
                     max_length: number;
+                    allowed_emojis?: string[];
                 };
             }) => {
                 if (e && e.settings) {
+                    if (e.settings.allowed_emojis) {
+                        reactionEmojis.value = e.settings.allowed_emojis;
+                    }
+
                     activeCooldownSeconds.value = e.settings.cooldown_seconds;
                     maxMessagesLimit.value = e.settings.max_messages;
                     maxLengthLimit.value = e.settings.max_length;
@@ -440,6 +483,88 @@ const deleteMessage = async (messageId: number) => {
     }
 };
 
+// Message Reactions state & methods
+const activeReactionPickerMessageId = ref<number | null>(null);
+const reactionEmojis = ref<string[]>(
+    props.chatState.reaction_emojis &&
+        props.chatState.reaction_emojis.length > 0
+        ? props.chatState.reaction_emojis
+        : ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏'],
+);
+
+const toggleReactionPicker = (messageId: number) => {
+    if (activeReactionPickerMessageId.value === messageId) {
+        activeReactionPickerMessageId.value = null;
+    } else {
+        activeReactionPickerMessageId.value = messageId;
+    }
+};
+
+const reactToMessage = async (message: ChatMessageItem, emoji: string) => {
+    if (!currentUser.value) {
+        alert('Please sign in to react to messages.');
+
+        return;
+    }
+
+    activeReactionPickerMessageId.value = null;
+
+    if (!message.reactions) {
+        message.reactions = [];
+    }
+
+    // Optimistic UI update
+    const existing = message.reactions.find((r) => r.emoji === emoji);
+
+    if (existing) {
+        if (existing.reacted) {
+            existing.reacted = false;
+            existing.count = Math.max(0, existing.count - 1);
+
+            if (existing.count === 0) {
+                message.reactions = message.reactions.filter(
+                    (r) => r.emoji !== emoji,
+                );
+            }
+        } else {
+            existing.reacted = true;
+            existing.count += 1;
+        }
+    } else {
+        message.reactions.push({
+            emoji,
+            count: 1,
+            reacted: true,
+        });
+    }
+
+    try {
+        const token = (
+            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
+        )?.content;
+        const res = await fetch(`/api/chat/messages/${message.id}/reactions`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': token || '',
+            },
+            body: JSON.stringify({ emoji }),
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+
+            if (data.reactions) {
+                message.reactions = data.reactions;
+            }
+        }
+    } catch (e) {
+        console.error('Failed to toggle reaction', e);
+    }
+};
+
 // Report message state & methods
 const reportingMessage = ref<ChatMessageItem | null>(null);
 const reportReason = ref('Inappropriate message or conduct');
@@ -580,6 +705,10 @@ const handleVisibilityOrFocus = () => {
     }
 };
 
+const handleDocumentClick = () => {
+    activeReactionPickerMessageId.value = null;
+};
+
 onMounted(() => {
     initCooldown();
     setupRealtime();
@@ -588,6 +717,7 @@ onMounted(() => {
     window.addEventListener('focus', fetchLatestMessages);
     window.addEventListener('pageshow', fetchLatestMessages);
     document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('click', handleDocumentClick);
 });
 
 onUnmounted(() => {
@@ -598,6 +728,7 @@ onUnmounted(() => {
     window.removeEventListener('focus', fetchLatestMessages);
     window.removeEventListener('pageshow', fetchLatestMessages);
     document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.removeEventListener('click', handleDocumentClick);
 });
 </script>
 
@@ -761,6 +892,55 @@ onUnmounted(() => {
                                         {{ formatTime(msg.created_at) }}
                                     </span>
 
+                                    <!-- Reaction Picker Button (Non-deleted messages) -->
+                                    <div
+                                        v-if="
+                                            currentUser &&
+                                            !msg.is_deleted &&
+                                            !msg.deleted_at
+                                        "
+                                        class="relative"
+                                    >
+                                        <button
+                                            type="button"
+                                            @click.stop="
+                                                toggleReactionPicker(msg.id)
+                                            "
+                                            class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-amber-50 hover:text-amber-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
+                                            :class="
+                                                activeReactionPickerMessageId ===
+                                                msg.id
+                                                    ? 'bg-amber-50 text-amber-600 !opacity-100 dark:bg-amber-950/40 dark:text-amber-400'
+                                                    : ''
+                                            "
+                                            title="Add reaction"
+                                        >
+                                            <Smile class="h-3 w-3" />
+                                        </button>
+
+                                        <!-- Emoji Reaction Popover -->
+                                        <div
+                                            v-if="
+                                                activeReactionPickerMessageId ===
+                                                msg.id
+                                            "
+                                            class="absolute right-0 bottom-full z-30 mb-1 flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                            @click.stop
+                                        >
+                                            <button
+                                                v-for="emoji in reactionEmojis"
+                                                :key="emoji"
+                                                type="button"
+                                                @click="
+                                                    reactToMessage(msg, emoji)
+                                                "
+                                                class="cursor-pointer text-base transition hover:scale-125 active:scale-95"
+                                            >
+                                                {{ emoji }}
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <!-- Reply Button -->
                                     <button
                                         v-if="
@@ -873,6 +1053,40 @@ onUnmounted(() => {
                             >
                                 {{ msg.content }}
                             </p>
+
+                            <!-- Reaction Badges / Chips -->
+                            <div
+                                v-if="msg.reactions && msg.reactions.length > 0"
+                                class="mt-2 flex flex-wrap items-center gap-1.5"
+                            >
+                                <button
+                                    v-for="r in msg.reactions"
+                                    :key="r.emoji"
+                                    type="button"
+                                    :disabled="
+                                        !currentUser ||
+                                        msg.is_deleted ||
+                                        !!msg.deleted_at
+                                    "
+                                    @click="reactToMessage(msg, r.emoji)"
+                                    class="inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-0.5 text-xs font-medium transition active:scale-95 disabled:cursor-default"
+                                    :class="
+                                        r.reacted
+                                            ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                            : 'border-slate-200 bg-slate-50/80 text-slate-600 hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:bg-gray-800'
+                                    "
+                                    :title="
+                                        r.users && r.users.length
+                                            ? `Reacted by: ${r.users.join(', ')}`
+                                            : ''
+                                    "
+                                >
+                                    <span>{{ r.emoji }}</span>
+                                    <span class="text-[11px] font-bold">{{
+                                        r.count
+                                    }}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </template>

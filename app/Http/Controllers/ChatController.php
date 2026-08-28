@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\ChatMessageDeleted;
+use App\Events\ChatMessageReacted;
 use App\Events\ChatMessageSent;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
@@ -50,7 +51,7 @@ class ChatController extends Controller
         }
 
         // Fetch last X messages in chronological order
-        $messages = ChatMessage::with(['user:id,name,username,image_path,institution', 'user.roles:id,name'])
+        $messages = ChatMessage::with(['user:id,name,username,image_path,institution', 'user.roles:id,name', 'reactions.user:id,name,username'])
             ->latest('id')
             ->take($maxMessages)
             ->get()
@@ -63,6 +64,7 @@ class ChatController extends Controller
                 'deleted_at' => $msg->deleted_at?->toIso8601String(),
                 'reply_to_id' => $msg->reply_to_id,
                 'reply_to_content' => $msg->reply_to_content,
+                'reactions' => $msg->getFormattedReactions($user?->id),
                 'created_at' => $msg->created_at->toIso8601String(),
                 'user' => [
                     'id' => $msg->user->id,
@@ -75,6 +77,8 @@ class ChatController extends Controller
                 ],
             ]);
 
+        $allowedEmojis = (array) AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
+
         if (! $request->wantsJson() && ! $request->is('api/*')) {
             return Inertia::render('Chat/Index', [
                 'chatState' => [
@@ -86,6 +90,7 @@ class ChatController extends Controller
                     'can_post' => $canPost,
                     'reason' => $reason,
                     'can_delete' => (bool) $user?->can('manage chat'),
+                    'reaction_emojis' => $allowedEmojis,
                     'messages' => $messages,
                     'pusher_key' => config('broadcasting.connections.pusher.key'),
                     'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
@@ -102,6 +107,7 @@ class ChatController extends Controller
             'can_post' => $canPost,
             'reason' => $reason,
             'can_delete' => (bool) $user?->can('manage chat'),
+            'reaction_emojis' => $allowedEmojis,
             'messages' => $messages,
             'pusher_key' => config('broadcasting.connections.pusher.key'),
             'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
@@ -222,6 +228,7 @@ class ChatController extends Controller
             'deleted_at' => $message->deleted_at?->toIso8601String(),
             'reply_to_id' => $message->reply_to_id,
             'reply_to_content' => $message->reply_to_content,
+            'reactions' => [],
             'created_at' => $message->created_at->toIso8601String(),
             'user' => [
                 'id' => $message->user->id,
@@ -317,5 +324,65 @@ class ChatController extends Controller
             'message' => 'Message reported successfully. Our team will review it.',
             'report_id' => $report->id,
         ], 201);
+    }
+
+    public function toggleReaction(Request $request, ChatMessage $message)
+    {
+        $user = $request->user();
+        abort_unless($user, 401, 'Unauthenticated');
+
+        if ($user->isChatBanned()) {
+            return response()->json([
+                'message' => 'You cannot react to messages while chat banned.',
+            ], 403);
+        }
+
+        if ($message->isDeleted()) {
+            return response()->json([
+                'message' => 'Cannot react to deleted messages.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'emoji' => ['required', 'string', 'max:32'],
+        ]);
+
+        $emoji = $validated['emoji'];
+
+        // Allowed reaction emojis from settings
+        $allowedEmojis = (array) AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
+        if (! in_array($emoji, $allowedEmojis, true)) {
+            return response()->json([
+                'message' => 'This reaction emoji is not enabled.',
+            ], 422);
+        }
+
+        $existing = $message->reactions()
+            ->where('user_id', $user->id)
+            ->where('emoji', $emoji)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+        } else {
+            $message->reactions()->create([
+                'user_id' => $user->id,
+                'emoji' => $emoji,
+            ]);
+        }
+
+        $formattedReactions = $message->getFormattedReactions($user->id);
+        $publicReactions = $message->getFormattedReactions(null);
+
+        try {
+            broadcast(new ChatMessageReacted($message->id, $publicReactions))->toOthers();
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+
+        return response()->json([
+            'success' => true,
+            'reactions' => $formattedReactions,
+        ]);
     }
 }

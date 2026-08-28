@@ -17,6 +17,7 @@ class ChatSettingsController extends Controller
     {
         $bannedWords = AppSetting::get('global_chat_banned_words', '');
         $bannedWordsText = is_array($bannedWords) ? implode(', ', $bannedWords) : (string) $bannedWords;
+        $allowedEmojis = AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
 
         return Inertia::render('admin/ChatSettings', [
             'settings' => [
@@ -28,6 +29,7 @@ class ChatSettingsController extends Controller
                 'max_length' => (int) AppSetting::get('global_chat_max_length', 280),
                 'profanity_filter_enabled' => (bool) AppSetting::get('global_chat_profanity_filter_enabled', true),
                 'banned_words' => $bannedWordsText,
+                'allowed_emojis' => (array) $allowedEmojis,
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
@@ -85,6 +87,8 @@ class ChatSettingsController extends Controller
             'max_length' => ['required', 'integer', 'min:50', 'max:1000'],
             'profanity_filter_enabled' => ['required', 'boolean'],
             'banned_words' => ['nullable', 'string'],
+            'allowed_emojis' => ['nullable', 'array'],
+            'allowed_emojis.*' => ['required', 'string', 'max:32'],
         ]);
 
         $isEnabled = $validated['audience'] !== 'disabled';
@@ -96,6 +100,11 @@ class ChatSettingsController extends Controller
         AppSetting::set('global_chat_max_length', $validated['max_length'], 'integer');
         AppSetting::set('global_chat_profanity_filter_enabled', $validated['profanity_filter_enabled'], 'boolean');
         AppSetting::set('global_chat_banned_words', $validated['banned_words'] ?? '', 'string');
+
+        $emojis = ! empty($validated['allowed_emojis'])
+            ? array_values(array_unique(array_filter($validated['allowed_emojis'])))
+            : ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏'];
+        AppSetting::set('global_chat_allowed_emojis', $emojis, 'json');
 
         // Immediately prune if current count exceeds new limit
         ChatMessage::pruneOldMessages($validated['max_messages']);
