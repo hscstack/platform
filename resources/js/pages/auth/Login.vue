@@ -144,7 +144,8 @@ const googleAuthUrl = redirectParam
                                     >Fast Google Access:</span
                                 >
                                 নতুন ইউজার হলে তথ্য সেটআপ করে অ্যাকাউন্ট তৈরি
-                                করতে পারবেন, আর পুরাতন ইউজার হলে সরাসরি Login হয়ে যাবে।
+                                করতে পারবেন, আর পুরাতন ইউজার হলে সরাসরি Login
+                                হয়ে যাবে।
                             </div>
                         </div>
 

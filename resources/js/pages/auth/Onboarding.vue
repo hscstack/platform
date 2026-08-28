@@ -116,7 +116,9 @@ const submit = () => {
                                 class="h-3.5 w-3.5 shrink-0 text-emerald-500"
                             />
                         </div>
-                        <p class="text-[11px] text-slate-400 dark:text-gray-500">
+                        <p
+                            class="text-[11px] text-slate-400 dark:text-gray-500"
+                        >
                             Verified via Google
                         </p>
                     </div>
@@ -208,7 +210,8 @@ const submit = () => {
                             for="school"
                             class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
                         >
-                            School / College / Institution <span class="text-rose-500">*</span>
+                            School / College / Institution
+                            <span class="text-rose-500">*</span>
                         </label>
                         <div class="relative">
                             <div
