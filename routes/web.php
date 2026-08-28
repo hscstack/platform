@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutUsController;
-use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NodeController;
