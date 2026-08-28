@@ -79,8 +79,14 @@ import {
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
-                        <li>৫ ধরনের রিসোর্স (Notes, Questions, PDFs, Images, Videos)</li>
-                        <li>Embedded YouTube classes (Custom Native Player-এর মাধ্যমে)</li>
+                        <li>
+                            ৫ ধরনের রিসোর্স (Notes, Questions, PDFs, Images,
+                            Videos)
+                        </li>
+                        <li>
+                            Embedded YouTube classes (Custom Native Player-এর
+                            মাধ্যমে)
+                        </li>
                         <li>Contributor-written blogs and articles</li>
                         <li>External references and links</li>
                         <li>Live chat messages</li>
@@ -110,7 +116,9 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        কন্ট্রিবিউটররা HSCStack-এ নোট বা যেকোনো শিক্ষামূলক উপকরণ (Questions, PDFs, Images, Videos ইত্যাদি) জমা দেওয়ার মাধ্যমে নিশ্চিত করেন যে:
+                        কন্ট্রিবিউটররা HSCStack-এ নোট বা যেকোনো শিক্ষামূলক উপকরণ
+                        (Questions, PDFs, Images, Videos ইত্যাদি) জমা দেওয়ার
+                        মাধ্যমে নিশ্চিত করেন যে:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
@@ -128,11 +136,13 @@ import {
                     <p
                         class="mt-2 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack-এ প্রকাশিত রিসোর্সগুলো শিক্ষার্থীদের শেখার সুবিধার
-                        জন্য প্রদান করা হয়। কোনো কন্ট্রিবিউটর কনটেন্ট জমা দিলে (S3/Cloudflare R2-তে আপলোড বা এক্সটার্নাল লিংকের মাধ্যমে),
-                        HSCStack সেই কনটেন্ট প্ল্যাটফর্মে সংরক্ষণ, প্রদর্শন এবং
-                        শিক্ষার্থীদের কাছে বিতরণের অনুমতি পায় — তবে কনটেন্টের
-                        মূল মালিকানা কন্ট্রিবিউটরের কাছেই থাকে।
+                        HSCStack-এ প্রকাশিত রিসোর্সগুলো শিক্ষার্থীদের শেখার
+                        সুবিধার জন্য প্রদান করা হয়। কোনো কন্ট্রিবিউটর কনটেন্ট
+                        জমা দিলে (S3/Cloudflare R2-তে আপলোড বা এক্সটার্নাল
+                        লিংকের মাধ্যমে), HSCStack সেই কনটেন্ট প্ল্যাটফর্মে
+                        সংরক্ষণ, প্রদর্শন এবং শিক্ষার্থীদের কাছে বিতরণের অনুমতি
+                        পায় — তবে কনটেন্টের মূল মালিকানা কন্ট্রিবিউটরের কাছেই
+                        থাকে।
                     </p>
                 </div>
             </div>
@@ -160,17 +170,18 @@ import {
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
+                        <li>কপিরাইট লঙ্ঘনকারী বা চুরি করা (stolen) কনটেন্ট।</li>
                         <li>
-                            কপিরাইট লঙ্ঘনকারী বা চুরি করা (stolen) কনটেন্ট।
+                            লাইভ চ্যাটে অশালীন ভাষা (profanity), হয়রানি,
+                            বিদ্বেষমূলক বক্তব্য (hate speech) বা হুমকি।
                         </li>
                         <li>
-                            লাইভ চ্যাটে অশালীন ভাষা (profanity), হয়রানি, বিদ্বেষমূলক বক্তব্য (hate speech) বা হুমকি।
+                            ইচ্ছাকৃতভাবে বিভ্রান্তিকর বা ভুল শিক্ষামূলক
+                            তথ্যসম্বলিত (misleading academic content) কনটেন্ট।
                         </li>
                         <li>
-                            ইচ্ছাকৃতভাবে বিভ্রান্তিকর বা ভুল শিক্ষামূলক তথ্যসম্বলিত (misleading academic content) কনটেন্ট।
-                        </li>
-                        <li>
-                            কারো ব্যক্তিগত বা সংবেদনশীল তথ্য শেয়ার করা বা ডক্সিং (doxxing)।
+                            কারো ব্যক্তিগত বা সংবেদনশীল তথ্য শেয়ার করা বা
+                            ডক্সিং (doxxing)।
                         </li>
                         <li>
                             ক্ষতিকর ফাইল, ম্যালওয়্যার, বা সন্দেহজনক
@@ -213,25 +224,42 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack-এর রিয়েল-টাইম লাইভ চ্যাটে শিক্ষার্থীদের একটি সুস্থ পরিবেশ বজায় রাখার জন্য আমাদের একটি স্বয়ংক্রিয় মডারেশন সিস্টেম রয়েছে:
+                        HSCStack-এর রিয়েল-টাইম লাইভ চ্যাটে শিক্ষার্থীদের একটি
+                        সুস্থ পরিবেশ বজায় রাখার জন্য আমাদের একটি স্বয়ংক্রিয়
+                        মডারেশন সিস্টেম রয়েছে:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
                         <li>
-                            <strong>Smart Profanity Filter:</strong> আমাদের সিস্টেমে স্বয়ংক্রিয়ভাবে গালিগালাজ শনাক্ত করার প্রযুক্তি রয়েছে, যা leet-speak (যেমন @->a, $->s, 1->i) এবং পুনরাবৃত্তিমূলক অক্ষর (repeated char collapse) শনাক্ত করতে সক্ষম। কনফিগারযোগ্য নিষিদ্ধ শব্দগুলো স্বয়ংক্রিয়ভাবে ফিল্টার হয়ে যায়।
+                            <strong>Smart Profanity Filter:</strong> আমাদের
+                            সিস্টেমে স্বয়ংক্রিয়ভাবে গালিগালাজ শনাক্ত করার
+                            প্রযুক্তি রয়েছে, যা leet-speak (যেমন @->a, $->s,
+                            1->i) এবং পুনরাবৃত্তিমূলক অক্ষর (repeated char
+                            collapse) শনাক্ত করতে সক্ষম। কনফিগারযোগ্য নিষিদ্ধ
+                            শব্দগুলো স্বয়ংক্রিয়ভাবে ফিল্টার হয়ে যায়।
                         </li>
                         <li>
-                            <strong>Community Reporting:</strong> চ্যাটের কোনো মেসেজ আপত্তিকর মনে হলে ব্যবহারকারীরা নির্দিষ্ট কারণ উল্লেখ করে সেটি রিপোর্ট করতে পারেন।
+                            <strong>Community Reporting:</strong> চ্যাটের কোনো
+                            মেসেজ আপত্তিকর মনে হলে ব্যবহারকারীরা নির্দিষ্ট কারণ
+                            উল্লেখ করে সেটি রিপোর্ট করতে পারেন।
                         </li>
                         <li>
-                            <strong>Auto-Suspension:</strong> কোনো ব্যবহারকারী ৫টি বা তার বেশি রিপোর্ট পেলে সিস্টেম স্বয়ংক্রিয়ভাবে তাকে ২৪ ঘণ্টার জন্য চ্যাট থেকে সাসপেন্ড করবে।
+                            <strong>Auto-Suspension:</strong> কোনো ব্যবহারকারী
+                            ৫টি বা তার বেশি রিপোর্ট পেলে সিস্টেম
+                            স্বয়ংক্রিয়ভাবে তাকে ২৪ ঘণ্টার জন্য চ্যাট থেকে
+                            সাসপেন্ড করবে।
                         </li>
                         <li>
-                            <strong>Message Pruning:</strong> প্ল্যাটফর্মের গতি ঠিক রাখতে চ্যাটে রোলিং মেসেজ প্রুনিং ব্যবহার করা হয়, যেখানে সর্বশেষ প্রায় ২০০টি মেসেজ সংরক্ষিত থাকে।
+                            <strong>Message Pruning:</strong> প্ল্যাটফর্মের গতি
+                            ঠিক রাখতে চ্যাটে রোলিং মেসেজ প্রুনিং ব্যবহার করা
+                            হয়, যেখানে সর্বশেষ প্রায় ২০০টি মেসেজ সংরক্ষিত
+                            থাকে।
                         </li>
                         <li>
-                            <strong>Staff Moderation:</strong> অ্যাডমিন এবং মডারেটররা যেকোনো সময় আপত্তিকর মেসেজ ডিলিট করার বা ব্যবহারকারীকে ব্যান করার অধিকার রাখেন।
+                            <strong>Staff Moderation:</strong> অ্যাডমিন এবং
+                            মডারেটররা যেকোনো সময় আপত্তিকর মেসেজ ডিলিট করার বা
+                            ব্যবহারকারীকে ব্যান করার অধিকার রাখেন।
                         </li>
                     </ul>
                 </div>
@@ -261,8 +289,9 @@ import {
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
                         <li>
-                            HSCStack থেকে ডাউনলোড করা ফাইল শিক্ষার্থীরা ব্যক্তিগত
-                            ও শিক্ষামূলক ব্যবহারের জন্য ব্যবহার করতে পারবেন।
+                            HSCStack থেকে ডাউনলোড করা ফাইল শিক্ষার্থীরা
+                            ব্যক্তিগত ও শিক্ষামূলক ব্যবহারের জন্য ব্যবহার করতে
+                            পারবেন।
                         </li>
                         <li>
                             ডাউনলোড করা ফাইল পুনরায় শেয়ার করা হলে HSCStack বা
@@ -341,7 +370,8 @@ import {
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
                         HSCStack কিছু ক্ষেত্রে YouTube-এ প্রকাশিত শিক্ষামূলক
-                        ভিডিও ক্লাস আমাদের Custom Native Player-এর মাধ্যমে embed করতে পারে। আমরা:
+                        ভিডিও ক্লাস আমাদের Custom Native Player-এর মাধ্যমে embed
+                        করতে পারে। আমরা:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
@@ -401,7 +431,11 @@ import {
                     <p
                         class="mt-2 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        ব্লগগুলোতে পাঠকরা <strong>Love reactions</strong> দিতে পারেন এবং <strong>Threaded comments</strong>-এর মাধ্যমে মতামত জানাতে পারেন। আমরা গঠনমূলক আলোচনা এবং শালীন ভাষা ব্যবহারের জন্য উৎসাহিত করি। এছাড়াও, নির্দিষ্ট মাইলফলক অর্জনে কন্ট্রিবিউটররা নোটিফিকেশন পাবেন।
+                        ব্লগগুলোতে পাঠকরা <strong>Love reactions</strong> দিতে
+                        পারেন এবং <strong>Threaded comments</strong>-এর মাধ্যমে
+                        মতামত জানাতে পারেন। আমরা গঠনমূলক আলোচনা এবং শালীন ভাষা
+                        ব্যবহারের জন্য উৎসাহিত করি। এছাড়াও, নির্দিষ্ট মাইলফলক
+                        অর্জনে কন্ট্রিবিউটররা নোটিফিকেশন পাবেন।
                     </p>
                 </div>
             </div>
@@ -422,14 +456,28 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack-এ একটি সহায়ক ও ইতিবাচক শিক্ষামূলক পরিবেশ গড়ে তোলার জন্য কমিউনিটির ইন্টারঅ্যাকশন অত্যন্ত গুরুত্বপূর্ণ:
+                        HSCStack-এ একটি সহায়ক ও ইতিবাচক শিক্ষামূলক পরিবেশ গড়ে
+                        তোলার জন্য কমিউনিটির ইন্টারঅ্যাকশন অত্যন্ত গুরুত্বপূর্ণ:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
-                        <li><strong>Folder Voting:</strong> ব্যবহারকারীরা ফোল্ডার আপভোট বা ডাউনভোট করার ক্ষেত্রে সততা বজায় রাখবেন। গঠনমূলক মূল্যায়ন অন্য শিক্ষার্থীদের সঠিক কনটেন্ট খুঁজে পেতে সাহায্য করবে।</li>
-                        <li><strong>Appreciations:</strong> প্রোফাইলে অন্যদের প্রশংসা (appreciations) প্রদান করার ক্ষেত্রে সম্মানজনক ভাষা ব্যবহার করতে হবে।</li>
-                        <li><strong>Profile Content:</strong> ব্যবহারকারীর প্রোফাইলের কনটেন্ট এবং কার্যকলাপের সম্পূর্ণ দায়ভার ওই ব্যবহারকারীর।</li>
+                        <li>
+                            <strong>Folder Voting:</strong> ব্যবহারকারীরা
+                            ফোল্ডার আপভোট বা ডাউনভোট করার ক্ষেত্রে সততা বজায়
+                            রাখবেন। গঠনমূলক মূল্যায়ন অন্য শিক্ষার্থীদের সঠিক
+                            কনটেন্ট খুঁজে পেতে সাহায্য করবে।
+                        </li>
+                        <li>
+                            <strong>Appreciations:</strong> প্রোফাইলে অন্যদের
+                            প্রশংসা (appreciations) প্রদান করার ক্ষেত্রে
+                            সম্মানজনক ভাষা ব্যবহার করতে হবে।
+                        </li>
+                        <li>
+                            <strong>Profile Content:</strong> ব্যবহারকারীর
+                            প্রোফাইলের কনটেন্ট এবং কার্যকলাপের সম্পূর্ণ দায়ভার
+                            ওই ব্যবহারকারীর।
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -481,14 +529,24 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack অ্যাডমিন প্যানেলের মাধ্যমে প্ল্যাটফর্মের কনটেন্ট পরিচালনার ক্ষমতা রাখে:
+                        HSCStack অ্যাডমিন প্যানেলের মাধ্যমে প্ল্যাটফর্মের
+                        কনটেন্ট পরিচালনার ক্ষমতা রাখে:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
-                        <li>অ্যাডমিন বা এডিটররা যেকোনো সাবজেক্ট, নোড, রিসোর্স বা ব্লগ তৈরি, সম্পাদনা বা ডিলিট করতে পারেন।</li>
-                        <li>প্রয়োজন অনুযায়ী Bulk operations পরিচালনা করা হতে পারে।</li>
-                        <li>প্ল্যাটফর্মের মান বজায় রাখার জন্য কনটেন্ট যাচাই করতে পারে এবং যেকোনো submission reject করতে পারে।</li>
+                        <li>
+                            অ্যাডমিন বা এডিটররা যেকোনো সাবজেক্ট, নোড, রিসোর্স বা
+                            ব্লগ তৈরি, সম্পাদনা বা ডিলিট করতে পারেন।
+                        </li>
+                        <li>
+                            প্রয়োজন অনুযায়ী Bulk operations পরিচালনা করা হতে
+                            পারে।
+                        </li>
+                        <li>
+                            প্ল্যাটফর্মের মান বজায় রাখার জন্য কনটেন্ট যাচাই
+                            করতে পারে এবং যেকোনো submission reject করতে পারে।
+                        </li>
                     </ul>
                 </div>
             </div>

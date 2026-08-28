@@ -14,17 +14,17 @@ If you're not yet a core developer but found a bug or have a suggestion, please 
 
 ## Tech Stack
 
-| Layer              | Technology                            |
-| ------------------ | ------------------------------------- |
-| **Backend**        | Laravel 12 (PHP)                      |
-| **Frontend**       | Vue 3 + TypeScript via Inertia.js v3  |
-| **Styling**        | Tailwind CSS v4                       |
-| **Realtime**       | Pusher Channels + Laravel Echo        |
-| **Storage**        | AWS S3 / Cloudflare R2                |
-| **Auth**           | Google OAuth 2.0 (Laravel Socialite)  |
-| **Analytics**      | PostHog                               |
-| **Permissions**    | Spatie Laravel Permission             |
-| **PWA**            | vite-plugin-pwa                       |
+| Layer           | Technology                           |
+| --------------- | ------------------------------------ |
+| **Backend**     | Laravel 12 (PHP)                     |
+| **Frontend**    | Vue 3 + TypeScript via Inertia.js v3 |
+| **Styling**     | Tailwind CSS v4                      |
+| **Realtime**    | Pusher Channels + Laravel Echo       |
+| **Storage**     | AWS S3 / Cloudflare R2               |
+| **Auth**        | Google OAuth 2.0 (Laravel Socialite) |
+| **Analytics**   | PostHog                              |
+| **Permissions** | Spatie Laravel Permission            |
+| **PWA**         | vite-plugin-pwa                      |
 
 ## Development Setup
 
@@ -63,18 +63,18 @@ pnpm dev
 ## Workflow
 
 1. Create a new branch off `main`:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
 2. Make your changes, following the code style guidelines below.
 3. Commit with a clear, descriptive message:
-   ```bash
-   git commit -m "Add: your feature"
-   ```
+    ```bash
+    git commit -m "Add: your feature"
+    ```
 4. Push your branch and open a Pull Request:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
+    ```bash
+    git push origin feature/your-feature-name
+    ```
 5. Fill out the PR description explaining what changed and why, and link any related issue.
 
 ### Branch naming
@@ -103,6 +103,7 @@ php artisan test
 ```
 
 General guidelines:
+
 - Follow existing Laravel conventions (FormRequests for validation, resource controllers, etc.).
 - Keep Vue components under `resources/js/pages/` and `resources/js/components/` organized and reusable.
 - Avoid passing non-database fields into mass assignment (`create()`/`update()`); validate and filter explicitly.

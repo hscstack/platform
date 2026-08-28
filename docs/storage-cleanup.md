@@ -6,12 +6,12 @@ The `resources:clean-unused-images` Artisan command removes orphaned files from 
 
 It scans four storage directories and cross-references them against the database:
 
-| Storage Directory | Database Check                          |
-| ----------------- | --------------------------------------- |
-| `resources/`      | `resources.file_path`                   |
-| `users/`          | `users.image_path`                      |
-| `blogs/`          | `blogs.featured_image_path`             |
-| `notices/`        | `notices.image` (non-HTTP paths only)   |
+| Storage Directory | Database Check                        |
+| ----------------- | ------------------------------------- |
+| `resources/`      | `resources.file_path`                 |
+| `users/`          | `users.image_path`                    |
+| `blogs/`          | `blogs.featured_image_path`           |
+| `notices/`        | `notices.image` (non-HTTP paths only) |
 
 A file is considered unused when it exists in storage but its path is not referenced by any database record.
 

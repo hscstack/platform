@@ -74,18 +74,18 @@ Only HSCStack members can upload resources. To become a member:
 
 ## 🛠️ Tech Stack
 
-| Layer              | Technology                            |
-| ------------------ | ------------------------------------- |
-| **Backend**        | Laravel 12 (PHP)                      |
-| **Frontend**       | Vue 3 + TypeScript via Inertia.js v3  |
-| **Styling**        | Tailwind CSS v4                       |
-| **Realtime**       | Pusher Channels + Laravel Echo        |
-| **Storage**        | AWS S3 / Cloudflare R2                |
-| **Auth**           | Google OAuth 2.0 (Laravel Socialite)  |
-| **Analytics**      | PostHog                               |
-| **Permissions**    | Spatie Laravel Permission             |
-| **PWA**            | vite-plugin-pwa                       |
-| **Backup**         | Google Drive API (automated)          |
+| Layer           | Technology                           |
+| --------------- | ------------------------------------ |
+| **Backend**     | Laravel 12 (PHP)                     |
+| **Frontend**    | Vue 3 + TypeScript via Inertia.js v3 |
+| **Styling**     | Tailwind CSS v4                      |
+| **Realtime**    | Pusher Channels + Laravel Echo       |
+| **Storage**     | AWS S3 / Cloudflare R2               |
+| **Auth**        | Google OAuth 2.0 (Laravel Socialite) |
+| **Analytics**   | PostHog                              |
+| **Permissions** | Spatie Laravel Permission            |
+| **PWA**         | vite-plugin-pwa                      |
+| **Backup**      | Google Drive API (automated)         |
 
 ---
 

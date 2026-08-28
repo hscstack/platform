@@ -186,10 +186,12 @@ const availableMentionUsers = computed<ChatUser[]>(() => {
     // Scan loaded messages from latest to oldest so active participants appear first
     for (let i = messages.value.length - 1; i >= 0; i--) {
         const u = messages.value[i]?.user;
+
         if (u && u.id && u.username) {
             if (currentId && Number(u.id) === currentId) {
                 continue;
             }
+
             if (!userMap.has(Number(u.id))) {
                 userMap.set(Number(u.id), u);
             }
@@ -201,9 +203,11 @@ const availableMentionUsers = computed<ChatUser[]>(() => {
 
 const filteredMentionUsers = computed(() => {
     const q = mentionQuery.value.toLowerCase().trim();
+
     if (!q) {
         return [];
     }
+
     return availableMentionUsers.value
         .filter(
             (u) =>
@@ -216,6 +220,7 @@ const filteredMentionUsers = computed(() => {
 const checkMentionTrigger = () => {
     if (!messageInputRef.value) {
         showMentionSuggestions.value = false;
+
         return;
     }
 
@@ -243,6 +248,7 @@ const handleInputKeydown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
         e.preventDefault();
         showMentionSuggestions.value = false;
+
         return;
     }
 
@@ -253,16 +259,21 @@ const handleInputKeydown = (e: KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
         e.preventDefault();
         selectedMentionIndex.value =
-            (selectedMentionIndex.value + 1) % filteredMentionUsers.value.length;
+            (selectedMentionIndex.value + 1) %
+            filteredMentionUsers.value.length;
     } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         selectedMentionIndex.value =
-            (selectedMentionIndex.value - 1 + filteredMentionUsers.value.length) %
+            (selectedMentionIndex.value -
+                1 +
+                filteredMentionUsers.value.length) %
             filteredMentionUsers.value.length;
     } else if (e.key === 'Enter' || e.key === 'Tab') {
         if (filteredMentionUsers.value[selectedMentionIndex.value]) {
             e.preventDefault();
-            insertMention(filteredMentionUsers.value[selectedMentionIndex.value]);
+            insertMention(
+                filteredMentionUsers.value[selectedMentionIndex.value],
+            );
         }
     }
 };
@@ -1596,7 +1607,7 @@ onUnmounted(() => {
                                     mentionQuery.trim() &&
                                     filteredMentionUsers.length > 0
                                 "
-                                class="max-h-48 overflow-y-auto space-y-0.5 pt-1"
+                                class="max-h-48 space-y-0.5 overflow-y-auto pt-1"
                             >
                                 <button
                                     v-for="(user, idx) in filteredMentionUsers"
