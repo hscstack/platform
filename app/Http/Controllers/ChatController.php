@@ -58,7 +58,9 @@ class ChatController extends Controller
             ->values()
             ->map(fn (ChatMessage $msg) => [
                 'id' => $msg->id,
-                'content' => $msg->content,
+                'content' => $msg->deleted_at ? 'This message was deleted by a moderator.' : $msg->content,
+                'is_deleted' => $msg->deleted_at !== null,
+                'deleted_at' => $msg->deleted_at?->toIso8601String(),
                 'reply_to_id' => $msg->reply_to_id,
                 'reply_to_content' => $msg->reply_to_content,
                 'created_at' => $msg->created_at->toIso8601String(),
@@ -181,7 +183,9 @@ class ChatController extends Controller
         if ($replyToId) {
             $parentMessage = ChatMessage::find($replyToId);
             if ($parentMessage) {
-                $replyToContent = Str::limit($parentMessage->content, 97, '...');
+                $replyToContent = $parentMessage->deleted_at
+                    ? 'This message was deleted by a moderator.'
+                    : Str::limit($parentMessage->content, 97, '...');
             } else {
                 $replyToId = null;
             }
@@ -213,7 +217,9 @@ class ChatController extends Controller
 
         return response()->json([
             'id' => $message->id,
-            'content' => $message->content,
+            'content' => $message->deleted_at ? 'This message was deleted by a moderator.' : $message->content,
+            'is_deleted' => $message->deleted_at !== null,
+            'deleted_at' => $message->deleted_at?->toIso8601String(),
             'reply_to_id' => $message->reply_to_id,
             'reply_to_content' => $message->reply_to_content,
             'created_at' => $message->created_at->toIso8601String(),
@@ -239,16 +245,19 @@ class ChatController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $messageId = $message->id;
-        $message->delete();
+        $deletedAt = now();
+        $message->update(['deleted_at' => $deletedAt]);
 
         try {
-            broadcast(new ChatMessageDeleted($messageId))->toOthers();
+            broadcast(new ChatMessageDeleted($message->id, $deletedAt->toIso8601String()))->toOthers();
         } catch (\Throwable $e) {
             // Ignore
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'deleted_at' => $deletedAt->toIso8601String(),
+        ]);
     }
 
     public function report(Request $request)

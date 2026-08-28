@@ -24,7 +24,9 @@ class ChatMessageSent implements ShouldBroadcastNow
 
         $this->message = [
             'id' => $chatMessage->id,
-            'content' => $chatMessage->content,
+            'content' => $chatMessage->deleted_at ? 'This message was deleted by a moderator.' : $chatMessage->content,
+            'is_deleted' => $chatMessage->deleted_at !== null,
+            'deleted_at' => $chatMessage->deleted_at?->toIso8601String(),
             'reply_to_id' => $chatMessage->reply_to_id,
             'reply_to_content' => $chatMessage->reply_to_content,
             'created_at' => $chatMessage->created_at->toIso8601String(),

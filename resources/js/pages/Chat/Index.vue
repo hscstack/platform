@@ -36,6 +36,8 @@ interface ChatUser {
 interface ChatMessageItem {
     id: number;
     content: string;
+    is_deleted?: boolean;
+    deleted_at?: string | null;
     reply_to_id?: number | null;
     reply_to_content?: string | null;
     created_at: string;
@@ -260,13 +262,24 @@ const setupRealtime = () => {
                 }
             }
         })
-        .listen('.message.deleted', (e: { messageId: number }) => {
-            if (e && e.messageId) {
-                messages.value = messages.value.filter(
-                    (m) => m.id !== e.messageId,
-                );
-            }
-        })
+        .listen(
+            '.message.deleted',
+            (e: { messageId: number; deleted_at?: string }) => {
+                if (e && e.messageId) {
+                    const target = messages.value.find(
+                        (m) => m.id === e.messageId,
+                    );
+
+                    if (target) {
+                        target.is_deleted = true;
+                        target.deleted_at =
+                            e.deleted_at || new Date().toISOString();
+                        target.content =
+                            'This message was deleted by a moderator.';
+                    }
+                }
+            },
+        )
         .listen(
             '.settings.updated',
             (e: {
@@ -413,7 +426,14 @@ const deleteMessage = async (messageId: number) => {
         });
 
         if (res.ok) {
-            messages.value = messages.value.filter((m) => m.id !== messageId);
+            const data = await res.json();
+            const target = messages.value.find((m) => m.id === messageId);
+
+            if (target) {
+                target.is_deleted = true;
+                target.deleted_at = data.deleted_at || new Date().toISOString();
+                target.content = 'This message was deleted by a moderator.';
+            }
         }
     } catch (e) {
         console.error('Failed to delete message', e);
@@ -743,7 +763,12 @@ onUnmounted(() => {
 
                                     <!-- Reply Button -->
                                     <button
-                                        v-if="currentUser && canPost"
+                                        v-if="
+                                            currentUser &&
+                                            canPost &&
+                                            !msg.is_deleted &&
+                                            !msg.deleted_at
+                                        "
                                         type="button"
                                         @click="startReply(msg)"
                                         class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-indigo-50 hover:text-indigo-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
@@ -772,7 +797,9 @@ onUnmounted(() => {
                                         v-if="
                                             currentUser &&
                                             Number(currentUser.id) !==
-                                                Number(msg.user.id)
+                                                Number(msg.user.id) &&
+                                            !msg.is_deleted &&
+                                            !msg.deleted_at
                                         "
                                         @click="openReportModal(msg)"
                                         class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-amber-50 hover:text-amber-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
@@ -783,7 +810,11 @@ onUnmounted(() => {
 
                                     <!-- Delete Button (Staff Only) -->
                                     <button
-                                        v-if="canDelete"
+                                        v-if="
+                                            canDelete &&
+                                            !msg.is_deleted &&
+                                            !msg.deleted_at
+                                        "
                                         type="button"
                                         @click="deleteMessage(msg.id)"
                                         class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
@@ -824,6 +855,13 @@ onUnmounted(() => {
 
                             <!-- Message Text -->
                             <p
+                                v-if="msg.is_deleted || msg.deleted_at"
+                                class="mt-1 text-xs text-slate-400 italic select-none sm:text-sm dark:text-gray-500"
+                            >
+                                {{ msg.content }}
+                            </p>
+                            <p
+                                v-else
                                 class="mt-1 text-xs leading-relaxed break-words whitespace-pre-wrap sm:text-sm"
                                 :class="
                                     currentUser &&

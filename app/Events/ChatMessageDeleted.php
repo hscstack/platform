@@ -14,12 +14,15 @@ class ChatMessageDeleted implements ShouldBroadcastNow
 
     public int $messageId;
 
+    public string $deletedAt;
+
     /**
      * Create a new event instance.
      */
-    public function __construct(int $messageId)
+    public function __construct(int $messageId, ?string $deletedAt = null)
     {
         $this->messageId = $messageId;
+        $this->deletedAt = $deletedAt ?? now()->toIso8601String();
     }
 
     /**
@@ -37,5 +40,18 @@ class ChatMessageDeleted implements ShouldBroadcastNow
     public function broadcastAs(): string
     {
         return 'message.deleted';
+    }
+
+    /**
+     * Data to broadcast with the event.
+     *
+     * @return array<string, mixed>
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'messageId' => $this->messageId,
+            'deleted_at' => $this->deletedAt,
+        ];
     }
 }
