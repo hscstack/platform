@@ -1122,10 +1122,35 @@ onUnmounted(() => {
 
 <template>
     <Head>
-        <title>Global Chat</title>
+        <title>HSCStack Global Chat — Talk. Ask. Connect.</title>
         <meta
             name="description"
-            content="Real-time public discussion space for HSC and SSC students."
+            content="Connect with fellow students, ask questions, share ideas, get help, and join the conversation on HSCStack Global Chat."
+        />
+        <meta
+            property="og:title"
+            content="HSCStack Global Chat — Talk. Ask. Connect."
+        />
+        <meta
+            property="og:description"
+            content="Connect with fellow students, ask questions, share ideas, get help, and join the conversation on HSCStack Global Chat."
+        />
+        <meta
+            property="og:image"
+            content="https://cdn.hscstack.site/images/og_chat.png"
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+            name="twitter:title"
+            content="HSCStack Global Chat — Talk. Ask. Connect."
+        />
+        <meta
+            name="twitter:description"
+            content="Connect with fellow students, ask questions, share ideas, get help, and join the conversation on HSCStack Global Chat."
+        />
+        <meta
+            name="twitter:image"
+            content="https://cdn.hscstack.site/images/og_chat.png"
         />
     </Head>
 

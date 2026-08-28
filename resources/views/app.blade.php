@@ -21,10 +21,13 @@
     $pageComponent = $page['component'] ?? '';
     $props = $page['props'] ?? [];
 
+    $s3Url = rtrim(config('filesystems.disks.s3.url') ?: env('AWS_URL', 'https://cdn.hscstack.site'), '/');
+    $defaultOgImage = $s3Url ? "{$s3Url}/images/og.png" : url('/images/og.png');
+
     $metaTitle = config('app.name', 'HSCStack');
     $ogTitle = 'HSCStack - Open source repository';
     $metaDescription = 'A curated open learning platform for HSC & SSC students in Bangladesh with video lectures, notes, books, and question banks.';
-    $ogImage = url('/feature.png');
+    $ogImage = $defaultOgImage;
     $ogType = 'website';
     $ogUrl = url()->current();
 
@@ -34,7 +37,7 @@
         $metaTitle = $rawTitle ? "{$rawTitle} - " . config('app.name', 'HSCStack') : config('app.name', 'HSCStack');
         $ogTitle = $rawTitle ?: config('app.name', 'HSCStack');
         $metaDescription = data_get($blog, 'meta_description') ?: data_get($blog, 'excerpt') ?: $rawTitle;
-        $ogImage = data_get($blog, 'featured_image') ?: url('/feature.png');
+        $ogImage = data_get($blog, 'featured_image') ?: $defaultOgImage;
         $ogType = 'article';
         $ogUrl = data_get($blog, 'slug') ? url('/blogs/' . data_get($blog, 'slug')) : url()->current();
     } elseif ($pageComponent === 'User/Show' && !empty($props['profileUser'])) {
@@ -52,7 +55,7 @@
         $metaDescription = !empty($descParts) 
             ? implode(' · ', array_slice($descParts, 0, 2)) 
             : "View {$userName}'s profile, completed study topics, and contributions on HSCStack.";
-        $ogImage = data_get($profileUser, 'image_url') ?: url('/feature.png');
+        $ogImage = data_get($profileUser, 'image_url') ?: $defaultOgImage;
         $ogType = 'profile';
         $ogUrl = $userHandle ? url('/u/' . $userHandle) : url()->current();
     } elseif ($pageComponent === 'Node' && (!empty($props['breadcrumb']) || !empty($props['subject']))) {
@@ -100,6 +103,11 @@
         $metaTitle = 'HSCStack AI - Smart Learning Assistant - ' . config('app.name', 'HSCStack');
         $ogTitle = 'HSCStack AI - Smart Learning Assistant';
         $metaDescription = 'Interactive AI Learning Assistant for HSC & SSC curriculum in Bangladesh.';
+    } elseif ($pageComponent === 'Chat/Index') {
+        $metaTitle = 'HSCStack Global Chat — Talk. Ask. Connect.';
+        $ogTitle = 'HSCStack Global Chat — Talk. Ask. Connect.';
+        $metaDescription = 'Connect with fellow students, ask questions, share ideas, get help, and join the conversation on HSCStack Global Chat.';
+        $ogImage = $s3Url ? "{$s3Url}/images/og_chat.png" : url('/images/og_chat.png');
     } elseif ($pageComponent === 'legal/PrivacyPolicy') {
         $metaTitle = 'Privacy Policy - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Privacy Policy - HSCStack';
