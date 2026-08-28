@@ -17,7 +17,7 @@ import {
     ShieldCheck,
     AlertCircle,
 } from 'lucide-vue-next';
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
@@ -83,6 +83,49 @@ const canPost = ref(props.chatState.can_post);
 const restrictionReason = ref(props.chatState.reason);
 const canDelete = ref(props.chatState.can_delete);
 const activeCooldownSeconds = ref(props.chatState.cooldown_seconds ?? 30);
+
+watch(
+    () => props.chatState,
+    (newState) => {
+        if (newState) {
+            if (newState.messages && Array.isArray(newState.messages)) {
+                messages.value = [...newState.messages];
+            }
+
+            if (typeof newState.can_post === 'boolean') {
+                canPost.value = newState.can_post;
+            }
+
+            if (typeof newState.can_delete === 'boolean') {
+                canDelete.value = newState.can_delete;
+            }
+
+            if (newState.reason !== undefined) {
+                restrictionReason.value = newState.reason;
+            }
+
+            if (newState.cooldown_seconds !== undefined) {
+                activeCooldownSeconds.value = newState.cooldown_seconds;
+            }
+
+            if (newState.max_messages !== undefined) {
+                maxMessagesLimit.value = newState.max_messages;
+            }
+
+            if (newState.max_length !== undefined) {
+                maxLengthLimit.value = newState.max_length;
+            }
+
+            if (
+                newState.reaction_emojis &&
+                newState.reaction_emojis.length > 0
+            ) {
+                reactionEmojis.value = [...newState.reaction_emojis];
+            }
+        }
+    },
+    { deep: true },
+);
 
 const messagesContainerRef = ref<HTMLElement | null>(null);
 const messageInputRef = ref<HTMLInputElement | null>(null);
@@ -198,19 +241,19 @@ const scrollToBottom = (smooth = true) => {
     });
 };
 
-let lastFetchTimestamp = Date.now();
+let lastFetchTimestamp = 0;
 const fetchLatestMessages = async (force = false) => {
-    // Throttle automatic refreshes to at most once every 15 seconds unless forced
+    // Debounce background refreshes to avoid spamming on rapid focus toggles
     const now = Date.now();
 
-    if (!force && now - lastFetchTimestamp < 15000) {
+    if (!force && now - lastFetchTimestamp < 3000) {
         return;
     }
 
     lastFetchTimestamp = now;
 
     try {
-        const res = await fetch('/chat', {
+        const res = await fetch('/api/chat/messages', {
             headers: {
                 Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -238,12 +281,22 @@ const fetchLatestMessages = async (force = false) => {
                 if (data.cooldown_seconds !== undefined) {
                     activeCooldownSeconds.value = data.cooldown_seconds;
                 }
+
+                if (
+                    data.reaction_emojis &&
+                    Array.isArray(data.reaction_emojis) &&
+                    data.reaction_emojis.length > 0
+                ) {
+                    reactionEmojis.value = data.reaction_emojis;
+                }
             }
         }
     } catch {
         // Silently ignore background refresh errors
     }
 };
+
+let handlePusherReconnect: (() => void) | null = null;
 
 const setupRealtime = () => {
     const echo = getEcho(
@@ -379,6 +432,29 @@ const setupRealtime = () => {
                 }
             },
         );
+
+    // Re-sync messages when websocket connection recovers from disconnect/background sleep
+    try {
+        const pusher = (
+            echo.connector as {
+                pusher?: {
+                    connection?: {
+                        bind: (event: string, callback: () => void) => void;
+                        unbind: (event: string, callback: () => void) => void;
+                    };
+                };
+            }
+        )?.pusher;
+
+        if (pusher?.connection) {
+            handlePusherReconnect = () => {
+                fetchLatestMessages(true);
+            };
+            pusher.connection.bind('connected', handlePusherReconnect);
+        }
+    } catch {
+        // Silently ignore connector inspection
+    }
 };
 
 const sendMessage = async () => {
@@ -729,6 +805,38 @@ onUnmounted(() => {
     window.removeEventListener('pageshow', fetchLatestMessages);
     document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
     window.removeEventListener('click', handleDocumentClick);
+
+    const echo = getEcho();
+
+    if (echo) {
+        if (handlePusherReconnect) {
+            try {
+                const pusher = (
+                    echo.connector as {
+                        pusher?: {
+                            connection?: {
+                                unbind: (
+                                    event: string,
+                                    callback: () => void,
+                                ) => void;
+                            };
+                        };
+                    }
+                )?.pusher;
+
+                if (pusher?.connection) {
+                    pusher.connection.unbind(
+                        'connected',
+                        handlePusherReconnect,
+                    );
+                }
+            } catch {
+                // Ignore
+            }
+        }
+
+        echo.leave('global-chat');
+    }
 });
 </script>
 
