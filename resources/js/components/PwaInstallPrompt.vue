@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Download, X, CheckCircle2, Loader2 } from 'lucide-vue-next';
-import { ref, shallowRef, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { usePwa } from '@/lib/usePwa';
 
 defineOptions({
     inheritAttrs: false,
@@ -21,13 +22,15 @@ const props = defineProps({
     },
 });
 
+const { deferredPrompt, isInstalled, promptInstall } = usePwa();
 const isVisible = ref(false);
 const isInstalling = ref(false);
-const deferredPrompt = shallowRef<any>(null);
 
-const handleBeforeInstall = (e: Event) => {
-    e.preventDefault();
-    deferredPrompt.value = e;
+const updateVisibility = () => {
+    if (isInstalled.value || !deferredPrompt.value) {
+        isVisible.value = false;
+        return;
+    }
 
     if (props.variant === 'modal') {
         if (!sessionStorage.getItem('pwa_prompt_dismissed')) {
@@ -38,27 +41,12 @@ const handleBeforeInstall = (e: Event) => {
     }
 };
 
-const handleAppInstalled = () => {
-    isVisible.value = false;
-    deferredPrompt.value = null;
-};
-
 onMounted(() => {
-    const isStandalone =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as Record<string, unknown>).standalone === true;
-
-    if (isStandalone) {
-        return;
-    }
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    updateVisibility();
 });
 
-onUnmounted(() => {
-    window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-    window.removeEventListener('appinstalled', handleAppInstalled);
+watch([deferredPrompt, isInstalled], () => {
+    updateVisibility();
 });
 
 const handleInstall = async () => {
@@ -68,15 +56,10 @@ const handleInstall = async () => {
 
     isInstalling.value = true;
     try {
-        await deferredPrompt.value.prompt();
-        const { outcome } = await deferredPrompt.value.userChoice;
-
-        if (outcome === 'accepted') {
+        const success = await promptInstall();
+        if (success) {
             isVisible.value = false;
-            deferredPrompt.value = null;
         }
-    } catch (error) {
-        console.error('PWA install error:', error);
     } finally {
         isInstalling.value = false;
     }
