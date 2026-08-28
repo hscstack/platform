@@ -41,14 +41,20 @@ class UserController extends Controller
         }
 
         $user = User::create($validated);
-        $role = $validated['role'];
-        $user->syncRoles([$role]);
+        $role = $validated['role'] ?? null;
 
-        if ($role === 'editor') {
-            $user->syncPermissions(
-                $validated['permissions'] ?? []
-            );
+        if (! empty($role)) {
+            $user->syncRoles([$role]);
+
+            if ($role === 'editor') {
+                $user->syncPermissions(
+                    $validated['permissions'] ?? []
+                );
+            } else {
+                $user->syncPermissions([]);
+            }
         } else {
+            $user->syncRoles([]);
             $user->syncPermissions([]);
         }
 
@@ -86,16 +92,21 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        if (isset($validated['role'])) {
+        if (array_key_exists('role', $validated)) {
             $role = $validated['role'];
 
-            $user->syncRoles([$role]);
+            if (! empty($role)) {
+                $user->syncRoles([$role]);
 
-            if ($role === 'editor') {
-                $user->syncPermissions(
-                    $validated['permissions'] ?? []
-                );
+                if ($role === 'editor') {
+                    $user->syncPermissions(
+                        $validated['permissions'] ?? []
+                    );
+                } else {
+                    $user->syncPermissions([]);
+                }
             } else {
+                $user->syncRoles([]);
                 $user->syncPermissions([]);
             }
         }

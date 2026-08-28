@@ -10,7 +10,13 @@ import {
     Activity,
     Flag,
     ShieldAlert,
+    Smile,
+    Plus,
+    X,
+    RotateCcw,
+    Bot,
 } from 'lucide-vue-next';
+import { ref } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
 defineOptions({ layout: AdminLayout });
@@ -25,6 +31,8 @@ interface ChatSettingsProps {
         max_length: number;
         profanity_filter_enabled: boolean;
         banned_words: string;
+        allowed_emojis?: string[];
+        bot_username?: string;
     };
     totalMessages: number;
     recentMessagesCount: number;
@@ -32,6 +40,28 @@ interface ChatSettingsProps {
 }
 
 const props = defineProps<ChatSettingsProps>();
+
+const defaultReactionEmojis = ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏'];
+const popularReactionEmojis = [
+    '👍',
+    '❤️',
+    '🔥',
+    '😂',
+    '🎉',
+    '😮',
+    '😢',
+    '👏',
+    '🚀',
+    '💯',
+    '👀',
+    '🙏',
+    '💡',
+    '✨',
+    '🤝',
+    '🥳',
+];
+
+const newEmojiInput = ref('');
 
 const form = useForm({
     enabled: props.settings.enabled,
@@ -42,7 +72,35 @@ const form = useForm({
     max_length: props.settings.max_length ?? 280,
     profanity_filter_enabled: props.settings.profanity_filter_enabled ?? true,
     banned_words: props.settings.banned_words ?? '',
+    allowed_emojis:
+        props.settings.allowed_emojis &&
+        props.settings.allowed_emojis.length > 0
+            ? [...props.settings.allowed_emojis]
+            : [...defaultReactionEmojis],
+    bot_username: props.settings.bot_username ?? 'hscstack',
 });
+
+const addEmoji = (emojiToAdd?: string) => {
+    const emoji = (emojiToAdd || newEmojiInput.value).trim();
+
+    if (!emoji) {
+        return;
+    }
+
+    if (!form.allowed_emojis.includes(emoji)) {
+        form.allowed_emojis.push(emoji);
+    }
+
+    newEmojiInput.value = '';
+};
+
+const removeEmoji = (index: number) => {
+    form.allowed_emojis.splice(index, 1);
+};
+
+const resetDefaultEmojis = () => {
+    form.allowed_emojis = [...defaultReactionEmojis];
+};
 
 const submitSettings = () => {
     form.post('/admin/chat/settings', {
@@ -608,6 +666,183 @@ const lengthPresets = [
                         The filter automatically collapses repeated letters and
                         replaces common leet-speak substitutions (e.g. @ &rarr;
                         a, $ &rarr; s, 0 &rarr; o).
+                    </p>
+                </div>
+            </div>
+
+            <!-- 7. Allowed Reaction Emojis -->
+            <div
+                class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
+            >
+                <div
+                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                >
+                    <div>
+                        <label
+                            class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            <Smile class="h-4 w-4 text-amber-500" />
+                            Allowed Message Reaction Emojis
+                        </label>
+                        <p
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Configure the emojis students and members can use to
+                            react to chat messages.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        @click="resetDefaultEmojis"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    >
+                        <RotateCcw class="h-3.5 w-3.5" />
+                        <span>Reset Defaults</span>
+                    </button>
+                </div>
+
+                <!-- Current Active Emojis List (Pills) -->
+                <div>
+                    <span
+                        class="mb-2 block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                    >
+                        Active Reaction Emojis ({{ form.allowed_emojis.length }}
+                        enabled):
+                    </span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div
+                            v-for="(emoji, idx) in form.allowed_emojis"
+                            :key="emoji"
+                            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-2xs dark:border-gray-700 dark:bg-gray-800"
+                        >
+                            <span class="text-base">{{ emoji }}</span>
+                            <button
+                                type="button"
+                                @click="removeEmoji(idx)"
+                                class="cursor-pointer rounded-full p-0.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/50 dark:hover:text-rose-400"
+                                title="Remove emoji"
+                            >
+                                <X class="h-3 w-3" />
+                            </button>
+                        </div>
+
+                        <span
+                            v-if="form.allowed_emojis.length === 0"
+                            class="text-xs text-amber-600 italic dark:text-amber-400"
+                        >
+                            No emojis active. Reactions will be disabled until
+                            emojis are added.
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Add Custom Emoji Input -->
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                    <div class="relative w-48">
+                        <input
+                            v-model="newEmojiInput"
+                            type="text"
+                            placeholder="Type or paste emoji..."
+                            maxlength="32"
+                            @keydown.enter.prevent="addEmoji()"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                        />
+                    </div>
+                    <button
+                        type="button"
+                        @click="addEmoji()"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-50 px-3.5 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100 active:scale-95 dark:bg-indigo-950/70 dark:text-indigo-300 dark:hover:bg-indigo-900"
+                    >
+                        <Plus class="h-3.5 w-3.5" />
+                        <span>Add Emoji</span>
+                    </button>
+                </div>
+
+                <!-- Quick Presets Picker -->
+                <div class="space-y-1.5 pt-1">
+                    <span
+                        class="block text-[11px] font-semibold text-slate-500 dark:text-gray-400"
+                    >
+                        Quick Add Popular Emojis:
+                    </span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button
+                            v-for="emoji in popularReactionEmojis"
+                            :key="emoji"
+                            type="button"
+                            @click="addEmoji(emoji)"
+                            :disabled="form.allowed_emojis.includes(emoji)"
+                            class="cursor-pointer rounded-lg border px-2 py-1 text-sm transition hover:scale-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+                            :class="
+                                form.allowed_emojis.includes(emoji)
+                                    ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700'
+                            "
+                            :title="
+                                form.allowed_emojis.includes(emoji)
+                                    ? 'Already added'
+                                    : `Add ${emoji}`
+                            "
+                        >
+                            {{ emoji }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. System Chat Bot Account -->
+            <div
+                class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
+            >
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label
+                            class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            <Bot
+                                class="h-4 w-4 text-purple-600 dark:text-purple-400"
+                            />
+                            System Chat Bot Account
+                        </label>
+                        <p
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Specify the username of the account that will post
+                            automated system announcements, ban notices, and
+                            moderation alerts.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="max-w-xs space-y-1.5">
+                    <label
+                        class="block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                    >
+                        Bot Account Username:
+                    </label>
+                    <div class="relative">
+                        <span
+                            class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-xs font-bold text-slate-400"
+                        >
+                            @
+                        </span>
+                        <input
+                            v-model="form.bot_username"
+                            type="text"
+                            placeholder="hscstack"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pr-3 pl-8 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                        />
+                    </div>
+                    <p class="text-[11px] text-slate-400 dark:text-gray-500">
+                        Enter the username of an existing user account to post
+                        automated moderation notices and ban announcements.
+                    </p>
+                    <p
+                        v-if="form.errors.bot_username"
+                        class="text-xs font-medium text-rose-500"
+                    >
+                        {{ form.errors.bot_username }}
                     </p>
                 </div>
             </div>

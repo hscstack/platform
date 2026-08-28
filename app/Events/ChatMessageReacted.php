@@ -8,21 +8,21 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ChatMessageDeleted implements ShouldBroadcastNow
+class ChatMessageReacted implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public int $messageId;
 
-    public string $deletedAt;
+    public array $reactions;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(int $messageId, ?string $deletedAt = null)
+    public function __construct(int $messageId, array $reactions)
     {
         $this->messageId = $messageId;
-        $this->deletedAt = $deletedAt ?? now()->toIso8601String();
+        $this->reactions = $reactions;
     }
 
     /**
@@ -39,7 +39,7 @@ class ChatMessageDeleted implements ShouldBroadcastNow
 
     public function broadcastAs(): string
     {
-        return 'message.deleted';
+        return 'message.reacted';
     }
 
     /**
@@ -51,7 +51,7 @@ class ChatMessageDeleted implements ShouldBroadcastNow
     {
         return [
             'messageId' => $this->messageId,
-            'deleted_at' => $this->deletedAt,
+            'reactions' => $this->reactions,
         ];
     }
 }

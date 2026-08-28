@@ -27,6 +27,7 @@ class ChatSettingsUpdated implements ShouldBroadcastNow
             'cooldown_seconds' => (int) AppSetting::get('global_chat_cooldown_seconds', 30),
             'max_messages' => (int) AppSetting::get('global_chat_max_messages', 200),
             'max_length' => (int) AppSetting::get('global_chat_max_length', 280),
+            'allowed_emojis' => (array) AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']),
         ];
     }
 

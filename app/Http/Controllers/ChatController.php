@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Events\ChatMessageDeleted;
+use App\Events\ChatMessageReacted;
 use App\Events\ChatMessageSent;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
+use App\Models\ChatReport;
+use App\Models\User;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -48,7 +51,7 @@ class ChatController extends Controller
         }
 
         // Fetch last X messages in chronological order
-        $messages = ChatMessage::with(['user:id,name,username,image_path,institution', 'user.roles:id,name'])
+        $messages = ChatMessage::with(['user:id,name,username,image_path,institution', 'user.roles:id,name', 'reactions.user:id,name,username'])
             ->latest('id')
             ->take($maxMessages)
             ->get()
@@ -56,9 +59,12 @@ class ChatController extends Controller
             ->values()
             ->map(fn (ChatMessage $msg) => [
                 'id' => $msg->id,
-                'content' => $msg->content,
+                'content' => $msg->deleted_at ? 'This message was deleted by a moderator.' : $msg->content,
+                'is_deleted' => $msg->deleted_at !== null,
+                'deleted_at' => $msg->deleted_at?->toIso8601String(),
                 'reply_to_id' => $msg->reply_to_id,
                 'reply_to_content' => $msg->reply_to_content,
+                'reactions' => $msg->getFormattedReactions($user?->id),
                 'created_at' => $msg->created_at->toIso8601String(),
                 'user' => [
                     'id' => $msg->user->id,
@@ -71,6 +77,8 @@ class ChatController extends Controller
                 ],
             ]);
 
+        $allowedEmojis = (array) AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
+
         if (! $request->wantsJson() && ! $request->is('api/*')) {
             return Inertia::render('Chat/Index', [
                 'chatState' => [
@@ -82,6 +90,7 @@ class ChatController extends Controller
                     'can_post' => $canPost,
                     'reason' => $reason,
                     'can_delete' => (bool) $user?->can('manage chat'),
+                    'reaction_emojis' => $allowedEmojis,
                     'messages' => $messages,
                     'pusher_key' => config('broadcasting.connections.pusher.key'),
                     'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
@@ -98,6 +107,7 @@ class ChatController extends Controller
             'can_post' => $canPost,
             'reason' => $reason,
             'can_delete' => (bool) $user?->can('manage chat'),
+            'reaction_emojis' => $allowedEmojis,
             'messages' => $messages,
             'pusher_key' => config('broadcasting.connections.pusher.key'),
             'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
@@ -179,7 +189,9 @@ class ChatController extends Controller
         if ($replyToId) {
             $parentMessage = ChatMessage::find($replyToId);
             if ($parentMessage) {
-                $replyToContent = Str::limit($parentMessage->content, 97, '...');
+                $replyToContent = $parentMessage->deleted_at
+                    ? 'This message was deleted by a moderator.'
+                    : Str::limit($parentMessage->content, 97, '...');
             } else {
                 $replyToId = null;
             }
@@ -211,9 +223,12 @@ class ChatController extends Controller
 
         return response()->json([
             'id' => $message->id,
-            'content' => $message->content,
+            'content' => $message->deleted_at ? 'This message was deleted by a moderator.' : $message->content,
+            'is_deleted' => $message->deleted_at !== null,
+            'deleted_at' => $message->deleted_at?->toIso8601String(),
             'reply_to_id' => $message->reply_to_id,
             'reply_to_content' => $message->reply_to_content,
+            'reactions' => [],
             'created_at' => $message->created_at->toIso8601String(),
             'user' => [
                 'id' => $message->user->id,
@@ -237,16 +252,19 @@ class ChatController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $messageId = $message->id;
-        $message->delete();
+        $deletedAt = now();
+        $message->update(['deleted_at' => $deletedAt]);
 
         try {
-            broadcast(new ChatMessageDeleted($messageId))->toOthers();
+            broadcast(new ChatMessageDeleted($message->id, $deletedAt->toIso8601String()))->toOthers();
         } catch (\Throwable $e) {
             // Ignore
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'deleted_at' => $deletedAt->toIso8601String(),
+        ]);
     }
 
     public function report(Request $request)
@@ -264,7 +282,7 @@ class ChatController extends Controller
         ]);
 
         // Prevent duplicate reporting of the exact same message content by the same user
-        $alreadyReported = \App\Models\ChatReport::where('reporter_id', $user->id)
+        $alreadyReported = ChatReport::where('reporter_id', $user->id)
             ->where('message_content', $validated['message_content'])
             ->where('reported_user_id', $validated['reported_user_id'] ?? null)
             ->exists();
@@ -275,7 +293,7 @@ class ChatController extends Controller
             ], 422);
         }
 
-        $report = \App\Models\ChatReport::create([
+        $report = ChatReport::create([
             'reporter_id' => $user->id,
             'reported_user_id' => $validated['reported_user_id'] ?? null,
             'reported_user_name' => $validated['reported_user_name'] ?? null,
@@ -288,16 +306,21 @@ class ChatController extends Controller
 
         // Auto-ban logic: If the reported user has 5 or more reports on this message/content, auto-ban for 1 day
         if (! empty($validated['reported_user_id'])) {
-            $reportedUser = \App\Models\User::find($validated['reported_user_id']);
+            $reportedUser = User::find($validated['reported_user_id']);
             if ($reportedUser && ! $reportedUser->can('view admin')) {
-                $totalReportsForMessage = \App\Models\ChatReport::where('reported_user_id', $reportedUser->id)
+                $totalReportsForMessage = ChatReport::where('reported_user_id', $reportedUser->id)
                     ->where('message_content', $validated['message_content'])
                     ->count();
 
                 if ($totalReportsForMessage >= 5) {
+                    $wasAlreadyBanned = $reportedUser->isChatBanned();
                     $reportedUser->update([
                         'chat_banned_until' => now()->addDay(),
                     ]);
+
+                    if (! $wasAlreadyBanned) {
+                        ChatMessage::sendBotMessage("System automatically suspended @{$reportedUser->username} from chat for 24 hours following community reports.");
+                    }
                 }
             }
         }
@@ -306,5 +329,65 @@ class ChatController extends Controller
             'message' => 'Message reported successfully. Our team will review it.',
             'report_id' => $report->id,
         ], 201);
+    }
+
+    public function toggleReaction(Request $request, ChatMessage $message)
+    {
+        $user = $request->user();
+        abort_unless($user, 401, 'Unauthenticated');
+
+        if ($user->isChatBanned()) {
+            return response()->json([
+                'message' => 'You cannot react to messages while chat banned.',
+            ], 403);
+        }
+
+        if ($message->isDeleted()) {
+            return response()->json([
+                'message' => 'Cannot react to deleted messages.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'emoji' => ['required', 'string', 'max:32'],
+        ]);
+
+        $emoji = $validated['emoji'];
+
+        // Allowed reaction emojis from settings
+        $allowedEmojis = (array) AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
+        if (! in_array($emoji, $allowedEmojis, true)) {
+            return response()->json([
+                'message' => 'This reaction emoji is not enabled.',
+            ], 422);
+        }
+
+        $existing = $message->reactions()
+            ->where('user_id', $user->id)
+            ->where('emoji', $emoji)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+        } else {
+            $message->reactions()->create([
+                'user_id' => $user->id,
+                'emoji' => $emoji,
+            ]);
+        }
+
+        $formattedReactions = $message->getFormattedReactions($user->id);
+        $publicReactions = $message->getFormattedReactions(null);
+
+        try {
+            broadcast(new ChatMessageReacted($message->id, $publicReactions))->toOthers();
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+
+        return response()->json([
+            'success' => true,
+            'reactions' => $formattedReactions,
+        ]);
     }
 }

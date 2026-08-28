@@ -5,7 +5,7 @@ import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
 
-const props = defineProps({
+defineProps({
     user: Object,
 });
 
@@ -13,7 +13,10 @@ const page = usePage();
 const userId = page.props.auth.user.id;
 
 const isChatBanned = (user: any) => {
-    if (!user?.chat_banned_until) return false;
+    if (!user?.chat_banned_until) {
+        return false;
+    }
+
     return new Date(user.chat_banned_until).getTime() > Date.now();
 };
 
@@ -84,7 +87,7 @@ const deleteUser = (id: number) => {
                         class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset"
                         :class="getRoleBadgeStyles(user.roles?.[0]?.name)"
                     >
-                        {{ user.roles?.[0]?.name ?? 'no role' }}
+                        {{ user.roles?.[0]?.name ?? 'student' }}
                     </span>
 
                     <span

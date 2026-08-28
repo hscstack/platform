@@ -80,6 +80,13 @@ class User extends Authenticatable
         return $this->chat_banned_until !== null && $this->chat_banned_until->isFuture();
     }
 
+    public static function getSystemBot(): ?self
+    {
+        $botUsername = AppSetting::get('global_chat_bot_username');
+
+        return $botUsername ? static::where('username', $botUsername)->first() : null;
+    }
+
     public function getImageUrlAttribute()
     {
         if (! $this->image_path) {
