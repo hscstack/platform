@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NodeController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
@@ -21,6 +22,10 @@ Route::middleware('throttle:60,1')->get('/api/auth/status', function (Request $r
 });
 
 Route::middleware(['throttle:60,1', 'auth'])->group(function () {
+    Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding.index');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+    Route::get('/api/check-username', [OnboardingController::class, 'checkUsername'])->name('onboarding.check-username');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');

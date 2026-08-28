@@ -81,9 +81,10 @@ class AuthController extends Controller
         Auth::login($user, remember: true);
         $request->session()->regenerate();
 
-        $defaultUrl = $user->username
-            ? route('user.profile', $user->username)
-            : route('profile.edit');
+        $needsOnboarding = empty($user->username) || $user->username === "student_{$user->id}" || empty($user->institution);
+        $defaultUrl = $needsOnboarding
+            ? route('onboarding.index')
+            : route('user.profile', $user->username);
 
         $redirect = redirect()->intended($defaultUrl);
 

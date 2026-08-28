@@ -28,7 +28,7 @@ test('google auth creates new user account if not exists and flashes notice', fu
     $response = $this->get(route('auth.google.callback'));
 
     $user = User::where('email', 'newuser@example.com')->first();
-    $response->assertRedirect(route('user.profile', $user->username));
+    $response->assertRedirect(route('onboarding.index'));
     $response->assertSessionHas('success', 'Account not found. New account created.');
     $this->assertAuthenticated();
     $this->assertDatabaseHas('users', [
