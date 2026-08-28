@@ -7,7 +7,6 @@ import {
     Loader2,
     LogIn,
     ArrowDown,
-    ShieldAlert,
     Pencil,
     Flag,
     Check,
@@ -93,6 +92,7 @@ const cancelReply = () => {
 
 const scrollToMessage = (messageId: number) => {
     const el = document.getElementById(`chat-msg-${messageId}`);
+
     if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         highlightedMessageId.value = messageId;
@@ -188,9 +188,11 @@ let lastFetchTimestamp = Date.now();
 const fetchLatestMessages = async (force = false) => {
     // Throttle automatic refreshes to at most once every 15 seconds unless forced
     const now = Date.now();
+
     if (!force && now - lastFetchTimestamp < 15000) {
         return;
     }
+
     lastFetchTimestamp = now;
 
     try {
@@ -200,19 +202,25 @@ const fetchLatestMessages = async (force = false) => {
                 'X-Requested-With': 'XMLHttpRequest',
             },
         });
+
         if (res.ok) {
             const data = await res.json();
+
             if (data.messages && Array.isArray(data.messages)) {
                 messages.value = data.messages;
+
                 if (typeof data.can_post === 'boolean') {
                     canPost.value = data.can_post;
                 }
+
                 if (typeof data.can_delete === 'boolean') {
                     canDelete.value = data.can_delete;
                 }
+
                 if (data.reason !== undefined) {
                     restrictionReason.value = data.reason;
                 }
+
                 if (data.cooldown_seconds !== undefined) {
                     activeCooldownSeconds.value = data.cooldown_seconds;
                 }
@@ -282,6 +290,7 @@ const setupRealtime = () => {
 
                     // Dynamically update permissions
                     const user = currentUser.value;
+
                     if (
                         !e.settings.enabled ||
                         e.settings.audience === 'disabled'
@@ -427,8 +436,10 @@ const reportReasons = [
 const openReportModal = (message: ChatMessageItem) => {
     if (!currentUser.value) {
         alert('Please sign in to report a message.');
+
         return;
     }
+
     reportingMessage.value = message;
     reportReason.value = 'Inappropriate message or conduct';
     reportSuccessMessage.value = null;
@@ -443,7 +454,9 @@ const closeReportModal = () => {
 };
 
 const submitReport = async () => {
-    if (!reportingMessage.value || isSubmittingReport.value) return;
+    if (!reportingMessage.value || isSubmittingReport.value) {
+        return;
+    }
 
     isSubmittingReport.value = true;
     reportSuccessMessage.value = null;
@@ -547,6 +560,7 @@ onUnmounted(() => {
     if (cooldownInterval) {
         clearInterval(cooldownInterval);
     }
+
     window.removeEventListener('focus', fetchLatestMessages);
     window.removeEventListener('pageshow', fetchLatestMessages);
     document.removeEventListener('visibilitychange', handleVisibilityOrFocus);

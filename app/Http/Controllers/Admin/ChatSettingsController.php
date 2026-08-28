@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\ChatSettingsUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
@@ -100,7 +101,7 @@ class ChatSettingsController extends Controller
 
         // Broadcast settings update to global-chat channel
         try {
-            broadcast(new \App\Events\ChatSettingsUpdated());
+            broadcast(new ChatSettingsUpdated);
         } catch (\Throwable $e) {
             // Log without failing response
         }

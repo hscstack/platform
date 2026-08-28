@@ -6,6 +6,8 @@ use App\Events\ChatMessageDeleted;
 use App\Events\ChatMessageSent;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
+use App\Models\ChatReport;
+use App\Models\User;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -264,7 +266,7 @@ class ChatController extends Controller
         ]);
 
         // Prevent duplicate reporting of the exact same message content by the same user
-        $alreadyReported = \App\Models\ChatReport::where('reporter_id', $user->id)
+        $alreadyReported = ChatReport::where('reporter_id', $user->id)
             ->where('message_content', $validated['message_content'])
             ->where('reported_user_id', $validated['reported_user_id'] ?? null)
             ->exists();
@@ -275,7 +277,7 @@ class ChatController extends Controller
             ], 422);
         }
 
-        $report = \App\Models\ChatReport::create([
+        $report = ChatReport::create([
             'reporter_id' => $user->id,
             'reported_user_id' => $validated['reported_user_id'] ?? null,
             'reported_user_name' => $validated['reported_user_name'] ?? null,
@@ -288,9 +290,9 @@ class ChatController extends Controller
 
         // Auto-ban logic: If the reported user has 5 or more reports on this message/content, auto-ban for 1 day
         if (! empty($validated['reported_user_id'])) {
-            $reportedUser = \App\Models\User::find($validated['reported_user_id']);
+            $reportedUser = User::find($validated['reported_user_id']);
             if ($reportedUser && ! $reportedUser->can('view admin')) {
-                $totalReportsForMessage = \App\Models\ChatReport::where('reported_user_id', $reportedUser->id)
+                $totalReportsForMessage = ChatReport::where('reported_user_id', $reportedUser->id)
                     ->where('message_content', $validated['message_content'])
                     ->count();
 

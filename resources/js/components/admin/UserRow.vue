@@ -5,7 +5,7 @@ import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
 
-const props = defineProps({
+defineProps({
     user: Object,
 });
 
@@ -13,7 +13,10 @@ const page = usePage();
 const userId = page.props.auth.user.id;
 
 const isChatBanned = (user: any) => {
-    if (!user?.chat_banned_until) return false;
+    if (!user?.chat_banned_until) {
+        return false;
+    }
+
     return new Date(user.chat_banned_until).getTime() > Date.now();
 };
 

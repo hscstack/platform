@@ -2,7 +2,6 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Flag,
-    ShieldAlert,
     Pencil,
     CheckCircle,
     XCircle,
@@ -56,6 +55,7 @@ const filteredReports = computed(() => {
     if (currentFilter.value === 'all') {
         return props.reports;
     }
+
     return props.reports.filter((r) => r.status === currentFilter.value);
 });
 
@@ -80,9 +80,13 @@ const deleteReport = (reportId: number) => {
 };
 
 const formatDate = (isoString?: string | null) => {
-    if (!isoString) return '';
+    if (!isoString) {
+        return '';
+    }
+
     try {
         const d = new Date(isoString);
+
         return d.toLocaleString([], {
             month: 'short',
             day: 'numeric',

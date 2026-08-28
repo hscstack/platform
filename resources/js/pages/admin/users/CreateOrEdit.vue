@@ -24,13 +24,21 @@ const roles = [
 const availablePermissions = props.permissions;
 
 const formatForDatetimeLocal = (dateString?: string | null) => {
-    if (!dateString) return '';
+    if (!dateString) {
+        return '';
+    }
+
     const d = new Date(dateString);
-    if (isNaN(d.getTime())) return '';
+
+    if (isNaN(d.getTime())) {
+        return '';
+    }
+
     const offset = d.getTimezoneOffset() * 60000;
     const localISOTime = new Date(d.getTime() - offset)
         .toISOString()
         .slice(0, 16);
+
     return localISOTime;
 };
 
