@@ -6,7 +6,10 @@ const isInstalled = ref(false);
 let isInitialized = false;
 
 export function initPwa() {
-    if (typeof window === 'undefined' || isInitialized) return;
+    if (typeof window === 'undefined' || isInitialized) {
+        return;
+    }
+
     isInitialized = true;
 
     const checkStandalone = () => {
@@ -35,18 +38,24 @@ export function usePwa() {
     }
 
     const promptInstall = async (): Promise<boolean> => {
-        if (!deferredPrompt.value) return false;
+        if (!deferredPrompt.value) {
+            return false;
+        }
+
         try {
             await deferredPrompt.value.prompt();
             const { outcome } = await deferredPrompt.value.userChoice;
+
             if (outcome === 'accepted') {
                 isInstalled.value = true;
                 deferredPrompt.value = null;
+
                 return true;
             }
         } catch (err) {
             console.error('PWA install error:', err);
         }
+
         return false;
     };
 
