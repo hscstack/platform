@@ -333,18 +333,6 @@ onBeforeUnmount(() => {
                         <span>Search</span>
                     </button>
 
-                    <!-- Permanent Install App Button on Desktop -->
-                    <button
-                        v-if="canInstallApp"
-                        type="button"
-                        @click="handleInstallApp"
-                        class="flex h-9 items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/80 px-3 text-xs font-bold text-indigo-700 shadow-2xs transition-all hover:bg-indigo-100 hover:text-indigo-800 active:scale-95 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-300"
-                        title="Install HSCStack App"
-                    >
-                        <Download class="h-3.5 w-3.5" />
-                        <span>Install App</span>
-                    </button>
-
                     <!-- Dark Mode Toggle Button -->
                     <button
                         @click="toggle"
