@@ -18,6 +18,7 @@ import {
     AlertCircle,
     MoreHorizontal,
     Radio,
+    AtSign,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
@@ -170,6 +171,123 @@ const startReply = (msg: ChatMessageItem) => {
 
 const cancelReply = () => {
     activeReplyTo.value = null;
+};
+
+// User Mention Autocomplete State & Logic
+const showMentionSuggestions = ref(false);
+const mentionQuery = ref('');
+const selectedMentionIndex = ref(0);
+const mentionStartPos = ref(-1);
+
+const availableMentionUsers = computed<ChatUser[]>(() => {
+    const userMap = new Map<number, ChatUser>();
+    const currentId = currentUser.value ? Number(currentUser.value.id) : null;
+
+    // Scan loaded messages from latest to oldest so active participants appear first
+    for (let i = messages.value.length - 1; i >= 0; i--) {
+        const u = messages.value[i]?.user;
+        if (u && u.id && u.username) {
+            if (currentId && Number(u.id) === currentId) {
+                continue;
+            }
+            if (!userMap.has(Number(u.id))) {
+                userMap.set(Number(u.id), u);
+            }
+        }
+    }
+
+    return Array.from(userMap.values());
+});
+
+const filteredMentionUsers = computed(() => {
+    const q = mentionQuery.value.toLowerCase().trim();
+    if (!q) {
+        return [];
+    }
+    return availableMentionUsers.value
+        .filter(
+            (u) =>
+                u.username.toLowerCase().includes(q) ||
+                u.name.toLowerCase().includes(q),
+        )
+        .slice(0, 5);
+});
+
+const checkMentionTrigger = () => {
+    if (!messageInputRef.value) {
+        showMentionSuggestions.value = false;
+        return;
+    }
+
+    const input = messageInputRef.value;
+    const cursorPos = input.selectionStart ?? inputContent.value.length;
+    const textBeforeCursor = inputContent.value.slice(0, cursorPos);
+
+    const match = /(?:^|\s)@([a-zA-Z0-9_.-]*)$/.exec(textBeforeCursor);
+
+    if (match !== null) {
+        mentionQuery.value = match[1];
+        mentionStartPos.value = cursorPos - match[1].length - 1;
+        selectedMentionIndex.value = 0;
+        showMentionSuggestions.value = true;
+    } else {
+        showMentionSuggestions.value = false;
+    }
+};
+
+const handleInputKeydown = (e: KeyboardEvent) => {
+    if (!showMentionSuggestions.value) {
+        return;
+    }
+
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        showMentionSuggestions.value = false;
+        return;
+    }
+
+    if (filteredMentionUsers.value.length === 0) {
+        return;
+    }
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedMentionIndex.value =
+            (selectedMentionIndex.value + 1) % filteredMentionUsers.value.length;
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedMentionIndex.value =
+            (selectedMentionIndex.value - 1 + filteredMentionUsers.value.length) %
+            filteredMentionUsers.value.length;
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+        if (filteredMentionUsers.value[selectedMentionIndex.value]) {
+            e.preventDefault();
+            insertMention(filteredMentionUsers.value[selectedMentionIndex.value]);
+        }
+    }
+};
+
+const insertMention = (user: ChatUser) => {
+    if (!messageInputRef.value || mentionStartPos.value < 0) {
+        return;
+    }
+
+    const input = messageInputRef.value;
+    const cursorPos = input.selectionStart ?? inputContent.value.length;
+    const before = inputContent.value.slice(0, mentionStartPos.value);
+    const after = inputContent.value.slice(cursorPos);
+    const mentionText = `@${user.username} `;
+
+    inputContent.value = before + mentionText + after;
+    showMentionSuggestions.value = false;
+
+    nextTick(() => {
+        if (messageInputRef.value) {
+            messageInputRef.value.focus();
+            const newCursorPos = before.length + mentionText.length;
+            messageInputRef.value.setSelectionRange(newCursorPos, newCursorPos);
+        }
+    });
 };
 
 const scrollToMessage = (messageId: number) => {
@@ -527,6 +645,7 @@ const sendMessage = async () => {
             }
 
             inputContent.value = '';
+            showMentionSuggestions.value = false;
             activeReplyTo.value = null;
 
             if (activeCooldownSeconds.value > 0) {
@@ -929,6 +1048,7 @@ const handlePopState = () => {
 
 const handleDocumentClick = () => {
     activeReactionPickerMessageId.value = null;
+    showMentionSuggestions.value = false;
 };
 
 onMounted(() => {
@@ -1002,10 +1122,35 @@ onUnmounted(() => {
 
 <template>
     <Head>
-        <title>Global Chat</title>
+        <title>HSCStack Global Chat — Talk. Ask. Connect.</title>
         <meta
             name="description"
-            content="Real-time public discussion space for HSC and SSC students."
+            content="Connect with fellow students, ask questions, share ideas, get help, and join the conversation on HSCStack Global Chat."
+        />
+        <meta
+            property="og:title"
+            content="HSCStack Global Chat — Talk. Ask. Connect."
+        />
+        <meta
+            property="og:description"
+            content="Connect with fellow students, ask questions, share ideas, get help, and join the conversation on HSCStack Global Chat."
+        />
+        <meta
+            property="og:image"
+            content="https://cdn.hscstack.site/images/og_chat.png"
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+            name="twitter:title"
+            content="HSCStack Global Chat — Talk. Ask. Connect."
+        />
+        <meta
+            name="twitter:description"
+            content="Connect with fellow students, ask questions, share ideas, get help, and join the conversation on HSCStack Global Chat."
+        />
+        <meta
+            name="twitter:image"
+            content="https://cdn.hscstack.site/images/og_chat.png"
         />
     </Head>
 
@@ -1432,6 +1577,107 @@ onUnmounted(() => {
                     class="flex items-center gap-2"
                 >
                     <div class="relative flex-1">
+                        <!-- Mention Autocomplete Suggestions Popup -->
+                        <div
+                            v-if="showMentionSuggestions"
+                            class="absolute bottom-full left-0 z-40 mb-2 w-full max-w-xs overflow-hidden rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl ring-1 ring-black/5 sm:max-w-sm dark:border-zinc-700 dark:bg-zinc-800 dark:ring-white/10"
+                            @click.stop
+                        >
+                            <div
+                                class="flex items-center gap-1 border-b border-slate-100 px-2.5 py-1 pb-1.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:border-zinc-700/60 dark:text-zinc-400"
+                            >
+                                <AtSign class="h-3 w-3 text-indigo-500" />
+                                <span>Mention user</span>
+                            </div>
+
+                            <!-- Matching users list when typing -->
+                            <div
+                                v-if="
+                                    mentionQuery.trim() &&
+                                    filteredMentionUsers.length > 0
+                                "
+                                class="max-h-48 overflow-y-auto space-y-0.5 pt-1"
+                            >
+                                <button
+                                    v-for="(user, idx) in filteredMentionUsers"
+                                    :key="user.id"
+                                    type="button"
+                                    @mousedown.prevent="insertMention(user)"
+                                    @mouseenter="selectedMentionIndex = idx"
+                                    class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition select-none"
+                                    :class="
+                                        selectedMentionIndex === idx
+                                            ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-200'
+                                            : 'text-slate-700 hover:bg-slate-50 dark:text-zinc-300 dark:hover:bg-zinc-700/50'
+                                    "
+                                >
+                                    <div
+                                        class="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-[10px] font-semibold text-slate-700 dark:bg-zinc-700 dark:text-zinc-300"
+                                    >
+                                        <img
+                                            v-if="user.image_url"
+                                            :src="user.image_url"
+                                            :alt="user.name"
+                                            class="h-full w-full object-cover"
+                                        />
+                                        <span v-else>{{
+                                            user.name?.charAt(0) || 'U'
+                                        }}</span>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1">
+                                            <span
+                                                class="truncate text-xs font-semibold"
+                                                >{{ user.name }}</span
+                                            >
+                                            <VerifiedBadge
+                                                v-if="user.is_verified"
+                                            />
+                                        </div>
+                                        <div
+                                            class="truncate text-[10px] text-slate-400 dark:text-zinc-500"
+                                        >
+                                            @{{ user.username }}
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- No results found for query -->
+                            <div
+                                v-else-if="mentionQuery.trim()"
+                                class="px-3 py-2.5 text-center text-xs text-slate-500 dark:text-zinc-400"
+                            >
+                                <p
+                                    class="font-medium text-slate-600 dark:text-zinc-300"
+                                >
+                                    No recent chatters matched
+                                </p>
+                                <p
+                                    class="mt-0.5 text-[11px] text-slate-400 dark:text-zinc-500"
+                                >
+                                    Write full username if not suggested
+                                </p>
+                            </div>
+
+                            <!-- Initial state when just typing '@' -->
+                            <div
+                                v-else
+                                class="px-3 py-2.5 text-center text-xs text-slate-500 dark:text-zinc-400"
+                            >
+                                <p
+                                    class="font-medium text-slate-600 dark:text-zinc-300"
+                                >
+                                    Start typing to get suggestions...
+                                </p>
+                                <p
+                                    class="mt-0.5 text-[11px] text-slate-400 dark:text-zinc-500"
+                                >
+                                    Type a name or username
+                                </p>
+                            </div>
+                        </div>
+
                         <input
                             ref="messageInputRef"
                             v-model="inputContent"
@@ -1443,6 +1689,10 @@ onUnmounted(() => {
                                     : 'Send a message...'
                             "
                             :maxlength="maxLengthLimit"
+                            @input="checkMentionTrigger"
+                            @click="checkMentionTrigger"
+                            @keyup="checkMentionTrigger"
+                            @keydown="handleInputKeydown"
                             class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-indigo-400 dark:focus:bg-zinc-800"
                         />
                         <span
