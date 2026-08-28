@@ -80,12 +80,10 @@ const isFullFooter = computed(() => {
                         class="mt-4 hidden text-xs font-medium text-slate-400 md:block dark:text-gray-500"
                     >
                         A concern of
-                        <a
-                            href="https://tajimz.xyz"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <Link
+                            href="/u/trtajim"
                             class="text-slate-600 underline transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
-                            >Tajim</a
+                            >Tajim</Link
                         >
                     </p>
                 </div>

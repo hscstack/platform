@@ -5,10 +5,12 @@ import {
     FileText,
     Users,
     ShieldAlert,
+    MessageSquare,
     Share2,
     UserMinus,
     Youtube,
     PenLine,
+    ThumbsUp,
     Copyright,
     RefreshCw,
 } from 'lucide-vue-next';
@@ -36,7 +38,7 @@ import {
         <p
             class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
         >
-            সর্বশেষ আপডেট: জুলাই ২০২৬
+            সর্বশেষ আপডেট: আগস্ট ২০২৬
         </p>
     </header>
 
@@ -77,11 +79,17 @@ import {
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
-                        <li>Contributor-submitted notes</li>
-                        <li>Educational resources</li>
-                        <li>Embedded YouTube classes</li>
+                        <li>
+                            ৫ ধরনের রিসোর্স (Notes, Questions, PDFs, Images,
+                            Videos)
+                        </li>
+                        <li>
+                            Embedded YouTube classes (Custom Native Player-এর
+                            মাধ্যমে)
+                        </li>
                         <li>Contributor-written blogs and articles</li>
                         <li>External references and links</li>
+                        <li>Live chat messages</li>
                     </ul>
                     <p
                         class="mt-2 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -103,13 +111,14 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ২. Contributor Submitted Notes
+                        ২. Contributor Submitted Content
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        কন্ট্রিবিউটররা HSCStack-এ নোট বা শিক্ষামূলক উপকরণ জমা
-                        দেওয়ার মাধ্যমে নিশ্চিত করেন যে:
+                        কন্ট্রিবিউটররা HSCStack-এ নোট বা যেকোনো শিক্ষামূলক উপকরণ
+                        (Questions, PDFs, Images, Videos ইত্যাদি) জমা দেওয়ার
+                        মাধ্যমে নিশ্চিত করেন যে:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
@@ -127,16 +136,18 @@ import {
                     <p
                         class="mt-2 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack-এ প্রকাশিত নোটগুলো শিক্ষার্থীদের শেখার সুবিধার
-                        জন্য প্রদান করা হয়। কোনো কন্ট্রিবিউটর নোট জমা দিলে,
-                        HSCStack সেই নোট প্ল্যাটফর্মে সংরক্ষণ, প্রদর্শন এবং
-                        শিক্ষার্থীদের কাছে বিতরণের অনুমতি পায় — তবে কনটেন্টের
-                        মূল মালিকানা কন্ট্রিবিউটরের কাছেই থাকে।
+                        HSCStack-এ প্রকাশিত রিসোর্সগুলো শিক্ষার্থীদের শেখার
+                        সুবিধার জন্য প্রদান করা হয়। কোনো কন্ট্রিবিউটর কনটেন্ট
+                        জমা দিলে (S3/Cloudflare R2-তে আপলোড বা এক্সটার্নাল
+                        লিংকের মাধ্যমে), HSCStack সেই কনটেন্ট প্ল্যাটফর্মে
+                        সংরক্ষণ, প্রদর্শন এবং শিক্ষার্থীদের কাছে বিতরণের অনুমতি
+                        পায় — তবে কনটেন্টের মূল মালিকানা কন্ট্রিবিউটরের কাছেই
+                        থাকে।
                     </p>
                 </div>
             </div>
 
-            <!-- Section 3 (NEW) -->
+            <!-- Section 3 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -159,27 +170,27 @@ import {
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
+                        <li>কপিরাইট লঙ্ঘনকারী বা চুরি করা (stolen) কনটেন্ট।</li>
                         <li>
-                            কপিরাইট লঙ্ঘনকারী বা চুরি করা (stolen) নোট বা
-                            কনটেন্ট।
+                            লাইভ চ্যাটে অশালীন ভাষা (profanity), হয়রানি,
+                            বিদ্বেষমূলক বক্তব্য (hate speech) বা হুমকি।
+                        </li>
+                        <li>
+                            ইচ্ছাকৃতভাবে বিভ্রান্তিকর বা ভুল শিক্ষামূলক
+                            তথ্যসম্বলিত (misleading academic content) কনটেন্ট।
+                        </li>
+                        <li>
+                            কারো ব্যক্তিগত বা সংবেদনশীল তথ্য শেয়ার করা বা
+                            ডক্সিং (doxxing)।
                         </li>
                         <li>
                             ক্ষতিকর ফাইল, ম্যালওয়্যার, বা সন্দেহজনক
                             এক্সিকিউটেবল সম্বলিত আপলোড।
                         </li>
                         <li>
-                            ব্যক্তিগত বা সংবেদনশীল তথ্য (personal information)
-                            প্রকাশ করে এমন কনটেন্ট।
-                        </li>
-                        <li>
                             স্প্যাম, প্রোমোশনাল, বা পুনরাবৃত্তিমূলক (repetitive)
                             submission।
                         </li>
-                        <li>
-                            ইচ্ছাকৃতভাবে বিভ্রান্তিকর বা ভুল তথ্যসম্বলিত
-                            (misleading) কনটেন্ট।
-                        </li>
-                        <li>শিক্ষামূলক উদ্দেশ্যের সাথে সম্পর্কহীন কনটেন্ট।</li>
                     </ul>
                     <p
                         class="mt-2 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -202,13 +213,70 @@ import {
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
+                    <MessageSquare class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৪. লাইভ চ্যাট কনটেন্ট নীতিমালা
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        HSCStack-এর রিয়েল-টাইম লাইভ চ্যাটে শিক্ষার্থীদের একটি
+                        সুস্থ পরিবেশ বজায় রাখার জন্য আমাদের একটি স্বয়ংক্রিয়
+                        মডারেশন সিস্টেম রয়েছে:
+                    </p>
+                    <ul
+                        class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        <li>
+                            <strong>Smart Profanity Filter:</strong> আমাদের
+                            সিস্টেমে স্বয়ংক্রিয়ভাবে গালিগালাজ শনাক্ত করার
+                            প্রযুক্তি রয়েছে, যা leet-speak (যেমন @->a, $->s,
+                            1->i) এবং পুনরাবৃত্তিমূলক অক্ষর (repeated char
+                            collapse) শনাক্ত করতে সক্ষম। কনফিগারযোগ্য নিষিদ্ধ
+                            শব্দগুলো স্বয়ংক্রিয়ভাবে ফিল্টার হয়ে যায়।
+                        </li>
+                        <li>
+                            <strong>Community Reporting:</strong> চ্যাটের কোনো
+                            মেসেজ আপত্তিকর মনে হলে ব্যবহারকারীরা নির্দিষ্ট কারণ
+                            উল্লেখ করে সেটি রিপোর্ট করতে পারেন।
+                        </li>
+                        <li>
+                            <strong>Auto-Suspension:</strong> কোনো ব্যবহারকারী
+                            ৫টি বা তার বেশি রিপোর্ট পেলে সিস্টেম
+                            স্বয়ংক্রিয়ভাবে তাকে ২৪ ঘণ্টার জন্য চ্যাট থেকে
+                            সাসপেন্ড করবে।
+                        </li>
+                        <li>
+                            <strong>Message Pruning:</strong> প্ল্যাটফর্মের গতি
+                            ঠিক রাখতে চ্যাটে রোলিং মেসেজ প্রুনিং ব্যবহার করা
+                            হয়, যেখানে সর্বশেষ প্রায় ২০০টি মেসেজ সংরক্ষিত
+                            থাকে।
+                        </li>
+                        <li>
+                            <strong>Staff Moderation:</strong> অ্যাডমিন এবং
+                            মডারেটররা যেকোনো সময় আপত্তিকর মেসেজ ডিলিট করার বা
+                            ব্যবহারকারীকে ব্যান করার অধিকার রাখেন।
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
                     <Share2 class="h-4 w-4 stroke-[2.2]" />
                 </div>
                 <div>
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৪. Attribution এবং Redistribution
+                        ৫. Attribution এবং Redistribution
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -221,8 +289,9 @@ import {
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
                         <li>
-                            HSCStack থেকে ডাউনলোড করা নোট শিক্ষার্থীরা ব্যক্তিগত
-                            ও শিক্ষামূলক ব্যবহারের জন্য ব্যবহার করতে পারবেন।
+                            HSCStack থেকে ডাউনলোড করা ফাইল শিক্ষার্থীরা
+                            ব্যক্তিগত ও শিক্ষামূলক ব্যবহারের জন্য ব্যবহার করতে
+                            পারবেন।
                         </li>
                         <li>
                             ডাউনলোড করা ফাইল পুনরায় শেয়ার করা হলে HSCStack বা
@@ -235,14 +304,13 @@ import {
                             জমা দেওয়া কনটেন্টের মূল মালিকানা ধরে রাখলেও,
                             HSCStack-এ প্রকাশের মাধ্যমে HSCStack-কে সেই কনটেন্ট
                             সংরক্ষণ, প্রদর্শন এবং শিক্ষামূলক উদ্দেশ্যে বিতরণের
-                            অনুমতি প্রদান করেন। যদি তা HSCStack-এর মাধ্যমে
-                            প্রকাশের জন্য অনুমোদিত হয়ে থাকে।
+                            অনুমতি প্রদান করেন।
                         </li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Section 5 -->
+            <!-- Section 6 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -253,7 +321,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৫. Contributor Account Removal
+                        ৬. Contributor Account Removal
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -285,7 +353,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 6 -->
+            <!-- Section 7 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -296,13 +364,14 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৬. Embedded YouTube Content
+                        ৭. Embedded YouTube Content
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
                         HSCStack কিছু ক্ষেত্রে YouTube-এ প্রকাশিত শিক্ষামূলক
-                        ভিডিও ক্লাস embed করতে পারে। আমরা:
+                        ভিডিও ক্লাস আমাদের Custom Native Player-এর মাধ্যমে embed
+                        করতে পারে। আমরা:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
@@ -327,7 +396,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 7 -->
+            <!-- Section 8 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -338,7 +407,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৭. Blogs এবং Articles
+                        ৮. Blogs এবং Articles
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -362,15 +431,58 @@ import {
                     <p
                         class="mt-2 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        কিছু লেখায় থাকতে পারে External links, reference
-                        sources, অথবা short quotations। এসব ক্ষেত্রে প্রাসঙ্গিক
-                        attribution এবং fair use principles অনুসরণ করার চেষ্টা
-                        করা হয়।
+                        ব্লগগুলোতে পাঠকরা <strong>Love reactions</strong> দিতে
+                        পারেন এবং <strong>Threaded comments</strong>-এর মাধ্যমে
+                        মতামত জানাতে পারেন। আমরা গঠনমূলক আলোচনা এবং শালীন ভাষা
+                        ব্যবহারের জন্য উৎসাহিত করি। এছাড়াও, নির্দিষ্ট মাইলফলক
+                        অর্জনে কন্ট্রিবিউটররা নোটিফিকেশন পাবেন।
                     </p>
                 </div>
             </div>
 
-            <!-- Section 8 -->
+            <!-- Section 9 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <ThumbsUp class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৯. কমিউনিটি ইন্টারঅ্যাকশন
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        HSCStack-এ একটি সহায়ক ও ইতিবাচক শিক্ষামূলক পরিবেশ গড়ে
+                        তোলার জন্য কমিউনিটির ইন্টারঅ্যাকশন অত্যন্ত গুরুত্বপূর্ণ:
+                    </p>
+                    <ul
+                        class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        <li>
+                            <strong>Folder Voting:</strong> ব্যবহারকারীরা
+                            ফোল্ডার আপভোট বা ডাউনভোট করার ক্ষেত্রে সততা বজায়
+                            রাখবেন। গঠনমূলক মূল্যায়ন অন্য শিক্ষার্থীদের সঠিক
+                            কনটেন্ট খুঁজে পেতে সাহায্য করবে।
+                        </li>
+                        <li>
+                            <strong>Appreciations:</strong> প্রোফাইলে অন্যদের
+                            প্রশংসা (appreciations) প্রদান করার ক্ষেত্রে
+                            সম্মানজনক ভাষা ব্যবহার করতে হবে।
+                        </li>
+                        <li>
+                            <strong>Profile Content:</strong> ব্যবহারকারীর
+                            প্রোফাইলের কনটেন্ট এবং কার্যকলাপের সম্পূর্ণ দায়ভার
+                            ওই ব্যবহারকারীর।
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 10 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -381,7 +493,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৮. Copyright এবং Removal Requests
+                        ১০. Copyright এবং Removal Requests
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -401,7 +513,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 9 -->
+            <!-- Section 11 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -412,24 +524,28 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৯. Content Review and Modification
+                        ১১. Content Review and Modification
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack:
+                        HSCStack অ্যাডমিন প্যানেলের মাধ্যমে প্ল্যাটফর্মের
+                        কনটেন্ট পরিচালনার ক্ষমতা রাখে:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
-                        <li>কনটেন্ট যাচাই করতে পারে।</li>
                         <li>
-                            প্রয়োজন অনুযায়ী কনটেন্ট edit, hide বা remove করতে
+                            অ্যাডমিন বা এডিটররা যেকোনো সাবজেক্ট, নোড, রিসোর্স বা
+                            ব্লগ তৈরি, সম্পাদনা বা ডিলিট করতে পারেন।
+                        </li>
+                        <li>
+                            প্রয়োজন অনুযায়ী Bulk operations পরিচালনা করা হতে
                             পারে।
                         </li>
                         <li>
-                            প্ল্যাটফর্মের মান বজায় রাখার জন্য submission reject
-                            করতে পারে।
+                            প্ল্যাটফর্মের মান বজায় রাখার জন্য কনটেন্ট যাচাই
+                            করতে পারে এবং যেকোনো submission reject করতে পারে।
                         </li>
                     </ul>
                 </div>
