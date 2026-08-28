@@ -155,6 +155,21 @@ class ChatSettingsController extends Controller
         return back()->with('success', 'Report deleted successfully.');
     }
 
+    public function clearReports(Request $request)
+    {
+        $status = $request->input('status');
+
+        if ($status && in_array($status, ['pending', 'reviewed', 'dismissed'], true)) {
+            ChatReport::where('status', $status)->delete();
+            $message = "All {$status} reports have been deleted.";
+        } else {
+            ChatReport::query()->delete();
+            $message = 'All report records have been deleted.';
+        }
+
+        return back()->with('success', $message);
+    }
+
     public function updateUserBan(Request $request, User $user)
     {
         if ($user->can('view admin')) {

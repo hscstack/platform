@@ -119,6 +119,7 @@ Route::middleware('permission:manage chat')->group(function () {
     Route::post('/chat/settings', [ChatSettingsController::class, 'update'])->name('chat.settings.update');
     Route::post('/chat/clear', [ChatSettingsController::class, 'clearMessages'])->name('chat.clear');
     Route::patch('/chat/reports/{report}/status', [ChatSettingsController::class, 'updateReportStatus'])->name('chat.reports.update-status');
+    Route::delete('/chat/reports/clear', [ChatSettingsController::class, 'clearReports'])->name('chat.reports.clear');
     Route::delete('/chat/reports/{report}', [ChatSettingsController::class, 'deleteReport'])->name('chat.reports.destroy');
     Route::post('/chat/users/{user}/ban', [ChatSettingsController::class, 'updateUserBan'])->name('chat.users.ban');
 });
