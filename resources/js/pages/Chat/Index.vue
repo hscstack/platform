@@ -1073,6 +1073,9 @@ onUnmounted(() => {
                             highlightedMessageId === msg.id
                                 ? 'bg-indigo-100/70 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60'
                                 : '',
+                            activeReactionPickerMessageId === msg.id
+                                ? 'z-30'
+                                : 'z-0',
                             isGroupedWithPrevious(idx) ? '!pt-0.5' : 'mt-1',
                         ]"
                     >
@@ -1220,8 +1223,8 @@ onUnmounted(() => {
                                         msg.is_deleted ||
                                         !!msg.deleted_at
                                     "
-                                    @click="reactToMessage(msg, r.emoji)"
-                                    class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition active:scale-95 disabled:cursor-default"
+                                    @click.stop="reactToMessage(msg, r.emoji)"
+                                    class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition select-none active:scale-95 disabled:cursor-default"
                                     :class="
                                         r.reacted
                                             ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
@@ -1239,10 +1242,15 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <!-- Floating Action Toolbar (Desktop on Hover) -->
+                        <!-- Floating Action Toolbar (Desktop on Hover or Active Picker) -->
                         <div
                             v-if="!msg.is_deleted && !msg.deleted_at"
-                            class="absolute -top-3 right-3 hidden items-center gap-0.5 rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-sm sm:group-hover:flex dark:border-zinc-700 dark:bg-zinc-800"
+                            class="absolute -top-3.5 right-3 items-center gap-0.5 rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-md dark:border-zinc-700 dark:bg-zinc-800"
+                            :class="[
+                                activeReactionPickerMessageId === msg.id
+                                    ? 'z-30 flex ring-1 ring-black/5 dark:ring-white/10'
+                                    : 'z-20 hidden sm:group-hover:flex',
+                            ]"
                             @click.stop
                         >
                             <!-- Reaction Trigger -->
@@ -1252,6 +1260,11 @@ onUnmounted(() => {
                                     type="button"
                                     @click.stop="toggleReactionPicker(msg.id)"
                                     class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:text-zinc-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
+                                    :class="
+                                        activeReactionPickerMessageId === msg.id
+                                            ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+                                            : ''
+                                    "
                                     title="Add reaction"
                                 >
                                     <Smile class="h-3.5 w-3.5" />
@@ -1262,15 +1275,16 @@ onUnmounted(() => {
                                     v-if="
                                         activeReactionPickerMessageId === msg.id
                                     "
-                                    class="absolute right-0 bottom-full z-30 mb-1 flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                                    class="absolute right-0 bottom-full z-40 mb-1.5 flex items-center gap-0.5 rounded-full border border-slate-200/90 bg-white px-2 py-1 shadow-xl ring-1 ring-black/5 dark:border-zinc-700 dark:bg-zinc-800 dark:ring-white/10"
                                     @click.stop
                                 >
                                     <button
                                         v-for="emoji in reactionEmojis"
                                         :key="emoji"
                                         type="button"
-                                        @click="reactToMessage(msg, emoji)"
-                                        class="cursor-pointer text-base transition hover:scale-125 active:scale-95"
+                                        @click.stop="reactToMessage(msg, emoji)"
+                                        class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-base transition-transform select-none hover:scale-125 hover:bg-slate-100 active:scale-95 dark:hover:bg-zinc-700"
+                                        :title="`React with ${emoji}`"
                                     >
                                         {{ emoji }}
                                     </button>
