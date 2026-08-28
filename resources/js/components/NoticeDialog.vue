@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import { X } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 
@@ -7,6 +8,16 @@ const props = defineProps({
 });
 
 const isVisible = ref(false);
+
+const isInternalLink = (url?: string | null) => {
+    if (!url) {
+        return false;
+    }
+
+    const trimmed = url.trim();
+
+    return trimmed.startsWith('/') && !trimmed.startsWith('//');
+};
 
 const getStorageKey = () => {
     return props.notice?.updated_at
@@ -95,11 +106,27 @@ const close = () => {
                         </p>
 
                         <div class="mt-6 flex gap-3">
+                            <Link
+                                v-if="
+                                    notice.show_button &&
+                                    notice.button_link &&
+                                    isInternalLink(notice.button_link)
+                                "
+                                :href="notice.button_link"
+                                @click="close"
+                                class="flex-1 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+                            >
+                                {{ notice.button_title || 'Learn more' }}
+                            </Link>
+
                             <a
-                                v-if="notice.show_button && notice.button_link"
+                                v-else-if="
+                                    notice.show_button && notice.button_link
+                                "
                                 :href="notice.button_link"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                @click="close"
                                 class="flex-1 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                             >
                                 {{ notice.button_title || 'Learn more' }}
