@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use App\Models\ChatReport;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -132,5 +133,26 @@ class ChatSettingsController extends Controller
         $report->delete();
 
         return back()->with('success', 'Report deleted successfully.');
+    }
+
+    public function updateUserBan(Request $request, User $user)
+    {
+        if ($user->can('view admin')) {
+            return back()->with('error', 'Staff and Admin accounts cannot be banned from chat.');
+        }
+
+        $validated = $request->validate([
+            'chat_banned_until' => ['nullable', 'date'],
+        ]);
+
+        $user->update([
+            'chat_banned_until' => $validated['chat_banned_until'],
+        ]);
+
+        $message = $user->isChatBanned()
+            ? "User @{$user->username} has been banned from chat until {$user->chat_banned_until->toDateTimeString()}."
+            : "User @{$user->username} has been unbanned from chat.";
+
+        return back()->with('success', $message);
     }
 }

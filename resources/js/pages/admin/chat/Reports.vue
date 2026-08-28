@@ -2,15 +2,17 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Flag,
-    Pencil,
     CheckCircle,
     XCircle,
     Trash2,
     Clock,
     CheckCheck,
     MessageCircle,
+    Ban,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import ChatBanModal from '@/components/ChatBanModal.vue';
+import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
 defineOptions({ layout: AdminLayout });
@@ -77,6 +79,28 @@ const deleteReport = (reportId: number) => {
             preserveScroll: true,
         });
     }
+};
+
+const isBanModalOpen = ref(false);
+const selectedUser = ref<ChatBanUser | null>(null);
+
+const openBanModal = (report: ReportItem) => {
+    if (!report.reported_user_id) {
+        return;
+    }
+
+    selectedUser.value = {
+        id: report.reported_user_id,
+        name: report.reported_user?.name || report.reported_user_name || 'User',
+        username:
+            report.reported_user?.username ||
+            report.reported_user_username ||
+            null,
+        chat_banned_until: report.reported_user?.chat_banned_until || null,
+        is_chat_banned: report.reported_user?.is_chat_banned ?? false,
+    };
+
+    isBanModalOpen.value = true;
 };
 
 const formatDate = (isoString?: string | null) => {
@@ -390,16 +414,30 @@ const formatDate = (isoString?: string | null) => {
 
                         <!-- Right: Action buttons & Moderation shortcut -->
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- Direct link to edit/ban reported user -->
-                            <Link
+                            <!-- Quick Ban / Unban Modal trigger -->
+                            <button
                                 v-if="report.reported_user_id"
-                                :href="`/admin/users/edit/${report.reported_user_id}`"
-                                class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/60"
-                                title="Open user profile to ban or moderate"
+                                type="button"
+                                @click="openBanModal(report)"
+                                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                                :class="
+                                    report.reported_user?.is_chat_banned
+                                        ? 'bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:hover:bg-amber-900/60'
+                                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/60'
+                                "
+                                :title="
+                                    report.reported_user?.is_chat_banned
+                                        ? 'Edit chat ban timer or unban user'
+                                        : 'Ban user from chat'
+                                "
                             >
-                                <Pencil class="h-3 w-3" />
-                                <span>Edit / Ban Author</span>
-                            </Link>
+                                <Ban class="h-3 w-3" />
+                                <span>{{
+                                    report.reported_user?.is_chat_banned
+                                        ? 'Edit Ban / Unban'
+                                        : 'Ban Author'
+                                }}</span>
+                            </button>
 
                             <!-- Mark Status Buttons -->
                             <button
@@ -490,5 +528,12 @@ const formatDate = (isoString?: string | null) => {
                 </div>
             </div>
         </div>
+
+        <!-- Reusable Quick Chat Ban Modal -->
+        <ChatBanModal
+            :is-open="isBanModalOpen"
+            :user="selectedUser"
+            @close="isBanModalOpen = false"
+        />
     </div>
 </template>

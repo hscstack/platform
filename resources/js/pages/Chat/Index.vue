@@ -7,7 +7,7 @@ import {
     Loader2,
     LogIn,
     ArrowDown,
-    Pencil,
+    Ban,
     Flag,
     Check,
     X,
@@ -17,6 +17,8 @@ import {
     AlertCircle,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import ChatBanModal from '@/components/ChatBanModal.vue';
+import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
 import { usePermissions } from '@/lib/usePermissions';
@@ -516,6 +518,18 @@ const formatTime = (isoString: string) => {
     }
 };
 
+const isBanModalOpen = ref(false);
+const selectedUserToBan = ref<ChatBanUser | null>(null);
+
+const openBanModal = (user: ChatUser) => {
+    selectedUserToBan.value = {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+    };
+    isBanModalOpen.value = true;
+};
+
 const formatDateDivider = (isoString: string) => {
     try {
         const date = new Date(isoString);
@@ -738,15 +752,20 @@ onUnmounted(() => {
                                         <Reply class="h-3 w-3" />
                                     </button>
 
-                                    <!-- Quick Admin Edit / Ban User Button -->
-                                    <Link
-                                        v-if="can('edit users')"
-                                        :href="`/admin/users/edit/${msg.user.id}`"
-                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-indigo-50 hover:text-indigo-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
-                                        :title="`Manage / Ban ${msg.user.name}`"
+                                    <!-- Quick Moderation / Ban Button (Staff Only) -->
+                                    <button
+                                        v-if="
+                                            (can('manage chat') || canDelete) &&
+                                            Number(currentUser?.id) !==
+                                                Number(msg.user.id)
+                                        "
+                                        type="button"
+                                        @click="openBanModal(msg.user)"
+                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                        :title="`Manage chat ban timer for @${msg.user.username}`"
                                     >
-                                        <Pencil class="h-3 w-3" />
-                                    </Link>
+                                        <Ban class="h-3 w-3" />
+                                    </button>
 
                                     <!-- Report Button (for non-author users) -->
                                     <button
@@ -1080,6 +1099,13 @@ onUnmounted(() => {
                 </form>
             </div>
         </div>
+
+        <!-- Reusable Quick Ban Moderation Modal (Staff) -->
+        <ChatBanModal
+            :is-open="isBanModalOpen"
+            :user="selectedUserToBan"
+            @close="isBanModalOpen = false"
+        />
 
         <!-- Chat Guidelines & Rules Alert Dialog Modal -->
         <div
