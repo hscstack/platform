@@ -30,6 +30,7 @@ class ChatSettingsController extends Controller
                 'profanity_filter_enabled' => (bool) AppSetting::get('global_chat_profanity_filter_enabled', true),
                 'banned_words' => $bannedWordsText,
                 'allowed_emojis' => (array) $allowedEmojis,
+                'bot_username' => (string) AppSetting::get('global_chat_bot_username', 'hscstack'),
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
@@ -89,6 +90,7 @@ class ChatSettingsController extends Controller
             'banned_words' => ['nullable', 'string'],
             'allowed_emojis' => ['nullable', 'array'],
             'allowed_emojis.*' => ['required', 'string', 'max:32'],
+            'bot_username' => ['nullable', 'string', 'max:50', 'exists:users,username'],
         ]);
 
         $isEnabled = $validated['audience'] !== 'disabled';
@@ -105,6 +107,10 @@ class ChatSettingsController extends Controller
             ? array_values(array_unique(array_filter($validated['allowed_emojis'])))
             : ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏'];
         AppSetting::set('global_chat_allowed_emojis', $emojis, 'json');
+
+        if (isset($validated['bot_username']) && ! empty($validated['bot_username'])) {
+            AppSetting::set('global_chat_bot_username', $validated['bot_username'], 'string');
+        }
 
         // Immediately prune if current count exceeds new limit
         ChatMessage::pruneOldMessages($validated['max_messages']);
@@ -158,9 +164,16 @@ class ChatSettingsController extends Controller
             'chat_banned_until' => $validated['chat_banned_until'],
         ]);
 
-        $message = $user->isChatBanned()
-            ? "User @{$user->username} has been banned from chat until {$user->chat_banned_until->toDateTimeString()}."
-            : "User @{$user->username} has been unbanned from chat.";
+        $moderator = $request->user();
+
+        if ($user->isChatBanned()) {
+            $durationText = $user->chat_banned_until->diffForHumans();
+            ChatMessage::sendBotMessage("🛡️ Moderator @{$moderator->username} banned @{$user->username} from chat until {$user->chat_banned_until->toDayDateTimeString()} ({$durationText}).");
+            $message = "User @{$user->username} has been banned from chat until {$user->chat_banned_until->toDateTimeString()}.";
+        } else {
+            ChatMessage::sendBotMessage("🛡️ Moderator @{$moderator->username} unbanned @{$user->username} from chat.");
+            $message = "User @{$user->username} has been unbanned from chat.";
+        }
 
         return back()->with('success', $message);
     }

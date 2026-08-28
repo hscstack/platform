@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\ChatMessageSent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -67,5 +68,32 @@ class ChatMessage extends Model
         if ($cutoffId) {
             static::where('id', '<=', $cutoffId)->delete();
         }
+    }
+
+    /**
+     * Post an automated announcement message from the configured system bot.
+     */
+    public static function sendBotMessage(string $content): ?self
+    {
+        $bot = User::getSystemBot();
+        if (! $bot) {
+            return null;
+        }
+
+        $message = static::create([
+            'user_id' => $bot->id,
+            'content' => $content,
+        ]);
+
+        $maxMessages = (int) AppSetting::get('global_chat_max_messages', 200);
+        static::pruneOldMessages($maxMessages);
+
+        try {
+            broadcast(new ChatMessageSent($message));
+        } catch (\Throwable $e) {
+            // Ignore broadcast failures in testing or if pusher is offline
+        }
+
+        return $message;
     }
 }

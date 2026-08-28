@@ -313,9 +313,14 @@ class ChatController extends Controller
                     ->count();
 
                 if ($totalReportsForMessage >= 5) {
+                    $wasAlreadyBanned = $reportedUser->isChatBanned();
                     $reportedUser->update([
                         'chat_banned_until' => now()->addDay(),
                     ]);
+
+                    if (! $wasAlreadyBanned) {
+                        ChatMessage::sendBotMessage("🛡️ System automatically suspended @{$reportedUser->username} from chat for 24 hours following community reports.");
+                    }
                 }
             }
         }

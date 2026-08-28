@@ -14,6 +14,7 @@ import {
     Plus,
     X,
     RotateCcw,
+    Bot,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -31,6 +32,7 @@ interface ChatSettingsProps {
         profanity_filter_enabled: boolean;
         banned_words: string;
         allowed_emojis?: string[];
+        bot_username?: string;
     };
     totalMessages: number;
     recentMessagesCount: number;
@@ -75,6 +77,7 @@ const form = useForm({
         props.settings.allowed_emojis.length > 0
             ? [...props.settings.allowed_emojis]
             : [...defaultReactionEmojis],
+    bot_username: props.settings.bot_username ?? 'hscstack',
 });
 
 const addEmoji = (emojiToAdd?: string) => {
@@ -785,6 +788,62 @@ const lengthPresets = [
                             {{ emoji }}
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- 8. System Chat Bot Account -->
+            <div
+                class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
+            >
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label
+                            class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            <Bot
+                                class="h-4 w-4 text-purple-600 dark:text-purple-400"
+                            />
+                            System Chat Bot Account
+                        </label>
+                        <p
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Specify the username of the account that will post
+                            automated system announcements, ban notices, and
+                            moderation alerts.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="max-w-xs space-y-1.5">
+                    <label
+                        class="block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                    >
+                        Bot Account Username:
+                    </label>
+                    <div class="relative">
+                        <span
+                            class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-xs font-bold text-slate-400"
+                        >
+                            @
+                        </span>
+                        <input
+                            v-model="form.bot_username"
+                            type="text"
+                            placeholder="hscstack"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pr-3 pl-8 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                        />
+                    </div>
+                    <p class="text-[11px] text-slate-400 dark:text-gray-500">
+                        Enter the username of an existing user account to post
+                        automated moderation notices and ban announcements.
+                    </p>
+                    <p
+                        v-if="form.errors.bot_username"
+                        class="text-xs font-medium text-rose-500"
+                    >
+                        {{ form.errors.bot_username }}
+                    </p>
                 </div>
             </div>
 
