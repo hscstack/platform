@@ -1,0 +1,12 @@
+{
+  "**/*.php": [
+    "vendor/bin/pint"
+  ],
+  "resources/**/*.{vue,ts,js}": [
+    "prettier --write",
+    "eslint --fix"
+  ],
+  "resources/**/*.{css,json}": [
+    "prettier --write"
+  ]
+}
