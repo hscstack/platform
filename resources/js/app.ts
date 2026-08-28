@@ -1,5 +1,6 @@
 import { createInertiaApp, router } from '@inertiajs/vue3';
 import { registerSW } from 'virtual:pwa-register';
+import { initPwa } from './lib/usePwa';
 import AdminLayout from './layouts/AdminLayout.vue';
 import AppLayout from './layouts/AppLayout.vue';
 
@@ -17,6 +18,7 @@ if (
 }
 
 registerSW({ immediate: true });
+initPwa();
 
 router.on('navigate', () => {
     if (typeof window !== 'undefined' && (window as any).posthog) {

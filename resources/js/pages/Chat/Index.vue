@@ -22,6 +22,7 @@ import {
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
+import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
 import { usePermissions } from '@/lib/usePermissions';
@@ -1734,6 +1735,9 @@ onUnmounted(() => {
             :user="selectedUserToBan"
             @close="isBanModalOpen = false"
         />
+
+        <!-- PWA Install Modal Prompt -->
+        <PwaInstallPrompt variant="modal" />
 
         <!-- Chat Guidelines & Rules Alert Dialog Modal -->
         <div

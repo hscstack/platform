@@ -19,6 +19,7 @@ import {
     HeartHandshake,
     Search,
     MessageCircle,
+    Download,
 } from 'lucide-vue-next';
 import {
     computed,
@@ -30,6 +31,7 @@ import {
 } from 'vue';
 import { globalSearchQuery } from '@/lib/searchStore';
 import { useDarkMode } from '@/lib/useDarkMode';
+import { usePwa } from '@/lib/usePwa';
 import AppLogo from './AppLogo.vue';
 import AuthModal from './AuthModal.vue';
 
@@ -41,6 +43,15 @@ defineProps({
 });
 
 const { theme, toggle } = useDarkMode();
+const { deferredPrompt, isInstalled, promptInstall } = usePwa();
+
+const canInstallApp = computed(
+    () => !isInstalled.value && Boolean(deferredPrompt.value),
+);
+
+const handleInstallApp = async () => {
+    await promptInstall();
+};
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
@@ -452,6 +463,21 @@ onBeforeUnmount(() => {
                                         />
                                         {{ isAdmin ? 'Home' : 'Staff Panel' }}
                                     </Link>
+
+                                    <button
+                                        v-if="canInstallApp"
+                                        type="button"
+                                        @click="
+                                            () => {
+                                                closeDropdown();
+                                                handleInstallApp();
+                                            }
+                                        "
+                                        class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                                    >
+                                        <Download class="h-3.5 w-3.5" />
+                                        <span>Install App</span>
+                                    </button>
                                 </div>
                             </div>
                         </Transition>
@@ -617,6 +643,44 @@ onBeforeUnmount(() => {
                                     <LogIn class="h-4 w-4" />
                                     <span>Sign in / Register</span>
                                 </Link>
+                            </div>
+
+                            <!-- Permanent Install App Button (Mobile Drawer) -->
+                            <div v-if="canInstallApp">
+                                <button
+                                    type="button"
+                                    @click="
+                                        () => {
+                                            closeMobileMenu();
+                                            handleInstallApp();
+                                        }
+                                    "
+                                    class="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-indigo-200/80 bg-indigo-50/80 p-3 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100 active:scale-98 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+                                >
+                                    <div class="flex items-center gap-2.5">
+                                        <div
+                                            class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-2xs dark:bg-indigo-500"
+                                        >
+                                            <Download class="h-4 w-4" />
+                                        </div>
+                                        <div class="text-left">
+                                            <p
+                                                class="font-bold text-slate-900 dark:text-gray-100"
+                                            >
+                                                Install HSCStack App
+                                            </p>
+                                            <p
+                                                class="text-[10px] font-normal text-slate-500 dark:text-gray-400"
+                                            >
+                                                Faster access & full-screen mode
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-indigo-200/70 px-2 py-0.5 text-[10px] font-extrabold text-indigo-800 uppercase dark:bg-indigo-900/60 dark:text-indigo-300"
+                                        >Install</span
+                                    >
+                                </button>
                             </div>
 
                             <!-- Main Exploration Navigation -->
