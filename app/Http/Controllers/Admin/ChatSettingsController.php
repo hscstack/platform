@@ -6,9 +6,11 @@ use App\Events\ChatSettingsUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
+use App\Models\ChatMessageReaction;
 use App\Models\ChatReport;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ChatSettingsController extends Controller
@@ -127,7 +129,10 @@ class ChatSettingsController extends Controller
 
     public function clearMessages()
     {
-        ChatMessage::truncate();
+        DB::transaction(function () {
+            ChatMessageReaction::query()->delete();
+            ChatMessage::query()->delete();
+        });
 
         return back()->with('success', 'All chat messages have been cleared.');
     }
