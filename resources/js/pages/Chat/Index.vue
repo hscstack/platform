@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import {
     Send,
     Trash2,
@@ -288,6 +288,7 @@ const fetchLatestMessages = async (force = false) => {
 
             if (data.messages && Array.isArray(data.messages)) {
                 messages.value = data.messages;
+                scrollToBottom(false);
 
                 if (typeof data.can_post === 'boolean') {
                     canPost.value = data.can_post;
@@ -912,10 +913,17 @@ const openBanModal = (user: ChatUser) => {
     isBanModalOpen.value = true;
 };
 
+let removeNavigateListener: (() => void) | null = null;
+
 const handleVisibilityOrFocus = () => {
     if (document.visibilityState === 'visible') {
-        fetchLatestMessages();
+        fetchLatestMessages(true);
     }
+};
+
+const handlePopState = () => {
+    fetchLatestMessages(true);
+    setupRealtime();
 };
 
 const handleDocumentClick = () => {
@@ -925,12 +933,21 @@ const handleDocumentClick = () => {
 onMounted(() => {
     initCooldown();
     setupRealtime();
+    fetchLatestMessages(true);
     scrollToBottom(false);
 
-    window.addEventListener('focus', fetchLatestMessages);
-    window.addEventListener('pageshow', fetchLatestMessages);
+    window.addEventListener('focus', () => fetchLatestMessages(true));
+    window.addEventListener('pageshow', () => fetchLatestMessages(true));
+    window.addEventListener('popstate', handlePopState);
     document.addEventListener('visibilitychange', handleVisibilityOrFocus);
     window.addEventListener('click', handleDocumentClick);
+
+    removeNavigateListener = router.on('navigate', (event) => {
+        if (event.detail.page.component === 'Chat/Index') {
+            setupRealtime();
+            fetchLatestMessages(true);
+        }
+    });
 });
 
 onUnmounted(() => {
@@ -938,8 +955,13 @@ onUnmounted(() => {
         clearInterval(cooldownInterval);
     }
 
-    window.removeEventListener('focus', fetchLatestMessages);
-    window.removeEventListener('pageshow', fetchLatestMessages);
+    if (removeNavigateListener) {
+        removeNavigateListener();
+    }
+
+    window.removeEventListener('focus', () => fetchLatestMessages(true));
+    window.removeEventListener('pageshow', () => fetchLatestMessages(true));
+    window.removeEventListener('popstate', handlePopState);
     document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
     window.removeEventListener('click', handleDocumentClick);
 
