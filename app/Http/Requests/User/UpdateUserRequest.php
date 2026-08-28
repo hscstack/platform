@@ -34,8 +34,8 @@ class UpdateUserRequest extends FormRequest
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
             'github' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'role' => ['sometimes', 'string'],
-            'permissions' => ['sometimes', 'array'],
+            'role' => ['sometimes', 'nullable', 'string'],
+            'permissions' => ['sometimes', 'nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
             'chat_banned_until' => ['sometimes', 'nullable', 'date'],
         ];

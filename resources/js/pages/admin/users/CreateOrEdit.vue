@@ -16,6 +16,7 @@ const props = defineProps({
 });
 
 const roles = [
+    { value: '', label: 'Student (No Role)' },
     { value: 'admin', label: 'Admin' },
     { value: 'editor', label: 'Editor' },
     { value: 'manager', label: 'Manager' },
@@ -46,7 +47,7 @@ const form = useForm({
     _method: props.user ? 'PATCH' : 'POST',
     name: props.user?.name || '',
     email: props.user?.email || '',
-    role: props.user?.roles?.[0]?.name || 'manager',
+    role: props.user?.roles?.[0]?.name || '',
     permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
     chat_banned_until: formatForDatetimeLocal(props.user?.chat_banned_until),
 
