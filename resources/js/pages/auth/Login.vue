@@ -141,10 +141,10 @@ const googleAuthUrl = redirectParam
                             >
                                 <span
                                     class="font-semibold text-slate-900 dark:text-gray-200"
-                                    >Instant 1-Click Access:</span
+                                    >Fast Google Access:</span
                                 >
-                                নতুন ইউজার হলে এক ক্লিকেই auto account create
-                                হবে, আর পুরাতন ইউজার হলে সরাসরি Login হয়ে যাবে।
+                                নতুন ইউজার হলে তথ্য সেটআপ করে অ্যাকাউন্ট তৈরি
+                                করতে পারবেন, আর পুরাতন ইউজার হলে সরাসরি Login হয়ে যাবে।
                             </div>
                         </div>
 

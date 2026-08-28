@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -59,24 +60,96 @@ class AuthController extends Controller
             ->orWhere('email', $googleUser->getEmail())
             ->first();
 
-        $isNewUser = false;
-
         if ($user) {
             $user->update([
                 'google_id' => $googleUser->getId(),
                 'email_verified_at' => $user->email_verified_at ?? now(),
             ]);
-        } else {
+
+            Auth::login($user, remember: true);
+            $request->session()->regenerate();
+
+            $defaultUrl = $user->username
+                ? route('user.profile', $user->username)
+                : route('profile.edit');
+
+            return redirect()->intended($defaultUrl);
+        }
+
+        $request->session()->put('onboarding_user', [
+            'google_id' => $googleUser->getId(),
+            'email' => $googleUser->getEmail(),
+            'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? '',
+            'avatar' => $googleUser->getAvatar() ?? null,
+        ]);
+
+        return redirect()->route('onboarding');
+    }
+
+    public function showOnboarding(Request $request)
+    {
+        if (Auth::check()) {
+            return redirect()->route('index');
+        }
+
+        if (! $request->session()->has('onboarding_user')) {
+            return redirect()->route('login')->with('error', 'Please continue with Google to create an account.');
+        }
+
+        $onboardingUser = $request->session()->get('onboarding_user');
+
+        return Inertia::render('auth/Onboarding', [
+            'user' => $onboardingUser,
+        ]);
+    }
+
+    public function completeOnboarding(Request $request)
+    {
+        if (Auth::check()) {
+            return redirect()->route('index');
+        }
+
+        if (! $request->session()->has('onboarding_user')) {
+            return redirect()->route('login')->with('error', 'Session expired. Please continue with Google again.');
+        }
+
+        $onboardingData = $request->session()->get('onboarding_user');
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => [
+                'required',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[a-zA-Z0-9_]+$/',
+                'unique:users,username',
+            ],
+            'school' => ['required', 'string', 'max:255'],
+        ], [
+            'school.required' => 'Please enter your school, college, or institution name.',
+            'username.regex' => 'Username can only contain letters, numbers, and underscores.',
+            'username.unique' => 'This username is already taken. Please choose another one.',
+        ]);
+
+        $user = User::where('google_id', $onboardingData['google_id'])
+            ->orWhere('email', $onboardingData['email'])
+            ->first();
+
+        if (! $user) {
             $user = User::create([
-                'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
-                'email' => $googleUser->getEmail(),
-                'google_id' => $googleUser->getId(),
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'email' => $onboardingData['email'],
+                'google_id' => $onboardingData['google_id'],
+                'institution' => $validated['school'],
                 'email_verified_at' => now(),
             ]);
-            $isNewUser = true;
 
             Mail::to($user->email)->queue(new WelcomeUserMail($user));
         }
+
+        $request->session()->forget('onboarding_user');
 
         Auth::login($user, remember: true);
         $request->session()->regenerate();
@@ -85,13 +158,7 @@ class AuthController extends Controller
             ? route('user.profile', $user->username)
             : route('profile.edit');
 
-        $redirect = redirect()->intended($defaultUrl);
-
-        if ($isNewUser) {
-            $redirect->with('success', 'Account not found. New account created.');
-        }
-
-        return $redirect;
+        return redirect()->intended($defaultUrl)->with('success', 'Account created successfully! Welcome to HSCStack.');
     }
 
     public function logout(Request $request)
