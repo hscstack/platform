@@ -32,7 +32,6 @@ const props = defineProps<{
         id: number;
         name: string;
         username: string;
-        title: string | null;
         about: string | null;
         institution: string | null;
         image_url: string | null;
@@ -156,7 +155,6 @@ const props = defineProps<{
         id: number;
         name: string;
         username: string;
-        title: string | null;
         institution: string | null;
         image_url: string | null;
         image_path: string | null;
@@ -270,7 +268,7 @@ const handleAppreciate = () => {
         <meta
             name="description"
             :content="
-                [profileUser.title, profileUser.institution, profileUser.about]
+                [profileUser.institution, profileUser.about]
                     .filter(Boolean)
                     .slice(0, 2)
                     .join(' · ') ||
@@ -284,7 +282,7 @@ const handleAppreciate = () => {
         <meta
             property="og:description"
             :content="
-                [profileUser.title, profileUser.institution, profileUser.about]
+                [profileUser.institution, profileUser.about]
                     .filter(Boolean)
                     .slice(0, 2)
                     .join(' · ') ||
@@ -305,7 +303,7 @@ const handleAppreciate = () => {
         <meta
             name="twitter:description"
             :content="
-                [profileUser.title, profileUser.institution, profileUser.about]
+                [profileUser.institution, profileUser.about]
                     .filter(Boolean)
                     .slice(0, 2)
                     .join(' · ') ||
@@ -393,14 +391,6 @@ const handleAppreciate = () => {
                                     profileUser.institution
                                 }}</span>
                             </div>
-
-                            <!-- Tagline / Title -->
-                            <p
-                                v-if="profileUser.title"
-                                class="truncate text-xs font-semibold text-indigo-600 dark:text-indigo-400"
-                            >
-                                {{ profileUser.title }}
-                            </p>
                         </div>
                     </div>
 
@@ -489,8 +479,8 @@ const handleAppreciate = () => {
                             >{{ localAppreciationsCount }}
                             {{
                                 localAppreciationsCount === 1
-                                    ? 'Appreciation'
-                                    : 'Appreciations'
+                                    ? 'Appreciator'
+                                    : 'Appreciators'
                             }}</span
                         >
                     </button>
@@ -1103,10 +1093,10 @@ const handleAppreciate = () => {
                                     <VerifiedBadge v-if="person.is_verified" />
                                 </div>
                                 <p
-                                    v-if="person.title || person.institution"
+                                    v-if="person.institution"
                                     class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
                                 >
-                                    {{ person.title || person.institution }}
+                                    {{ person.institution }}
                                 </p>
                                 <p
                                     v-else
@@ -1198,7 +1188,7 @@ const handleAppreciate = () => {
                     v-else
                     class="py-6 text-center text-xs text-slate-400 dark:text-gray-500"
                 >
-                    No appreciations yet.
+                    No appreciators yet.
                 </div>
             </div>
         </div>

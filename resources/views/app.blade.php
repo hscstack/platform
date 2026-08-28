@@ -44,14 +44,13 @@
         $profileUser = $props['profileUser'];
         $userName = data_get($profileUser, 'name');
         $userHandle = data_get($profileUser, 'username');
-        $userTitle = data_get($profileUser, 'title');
         $userInstitution = data_get($profileUser, 'institution');
         $userAbout = data_get($profileUser, 'about');
 
         $metaTitle = "{$userName} (@{$userHandle}) - " . config('app.name', 'HSCStack');
         $ogTitle = "{$userName} (@{$userHandle})";
         
-        $descParts = array_filter([$userTitle, $userInstitution, $userAbout]);
+        $descParts = array_filter([$userInstitution, $userAbout]);
         $metaDescription = !empty($descParts) 
             ? implode(' · ', array_slice($descParts, 0, 2)) 
             : "View {$userName}'s profile, completed study topics, and contributions on HSCStack.";
