@@ -16,6 +16,8 @@ import {
     Info,
     ShieldCheck,
     AlertCircle,
+    MoreHorizontal,
+    Radio,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
@@ -51,6 +53,12 @@ interface ChatMessageItem {
     reactions?: ChatMessageReactionItem[];
     created_at: string;
     user: ChatUser;
+}
+
+interface MessageSegment {
+    type: 'text' | 'mention';
+    text: string;
+    username?: string;
 }
 
 const props = defineProps<{
@@ -133,10 +141,26 @@ const showScrollButton = ref(false);
 const highlightedMessageId = ref<number | null>(null);
 const showRulesModal = ref(false);
 
+// Mobile Action Sheet State
+const mobileActionMessage = ref<ChatMessageItem | null>(null);
+
+const openMobileActions = (msg: ChatMessageItem) => {
+    if (msg.is_deleted || msg.deleted_at) {
+        return;
+    }
+
+    mobileActionMessage.value = msg;
+};
+
+const closeMobileActions = () => {
+    mobileActionMessage.value = null;
+};
+
 // Reply State
 const activeReplyTo = ref<ChatMessageItem | null>(null);
 
 const startReply = (msg: ChatMessageItem) => {
+    closeMobileActions();
     activeReplyTo.value = msg;
     nextTick(() => {
         messageInputRef.value?.focus();
@@ -243,7 +267,6 @@ const scrollToBottom = (smooth = true) => {
 
 let lastFetchTimestamp = 0;
 const fetchLatestMessages = async (force = false) => {
-    // Debounce background refreshes to avoid spamming on rapid focus toggles
     const now = Date.now();
 
     if (!force && now - lastFetchTimestamp < 3000) {
@@ -392,14 +415,12 @@ const setupRealtime = () => {
                     maxMessagesLimit.value = e.settings.max_messages;
                     maxLengthLimit.value = e.settings.max_length;
 
-                    // Automatically trim messages if max_messages decreased
                     if (messages.value.length > e.settings.max_messages) {
                         messages.value = messages.value.slice(
                             -e.settings.max_messages,
                         );
                     }
 
-                    // Dynamically update permissions
                     const user = currentUser.value;
 
                     if (
@@ -433,7 +454,6 @@ const setupRealtime = () => {
             },
         );
 
-    // Re-sync messages when websocket connection recovers from disconnect/background sleep
     try {
         const pusher = (
             echo.connector as {
@@ -527,6 +547,8 @@ const sendMessage = async () => {
 };
 
 const deleteMessage = async (messageId: number) => {
+    closeMobileActions();
+
     if (!confirm('Are you sure you want to delete this message?')) {
         return;
     }
@@ -584,6 +606,7 @@ const reactToMessage = async (message: ChatMessageItem, emoji: string) => {
     }
 
     activeReactionPickerMessageId.value = null;
+    closeMobileActions();
 
     if (!message.reactions) {
         message.reactions = [];
@@ -657,6 +680,8 @@ const reportReasons = [
 ];
 
 const openReportModal = (message: ChatMessageItem) => {
+    closeMobileActions();
+
     if (!currentUser.value) {
         alert('Please sign in to report a message.');
 
@@ -726,6 +751,71 @@ const submitReport = async () => {
     }
 };
 
+const parseMessageSegments = (content: string): MessageSegment[] => {
+    if (!content) {
+        return [];
+    }
+
+    const mentionRegex = /(?<=^|\s)@([a-zA-Z0-9_.-]+)/g;
+    const segments: MessageSegment[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+        const matchStart = match.index;
+
+        if (matchStart > lastIndex) {
+            segments.push({
+                type: 'text',
+                text: content.substring(lastIndex, matchStart),
+            });
+        }
+
+        let username = match[1];
+        let mentionText = match[0];
+        let trailingPunctuation = '';
+
+        const trailingMatch = username.match(/[.,!?;:]+$/);
+
+        if (trailingMatch) {
+            trailingPunctuation = trailingMatch[0];
+            username = username.slice(0, -trailingPunctuation.length);
+            mentionText = mentionText.slice(0, -trailingPunctuation.length);
+        }
+
+        if (username) {
+            segments.push({
+                type: 'mention',
+                text: mentionText,
+                username,
+            });
+        } else {
+            segments.push({
+                type: 'text',
+                text: match[0],
+            });
+        }
+
+        if (trailingPunctuation) {
+            segments.push({
+                type: 'text',
+                text: trailingPunctuation,
+            });
+        }
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+        segments.push({
+            type: 'text',
+            text: content.substring(lastIndex),
+        });
+    }
+
+    return segments;
+};
+
 const formatTime = (isoString: string) => {
     try {
         const date = new Date(isoString);
@@ -739,25 +829,28 @@ const formatTime = (isoString: string) => {
     }
 };
 
-const isBanModalOpen = ref(false);
-const selectedUserToBan = ref<ChatBanUser | null>(null);
-
-const openBanModal = (user: ChatUser) => {
-    selectedUserToBan.value = {
-        id: user.id,
-        name: user.name,
-        username: user.username,
-    };
-    isBanModalOpen.value = true;
-};
-
 const formatDateDivider = (isoString: string) => {
     try {
         const date = new Date(isoString);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        if (date.toDateString() === today.toDateString()) {
+            return 'Today';
+        }
+
+        if (date.toDateString() === yesterday.toDateString()) {
+            return 'Yesterday';
+        }
 
         return date.toLocaleDateString(undefined, {
             month: 'short',
             day: 'numeric',
+            year:
+                date.getFullYear() !== today.getFullYear()
+                    ? 'numeric'
+                    : undefined,
         });
     } catch {
         return '';
@@ -773,6 +866,50 @@ const shouldShowDateDivider = (index: number) => {
     const curr = new Date(messages.value[index].created_at).toDateString();
 
     return prev !== curr;
+};
+
+// Smart Message Grouping: consecutive messages by same author within 2 minutes merge
+const isGroupedWithPrevious = (idx: number) => {
+    if (idx === 0) {
+        return false;
+    }
+
+    if (shouldShowDateDivider(idx)) {
+        return false;
+    }
+
+    const prev = messages.value[idx - 1];
+    const curr = messages.value[idx];
+
+    if (!prev || !curr) {
+        return false;
+    }
+
+    if (Number(prev.user.id) !== Number(curr.user.id)) {
+        return false;
+    }
+
+    if (curr.reply_to_content || curr.is_deleted || prev.is_deleted) {
+        return false;
+    }
+
+    const prevTime = new Date(prev.created_at).getTime();
+    const currTime = new Date(curr.created_at).getTime();
+
+    return currTime - prevTime < 120000;
+};
+
+const isBanModalOpen = ref(false);
+const selectedUserToBan = ref<ChatBanUser | null>(null);
+
+const openBanModal = (user: ChatUser) => {
+    closeMobileActions();
+    selectedUserToBan.value = {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+    };
+    isBanModalOpen.value = true;
 };
 
 const handleVisibilityOrFocus = () => {
@@ -849,19 +986,19 @@ onUnmounted(() => {
         />
     </Head>
 
-    <main class="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <main class="mx-auto max-w-4xl px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
         <!-- Compact Page Title & Subtitle + Rules Button -->
         <div
-            class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-gray-800"
+            class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
         >
             <div>
                 <h1
-                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-zinc-100"
                 >
                     Global Chat
                 </h1>
                 <p
-                    class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
+                    class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-zinc-400"
                 >
                     অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
                     করুন।
@@ -872,7 +1009,7 @@ onUnmounted(() => {
             <button
                 type="button"
                 @click="showRulesModal = true"
-                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700"
+                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
                 title="Chat Rules & Guidelines"
             >
                 <Info class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -880,237 +1017,135 @@ onUnmounted(() => {
             </button>
         </div>
 
-        <!-- Chat Container Window -->
+        <!-- Main Messenger Shell -->
         <div
-            class="flex h-[calc(100vh-14rem)] max-h-[740px] min-h-[520px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900/90"
+            class="flex h-[calc(100dvh-13.5rem)] max-h-[760px] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs sm:h-[calc(100dvh-15rem)] dark:border-zinc-800 dark:bg-zinc-900"
         >
-            <!-- Messages Stream -->
+            <!-- Scrollable Message Stream -->
             <div
                 ref="messagesContainerRef"
                 @scroll="handleScroll"
-                class="relative flex-1 divide-y divide-slate-100/80 overflow-y-auto p-3 sm:p-5 dark:divide-gray-800/60"
+                class="relative flex-1 space-y-1 overflow-y-auto px-3 py-4 sm:px-5"
             >
                 <!-- Empty State -->
                 <div
                     v-if="messages.length === 0"
-                    class="flex h-full flex-col items-center justify-center p-8 text-center text-slate-400 dark:text-gray-500"
+                    class="flex h-full flex-col items-center justify-center p-8 text-center"
                 >
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400"
+                    >
+                        <Radio class="h-6 w-6" />
+                    </div>
                     <p
-                        class="text-sm font-semibold text-slate-600 dark:text-gray-400"
+                        class="mt-3 text-sm font-semibold text-slate-800 dark:text-zinc-200"
                     >
                         No messages yet
                     </p>
-                    <p class="mt-1 text-xs text-slate-400 dark:text-gray-500">
-                        Be the first to send a message to start the
-                        conversation.
+                    <p class="mt-1 text-xs text-slate-400 dark:text-zinc-500">
+                        Be the first to start the conversation!
                     </p>
                 </div>
 
-                <!-- Messages Feed -->
+                <!-- Message Items -->
                 <template v-for="(msg, idx) in messages" :key="msg.id">
                     <!-- Date Divider -->
                     <div
                         v-if="shouldShowDateDivider(idx)"
-                        class="sticky top-0 z-10 my-2 flex justify-center"
+                        class="my-3 flex justify-center"
                     >
                         <span
-                            class="rounded-full bg-slate-100/90 px-3 py-0.5 text-[10px] font-medium text-slate-600 shadow-2xs backdrop-blur-xs dark:bg-gray-800/90 dark:text-gray-300"
+                            class="rounded-full border border-slate-200/80 bg-slate-50 px-3 py-0.5 text-[10px] font-semibold text-slate-500 shadow-2xs dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400"
                         >
                             {{ formatDateDivider(msg.created_at) }}
                         </span>
                     </div>
 
-                    <!-- Individual Message Row (Distinctly Highlighted for currentUser) -->
+                    <!-- Chat Message Row -->
                     <div
                         :id="`chat-msg-${msg.id}`"
-                        class="group flex items-start gap-3 rounded-2xl p-2.5 transition-all duration-300 sm:p-3"
+                        class="group relative flex items-start gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors duration-150 sm:gap-3 sm:px-3 sm:py-2"
                         :class="[
                             currentUser &&
                             Number(currentUser.id) === Number(msg.user.id)
-                                ? 'bg-indigo-50/50 dark:bg-indigo-950/20'
-                                : 'hover:bg-slate-50 dark:hover:bg-gray-800/40',
+                                ? 'bg-indigo-50/30 dark:bg-indigo-950/15'
+                                : 'hover:bg-slate-50/80 dark:hover:bg-zinc-800/40',
                             highlightedMessageId === msg.id
-                                ? 'bg-indigo-100/70 ring-2 ring-indigo-500 dark:bg-indigo-950/60'
+                                ? 'bg-indigo-100/70 ring-2 ring-indigo-500/50 dark:bg-indigo-950/60'
                                 : '',
+                            isGroupedWithPrevious(idx) ? '!pt-0.5' : 'mt-1',
                         ]"
                     >
-                        <!-- User Avatar -->
-                        <Link
-                            :href="`/u/${msg.user.username}`"
-                            class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:ring-2 hover:ring-indigo-400 sm:h-9 sm:w-9"
-                            :class="
-                                currentUser &&
-                                Number(currentUser.id) === Number(msg.user.id)
-                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                                    : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300'
-                            "
-                        >
-                            <img
-                                v-if="msg.user.image_url"
-                                :src="msg.user.image_url"
-                                :alt="msg.user.name"
-                                class="h-full w-full object-cover"
-                            />
-                            <span v-else class="text-xs uppercase">
-                                {{ msg.user.name?.charAt(0) || 'U' }}
-                            </span>
-                        </Link>
-
-                        <!-- Content Area -->
-                        <div class="min-w-0 flex-1">
-                            <!-- Header Info -->
-                            <div
-                                class="flex items-center justify-between gap-2"
+                        <!-- Left Avatar Gutter -->
+                        <div class="w-8 shrink-0 sm:w-9">
+                            <Link
+                                v-if="!isGroupedWithPrevious(idx)"
+                                :href="`/u/${msg.user.username}`"
+                                class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:opacity-85 sm:h-9 sm:w-9"
+                                :class="
+                                    currentUser &&
+                                    Number(currentUser.id) ===
+                                        Number(msg.user.id)
+                                        ? 'bg-indigo-600 text-white'
+                                        : 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300'
+                                "
                             >
-                                <div class="flex min-w-0 items-center gap-1.5">
-                                    <Link
-                                        :href="`/u/${msg.user.username}`"
-                                        class="truncate text-xs font-semibold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                    >
-                                        {{ msg.user.name }}
-                                    </Link>
+                                <img
+                                    v-if="msg.user.image_url"
+                                    :src="msg.user.image_url"
+                                    :alt="msg.user.name"
+                                    class="h-full w-full object-cover"
+                                />
+                                <span v-else class="text-xs uppercase">
+                                    {{ msg.user.name?.charAt(0) || 'U' }}
+                                </span>
+                            </Link>
+                            <span
+                                v-else
+                                class="block text-center text-[9px] text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-zinc-600"
+                            >
+                                {{ formatTime(msg.created_at) }}
+                            </span>
+                        </div>
 
-                                    <!-- You Badge -->
-                                    <span
-                                        v-if="
-                                            currentUser &&
-                                            Number(currentUser.id) ===
-                                                Number(msg.user.id)
-                                        "
-                                        class="rounded-md bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 dark:bg-indigo-900/70 dark:text-indigo-200"
-                                    >
-                                        You
-                                    </span>
+                        <!-- Message Content Area -->
+                        <div class="min-w-0 flex-1">
+                            <!-- Header Info (Shown on First in Group) -->
+                            <div
+                                v-if="!isGroupedWithPrevious(idx)"
+                                class="flex items-baseline gap-1.5"
+                            >
+                                <Link
+                                    :href="`/u/${msg.user.username}`"
+                                    class="truncate text-xs font-bold text-slate-900 transition hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
+                                >
+                                    {{ msg.user.name }}
+                                </Link>
 
-                                    <VerifiedBadge
-                                        v-if="msg.user.is_verified"
-                                    />
-                                    <span
-                                        v-if="msg.user.institution"
-                                        class="hidden truncate text-[11px] text-slate-400 sm:inline dark:text-gray-500"
-                                    >
-                                        • {{ msg.user.institution }}
-                                    </span>
-                                </div>
+                                <span
+                                    v-if="
+                                        currentUser &&
+                                        Number(currentUser.id) ===
+                                            Number(msg.user.id)
+                                    "
+                                    class="py-0.2 rounded-md bg-indigo-100 px-1 text-[9px] font-bold text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300"
+                                >
+                                    You
+                                </span>
 
-                                <div class="flex shrink-0 items-center gap-1">
-                                    <span
-                                        class="text-[10px] text-slate-400 sm:text-[11px] dark:text-gray-500"
-                                    >
-                                        {{ formatTime(msg.created_at) }}
-                                    </span>
+                                <VerifiedBadge v-if="msg.user.is_verified" />
 
-                                    <!-- Reaction Picker Button (Non-deleted messages) -->
-                                    <div
-                                        v-if="
-                                            currentUser &&
-                                            !msg.is_deleted &&
-                                            !msg.deleted_at
-                                        "
-                                        class="relative"
-                                    >
-                                        <button
-                                            type="button"
-                                            @click.stop="
-                                                toggleReactionPicker(msg.id)
-                                            "
-                                            class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-amber-50 hover:text-amber-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
-                                            :class="
-                                                activeReactionPickerMessageId ===
-                                                msg.id
-                                                    ? 'bg-amber-50 text-amber-600 !opacity-100 dark:bg-amber-950/40 dark:text-amber-400'
-                                                    : ''
-                                            "
-                                            title="Add reaction"
-                                        >
-                                            <Smile class="h-3 w-3" />
-                                        </button>
+                                <span
+                                    class="truncate text-[11px] text-slate-400 dark:text-zinc-500"
+                                >
+                                    @{{ msg.user.username }}
+                                </span>
 
-                                        <!-- Emoji Reaction Popover -->
-                                        <div
-                                            v-if="
-                                                activeReactionPickerMessageId ===
-                                                msg.id
-                                            "
-                                            class="absolute right-0 bottom-full z-30 mb-1 flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
-                                            @click.stop
-                                        >
-                                            <button
-                                                v-for="emoji in reactionEmojis"
-                                                :key="emoji"
-                                                type="button"
-                                                @click="
-                                                    reactToMessage(msg, emoji)
-                                                "
-                                                class="cursor-pointer text-base transition hover:scale-125 active:scale-95"
-                                            >
-                                                {{ emoji }}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Reply Button -->
-                                    <button
-                                        v-if="
-                                            currentUser &&
-                                            canPost &&
-                                            !msg.is_deleted &&
-                                            !msg.deleted_at
-                                        "
-                                        type="button"
-                                        @click="startReply(msg)"
-                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-indigo-50 hover:text-indigo-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
-                                        title="Reply to message"
-                                    >
-                                        <Reply class="h-3 w-3" />
-                                    </button>
-
-                                    <!-- Quick Moderation / Ban Button (Staff Only) -->
-                                    <button
-                                        v-if="
-                                            (can('manage chat') || canDelete) &&
-                                            Number(currentUser?.id) !==
-                                                Number(msg.user.id)
-                                        "
-                                        type="button"
-                                        @click="openBanModal(msg.user)"
-                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                        :title="`Manage chat ban timer for @${msg.user.username}`"
-                                    >
-                                        <Ban class="h-3 w-3" />
-                                    </button>
-
-                                    <!-- Report Button (for non-author users) -->
-                                    <button
-                                        v-if="
-                                            currentUser &&
-                                            Number(currentUser.id) !==
-                                                Number(msg.user.id) &&
-                                            !msg.is_deleted &&
-                                            !msg.deleted_at
-                                        "
-                                        @click="openReportModal(msg)"
-                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-amber-50 hover:text-amber-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
-                                        title="Report message"
-                                    >
-                                        <Flag class="h-3 w-3" />
-                                    </button>
-
-                                    <!-- Delete Button (Staff Only) -->
-                                    <button
-                                        v-if="
-                                            canDelete &&
-                                            !msg.is_deleted &&
-                                            !msg.deleted_at
-                                        "
-                                        type="button"
-                                        @click="deleteMessage(msg.id)"
-                                        class="cursor-pointer rounded-md p-1 text-slate-400 opacity-100 transition hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                        title="Delete message (Staff)"
-                                    >
-                                        <Trash2 class="h-3 w-3" />
-                                    </button>
-                                </div>
+                                <span
+                                    class="ml-auto text-[10px] text-slate-400 select-none sm:text-[11px] dark:text-zinc-500"
+                                >
+                                    {{ formatTime(msg.created_at) }}
+                                </span>
                             </div>
 
                             <!-- Quoted Parent Snapshot (If Reply) -->
@@ -1121,7 +1156,7 @@ onUnmounted(() => {
                                         ? scrollToMessage(msg.reply_to_id)
                                         : null
                                 "
-                                class="mt-1.5 flex items-center gap-1.5 rounded-lg border-l-2 border-indigo-500 bg-slate-100/70 px-2.5 py-1 text-[11px] text-slate-600 transition dark:border-indigo-400 dark:bg-gray-800/60 dark:text-gray-300"
+                                class="mt-1 flex items-center gap-1.5 rounded-lg border-l-2 border-indigo-500 bg-slate-100/60 px-2 py-0.5 text-[11px] text-slate-600 transition dark:border-indigo-400 dark:bg-zinc-800/60 dark:text-zinc-400"
                                 :class="
                                     msg.reply_to_id
                                         ? 'cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30'
@@ -1129,43 +1164,52 @@ onUnmounted(() => {
                                 "
                                 :title="
                                     msg.reply_to_id
-                                        ? 'Click to jump to original message'
+                                        ? 'Jump to original message'
                                         : ''
                                 "
                             >
-                                <Reply
-                                    class="h-3 w-3 shrink-0 text-indigo-500 dark:text-indigo-400"
-                                />
+                                <Reply class="h-3 w-3 shrink-0 opacity-70" />
                                 <span class="truncate italic">
                                     "{{ msg.reply_to_content }}"
                                 </span>
                             </div>
 
-                            <!-- Message Text -->
+                            <!-- Message Text Body -->
                             <p
                                 v-if="msg.is_deleted || msg.deleted_at"
-                                class="mt-1 text-xs text-slate-400 italic select-none sm:text-sm dark:text-gray-500"
+                                class="mt-0.5 text-xs text-slate-400 italic select-none sm:text-sm dark:text-zinc-500"
                             >
                                 {{ msg.content }}
                             </p>
                             <p
                                 v-else
-                                class="mt-1 text-xs leading-relaxed break-words whitespace-pre-wrap sm:text-sm"
-                                :class="
-                                    currentUser &&
-                                    Number(currentUser.id) ===
-                                        Number(msg.user.id)
-                                        ? 'text-slate-900 dark:text-gray-100'
-                                        : 'text-slate-700 dark:text-gray-300'
-                                "
+                                class="mt-0.5 text-xs leading-relaxed break-words whitespace-pre-wrap text-slate-800 sm:text-sm dark:text-zinc-200"
                             >
-                                {{ msg.content }}
+                                <template
+                                    v-for="(seg, sIdx) in parseMessageSegments(
+                                        msg.content,
+                                    )"
+                                    :key="sIdx"
+                                >
+                                    <Link
+                                        v-if="
+                                            seg.type === 'mention' &&
+                                            seg.username
+                                        "
+                                        :href="`/u/${seg.username}`"
+                                        class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                                        @click.stop
+                                    >
+                                        {{ seg.text }}
+                                    </Link>
+                                    <span v-else>{{ seg.text }}</span>
+                                </template>
                             </p>
 
-                            <!-- Reaction Badges / Chips -->
+                            <!-- Reaction Pills -->
                             <div
                                 v-if="msg.reactions && msg.reactions.length > 0"
-                                class="mt-2 flex flex-wrap items-center gap-1.5"
+                                class="mt-1.5 flex flex-wrap items-center gap-1"
                             >
                                 <button
                                     v-for="r in msg.reactions"
@@ -1177,11 +1221,11 @@ onUnmounted(() => {
                                         !!msg.deleted_at
                                     "
                                     @click="reactToMessage(msg, r.emoji)"
-                                    class="inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-0.5 text-xs font-medium transition active:scale-95 disabled:cursor-default"
+                                    class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition active:scale-95 disabled:cursor-default"
                                     :class="
                                         r.reacted
-                                            ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
-                                            : 'border-slate-200 bg-slate-50/80 text-slate-600 hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:bg-gray-800'
+                                            ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
+                                            : 'border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400 dark:hover:bg-zinc-800'
                                     "
                                     :title="
                                         r.users && r.users.length
@@ -1190,30 +1234,129 @@ onUnmounted(() => {
                                     "
                                 >
                                     <span>{{ r.emoji }}</span>
-                                    <span class="text-[11px] font-bold">{{
-                                        r.count
-                                    }}</span>
+                                    <span class="font-bold">{{ r.count }}</span>
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Floating Action Toolbar (Desktop on Hover) -->
+                        <div
+                            v-if="!msg.is_deleted && !msg.deleted_at"
+                            class="absolute -top-3 right-3 hidden items-center gap-0.5 rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-sm sm:group-hover:flex dark:border-zinc-700 dark:bg-zinc-800"
+                            @click.stop
+                        >
+                            <!-- Reaction Trigger -->
+                            <div class="relative">
+                                <button
+                                    v-if="currentUser"
+                                    type="button"
+                                    @click.stop="toggleReactionPicker(msg.id)"
+                                    class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:text-zinc-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
+                                    title="Add reaction"
+                                >
+                                    <Smile class="h-3.5 w-3.5" />
+                                </button>
+
+                                <!-- Emoji Quick Popover -->
+                                <div
+                                    v-if="
+                                        activeReactionPickerMessageId === msg.id
+                                    "
+                                    class="absolute right-0 bottom-full z-30 mb-1 flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                                    @click.stop
+                                >
+                                    <button
+                                        v-for="emoji in reactionEmojis"
+                                        :key="emoji"
+                                        type="button"
+                                        @click="reactToMessage(msg, emoji)"
+                                        class="cursor-pointer text-base transition hover:scale-125 active:scale-95"
+                                    >
+                                        {{ emoji }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Reply -->
+                            <button
+                                v-if="currentUser && canPost"
+                                type="button"
+                                @click="startReply(msg)"
+                                class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                title="Reply"
+                            >
+                                <Reply class="h-3.5 w-3.5" />
+                            </button>
+
+                            <!-- Ban (Staff) -->
+                            <button
+                                v-if="
+                                    (can('manage chat') || canDelete) &&
+                                    Number(currentUser?.id) !==
+                                        Number(msg.user.id)
+                                "
+                                type="button"
+                                @click="openBanModal(msg.user)"
+                                class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                :title="`Ban @${msg.user.username}`"
+                            >
+                                <Ban class="h-3.5 w-3.5" />
+                            </button>
+
+                            <!-- Report -->
+                            <button
+                                v-if="
+                                    currentUser &&
+                                    Number(currentUser.id) !==
+                                        Number(msg.user.id)
+                                "
+                                type="button"
+                                @click="openReportModal(msg)"
+                                class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:text-zinc-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
+                                title="Report"
+                            >
+                                <Flag class="h-3.5 w-3.5" />
+                            </button>
+
+                            <!-- Delete (Staff) -->
+                            <button
+                                v-if="canDelete"
+                                type="button"
+                                @click="deleteMessage(msg.id)"
+                                class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                title="Delete"
+                            >
+                                <Trash2 class="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+
+                        <!-- Mobile Action Trigger (3-dots) -->
+                        <button
+                            v-if="!msg.is_deleted && !msg.deleted_at"
+                            type="button"
+                            @click.stop="openMobileActions(msg)"
+                            class="shrink-0 p-1 text-slate-300 hover:text-slate-600 sm:hidden dark:text-zinc-600 dark:hover:text-zinc-300"
+                        >
+                            <MoreHorizontal class="h-3.5 w-3.5" />
+                        </button>
                     </div>
                 </template>
             </div>
 
-            <!-- Scroll To Bottom Button -->
+            <!-- Floating Scroll-To-Bottom Button -->
             <button
                 v-if="showScrollButton"
                 type="button"
                 @click="scrollToBottom(true)"
-                class="absolute right-8 bottom-24 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-white shadow-md transition hover:bg-slate-800 active:scale-95 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
+                class="absolute right-6 bottom-20 z-20 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition hover:scale-105 active:scale-95 sm:right-8 sm:bottom-22 dark:bg-zinc-100 dark:text-zinc-900"
                 title="Scroll to bottom"
             >
                 <ArrowDown class="h-4 w-4" />
             </button>
 
-            <!-- Bottom Input Field -->
-            <div
-                class="border-t border-slate-100 bg-white p-3.5 sm:p-4 dark:border-gray-800 dark:bg-gray-900"
+            <!-- Bottom Input Bar Area -->
+            <footer
+                class="border-t border-slate-100 bg-white p-3 sm:p-4 dark:border-zinc-800 dark:bg-zinc-900"
             >
                 <!-- Active Reply Banner -->
                 <div
@@ -1238,14 +1381,14 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="cancelReply"
-                        class="cursor-pointer rounded-lg p-0.5 text-indigo-500 transition hover:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/60"
+                        class="cursor-pointer rounded-lg p-0.5 text-indigo-500 hover:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/60"
                         title="Cancel reply"
                     >
                         <X class="h-3.5 w-3.5" />
                     </button>
                 </div>
 
-                <!-- Can Post -->
+                <!-- Input Form when User can post -->
                 <form
                     v-if="canPost"
                     @submit.prevent="sendMessage"
@@ -1260,14 +1403,14 @@ onUnmounted(() => {
                             :placeholder="
                                 activeReplyTo
                                     ? `Reply to ${activeReplyTo.user.name}...`
-                                    : 'Type a message...'
+                                    : 'Send a message...'
                             "
                             :maxlength="maxLengthLimit"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none disabled:opacity-60 sm:text-sm dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-indigo-400 dark:focus:bg-zinc-800"
                         />
                         <span
-                            v-if="inputContent.length > maxLengthLimit - 80"
-                            class="absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                            v-if="inputContent.length > maxLengthLimit - 60"
+                            class="absolute top-1/2 right-3 -translate-y-1/2 text-[10px] font-medium text-slate-400 dark:text-zinc-500"
                         >
                             {{ maxLengthLimit - inputContent.length }}
                         </span>
@@ -1296,16 +1439,16 @@ onUnmounted(() => {
                     </button>
                 </form>
 
-                <!-- Restricted Notice -->
+                <!-- Restricted State Notice -->
                 <div
                     v-else
-                    class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5 text-xs dark:border-gray-800 dark:bg-gray-800/40"
+                    class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5 text-xs dark:border-zinc-800 dark:bg-zinc-800/40"
                 >
                     <div
-                        class="flex items-center gap-2 text-slate-600 dark:text-gray-400"
+                        class="flex items-center gap-2 text-slate-600 dark:text-zinc-400"
                     >
                         <Lock
-                            class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-gray-500"
+                            class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500"
                         />
                         <span>{{
                             restrictionReason || 'Posting is restricted'
@@ -1321,6 +1464,99 @@ onUnmounted(() => {
                         <span>Sign in</span>
                     </Link>
                 </div>
+            </footer>
+        </div>
+
+        <!-- Mobile Action Sheet Bottom Drawer -->
+        <div
+            v-if="mobileActionMessage"
+            class="fixed inset-0 z-50 flex items-end bg-black/50 backdrop-blur-xs sm:hidden"
+            @click.self="closeMobileActions"
+        >
+            <div
+                class="w-full rounded-t-2xl border-t border-slate-200 bg-white p-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
+            >
+                <!-- Header with message preview -->
+                <div
+                    class="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
+                >
+                    <span
+                        class="text-xs font-bold text-slate-700 dark:text-zinc-300"
+                    >
+                        Message by @{{ mobileActionMessage.user.username }}
+                    </span>
+                    <button
+                        type="button"
+                        @click="closeMobileActions"
+                        class="rounded-lg p-1 text-slate-400"
+                    >
+                        <X class="h-4 w-4" />
+                    </button>
+                </div>
+
+                <!-- Quick Emoji Reactions -->
+                <div v-if="currentUser" class="my-3 flex justify-between gap-1">
+                    <button
+                        v-for="emoji in reactionEmojis"
+                        :key="emoji"
+                        type="button"
+                        @click="reactToMessage(mobileActionMessage, emoji)"
+                        class="cursor-pointer text-xl transition active:scale-95"
+                    >
+                        {{ emoji }}
+                    </button>
+                </div>
+
+                <!-- Action Rows -->
+                <div class="space-y-1 pt-1 text-xs">
+                    <button
+                        v-if="currentUser && canPost"
+                        type="button"
+                        @click="startReply(mobileActionMessage)"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-slate-700 hover:bg-slate-100 active:scale-98 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <Reply class="h-4 w-4 text-indigo-500" />
+                        <span>Reply</span>
+                    </button>
+
+                    <button
+                        v-if="
+                            currentUser &&
+                            Number(currentUser.id) !==
+                                Number(mobileActionMessage.user.id)
+                        "
+                        type="button"
+                        @click="openReportModal(mobileActionMessage)"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-amber-600 hover:bg-amber-50 active:scale-98 dark:text-amber-400 dark:hover:bg-amber-950/40"
+                    >
+                        <Flag class="h-4 w-4" />
+                        <span>Report Message</span>
+                    </button>
+
+                    <button
+                        v-if="
+                            (can('manage chat') || canDelete) &&
+                            Number(currentUser?.id) !==
+                                Number(mobileActionMessage.user.id)
+                        "
+                        type="button"
+                        @click="openBanModal(mobileActionMessage.user)"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                    >
+                        <Ban class="h-4 w-4" />
+                        <span>Ban User</span>
+                    </button>
+
+                    <button
+                        v-if="canDelete"
+                        type="button"
+                        @click="deleteMessage(mobileActionMessage.id)"
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                    >
+                        <Trash2 class="h-4 w-4" />
+                        <span>Delete Message</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1331,10 +1567,10 @@ onUnmounted(() => {
             @click.self="closeReportModal"
         >
             <div
-                class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+                class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6 dark:border-zinc-800 dark:bg-zinc-900"
             >
                 <div
-                    class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-gray-800"
+                    class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-zinc-800"
                 >
                     <div class="flex items-center gap-2">
                         <div
@@ -1343,7 +1579,7 @@ onUnmounted(() => {
                             <Flag class="h-4 w-4" />
                         </div>
                         <h3
-                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                            class="text-sm font-bold text-slate-900 dark:text-zinc-100"
                         >
                             Report Message
                         </h3>
@@ -1351,7 +1587,7 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="closeReportModal"
-                        class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                        class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                     >
                         <X class="h-4 w-4" />
                     </button>
@@ -1380,7 +1616,6 @@ onUnmounted(() => {
                     @submit.prevent="submitReport"
                     class="mt-4 space-y-4"
                 >
-                    <!-- Error notice if duplicate or validation fails -->
                     <div
                         v-if="reportErrorMessage"
                         class="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300"
@@ -1388,15 +1623,14 @@ onUnmounted(() => {
                         {{ reportErrorMessage }}
                     </div>
 
-                    <!-- Message Preview Snapshot -->
                     <div
-                        class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-800/60"
+                        class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-zinc-800 dark:bg-zinc-800/60"
                     >
                         <div
-                            class="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400"
+                            class="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400"
                         >
                             <span
-                                class="font-semibold text-slate-700 dark:text-gray-300"
+                                class="font-semibold text-slate-700 dark:text-zinc-300"
                             >
                                 {{ reportingMessage.user.name }} (@{{
                                     reportingMessage.user.username
@@ -1407,40 +1641,38 @@ onUnmounted(() => {
                             }}</span>
                         </div>
                         <p
-                            class="mt-1.5 text-xs break-words text-slate-800 dark:text-gray-200"
+                            class="mt-1.5 text-xs break-words text-slate-800 dark:text-zinc-200"
                         >
                             "{{ reportingMessage.content }}"
                         </p>
                     </div>
 
-                    <!-- Reason Selection -->
                     <div>
                         <label
-                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-zinc-300"
                         >
                             Why are you reporting this message?
                         </label>
                         <select
                             v-model="reportReason"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-medium text-slate-800 transition outline-none focus:border-indigo-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-medium text-slate-800 transition outline-none focus:border-indigo-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:focus:border-indigo-400 dark:focus:bg-zinc-800"
                         >
                             <option
                                 v-for="reason in reportReasons"
                                 :key="reason"
                                 :value="reason"
-                                class="bg-white text-slate-800 dark:bg-gray-800 dark:text-gray-200"
+                                class="bg-white text-slate-800 dark:bg-zinc-800 dark:text-zinc-200"
                             >
                                 {{ reason }}
                             </option>
                         </select>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="flex items-center justify-end gap-2 pt-2">
                         <button
                             type="button"
                             @click="closeReportModal"
-                            class="cursor-pointer rounded-xl border border-slate-200 bg-transparent px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                            class="cursor-pointer rounded-xl border border-slate-200 bg-transparent px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                         >
                             Cancel
                         </button>
@@ -1472,19 +1704,16 @@ onUnmounted(() => {
             v-if="showRulesModal"
             class="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-            <!-- Backdrop -->
             <div
                 class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
                 @click="showRulesModal = false"
             ></div>
 
-            <!-- Modal Content -->
             <div
-                class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+                class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-zinc-800 dark:bg-zinc-900"
             >
-                <!-- Modal Header -->
                 <div
-                    class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-gray-800"
+                    class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-zinc-800"
                 >
                     <div class="flex items-center gap-3">
                         <div
@@ -1494,12 +1723,12 @@ onUnmounted(() => {
                         </div>
                         <div>
                             <h3
-                                class="text-base font-bold text-slate-900 dark:text-gray-100"
+                                class="text-base font-bold text-slate-900 dark:text-zinc-100"
                             >
                                 Global Chat Rules & Guidelines
                             </h3>
                             <p
-                                class="text-xs text-slate-500 dark:text-gray-400"
+                                class="text-xs text-slate-500 dark:text-zinc-400"
                             >
                                 সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে নিচের
                                 নিয়মগুলো মেনে চলুন।
@@ -1509,7 +1738,7 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="showRulesModal = false"
-                        class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                        class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                     >
                         <X class="h-4 w-4" />
                     </button>
@@ -1517,7 +1746,7 @@ onUnmounted(() => {
 
                 <!-- Rules List -->
                 <div
-                    class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-gray-300"
+                    class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-zinc-300"
                 >
                     <div class="flex items-start gap-2.5">
                         <div
@@ -1527,11 +1756,11 @@ onUnmounted(() => {
                         </div>
                         <div>
                             <strong
-                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                class="font-semibold text-slate-900 dark:text-zinc-100"
                                 >পরস্পরকে সম্মান করুন (Respectful
                                 Environment):</strong
                             >
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
                                 অন্য শিক্ষার্থী ও মডারেটরদের সাথে শালীন আচরণ
                                 বজায় রাখুন। কোনো ধরনের ব্যক্তিগত আক্রমণ, বুলিং
                                 বা হেট স্পিচ কঠোরভাবে নিষিদ্ধ।
@@ -1547,11 +1776,11 @@ onUnmounted(() => {
                         </div>
                         <div>
                             <strong
-                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                class="font-semibold text-slate-900 dark:text-zinc-100"
                                 >খারাপ ভাষা ও গালিগালাজ নিষেধ (No Abuse /
                                 Slang):</strong
                             >
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
                                 বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই গালাগালি বা
                                 অশালীন শব্দ ব্যবহার করা যাবে না। এমন মেসেজ
                                 অটোমেটিক ব্লক হবে।
@@ -1567,11 +1796,11 @@ onUnmounted(() => {
                         </div>
                         <div>
                             <strong
-                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                class="font-semibold text-slate-900 dark:text-zinc-100"
                                 >স্প্যামিং ও অ্যাডভার্টাইজিং নিষেধ (No
                                 Spam):</strong
                             >
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
                                 একই মেসেজ বারবার পাঠানো, চ্যাট ফ্লাড করা বা
                                 অনুমতি ছাড়া কোনো প্রোমোশন বা অপ্রাসঙ্গিক লিংক
                                 শেয়ার করা যাবে না।
@@ -1587,14 +1816,14 @@ onUnmounted(() => {
                         </div>
                         <div>
                             <strong
-                                class="font-semibold text-slate-900 dark:text-gray-100"
+                                class="font-semibold text-slate-900 dark:text-zinc-100"
                                 >অনুপযুক্ত মেসেজ রিপোর্ট করুন (Report
                                 Violations):</strong
                             >
-                            <p class="mt-0.5 text-slate-500 dark:text-gray-400">
+                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
                                 কারো মেসেজে নিয়ম লঙ্ঘন দেখতে পেলে মেসেজের
-                                ডানপাশে থাকা ফ্ল্যাগ/রিপোর্ট বাটনে ক্লিক করে
-                                মডারেটরদের জানান।
+                                ডানপাশে থাকা রিপোর্ট বাটনে ক্লিক করে মডারেটরদের
+                                জানান।
                             </p>
                         </div>
                     </div>

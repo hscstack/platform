@@ -29,7 +29,7 @@ import ToastNotification from '@/components/ToastNotification.vue';
             <main class="min-h-[calc(100vh-4rem)] flex-1">
                 <slot />
             </main>
-            <Footer />
+            <Footer v-if="$page.component !== 'Chat/Index'" />
         </div>
         <FloatingShareBar />
         <ToastNotification />

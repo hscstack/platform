@@ -168,10 +168,10 @@ class ChatSettingsController extends Controller
 
         if ($user->isChatBanned()) {
             $durationText = $user->chat_banned_until->diffForHumans();
-            ChatMessage::sendBotMessage("🛡️ Moderator @{$moderator->username} banned @{$user->username} from chat until {$user->chat_banned_until->toDayDateTimeString()} ({$durationText}).");
+            ChatMessage::sendBotMessage("Moderator @{$moderator->username} banned @{$user->username} from chat until {$user->chat_banned_until->toDayDateTimeString()} ({$durationText}).");
             $message = "User @{$user->username} has been banned from chat until {$user->chat_banned_until->toDateTimeString()}.";
         } else {
-            ChatMessage::sendBotMessage("🛡️ Moderator @{$moderator->username} unbanned @{$user->username} from chat.");
+            ChatMessage::sendBotMessage("Moderator @{$moderator->username} unbanned @{$user->username} from chat.");
             $message = "User @{$user->username} has been unbanned from chat.";
         }
 

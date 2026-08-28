@@ -319,7 +319,7 @@ class ChatController extends Controller
                     ]);
 
                     if (! $wasAlreadyBanned) {
-                        ChatMessage::sendBotMessage("🛡️ System automatically suspended @{$reportedUser->username} from chat for 24 hours following community reports.");
+                        ChatMessage::sendBotMessage("System automatically suspended @{$reportedUser->username} from chat for 24 hours following community reports.");
                     }
                 }
             }
