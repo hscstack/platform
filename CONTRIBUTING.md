@@ -1,6 +1,6 @@
 # Contributing to HSCStack
 
-Thanks for your interest in HSCStack! This project is built by and for HSC students in Bangladesh, and we welcome help from fellow developers.
+Thanks for your interest in HSCStack! This project is built by and for HSC & SSC students in Bangladesh, and we welcome help from fellow developers.
 
 ## Before You Start
 
@@ -10,16 +10,21 @@ HSCStack's codebase is **not open for general, unsolicited pull requests**. To c
 2. Once your application is reviewed and accepted, you'll be onboarded to the codebase.
 3. After that, you're free to open issues, pick up tasks, and submit PRs following the workflow below.
 
-If you're not yet a core developer but found a bug or have a suggestion, please [open a GitHub Issue](https://github.com/trtajim/hscstack/issues) instead — no membership required for that.
+If you're not yet a core developer but found a bug or have a suggestion, please [open a GitHub Issue](https://github.com/hscstack/platform/issues) instead — no membership required for that.
 
 ## Tech Stack
 
-| Layer        | Technology            |
-|--------------|------------------------|
-| Backend      | Laravel (PHP)          |
-| Frontend     | Vue.js via Inertia.js  |
-| Storage      | Public file storage    |
-| Admin Panel  | Built-in Laravel admin |
+| Layer              | Technology                            |
+| ------------------ | ------------------------------------- |
+| **Backend**        | Laravel 12 (PHP)                      |
+| **Frontend**       | Vue 3 + TypeScript via Inertia.js v3  |
+| **Styling**        | Tailwind CSS v4                       |
+| **Realtime**       | Pusher Channels + Laravel Echo        |
+| **Storage**        | AWS S3 / Cloudflare R2                |
+| **Auth**           | Google OAuth 2.0 (Laravel Socialite)  |
+| **Analytics**      | PostHog                               |
+| **Permissions**    | Spatie Laravel Permission             |
+| **PWA**            | vite-plugin-pwa                       |
 
 ## Development Setup
 
@@ -45,6 +50,15 @@ php artisan migrate
 php artisan serve
 pnpm dev
 ```
+
+### Additional Setup (Optional)
+
+- **Google OAuth:** Configure `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` in `.env` for authentication.
+- **Pusher:** Configure `PUSHER_APP_ID`, `PUSHER_APP_KEY`, `PUSHER_APP_SECRET` in `.env` for live chat.
+- **S3/R2 Storage:** Configure `AWS_*` or `CLOUDFLARE_*` keys for file uploads.
+- **PostHog:** Configure `POSTHOG_*` keys for analytics.
+- **YouTube Data API:** Configure `YOUTUBE_API_KEY` for playlist imports.
+- **Short.io:** Configure `SHORT_IO_*` keys for URL shortening.
 
 ## Workflow
 
@@ -90,44 +104,54 @@ php artisan test
 
 General guidelines:
 - Follow existing Laravel conventions (FormRequests for validation, resource controllers, etc.).
-- Keep Vue components under `resources/js/Pages` and `resources/js/Components` organized and reusable.
+- Keep Vue components under `resources/js/pages/` and `resources/js/components/` organized and reusable.
 - Avoid passing non-database fields into mass assignment (`create()`/`update()`); validate and filter explicitly.
 - Keep PRs focused — one feature or fix per PR is easier to review.
+- Use TypeScript types defined in `resources/js/types/` for all component props and API responses.
+- Follow the existing cache invalidation pattern using Observers when adding new cacheable models.
 
 ## Project Structure
 
 ```
-hscstack/
+platform/
 ├── app/
-│   ├── Models/             # Subject, Node, Resource models
-│   ├── Http/Controllers/   # Web + Admin controllers
-│   └── ...
+│   ├── Models/               # Eloquent models (User, Subject, Node, Resource, Blog, etc.)
+│   ├── Http/Controllers/     # Web + Admin + API controllers
+│   ├── Mail/                 # Mailable classes (Welcome, Notifications, Broadcasts)
+│   ├── Observers/            # Cache invalidation observers
+│   ├── Services/             # Business logic services
+│   └── Console/Commands/     # Artisan CLI commands
 ├── resources/
 │   ├── js/
-│   │   ├── Pages/          # Inertia Vue pages
-│   │   └── Components/     # Reusable Vue components
-│   └── views/              # Blade layouts
+│   │   ├── pages/            # Inertia Vue pages
+│   │   ├── components/       # Reusable Vue components
+│   │   ├── layouts/          # App layouts
+│   │   └── types/            # TypeScript type definitions
+│   └── views/                # Blade templates
 ├── routes/
-│   ├── web.php             # Public routes
-│   └── admin.php           # Admin routes
-├── public/storage/         # Uploaded files
-├── .env.example
+│   ├── web.php               # Public & auth routes
+│   ├── admin.php             # Admin panel routes
+│   └── api.php               # API routes (chat, auth, short URLs)
+├── database/migrations/      # Database schema migrations
+├── config/                   # App configuration
+├── docs/                     # Developer documentation
 └── README.md
 ```
 
 ## Content Contributions (Non-Code)
 
-If you want to contribute academic resources (notes, PDFs, questions, etc.) rather than code, you don't need to touch this repository at all. Instead:
+If you want to contribute academic resources (notes, PDFs, questions, images, videos) rather than code, you don't need to touch this repository at all. Instead:
 
 1. Become a member at [hscstack.site/join](https://hscstack.site/join)
-2. Log in to the platform and upload your resource under the relevant subject and chapter.
-3. Your submission goes live after a quick admin review.
+2. Log in with Google and navigate to the relevant subject and chapter.
+3. Upload your resource with a clear title and content.
+4. Your submission goes live after admin review.
 
 Please only upload content you created or have permission to share, and avoid copyrighted textbooks or board materials.
 
 ## Reporting Bugs & Requesting Features
 
-- Use [GitHub Issues](https://github.com/trtajim/hscstack/issues) for bugs and feature requests.
+- Use [GitHub Issues](https://github.com/hscstack/platform/issues) for bugs and feature requests.
 - Include steps to reproduce, expected vs. actual behavior, and screenshots if relevant (for UI bugs).
 
 ## Questions?

@@ -9,6 +9,8 @@ import {
     Trash,
     LocateIcon,
     PersonStanding,
+    Mail,
+    MessageSquare,
 } from 'lucide-vue-next';
 </script>
 
@@ -31,7 +33,7 @@ import {
         <p
             class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
         >
-            সর্বশেষ আপডেট: জুলাই ২০২৬
+            সর্বশেষ আপডেট: আগস্ট ২০২৬
         </p>
     </header>
 
@@ -67,26 +69,28 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        আমরা জিনিসগুলো fast এবং clean রাখার চেষ্টা করি । একটা
-                        ভালো experience দেওয়ার জন্য যতটুকু প্রয়োজন, ঠিক ততটুকু
-                        তথ্যই আমরা সংগ্রহ করি:
+                        প্ল্যাটফর্মের ফিচারগুলো নিরবচ্ছিন্নভাবে প্রদানের জন্য আমরা কিছু নির্দিষ্ট তথ্য সংগ্রহ করি:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
                         <li>
                             <strong class="text-slate-700 dark:text-gray-300"
-                                >Usage Data:</strong
+                                >অ্যাকাউন্ট ডেটা:</strong
                             >
-                            layout পারফরম্যান্স অপটিমাইজ করার জন্য ব্রাউজার টাইপ
-                            এবং ভিজিট করা পেজের মতো non-personal ডেটা।
+                            Google OAuth 2.0 এর মাধ্যমে লগইন করার সময় আপনার নাম, ইমেইল, Google ID এবং প্রোফাইল ছবি সংগ্রহ করা হয়।
                         </li>
                         <li>
                             <strong class="text-slate-700 dark:text-gray-300"
-                                >Search Queries:</strong
+                                >প্রোফাইল ডেটা:</strong
                             >
-                            সাবজেক্ট instantly ফিল্টার করার জন্য আপনার সার্চ
-                            ইনপুট আপনার ডিভাইসেই locally প্রসেস করা হয়।
+                            আপনার বায়ো, শিক্ষাপ্রতিষ্ঠানের নাম, অ্যাভাটার এবং সোশ্যাল লিংক (Facebook, Instagram, GitHub)।
+                        </li>
+                        <li>
+                            <strong class="text-slate-700 dark:text-gray-300"
+                                >ইউজার অ্যাক্টিভিটি:</strong
+                            >
+                            চ্যাট মেসেজ, রিসোর্স কমপ্লিশন স্ট্যাটাস, ফোল্ডার আপভোট/ডাউনভোট, অ্যাপ্রিসিয়েশন, ব্লগ কমেন্ট ও রিঅ্যাকশন এবং আপলোড করা ফাইলসমূহ।
                         </li>
                     </ul>
                 </div>
@@ -108,14 +112,7 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        আপনার visual preference (যেমন লেআউট সাইজিং বা cached
-                        data) মনে রাখার জন্য আমরা lightweight local storage বা
-                        কুকিজ ব্যবহার করি, যাতে ব্রাউজিং সেশনটা seamless হয়।
-                        আমরা তৃতীয় পক্ষের বিজ্ঞাপন বা cross-site advertising
-                        tracking এর মাধ্যমে আপনাকে অনুসরণ করি না। আমরা কিছু
-                        privacy-focused analytics টুলও ব্যবহার করি, যেগুলোর
-                        বিস্তারিত বর্ণনা ৬ নম্বর সেকশনে ("অ্যানালিটিক্স ও
-                        ট্র্যাকিং") দেওয়া আছে।
+                        একটি সুরক্ষিত এবং seamless অভিজ্ঞতা নিশ্চিত করতে আমরা কুকিজ ও লোকাল স্টোরেজ ব্যবহার করি। এর মধ্যে রয়েছে Session Cookies এবং CSRF টোকেন যা সিকিউরিটির জন্য জরুরি। পাশাপাশি আপনার সিলেক্ট করা কোর্সের জন্য preferred_course কুকি এবং আমাদের PWA অ্যাপের জন্য Service Worker ব্যবহার করা হয়। আমরা কোনো ধরনের থার্ড-পার্টি অ্যাডভার্টাইজিং কুকিজ ব্যবহার করি না।
                     </p>
                 </div>
             </div>
@@ -136,12 +133,17 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        অনলাইনে থাকতে এবং দ্রুত পারফর্ম করতে আমাদের আর্কাইভ
-                        modern hosting platform এবং lightweight analytics টুল
-                        ব্যবহার করে। এই থার্ড পার্টিগুলো আপনার basic operational
-                        data নিরাপদে এবং কড়া security compliance নিয়ম মেনে
-                        হ্যান্ডেল করে।
+                        প্ল্যাটফর্মের কার্যক্রম পরিচালনার জন্য আমরা কিছু নির্ভরযোগ্য থার্ড-পার্টি সার্ভিস ব্যবহার করি:
                     </p>
+                    <ul
+                        class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        <li><strong>অথেন্টিকেশন:</strong> Google OAuth</li>
+                        <li><strong>রিয়েল-টাইম সার্ভিস:</strong> Pusher (WebSockets)</li>
+                        <li><strong>স্টোরেজ:</strong> AWS S3 / Cloudflare R2</li>
+                        <li><strong>অ্যানালিটিক্স:</strong> PostHog</li>
+                        <li><strong>অন্যান্য:</strong> Short.io (লিংক শর্টেনার), YouTube (এম্বেড করা ভিডিও) এবং নির্ভরযোগ্য ইমেইল প্রোভাইডার (Postmark/Resend/SES)।</li>
+                    </ul>
                 </div>
             </div>
 
@@ -161,11 +163,7 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        প্ল্যাটফর্মের safety নিশ্চিত করতে আমরা strict, clean
-                        codebase practice অনুসরণ করি। এই ডিজিটাল আর্কাইভ
-                        সুরক্ষিত রাখতে আমরা যথাসাধ্য চেষ্টা করলেও, মনে
-                        রাখবেন—অনলাইনে absolute নেটওয়ার্ক সিকিউরিটি বলে কিছু
-                        নেই।
+                        আপনার ডেটার সর্বোচ্চ নিরাপত্তা নিশ্চিত করতে আমরা HTTPS এনক্রিপশন, সিকিউর ক্লাউড স্টোরেজ, মজবুত পাসওয়ার্ড হ্যাশিং এবং প্রোডাকশন লেভেলের সেফগার্ড ব্যবহার করি। স্প্যাম রোধে রয়েছে রেট লিমিটিং ব্যবস্থা। এছাড়া ডেটা লস এড়াতে আমাদের ডাটাবেস এবং ফাইলগুলো স্বয়ংক্রিয়ভাবে Google Drive-এ ব্যাকআপ নেওয়া হয়। তবে অনলাইনে কোনো সিস্টেমই ১০০% সুরক্ষিত নয়।
                     </p>
                 </div>
             </div>
@@ -181,24 +179,12 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৫. কনট্রিবিউটর তথ্য
+                        ৫. কনট্রিবিউটর ও ব্যবহারকারী তথ্য
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        কনট্রিবিউটর হিসেবে কাজ করার জন্য আপনি যে তথ্য প্রদান
-                        করেন (যেমন নাম, ইমেইল বা প্রোফাইল তথ্য), তা কনট্রিবিউটর
-                        management, কনটেন্ট attribution এবং প্ল্যাটফর্ম
-                        পরিচালনার জন্য ব্যবহার করা হয়। কনট্রিবিউটররা তাদের
-                        অ্যাকাউন্ট মুছে ফেলার অনুরোধ করতে পারেন, তবে অ্যাকাউন্ট
-                        মুছে ফেলার অর্থ এই নয় যে তাদের পূর্বে প্রকাশিত কনটেন্টও
-                        স্বয়ংক্রিয়ভাবে মুছে যাবে — বিস্তারিত জানতে আমাদের
-                        <Link
-                            href="/content-policy"
-                            class="text-indigo-600 underline dark:text-indigo-400"
-                            >Content Policy
-                        </Link>
-                        দেখুন।
+                        Google sign-in থেকে প্রাপ্ত আপনার প্রোফাইল তথ্য এবং আপলোড করা কনটেন্ট অন্যান্য ব্যবহারকারীরা দেখতে পারেন। আপনি চাইলে সেটিংস থেকে প্রোফাইল ভিজিবিলিটি নিয়ন্ত্রণ করতে পারেন এবং ইমেইল প্রেফারেন্স (receive_emails) অন/অফ করতে পারেন। প্ল্যাটফর্মে কোনো কনটেন্ট আপলোড করলে তার সাথে আপনার নাম সংযুক্ত (Attribution) থাকে।
                     </p>
                 </div>
             </div>
@@ -219,20 +205,54 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        ব্যবহারকারীর অভিজ্ঞতা এবং প্ল্যাটফর্মের কার্যকারিতা
-                        উন্নত করার জন্য আমরা বিভিন্ন analytics এবং performance
-                        monitoring tool ব্যবহার করতে পারি। এর মধ্যে Cloudflare
-                        Analytics, Microsoft Clarity এবং আমাদের নিজস্ব internal
-                        analytics system অন্তর্ভুক্ত হতে পারে। এসব সিস্টেম
-                        সাধারণত ভিজিট, ব্রাউজার, ডিভাইস, পেজ interaction এবং
-                        ট্রাফিক pattern-এর মতো non-personal usage data সংগ্রহ
-                        করে। আমরা এই তথ্য কোনো নির্দিষ্ট ব্যক্তিকে শনাক্ত করার
-                        উদ্দেশ্যে ব্যবহার করি না।
+                        প্ল্যাটফর্ম উন্নত করার উদ্দেশ্যে আমরা মূলত PostHog ব্যবহার করি যা pageviews, unique visitors, active users এবং referrers সম্পর্কে ধারণা দেয়। পাশাপাশি Cloudflare ও আমাদের ইন্টার্নাল অ্যানালিটিক্স কাজ করে। এসব ডেটা সম্পূর্ণ রূপে non-personal এবং শুধু এগ্রিগেট আকারে ব্যবহৃত হয়।
                     </p>
                 </div>
             </div>
 
             <!-- Section 7 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <Mail class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৭. ইমেইল কমিউনিকেশন
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        ব্যবহারকারীদের সাথে যোগাযোগ রাখার জন্য আমরা ওয়েলকাম ইমেইল, নির্দিষ্ট মাইলস্টোন নোটিফিকেশন, ব্লগে কমেন্ট অ্যালার্ট এবং গুরুত্বপূর্ণ ঘোষণা (bulk announcements) পাঠিয়ে থাকি। আপনি চাইলে যেকোনো সময় আপনার অ্যাকাউন্ট সেটিংস বা ইমেইলের নিচে থাকা আনসাবস্ক্রাইব লিংকে ক্লিক করে এসব ইমেইল বন্ধ করতে পারেন।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 8 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <MessageSquare class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৮. লাইভ চ্যাট ডেটা
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        আমাদের রিয়েল-টাইম লাইভ চ্যাটে পাঠানো মেসেজ, রিপ্লাই এবং রিঅ্যাকশন ডাটাবেসে সেভ করা হয়। চ্যাটের পারফরম্যান্স ঠিক রাখতে আমরা সাধারণত নির্দিষ্ট সংখ্যক (যেমন ~২০০) লেটেস্ট মেসেজ রেখে পুরনো মেসেজ মুছে ফেলি (rolling pruning)। এছাড়া চ্যাটের সুষ্ঠু পরিবেশ বজায় রাখার জন্য ইউজার রিপোর্ট সেভ করা হয় এবং নিয়ম ভাঙলে অটো-ব্যান মেকানিজম রয়েছে। শুধুমাত্র প্ল্যাটফর্মের মডারেটর বা স্টাফরা নিয়মভঙ্গকারী মেসেজ ডিলিট করতে পারেন।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 9 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -243,24 +263,17 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৭. ব্যক্তিগত তথ্য মুছে ফেলার অনুরোধ
+                        ৯. ব্যক্তিগত তথ্য মুছে ফেলার অনুরোধ
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack সাধারণ দর্শকদের কাছ থেকে কোনো ব্যক্তিগত
-                        অ্যাকাউন্ট তথ্য সংগ্রহ বা সংরক্ষণ করে না। তাই সাধারণ
-                        ব্যবহারকারীদের জন্য আলাদা data deletion request প্রযোজ্য
-                        নয়। তবে কনট্রিবিউটর অ্যাকাউন্টের ক্ষেত্রে,
-                        ব্যবহারকারীরা তাদের অ্যাকাউন্ট মুছে ফেলার অনুরোধ করতে
-                        পারেন — যদিও তাদের পূর্বে প্রকাশিত কনটেন্ট প্ল্যাটফর্মে
-                        থেকে যেতে পারে, যেমনটি Content Policy-তে ব্যাখ্যা করা
-                        হয়েছে।
+                        আপনি চাইলে যেকোনো সময় আপনার অ্যাকাউন্ট ডিলিট করার অনুরোধ করতে পারেন। অ্যাকাউন্ট মুছে ফেললে আপনার প্রোফাইল তথ্য এবং পার্সোনাল ডেটা মুছে যাবে, তবে পূর্বে আপলোড করা রিসোর্স বা কনটেন্ট প্ল্যাটফর্মে থেকে যেতে পারে (কনটেন্ট রিটেনশন পলিসি অনুযায়ী)। বিস্তারিত আমাদের Content Policy-তে দেখুন।
                     </p>
                 </div>
             </div>
 
-            <!-- Section 8 -->
+            <!-- Section 10 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -271,7 +284,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৮. কনটেন্ট সম্পর্কিত তথ্য
+                        ১০. কনটেন্ট সম্পর্কিত তথ্য
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"

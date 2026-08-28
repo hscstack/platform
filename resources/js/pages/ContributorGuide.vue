@@ -846,9 +846,10 @@ onUnmounted(() => {
                         class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
                     >
                         যেকোনো সময় আপনি আপনার account details update করতে
-                        পারবেন। Profile photo-এর জন্য Imgur বা PostImages-এর মতো
-                        কোনো service-এ ছবি আপলোড করে, সেই direct link আপনার
-                        profile-এ ব্যবহার করুন।
+                        পারবেন। Profile photo সরাসরি আপলোড করুন — PNG, JPG বা
+                        WEBP ফরম্যাটে, সর্বোচ্চ 2MB সাইজের মধ্যে। এছাড়া bio,
+                        institution, এবং social links (Facebook, Instagram,
+                        GitHub) যোগ করতে পারবেন।
                     </p>
                 </div>
             </section>
