@@ -49,13 +49,13 @@ class UserProfileController extends Controller
             : false;
 
         $appreciators = $user->appreciators()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.title'])
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
             ->inRandomOrder()
             ->take(30)
             ->get();
 
         $appreciating = $user->appreciatingUsers()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.title'])
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
             ->inRandomOrder()
             ->take(30)
             ->get();
@@ -194,7 +194,7 @@ class UserProfileController extends Controller
         $contributorUsers = User::where('id', '!=', $user->id)
             ->whereNotNull('username')
             ->whereHas('roles')
-            ->select(['id', 'name', 'username', 'title', 'institution', 'image_path', 'about'])
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about'])
             ->inRandomOrder()
             ->take(2)
             ->get();
@@ -204,7 +204,7 @@ class UserProfileController extends Controller
 
         $randomUsers = User::whereNotIn('id', $excludedIds)
             ->whereNotNull('username')
-            ->select(['id', 'name', 'username', 'title', 'institution', 'image_path', 'about'])
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about'])
             ->inRandomOrder()
             ->take($remainingNeeded)
             ->get();
@@ -216,7 +216,6 @@ class UserProfileController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'username' => $user->username,
-                'title' => $user->title,
                 'about' => $user->about,
                 'institution' => $user->institution,
                 'image_url' => $user->image_url,
