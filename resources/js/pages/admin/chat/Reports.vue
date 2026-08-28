@@ -81,6 +81,20 @@ const deleteReport = (reportId: number) => {
     }
 };
 
+const handleClearReports = (statusFilter?: string) => {
+    const isFiltered = statusFilter && statusFilter !== 'all';
+    const confirmMessage = isFiltered
+        ? `Are you sure you want to permanently delete all ${statusFilter} report records? This action cannot be undone.`
+        : 'Are you sure you want to permanently delete ALL report records? This action cannot be undone.';
+
+    if (confirm(confirmMessage)) {
+        router.delete('/admin/chat/reports/clear', {
+            data: isFiltered ? { status: statusFilter } : {},
+            preserveScroll: true,
+        });
+    }
+};
+
 const isBanModalOpen = ref(false);
 const selectedUser = ref<ChatBanUser | null>(null);
 
@@ -149,6 +163,33 @@ const formatDate = (isoString?: string | null) => {
                         and moderate disruptive accounts.
                     </p>
                 </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div v-if="reports.length > 0" class="flex items-center gap-2">
+                <button
+                    type="button"
+                    @click="
+                        handleClearReports(
+                            currentFilter === 'all' ? undefined : currentFilter,
+                        )
+                    "
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/70 px-3.5 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100 active:scale-95 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-950/80"
+                    :title="
+                        currentFilter === 'all'
+                            ? 'Delete all reports'
+                            : `Delete all ${currentFilter} reports`
+                    "
+                >
+                    <Trash2 class="h-3.5 w-3.5" />
+                    <span>
+                        {{
+                            currentFilter === 'all'
+                                ? 'Clear All Reports'
+                                : `Clear ${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)} Reports`
+                        }}
+                    </span>
+                </button>
             </div>
         </div>
 
