@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutUsController;
-use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NodeController;
@@ -72,6 +72,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+    Route::get('/onboarding', [AuthController::class, 'showOnboarding'])->name('onboarding');
+    Route::post('/onboarding', [AuthController::class, 'completeOnboarding'])->name('onboarding.complete');
 
     Route::get('/blogs', [BlogController::class, 'index']);
     Route::get('/blogs/{blog}', [BlogController::class, 'show']);
