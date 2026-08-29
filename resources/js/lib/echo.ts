@@ -33,12 +33,14 @@ export function getEcho(key?: string, cluster?: string): Echo<'pusher'> | null {
         authEndpoint: '/broadcasting/auth',
         auth: {
             headers: {
-                'X-CSRF-TOKEN':
-                    (
-                        document.querySelector(
-                            'meta[name="csrf-token"]',
-                        ) as HTMLMetaElement
-                    )?.content || '',
+                'X-XSRF-TOKEN': decodeURIComponent(
+                    document.cookie
+                        .split('; ')
+                        .find((c) => c.startsWith('XSRF-TOKEN='))
+                        ?.split('=')
+                        .slice(1)
+                        .join('=') || '',
+                ),
                 'X-Requested-With': 'XMLHttpRequest',
             },
         },
