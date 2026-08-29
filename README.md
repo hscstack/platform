@@ -155,7 +155,7 @@ Have a question, found a bug, or want to get involved?
 
 - 📧 Email: `com.tajim@gmail.com`
 - 🐛 Issues: [Open a GitHub Issue](../../issues)
-- ❤️ Support: [hscstack.site/support](https://hscstack.site/support)
+- ❤️ Support / Donate: [hscstack.site/donate](https://hscstack.site/donate)
 
 ---
 
