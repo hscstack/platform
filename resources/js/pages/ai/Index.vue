@@ -179,7 +179,7 @@ const handleMockSubmit = (question?: string) => {
                 </div>
 
                 <Link
-                    href="/support"
+                    href="/donate"
                     class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-700 hover:shadow-lg active:scale-95"
                 >
                     <span>ফান্ডিং এ সাহায্য করুন</span>
