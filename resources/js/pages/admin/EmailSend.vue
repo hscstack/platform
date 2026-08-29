@@ -7,6 +7,7 @@ import {
     Users,
     User,
     GraduationCap,
+    ShieldCheck,
     AlertCircle,
     AtSign,
     Eye,
@@ -27,6 +28,10 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    staffCount: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const page = usePage();
@@ -39,7 +44,7 @@ const imagePreview = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
-    recipient_type: 'all' as 'all' | 'students' | 'single',
+    recipient_type: 'all' as 'all' | 'students' | 'staff' | 'single',
     recipient_email: '',
     subject: '',
     body: '',
@@ -173,7 +178,9 @@ const submitForm = () => {
                     Recipient Target
                 </label>
 
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div
+                    class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+                >
                     <!-- Bulk to all subscribed -->
                     <button
                         type="button"
@@ -240,6 +247,41 @@ const submitForm = () => {
                                 class="text-xs text-slate-500 dark:text-gray-400"
                             >
                                 {{ studentsCount }} public accounts
+                            </p>
+                        </div>
+                    </button>
+
+                    <!-- Staff Only -->
+                    <button
+                        type="button"
+                        @click="form.recipient_type = 'staff'"
+                        class="flex items-center gap-3 rounded-2xl border p-4 text-left transition"
+                        :class="
+                            form.recipient_type === 'staff'
+                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/10 dark:border-indigo-500 dark:bg-indigo-500/10'
+                                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-gray-700 dark:bg-gray-950/40 dark:hover:border-gray-600'
+                        "
+                    >
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                            :class="
+                                form.recipient_type === 'staff'
+                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
+                                    : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                            "
+                        >
+                            <ShieldCheck class="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                            <p
+                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                Staff Only
+                            </p>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                {{ staffCount }} staff accounts
                             </p>
                         </div>
                     </button>
@@ -320,13 +362,18 @@ const submitForm = () => {
 
             <!-- Zero Subscribers Warning for Bulk mode -->
             <div
-                v-if="form.recipient_type === 'all' && recipientCount === 0"
+                v-if="
+                    (form.recipient_type === 'all' && recipientCount === 0) ||
+                    (form.recipient_type === 'students' &&
+                        studentsCount === 0) ||
+                    (form.recipient_type === 'staff' && staffCount === 0)
+                "
                 class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-xs font-medium text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300"
             >
                 <AlertCircle class="mt-0.5 h-4 w-4 shrink-0" />
                 <p>
                     There are currently no active users with email notifications
-                    enabled.
+                    enabled in the selected recipient target.
                 </p>
             </div>
 
@@ -501,7 +548,11 @@ const submitForm = () => {
                         :disabled="
                             form.processing ||
                             (form.recipient_type === 'all' &&
-                                recipientCount === 0)
+                                recipientCount === 0) ||
+                            (form.recipient_type === 'students' &&
+                                studentsCount === 0) ||
+                            (form.recipient_type === 'staff' &&
+                                staffCount === 0)
                         "
                         class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                     >
@@ -599,7 +650,11 @@ const submitForm = () => {
                                     form.recipient_type === 'single'
                                         ? form.recipient_email ||
                                           '(Recipient Email)'
-                                        : `All Subscribed Users (${props.recipientCount} recipients)`
+                                        : form.recipient_type === 'students'
+                                          ? `Students (Non-Staff) (${props.studentsCount} recipients)`
+                                          : form.recipient_type === 'staff'
+                                            ? `Staff Members Only (${props.staffCount} recipients)`
+                                            : `All Subscribed Users (${props.recipientCount} recipients)`
                                 }}
                             </span>
                         </div>
@@ -757,7 +812,9 @@ const submitForm = () => {
                                     ? 'Confirm Single Email'
                                     : form.recipient_type === 'students'
                                       ? 'Confirm Students Broadcast'
-                                      : 'Confirm Email Broadcast'
+                                      : form.recipient_type === 'staff'
+                                        ? 'Confirm Staff Broadcast'
+                                        : 'Confirm Email Broadcast'
                             }}
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
@@ -766,7 +823,9 @@ const submitForm = () => {
                                     ? `Direct email to ${form.recipient_email}`
                                     : form.recipient_type === 'students'
                                       ? `Queue broadcast to ${props.studentsCount} students (non-staff)`
-                                      : `Queue broadcast to ${props.recipientCount} subscribed users`
+                                      : form.recipient_type === 'staff'
+                                        ? `Queue broadcast to ${props.staffCount} staff members`
+                                        : `Queue broadcast to ${props.recipientCount} subscribed users`
                             }}
                         </p>
                     </div>
@@ -785,6 +844,12 @@ const submitForm = () => {
                         will be dispatched to
                         <strong>{{ props.studentsCount }}</strong> students
                         (public non-staff users) who have enabled email updates.
+                    </span>
+                    <span v-else-if="form.recipient_type === 'staff'">
+                        Are you sure you want to send this broadcast? The emails
+                        will be dispatched to
+                        <strong>{{ props.staffCount }}</strong> staff members
+                        who have enabled email updates.
                     </span>
                     <span v-else>
                         Are you sure you want to send this broadcast? The emails
