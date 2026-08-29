@@ -51,7 +51,12 @@ class ChatController extends Controller
         }
 
         // Fetch last X messages in chronological order
-        $messages = ChatMessage::with(['user:id,name,username,image_path,institution', 'user.roles:id,name', 'reactions.user:id,name,username'])
+        $messages = ChatMessage::with([
+            'user:id,name,username,image_path,institution',
+            'user.roles:id,name',
+            'reactions.user:id,name,username,image_path,institution',
+            'reactions.user.roles:id,name',
+        ])
             ->latest('id')
             ->take($maxMessages)
             ->get()
@@ -404,6 +409,7 @@ class ChatController extends Controller
             ]);
         }
 
+        $message->unsetRelation('reactions');
         $formattedReactions = $message->getFormattedReactions($user->id);
         $publicReactions = $message->getFormattedReactions(null);
 
