@@ -50,8 +50,10 @@ class ChatMessageSent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
+        $channel = app()->environment('production') ? 'global-chat' : app()->environment().'.global-chat';
+
         return [
-            new Channel('global-chat'),
+            new Channel($channel),
         ];
     }
 

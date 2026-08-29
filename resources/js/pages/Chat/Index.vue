@@ -75,6 +75,7 @@ const props = defineProps<{
         can_delete: boolean;
         reaction_emojis?: string[];
         messages: ChatMessageItem[];
+        channel_name?: string;
         pusher_key?: string;
         pusher_cluster?: string;
     };
@@ -83,6 +84,10 @@ const props = defineProps<{
 const page = usePage();
 const { can } = usePermissions();
 const currentUser = computed(() => page.props.auth?.user);
+
+const chatChannelName = computed(
+    () => props.chatState.channel_name || 'global-chat',
+);
 
 const maxMessagesLimit = ref(props.chatState.max_messages ?? 200);
 const maxLengthLimit = ref(props.chatState.max_length ?? 280);
@@ -147,7 +152,10 @@ const showRulesModal = ref(false);
 const mobileActionMessage = ref<ChatMessageItem | null>(null);
 
 const openMobileActions = (msg: ChatMessageItem) => {
-    if (msg.is_deleted || msg.deleted_at) {
+    const isDeleted = Boolean(msg.is_deleted || msg.deleted_at);
+    const isStaff = Boolean(can('manage chat') || canDelete.value);
+
+    if (isDeleted && !isStaff) {
         return;
     }
 
@@ -462,7 +470,7 @@ const setupRealtime = () => {
         return;
     }
 
-    echo.channel('global-chat')
+    echo.channel(chatChannelName.value)
         .stopListening('.message.sent')
         .stopListening('.message.deleted')
         .stopListening('.message.reacted')
@@ -744,29 +752,45 @@ const reactToMessage = async (message: ChatMessageItem, emoji: string) => {
         message.reactions = [];
     }
 
-    // Optimistic UI update
-    const existing = message.reactions.find((r) => r.emoji === emoji);
+    // Optimistic UI update: Find currently reacted emoji by this user if any
+    const currentlyReacted = message.reactions.find((r) => r.reacted);
 
-    if (existing) {
-        if (existing.reacted) {
-            existing.reacted = false;
-            existing.count = Math.max(0, existing.count - 1);
+    if (currentlyReacted && currentlyReacted.emoji === emoji) {
+        // Toggle off same emoji
+        currentlyReacted.reacted = false;
+        currentlyReacted.count = Math.max(0, currentlyReacted.count - 1);
 
-            if (existing.count === 0) {
-                message.reactions = message.reactions.filter(
-                    (r) => r.emoji !== emoji,
-                );
-            }
-        } else {
-            existing.reacted = true;
-            existing.count += 1;
+        if (currentlyReacted.count === 0) {
+            message.reactions = message.reactions.filter(
+                (r) => r.emoji !== emoji,
+            );
         }
     } else {
-        message.reactions.push({
-            emoji,
-            count: 1,
-            reacted: true,
-        });
+        // Remove previous reaction if any
+        if (currentlyReacted) {
+            currentlyReacted.reacted = false;
+            currentlyReacted.count = Math.max(0, currentlyReacted.count - 1);
+
+            if (currentlyReacted.count === 0) {
+                message.reactions = message.reactions.filter(
+                    (r) => r.emoji !== currentlyReacted.emoji,
+                );
+            }
+        }
+
+        // Add new reaction
+        const target = message.reactions.find((r) => r.emoji === emoji);
+
+        if (target) {
+            target.reacted = true;
+            target.count += 1;
+        } else {
+            message.reactions.push({
+                emoji,
+                count: 1,
+                reacted: true,
+            });
+        }
     }
 
     try {
@@ -1126,7 +1150,7 @@ onUnmounted(() => {
             }
         }
 
-        echo.leave('global-chat');
+        echo.leave(chatChannelName.value);
     }
 });
 </script>
@@ -1423,17 +1447,25 @@ onUnmounted(() => {
 
                         <!-- Floating Action Toolbar (Desktop on Hover or Active Picker) -->
                         <div
-                            v-if="!msg.is_deleted && !msg.deleted_at"
-                            class="absolute -top-3.5 right-3 items-center gap-0.5 rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-md dark:border-zinc-700 dark:bg-zinc-800"
+                            v-if="
+                                (!msg.is_deleted && !msg.deleted_at) ||
+                                ((can('manage chat') || canDelete) &&
+                                    Number(currentUser?.id) !==
+                                        Number(msg.user.id))
+                            "
+                            class="absolute -top-3.5 right-3 z-30 items-center gap-0.5 rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-md dark:border-zinc-700 dark:bg-zinc-800"
                             :class="[
                                 activeReactionPickerMessageId === msg.id
-                                    ? 'z-30 flex ring-1 ring-black/5 dark:ring-white/10'
-                                    : 'z-20 hidden sm:group-hover:flex',
+                                    ? 'flex ring-1 ring-black/5 dark:ring-white/10'
+                                    : 'hidden sm:group-hover:flex',
                             ]"
                             @click.stop
                         >
-                            <!-- Reaction Trigger -->
-                            <div class="relative">
+                            <!-- Reaction Trigger (active messages only) -->
+                            <div
+                                v-if="!msg.is_deleted && !msg.deleted_at"
+                                class="relative"
+                            >
                                 <button
                                     v-if="currentUser"
                                     type="button"
@@ -1470,18 +1502,23 @@ onUnmounted(() => {
                                 </div>
                             </div>
 
-                            <!-- Reply -->
+                            <!-- Reply (active messages only) -->
                             <button
-                                v-if="currentUser && canPost"
+                                v-if="
+                                    !msg.is_deleted &&
+                                    !msg.deleted_at &&
+                                    currentUser &&
+                                    canPost
+                                "
                                 type="button"
-                                @click="startReply(msg)"
+                                @click.stop="startReply(msg)"
                                 class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
                                 title="Reply"
                             >
                                 <Reply class="h-3.5 w-3.5" />
                             </button>
 
-                            <!-- Ban (Staff) -->
+                            <!-- Ban (Staff) - stays visible on deleted messages -->
                             <button
                                 v-if="
                                     (can('manage chat') || canDelete) &&
@@ -1489,33 +1526,39 @@ onUnmounted(() => {
                                         Number(msg.user.id)
                                 "
                                 type="button"
-                                @click="openBanModal(msg.user)"
+                                @click.stop="openBanModal(msg.user)"
                                 class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                                 :title="`Ban @${msg.user.username}`"
                             >
                                 <Ban class="h-3.5 w-3.5" />
                             </button>
 
-                            <!-- Report -->
+                            <!-- Report (active messages only) -->
                             <button
                                 v-if="
+                                    !msg.is_deleted &&
+                                    !msg.deleted_at &&
                                     currentUser &&
                                     Number(currentUser.id) !==
                                         Number(msg.user.id)
                                 "
                                 type="button"
-                                @click="openReportModal(msg)"
+                                @click.stop="openReportModal(msg)"
                                 class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:text-zinc-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-400"
                                 title="Report"
                             >
                                 <Flag class="h-3.5 w-3.5" />
                             </button>
 
-                            <!-- Delete (Staff) -->
+                            <!-- Delete (Staff, active messages only) -->
                             <button
-                                v-if="canDelete"
+                                v-if="
+                                    !msg.is_deleted &&
+                                    !msg.deleted_at &&
+                                    canDelete
+                                "
                                 type="button"
-                                @click="deleteMessage(msg.id)"
+                                @click.stop="deleteMessage(msg.id)"
                                 class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                                 title="Delete"
                             >
@@ -1525,7 +1568,12 @@ onUnmounted(() => {
 
                         <!-- Mobile Action Trigger (3-dots) -->
                         <button
-                            v-if="!msg.is_deleted && !msg.deleted_at"
+                            v-if="
+                                (!msg.is_deleted && !msg.deleted_at) ||
+                                ((can('manage chat') || canDelete) &&
+                                    Number(currentUser?.id) !==
+                                        Number(msg.user.id))
+                            "
                             type="button"
                             @click.stop="openMobileActions(msg)"
                             class="shrink-0 p-1 text-slate-300 hover:text-slate-600 sm:hidden dark:text-zinc-600 dark:hover:text-zinc-300"
@@ -1792,8 +1840,15 @@ onUnmounted(() => {
                     </button>
                 </div>
 
-                <!-- Quick Emoji Reactions -->
-                <div v-if="currentUser" class="my-3 flex justify-between gap-1">
+                <!-- Quick Emoji Reactions (active messages only) -->
+                <div
+                    v-if="
+                        currentUser &&
+                        !mobileActionMessage.is_deleted &&
+                        !mobileActionMessage.deleted_at
+                    "
+                    class="my-3 flex justify-between gap-1"
+                >
                     <button
                         v-for="emoji in reactionEmojis"
                         :key="emoji"
@@ -1808,7 +1863,12 @@ onUnmounted(() => {
                 <!-- Action Rows -->
                 <div class="space-y-1 pt-1 text-xs">
                     <button
-                        v-if="currentUser && canPost"
+                        v-if="
+                            currentUser &&
+                            canPost &&
+                            !mobileActionMessage.is_deleted &&
+                            !mobileActionMessage.deleted_at
+                        "
                         type="button"
                         @click="startReply(mobileActionMessage)"
                         class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-slate-700 hover:bg-slate-100 active:scale-98 dark:text-zinc-200 dark:hover:bg-zinc-800"
@@ -1821,7 +1881,9 @@ onUnmounted(() => {
                         v-if="
                             currentUser &&
                             Number(currentUser.id) !==
-                                Number(mobileActionMessage.user.id)
+                                Number(mobileActionMessage.user.id) &&
+                            !mobileActionMessage.is_deleted &&
+                            !mobileActionMessage.deleted_at
                         "
                         type="button"
                         @click="openReportModal(mobileActionMessage)"
@@ -1831,6 +1893,7 @@ onUnmounted(() => {
                         <span>Report Message</span>
                     </button>
 
+                    <!-- Ban User (Staff) - stays visible on deleted messages -->
                     <button
                         v-if="
                             (can('manage chat') || canDelete) &&
@@ -1846,7 +1909,11 @@ onUnmounted(() => {
                     </button>
 
                     <button
-                        v-if="canDelete"
+                        v-if="
+                            canDelete &&
+                            !mobileActionMessage.is_deleted &&
+                            !mobileActionMessage.deleted_at
+                        "
                         type="button"
                         @click="deleteMessage(mobileActionMessage.id)"
                         class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
