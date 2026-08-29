@@ -19,6 +19,7 @@ import {
     MoreHorizontal,
     Radio,
     AtSign,
+    LifeBuoy,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
@@ -2222,8 +2223,26 @@ onUnmounted(() => {
                     </p>
                 </div>
 
+                <!-- Support Notice in Chat Modal -->
+                <div
+                    class="mt-3 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-2.5 text-[11px] text-slate-600 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400"
+                >
+                    <div class="flex items-center gap-2">
+                        <LifeBuoy
+                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                        />
+                        <span>কোনো টেকনিক্যাল সমস্যা বা সহায়তার জন্য?</span>
+                    </div>
+                    <Link
+                        href="/support"
+                        class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                    >
+                        সাপোর্ট সেন্টার &rarr;
+                    </Link>
+                </div>
+
                 <!-- Footer Close Button -->
-                <div class="mt-5 flex justify-end">
+                <div class="mt-4 flex justify-end">
                     <button
                         type="button"
                         @click="showRulesModal = false"
