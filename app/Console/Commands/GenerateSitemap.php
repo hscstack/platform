@@ -28,7 +28,7 @@ class GenerateSitemap extends Command
                 '/privacy-policy',
                 '/terms-service',
                 '/content-policy',
-                '/support',
+                '/donate',
                 '/join',
                 '/guide',
             ] as $page
