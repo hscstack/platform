@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 // Presence channel for tracking active users on Global Chat.
-// Only authenticated users join this channel; the data returned
-// here is what other members see via .here() / .joining().
-Broadcast::channel('presence-global-chat', function ($user) {
-    return ['id' => $user->id];
-});
+// Only registered when Pusher credentials are configured.
+if (env('PUSHER_APP_KEY')) {
+    Broadcast::channel('presence-global-chat', function ($user) {
+        return ['id' => $user->id];
+    });
+}
