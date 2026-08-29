@@ -30,6 +30,18 @@ export function getEcho(key?: string, cluster?: string): Echo<'pusher'> | null {
         key: pusherKey,
         cluster: pusherCluster,
         forceTLS: true,
+        authEndpoint: '/broadcasting/auth',
+        auth: {
+            headers: {
+                'X-CSRF-TOKEN':
+                    (
+                        document.querySelector(
+                            'meta[name="csrf-token"]',
+                        ) as HTMLMetaElement
+                    )?.content || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        },
     });
 
     window.Echo = echoInstance;
