@@ -15,7 +15,10 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
-    'version' => env('APP_VERSION', 'v2.1.0'),
+    'version' => env('APP_VERSION')
+        ?: (file_exists(base_path('version.txt')) ? trim((string) file_get_contents(base_path('version.txt'))) : null)
+        ?: trim((string) @exec('git describe --tags --abbrev=0 2>/dev/null'))
+        ?: 'v2.5.0',
 
     /*
     |--------------------------------------------------------------------------
