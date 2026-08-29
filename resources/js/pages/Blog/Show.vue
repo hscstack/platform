@@ -13,6 +13,7 @@ import {
     LogIn,
     X,
     Loader2,
+    CornerDownRight,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import UserListItem from '@/components/UserListItem.vue';
@@ -104,23 +105,27 @@ const handleReactionClick = () => {
     );
 };
 
-// Comment Form
+// Comment Form (Top-level)
 const commentForm = useForm({
     content: '',
+    parent_id: null as number | null,
 });
 
-const hasUserCommented = computed(() => {
-    if (!currentUser.value?.id) {
-        return false;
+// Reply State
+const replyingToId = ref<number | null>(null);
+const replyForm = useForm({
+    content: '',
+    parent_id: null as number | null,
+});
+
+const totalCommentsCount = computed(() => {
+    if (!props.comments) {
+        return 0;
     }
 
-    const currentId = Number(currentUser.value.id);
-
-    return props.comments.some((c: any) => {
-        const commentUserId = Number(c.user_id ?? c.user?.id);
-
-        return commentUserId === currentId;
-    });
+    return props.comments.reduce((total: number, c: any) => {
+        return total + 1 + (c.replies ? c.replies.length : 0);
+    }, 0);
 });
 
 const handleCommentInputClick = () => {
@@ -144,10 +149,60 @@ const submitComment = () => {
         return;
     }
 
+    commentForm.parent_id = null;
     commentForm.post(`/blogs/${props.blog.slug}/comments`, {
         preserveScroll: true,
         onSuccess: () => {
             commentForm.reset();
+        },
+    });
+};
+
+const startReply = (comment: any) => {
+    if (!currentUser.value) {
+        authModalMessage.value =
+            'Please sign in to join the conversation and leave a reply.';
+        showAuthModal.value = true;
+
+        return;
+    }
+
+    if (replyingToId.value === comment.id) {
+        replyingToId.value = null;
+        replyForm.reset();
+
+        return;
+    }
+
+    replyingToId.value = comment.id;
+    replyForm.parent_id = comment.id;
+    replyForm.content = '';
+};
+
+const cancelReply = () => {
+    replyingToId.value = null;
+    replyForm.reset();
+};
+
+const submitReply = (parentId: number) => {
+    if (!currentUser.value) {
+        authModalMessage.value =
+            'Please sign in to join the conversation and leave a reply.';
+        showAuthModal.value = true;
+
+        return;
+    }
+
+    if (!replyForm.content.trim() || replyForm.processing) {
+        return;
+    }
+
+    replyForm.parent_id = parentId;
+    replyForm.post(`/blogs/${props.blog.slug}/comments`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            replyingToId.value = null;
+            replyForm.reset();
         },
     });
 };
@@ -488,31 +543,13 @@ const formatTimeAgo = (dateStr: string) => {
                     <span
                         class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-300"
                     >
-                        {{ comments.length }}
+                        {{ totalCommentsCount }}
                     </span>
                 </h2>
             </div>
 
-            <!-- Comment Input Box or Already Commented Notice -->
+            <!-- Comment Input Box -->
             <div
-                v-if="hasUserCommented"
-                class="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-sm text-slate-700 dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:text-gray-300"
-            >
-                <div
-                    class="flex items-center gap-2 font-semibold text-indigo-700 dark:text-indigo-300"
-                >
-                    <MessageSquare class="h-4 w-4" />
-                    <span>You've already commented on this post</span>
-                </div>
-                <p class="mt-1 text-xs text-slate-600 dark:text-gray-400">
-                    Each user is limited to 1 comment per article. You can
-                    delete your existing comment below if you wish to post a new
-                    one.
-                </p>
-            </div>
-
-            <div
-                v-else
                 class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900"
             >
                 <form @submit.prevent="submitComment">
@@ -659,11 +696,12 @@ const formatTimeAgo = (dateStr: string) => {
                                 {{ formatTimeAgo(comment.created_at) }}
                             </span>
 
-                            <!-- Delete Button (Only for comment author or admin) -->
+                            <!-- Delete Button (Comment author, blog author, or admin) -->
                             <button
                                 v-if="
                                     currentUser &&
                                     (currentUser.id === comment.user_id ||
+                                        currentUser.id === blog.user_id ||
                                         canAccessAdmin)
                                 "
                                 @click="deleteComment(comment.id)"
@@ -680,6 +718,220 @@ const formatTimeAgo = (dateStr: string) => {
                     >
                         {{ comment.content }}
                     </p>
+
+                    <!-- Reply Action Button & Count -->
+                    <div
+                        class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-gray-800"
+                    >
+                        <button
+                            type="button"
+                            @click="startReply(comment)"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                        >
+                            <CornerDownRight class="h-3.5 w-3.5" />
+                            <span>Reply</span>
+                        </button>
+
+                        <span
+                            v-if="comment.replies && comment.replies.length > 0"
+                            class="text-[11px] font-medium text-slate-400 dark:text-gray-500"
+                        >
+                            {{ comment.replies.length }}
+                            {{
+                                comment.replies.length === 1
+                                    ? 'reply'
+                                    : 'replies'
+                            }}
+                        </span>
+                    </div>
+
+                    <!-- Inline Reply Input Box -->
+                    <div
+                        v-if="replyingToId === comment.id"
+                        class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20"
+                    >
+                        <div
+                            class="mb-2 flex items-center justify-between text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            <span
+                                >Replying to
+                                <strong
+                                    class="text-slate-800 dark:text-gray-200"
+                                    >@{{
+                                        comment.user?.name || 'Anonymous'
+                                    }}</strong
+                                ></span
+                            >
+                            <button
+                                type="button"
+                                @click="cancelReply"
+                                class="cursor-pointer rounded p-0.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                            >
+                                <X class="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+
+                        <form @submit.prevent="submitReply(comment.id)">
+                            <textarea
+                                v-model="replyForm.content"
+                                rows="2"
+                                placeholder="Write your reply..."
+                                maxlength="1000"
+                                class="w-full resize-none rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 transition placeholder:text-slate-400 focus:border-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400"
+                            ></textarea>
+
+                            <div class="mt-2 flex items-center justify-between">
+                                <span
+                                    class="text-[10px] text-slate-400 dark:text-gray-500"
+                                >
+                                    {{ 1000 - replyForm.content.length }}
+                                    characters remaining
+                                </span>
+
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        @click="cancelReply"
+                                        class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        :disabled="
+                                            replyForm.processing ||
+                                            !replyForm.content.trim()
+                                        "
+                                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <Loader2
+                                            v-if="replyForm.processing"
+                                            class="h-3 w-3 animate-spin"
+                                        />
+                                        <Send v-else class="h-3 w-3" />
+                                        <span>Reply</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Threaded Replies List -->
+                    <div
+                        v-if="comment.replies && comment.replies.length > 0"
+                        class="mt-3 space-y-2.5 border-l-2 border-slate-100 pl-3 sm:pl-4 dark:border-gray-800"
+                    >
+                        <div
+                            v-for="reply in comment.replies"
+                            :key="reply.id"
+                            class="group/reply rounded-xl border border-slate-100/90 bg-slate-50/70 p-3 transition hover:border-slate-200 dark:border-gray-800/80 dark:bg-gray-900/60 dark:hover:border-gray-700"
+                        >
+                            <div
+                                class="flex items-start justify-between gap-2.5"
+                            >
+                                <div class="flex items-start gap-2.5">
+                                    <Link
+                                        :href="
+                                            reply.user?.username
+                                                ? `/u/${reply.user.username}`
+                                                : '#'
+                                        "
+                                        class="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 transition hover:ring-2 hover:ring-indigo-400 dark:bg-indigo-950 dark:text-indigo-300"
+                                    >
+                                        <img
+                                            v-if="
+                                                reply.user?.image_url ||
+                                                reply.user?.image_path
+                                            "
+                                            :src="
+                                                reply.user?.image_url ||
+                                                '/storage/' +
+                                                    reply.user?.image_path
+                                            "
+                                            :alt="reply.user?.name"
+                                            class="h-full w-full object-cover"
+                                        />
+                                        <span class="text-[10px] uppercase">
+                                            {{
+                                                reply.user?.name?.charAt(0) ||
+                                                'U'
+                                            }}
+                                        </span>
+                                    </Link>
+
+                                    <div class="min-w-0">
+                                        <div
+                                            class="flex flex-wrap items-center gap-1.5"
+                                        >
+                                            <Link
+                                                :href="
+                                                    reply.user?.username
+                                                        ? `/u/${reply.user.username}`
+                                                        : '#'
+                                                "
+                                                class="inline-flex items-center gap-1 text-xs font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                                            >
+                                                <span>{{
+                                                    reply.user?.name ||
+                                                    'Anonymous'
+                                                }}</span>
+                                                <VerifiedBadge
+                                                    v-if="
+                                                        reply.user?.is_verified
+                                                    "
+                                                />
+                                            </Link>
+                                            <span
+                                                v-if="
+                                                    reply.user_id ===
+                                                    blog.user_id
+                                                "
+                                                class="rounded bg-indigo-50 px-1 py-0.5 text-[9px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
+                                            >
+                                                Author
+                                            </span>
+                                        </div>
+                                        <p
+                                            v-if="reply.user?.institution"
+                                            class="truncate text-[10px] text-slate-500 dark:text-gray-400"
+                                        >
+                                            {{ reply.user.institution }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="flex shrink-0 items-center gap-1.5">
+                                    <span
+                                        class="text-[11px] text-slate-400 dark:text-gray-500"
+                                    >
+                                        {{ formatTimeAgo(reply.created_at) }}
+                                    </span>
+
+                                    <!-- Delete Reply Button -->
+                                    <button
+                                        v-if="
+                                            currentUser &&
+                                            (currentUser.id === reply.user_id ||
+                                                currentUser.id ===
+                                                    blog.user_id ||
+                                                canAccessAdmin)
+                                        "
+                                        @click="deleteComment(reply.id)"
+                                        title="Delete reply"
+                                        class="cursor-pointer rounded-lg p-1 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover/reply:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                    >
+                                        <Trash2 class="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p
+                                class="mt-2 text-xs leading-relaxed break-words whitespace-pre-line text-slate-700 dark:text-gray-300"
+                            >
+                                {{ reply.content }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

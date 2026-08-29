@@ -71,7 +71,17 @@ class BlogController extends Controller
             ->values();
 
         $comments = $blog->comments()
-            ->with(['user:id,name,username,image_path,institution'])
+            ->whereNull('parent_id')
+            ->with([
+                'user:id,name,username,image_path,institution',
+                'user.roles:id,name',
+                'replies' => function ($query) {
+                    $query->with([
+                        'user:id,name,username,image_path,institution',
+                        'user.roles:id,name',
+                    ])->oldest();
+                },
+            ])
             ->latest()
             ->get();
 
@@ -118,32 +128,70 @@ class BlogController extends Controller
     {
         $userId = auth()->id();
 
-        if ($blog->comments()->where('user_id', $userId)->exists()) {
-            return back()->with('error', 'You have already posted a comment on this blog.');
-        }
-
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:1000'],
+            'parent_id' => ['nullable', 'exists:blog_comments,id'],
         ]);
+
+        $parentId = null;
+        $parentComment = null;
+
+        if (! empty($validated['parent_id'])) {
+            $parentComment = BlogComment::where('id', $validated['parent_id'])
+                ->where('blog_id', $blog->id)
+                ->firstOrFail();
+
+            // If replying to a reply, flatten to the top-level parent comment
+            $parentId = $parentComment->parent_id ?: $parentComment->id;
+        }
 
         $comment = $blog->comments()->create([
             'user_id' => $userId,
+            'parent_id' => $parentId,
             'content' => trim($validated['content']),
         ]);
 
         $comment->load(['user:id,name,username,image_path,institution', 'user.roles:id,name']);
         $blog->loadMissing('user:id,name,email,receive_emails');
 
-        if ($blog->user && $blog->user_id !== $userId && $blog->user->email && $blog->user->receive_emails !== false) {
-            Mail::to($blog->user->email)->queue(BlogNotificationMail::forComment($blog, $comment));
+        if ($parentId && $parentComment) {
+            // Notification for reply: notify the parent comment owner
+            $parentComment->loadMissing('user:id,name,email,receive_emails');
+            if (
+                $parentComment->user
+                && $parentComment->user_id !== $userId
+                && $parentComment->user->email
+                && $parentComment->user->receive_emails !== false
+            ) {
+                Mail::to($parentComment->user->email)->queue(BlogNotificationMail::forReply($blog, $comment, $parentComment));
+            }
+
+            // Also notify blog author if the blog author is not the replier and not the parent commenter
+            if (
+                $blog->user
+                && $blog->user_id !== $userId
+                && $blog->user_id !== $parentComment->user_id
+                && $blog->user->email
+                && $blog->user->receive_emails !== false
+            ) {
+                Mail::to($blog->user->email)->queue(BlogNotificationMail::forComment($blog, $comment));
+            }
+        } else {
+            // Top-level comment: notify blog author
+            if ($blog->user && $blog->user_id !== $userId && $blog->user->email && $blog->user->receive_emails !== false) {
+                Mail::to($blog->user->email)->queue(BlogNotificationMail::forComment($blog, $comment));
+            }
         }
 
-        return back()->with('success', 'Comment posted successfully.');
+        return back()->with('success', $parentId ? 'Reply posted successfully.' : 'Comment posted successfully.');
     }
 
     public function destroyComment(BlogComment $comment)
     {
-        abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('view admin'), 403);
+        $comment->loadMissing('blog');
+        $isBlogAuthor = $comment->blog && auth()->id() === $comment->blog->user_id;
+
+        abort_unless(auth()->id() === $comment->user_id || $isBlogAuthor || auth()->user()?->can('view admin'), 403);
 
         $comment->delete();
 

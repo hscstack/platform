@@ -44,6 +44,28 @@ class BlogNotificationMail extends Mailable implements ShouldQueue
         return new self($mailSubject, $mailContent, $blog->user?->name);
     }
 
+    public static function forReply(Blog $blog, BlogComment $reply, BlogComment $parentComment): self
+    {
+        $appUrl = config('app.url', 'https://hscstack.site');
+        $blogUrl = rtrim($appUrl, '/')."/blogs/{$blog->slug}#comments";
+        $replierName = htmlspecialchars($reply->user?->name ?? 'Someone', ENT_QUOTES, 'UTF-8');
+        $replyContent = nl2br(htmlspecialchars($reply->content, ENT_QUOTES, 'UTF-8'));
+        $blogTitle = htmlspecialchars($blog->title, ENT_QUOTES, 'UTF-8');
+
+        $mailSubject = "New reply to your comment on \"{$blog->title}\"";
+        $mailContent = "<p><strong>{$replierName}</strong> replied to your comment on <a href=\"{$blogUrl}\" target=\"_blank\"><strong>\"{$blogTitle}\"</strong></a>:</p>"
+            .'<blockquote style="border-left: 4px solid #4f46e5; background-color: #f8fafc; padding: 14px 18px; margin: 18px 0; border-radius: 0 8px 8px 0; font-style: normal; color: #334155;">'
+            ."<p style=\"margin: 0; font-size: 14px; line-height: 1.6;\">{$replyContent}</p>"
+            .'</blockquote>'
+            .'<p style="margin-top: 24px;">'
+            ."<a href=\"{$blogUrl}\" target=\"_blank\" style=\"display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 10px 20px; font-weight: 600; text-decoration: none; border-radius: 10px; font-size: 13px;\">"
+            .'View & Reply &rarr;'
+            .'</a>'
+            .'</p>';
+
+        return new self($mailSubject, $mailContent, $parentComment->user?->name);
+    }
+
     public static function forReactionMilestone(Blog $blog, User $reactor, int $milestoneCount): self
     {
         $appUrl = config('app.url', 'https://hscstack.site');

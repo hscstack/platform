@@ -87,7 +87,7 @@ test('authenticated user can post and delete own comments', function () {
     ]);
 });
 
-test('a user is restricted to 1 comment per blog', function () {
+test('a user can post multiple comments and replies on a blog', function () {
     $user = User::factory()->create();
     $blog = Blog::factory()->create(['is_published' => true]);
 
@@ -100,14 +100,75 @@ test('a user is restricted to 1 comment per blog', function () {
 
     expect($blog->comments()->count())->toBe(1);
 
-    // Second comment by same user fails
+    // Second comment by same user also succeeds
     $this->actingAs($user)
         ->post("/blogs/{$blog->slug}/comments", [
-            'content' => 'Second duplicate comment attempt',
+            'content' => 'Second comment follow-up',
         ])
-        ->assertSessionHas('error');
+        ->assertSessionHas('success');
 
-    expect($blog->comments()->count())->toBe(1);
+    expect($blog->comments()->count())->toBe(2);
+});
+
+test('user can reply to an existing comment', function () {
+    Mail::fake();
+
+    $author = User::factory()->create(['email' => 'author@example.com', 'receive_emails' => true]);
+    $commenter = User::factory()->create(['email' => 'commenter@example.com', 'receive_emails' => true]);
+    $replier = User::factory()->create(['email' => 'replier@example.com', 'receive_emails' => true]);
+
+    $blog = Blog::factory()->create(['user_id' => $author->id, 'is_published' => true]);
+
+    // Create parent comment
+    $parentComment = BlogComment::create([
+        'blog_id' => $blog->id,
+        'user_id' => $commenter->id,
+        'content' => 'Parent discussion topic',
+    ]);
+
+    // Post reply
+    $this->actingAs($replier)
+        ->post("/blogs/{$blog->slug}/comments", [
+            'content' => 'This is a reply to the parent comment',
+            'parent_id' => $parentComment->id,
+        ])
+        ->assertSessionHas('success');
+
+    $reply = BlogComment::where('parent_id', $parentComment->id)->first();
+    expect($reply)->not->toBeNull();
+    expect($reply->content)->toBe('This is a reply to the parent comment');
+    expect($reply->user_id)->toBe($replier->id);
+
+    // Assert notification sent to parent comment owner
+    Mail::assertQueued(BlogNotificationMail::class, function ($mail) use ($commenter) {
+        return $mail->hasTo($commenter->email);
+    });
+});
+
+test('deleting parent comment cascades to delete replies', function () {
+    $user = User::factory()->create();
+    $blog = Blog::factory()->create(['is_published' => true]);
+
+    $parent = BlogComment::create([
+        'blog_id' => $blog->id,
+        'user_id' => $user->id,
+        'content' => 'Parent comment',
+    ]);
+
+    $reply = BlogComment::create([
+        'blog_id' => $blog->id,
+        'user_id' => $user->id,
+        'parent_id' => $parent->id,
+        'content' => 'Child reply',
+    ]);
+
+    expect(BlogComment::count())->toBe(2);
+
+    $this->actingAs($user)
+        ->delete("/blogs/comments/{$parent->id}")
+        ->assertRedirect();
+
+    expect(BlogComment::count())->toBe(0);
 });
 
 test('blog show page returns live reactive reaction counts and comments', function () {
