@@ -90,6 +90,17 @@ const chatChannelName = computed(
     () => props.chatState.channel_name || 'global-chat',
 );
 
+interface OnlineMember {
+    id: number | string;
+    name?: string;
+    username?: string;
+    image_url?: string | null;
+    is_guest?: boolean;
+}
+
+const onlineUsers = ref<OnlineMember[]>([]);
+const onlineCount = computed(() => onlineUsers.value.length);
+
 const maxMessagesLimit = ref(props.chatState.max_messages ?? 200);
 const maxLengthLimit = ref(props.chatState.max_length ?? 280);
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
@@ -462,6 +473,11 @@ const fetchLatestMessages = async (force = false) => {
 let handlePusherReconnect: (() => void) | null = null;
 
 const setupRealtime = () => {
+    // Only authenticated users join the presence channel (standard Laravel approach)
+    if (!currentUser.value) {
+        return;
+    }
+
     const echo = getEcho(
         props.chatState.pusher_key,
         props.chatState.pusher_cluster,
@@ -471,7 +487,22 @@ const setupRealtime = () => {
         return;
     }
 
-    echo.channel(chatChannelName.value)
+    echo.join(chatChannelName.value)
+        .here((users: OnlineMember[]) => {
+            onlineUsers.value = Array.isArray(users) ? [...users] : [];
+        })
+        .joining((user: OnlineMember) => {
+            if (user && !onlineUsers.value.some((u) => u.id === user.id)) {
+                onlineUsers.value.push(user);
+            }
+        })
+        .leaving((user: OnlineMember) => {
+            if (user) {
+                onlineUsers.value = onlineUsers.value.filter(
+                    (u) => u.id !== user.id,
+                );
+            }
+        })
         .stopListening('.message.sent')
         .stopListening('.message.deleted')
         .stopListening('.message.reacted')
@@ -1200,11 +1231,28 @@ onUnmounted(() => {
             class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
         >
             <div>
-                <h1
-                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-zinc-100"
-                >
-                    Global Chat
-                </h1>
+                <div class="flex items-center gap-2.5">
+                    <h1
+                        class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-zinc-100"
+                    >
+                        Global Chat
+                    </h1>
+                    <div
+                        v-if="onlineCount > 0"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-2.5 py-0.5 text-xs font-medium text-emerald-700 shadow-2xs dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        :title="`${onlineCount} active in chat right now`"
+                    >
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+                            ></span>
+                            <span
+                                class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"
+                            ></span>
+                        </span>
+                        <span>{{ onlineCount }} online</span>
+                    </div>
+                </div>
                 <p
                     class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-zinc-400"
                 >

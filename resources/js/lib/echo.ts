@@ -30,6 +30,7 @@ export function getEcho(key?: string, cluster?: string): Echo<'pusher'> | null {
         key: pusherKey,
         cluster: pusherCluster,
         forceTLS: true,
+        authEndpoint: '/broadcasting/auth',
     });
 
     window.Echo = echoInstance;

@@ -2,8 +2,8 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -28,14 +28,14 @@ class ChatMessageDeleted implements ShouldBroadcastNow
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, Channel>
+     * @return array<int, PresenceChannel>
      */
     public function broadcastOn(): array
     {
         $channel = app()->environment('production') ? 'global-chat' : app()->environment().'.global-chat';
 
         return [
-            new Channel($channel),
+            new PresenceChannel($channel),
         ];
     }
 
