@@ -155,4 +155,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'user_appreciations', 'appreciator_id', 'user_id');
     }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
 }
