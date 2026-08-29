@@ -90,7 +90,7 @@ const chatChannelName = computed(
     () => props.chatState.channel_name || 'global-chat',
 );
 
-const presenceChannelName = 'presence-global-chat';
+const presenceChannelName = computed(() => chatChannelName.value);
 const activeUsersCount = ref(0);
 
 const maxMessagesLimit = ref(props.chatState.max_messages ?? 200);
@@ -636,7 +636,7 @@ const setupPresenceChannel = () => {
         return;
     }
 
-    echo.join(presenceChannelName)
+    echo.join(presenceChannelName.value)
         .here((users: unknown[]) => {
             activeUsersCount.value = users.length;
         })
@@ -1189,7 +1189,7 @@ onUnmounted(() => {
         }
 
         echo.leave(chatChannelName.value);
-        echo.leave(presenceChannelName);
+        echo.leave(presenceChannelName.value);
     }
 });
 </script>
