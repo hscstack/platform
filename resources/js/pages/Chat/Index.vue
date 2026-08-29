@@ -90,6 +90,9 @@ const chatChannelName = computed(
     () => props.chatState.channel_name || 'global-chat',
 );
 
+const presenceChannelName = 'presence-global-chat';
+const activeUsersCount = ref(0);
+
 const maxMessagesLimit = ref(props.chatState.max_messages ?? 200);
 const maxLengthLimit = ref(props.chatState.max_length ?? 280);
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
@@ -619,6 +622,35 @@ const setupRealtime = () => {
     }
 };
 
+const setupPresenceChannel = () => {
+    if (!currentUser.value) {
+        return; // Only authenticated users can join presence channels
+    }
+
+    const echo = getEcho(
+        props.chatState.pusher_key,
+        props.chatState.pusher_cluster,
+    );
+
+    if (!echo) {
+        return;
+    }
+
+    echo.join(presenceChannelName)
+        .here((users: unknown[]) => {
+            activeUsersCount.value = users.length;
+        })
+        .joining(() => {
+            activeUsersCount.value++;
+        })
+        .leaving(() => {
+            activeUsersCount.value = Math.max(0, activeUsersCount.value - 1);
+        })
+        .error(() => {
+            // Silently ignore presence auth errors (e.g. guest users)
+        });
+};
+
 const sendMessage = async () => {
     if (
         !inputContent.value.trim() ||
@@ -1094,6 +1126,7 @@ const handleDocumentClick = () => {
 onMounted(() => {
     initCooldown();
     setupRealtime();
+    setupPresenceChannel();
     fetchLatestMessages(true);
     scrollToBottom(false);
 
@@ -1156,6 +1189,7 @@ onUnmounted(() => {
         }
 
         echo.leave(chatChannelName.value);
+        echo.leave(presenceChannelName);
     }
 });
 </script>
@@ -1200,29 +1234,49 @@ onUnmounted(() => {
             class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
         >
             <div>
-                <h1
-                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-zinc-100"
-                >
-                    Global Chat
-                </h1>
+                <div class="flex items-center gap-2.5">
+                    <h1
+                        class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-zinc-100"
+                    >
+                        Global Chat
+                    </h1>
+                    <div
+                        v-if="activeUsersCount > 0"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-2xs dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    >
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+                            ></span>
+                            <span
+                                class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"
+                            ></span>
+                        </span>
+                        {{ activeUsersCount }} active
+                    </div>
+                </div>
                 <p
                     class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-zinc-400"
                 >
-                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
+                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
                     করুন।
                 </p>
             </div>
 
-            <!-- Rules / Guidelines Trigger Button -->
-            <button
-                type="button"
-                @click="showRulesModal = true"
-                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                title="Chat Rules & Guidelines"
-            >
-                <Info class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span class="hidden sm:inline">Chat Rules</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <!-- Rules / Guidelines Trigger Button -->
+                <button
+                    type="button"
+                    @click="showRulesModal = true"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 active:scale-95 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                    title="Chat Rules & Guidelines"
+                >
+                    <Info
+                        class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                    />
+                    <span class="hidden sm:inline">Chat Rules</span>
+                </button>
+            </div>
         </div>
 
         <!-- Main Messenger Shell -->
