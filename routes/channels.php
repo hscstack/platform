@@ -17,10 +17,5 @@ use Illuminate\Support\Facades\Broadcast;
 // Only authenticated users join this channel; the data returned
 // here is what other members see via .here() / .joining().
 Broadcast::channel('presence-global-chat', function ($user) {
-    return [
-        'id' => $user->id,
-        'name' => $user->name,
-        'username' => $user->username,
-        'image_url' => $user->image_url,
-    ];
+    return ['id' => $user->id];
 });
