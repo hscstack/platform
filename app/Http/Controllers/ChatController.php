@@ -62,8 +62,8 @@ class ChatController extends Controller
                 'content' => $msg->deleted_at ? 'This message was deleted by a moderator.' : $msg->content,
                 'is_deleted' => $msg->deleted_at !== null,
                 'deleted_at' => $msg->deleted_at?->toIso8601String(),
-                'reply_to_id' => $msg->reply_to_id,
-                'reply_to_content' => $msg->reply_to_content,
+                'reply_to_id' => $msg->deleted_at ? null : $msg->reply_to_id,
+                'reply_to_content' => $msg->deleted_at ? null : $msg->reply_to_content,
                 'reactions' => $msg->getFormattedReactions($user?->id),
                 'created_at' => $msg->created_at->toIso8601String(),
                 'user' => [
@@ -257,7 +257,12 @@ class ChatController extends Controller
         }
 
         $deletedAt = now();
-        $message->update(['deleted_at' => $deletedAt]);
+        $message->update([
+            'content' => '',
+            'reply_to_id' => null,
+            'reply_to_content' => null,
+            'deleted_at' => $deletedAt,
+        ]);
 
         try {
             broadcast(new ChatMessageDeleted($message->id, $deletedAt->toIso8601String()))->toOthers();
@@ -308,22 +313,36 @@ class ChatController extends Controller
             'status' => 'pending',
         ]);
 
-        // Auto-ban logic: If the reported user has 5 or more reports on this message/content, auto-ban for 1 day
-        if (! empty($validated['reported_user_id'])) {
+        // Dynamic Auto-ban logic on X reports
+        $autoBanEnabled = (bool) AppSetting::get('global_chat_auto_ban_enabled', true);
+        $threshold = (int) AppSetting::get('global_chat_auto_ban_reports_threshold', 5);
+        $durationMinutes = (int) AppSetting::get('global_chat_auto_ban_duration_minutes', 0);
+        if ($durationMinutes <= 0) {
+            $durationMinutes = (int) AppSetting::get('global_chat_auto_ban_duration_hours', 24) * 60;
+        }
+
+        if ($autoBanEnabled && ! empty($validated['reported_user_id']) && $threshold > 0) {
             $reportedUser = User::find($validated['reported_user_id']);
             if ($reportedUser && ! $reportedUser->can('view admin')) {
                 $totalReportsForMessage = ChatReport::where('reported_user_id', $reportedUser->id)
                     ->where('message_content', $validated['message_content'])
                     ->count();
 
-                if ($totalReportsForMessage >= 5) {
+                if ($totalReportsForMessage >= $threshold) {
                     $wasAlreadyBanned = $reportedUser->isChatBanned();
+                    $banUntil = now()->addMinutes(max(1, $durationMinutes));
                     $reportedUser->update([
-                        'chat_banned_until' => now()->addDay(),
+                        'chat_banned_until' => $banUntil,
                     ]);
 
                     if (! $wasAlreadyBanned) {
-                        ChatMessage::sendBotMessage("System automatically suspended @{$reportedUser->username} from chat for 24 hours following community reports.");
+                        $durationText = $durationMinutes >= 1440 && $durationMinutes % 1440 === 0
+                            ? ($durationMinutes / 1440).' day'.($durationMinutes / 1440 > 1 ? 's' : '')
+                            : ($durationMinutes >= 60 && $durationMinutes % 60 === 0
+                                ? ($durationMinutes / 60).' hour'.($durationMinutes / 60 > 1 ? 's' : '')
+                                : "{$durationMinutes} minutes");
+
+                        ChatMessage::sendBotMessage("System automatically suspended @{$reportedUser->username} from chat for {$durationText} following {$totalReportsForMessage} community reports.");
                     }
                 }
             }

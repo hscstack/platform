@@ -5,6 +5,7 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+/public/local
 /resources/js/actions
 /resources/js/routes
 /resources/js/wayfinder
