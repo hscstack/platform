@@ -8,7 +8,6 @@ const page = usePage();
 const user = computed(() => page.props.auth?.user);
 
 const shareablePages = [
-    'Home',
     'Node',
     'Resource',
     'Blog/Index',
