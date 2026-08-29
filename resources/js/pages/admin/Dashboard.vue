@@ -14,6 +14,10 @@ import {
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
+const props = defineProps<{
+    totalAccounts?: number;
+}>();
+
 const stats = ref<any>(null);
 const isLoading = ref(false);
 const hasFetched = ref(false);
@@ -98,6 +102,44 @@ const fetchAnalytics = async (refresh = false) => {
                               : 'Load Analytics'
                     }}</span>
                 </button>
+            </div>
+        </div>
+
+        <!-- Overview Stats Grid -->
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+                class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p
+                            class="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-gray-400"
+                        >
+                            Total Accounts
+                        </p>
+                        <h3
+                            class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                        >
+                            {{
+                                (
+                                    stats?.total_accounts ??
+                                    props.totalAccounts ??
+                                    0
+                                ).toLocaleString()
+                            }}
+                        </h3>
+                        <p
+                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            সর্বমোট নিবন্ধিত একাউন্ট
+                        </p>
+                    </div>
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
+                    >
+                        <Users class="h-5 w-5" />
+                    </div>
+                </div>
             </div>
         </div>
 
