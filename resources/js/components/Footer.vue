@@ -75,17 +75,6 @@ const isFullFooter = computed(() => {
                             <Instagram class="h-5 w-5" />
                         </a>
                     </div>
-
-                    <p
-                        class="mt-4 hidden text-xs font-medium text-slate-400 md:block dark:text-gray-500"
-                    >
-                        A concern of
-                        <Link
-                            href="/u/trtajim"
-                            class="text-slate-600 underline transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
-                            >Tajim</Link
-                        >
-                    </p>
                 </div>
 
                 <div
@@ -195,19 +184,6 @@ const isFullFooter = computed(() => {
             <div
                 class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 sm:flex-row dark:border-gray-800"
             >
-                <p
-                    class="text-center text-xs font-medium text-slate-400 md:hidden dark:text-gray-500"
-                >
-                    A concern of
-                    <a
-                        href="https://tajimz.xyz"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-slate-600 underline transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
-                        >Tajim</a
-                    >
-                </p>
-
                 <p
                     class="text-center text-xs font-medium text-slate-400 sm:text-left dark:text-gray-500"
                 >
