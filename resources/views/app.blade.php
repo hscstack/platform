@@ -31,7 +31,50 @@
     $ogType = 'website';
     $ogUrl = url()->current();
 
-    if ($pageComponent === 'Blog/Show' && !empty($props['blog'])) {
+    $isNoIndex = str_starts_with(strtolower($pageComponent), 'admin') || in_array($pageComponent, [
+        'auth/Onboarding',
+        'Onboarding',
+        'Profile',
+        'SupportMyTickets',
+        'errors/404',
+        'errors/503',
+    ], true);
+
+    $jsonLdSchemas = [];
+
+    // Base Organization & WebSite Schemas for sitelinks
+    $jsonLdSchemas[] = [
+        '@type' => 'Organization',
+        '@id' => url('/') . '/#organization',
+        'name' => 'HSCStack',
+        'url' => url('/'),
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => $defaultOgImage,
+        ],
+        'sameAs' => [
+            'https://www.facebook.com/hscstack',
+            'https://github.com/hscstack',
+        ],
+    ];
+
+    $jsonLdSchemas[] = [
+        '@type' => 'WebSite',
+        '@id' => url('/') . '/#website',
+        'url' => url('/'),
+        'name' => 'HSCStack',
+        'description' => 'Curated open learning platform for HSC & SSC students in Bangladesh',
+        'publisher' => [
+            '@id' => url('/') . '/#organization',
+        ],
+    ];
+
+    if ($pageComponent === 'Home' && request()->is('ssc')) {
+        $metaTitle = 'SSC Study Materials, Lecture Notes & Question Bank - ' . config('app.name', 'HSCStack');
+        $ogTitle = 'SSC Study Materials & Question Bank - HSCStack';
+        $metaDescription = 'Explore curated SSC video lectures, notes, books, and question banks for Science, Commerce, and Arts on HSCStack.';
+        $ogUrl = url('/ssc');
+    } elseif ($pageComponent === 'Blog/Show' && !empty($props['blog'])) {
         $blog = $props['blog'];
         $rawTitle = data_get($blog, 'meta_title') ?: data_get($blog, 'title');
         $metaTitle = $rawTitle ? "{$rawTitle} - " . config('app.name', 'HSCStack') : config('app.name', 'HSCStack');
@@ -40,6 +83,27 @@
         $ogImage = data_get($blog, 'featured_image') ?: $defaultOgImage;
         $ogType = 'article';
         $ogUrl = data_get($blog, 'slug') ? url('/blogs/' . data_get($blog, 'slug')) : url()->current();
+
+        $jsonLdSchemas[] = [
+            '@type' => 'BlogPosting',
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id' => $ogUrl,
+            ],
+            'headline' => $ogTitle,
+            'description' => $metaDescription,
+            'image' => $ogImage,
+            'datePublished' => data_get($blog, 'created_at'),
+            'dateModified' => data_get($blog, 'updated_at'),
+            'author' => [
+                '@type' => 'Person',
+                'name' => data_get($blog, 'user.name', 'HSCStack Contributor'),
+                'url' => data_get($blog, 'user.username') ? url('/u/' . data_get($blog, 'user.username')) : null,
+            ],
+            'publisher' => [
+                '@id' => url('/') . '/#organization',
+            ],
+        ];
     } elseif ($pageComponent === 'User/Show' && !empty($props['profileUser'])) {
         $profileUser = $props['profileUser'];
         $userName = data_get($profileUser, 'name');
@@ -57,6 +121,18 @@
         $ogImage = data_get($profileUser, 'image_url') ?: $defaultOgImage;
         $ogType = 'profile';
         $ogUrl = $userHandle ? url('/u/' . $userHandle) : url()->current();
+
+        $jsonLdSchemas[] = [
+            '@type' => 'ProfilePage',
+            'mainEntity' => [
+                '@type' => 'Person',
+                'name' => $userName,
+                'alternateName' => "@{$userHandle}",
+                'description' => $metaDescription,
+                'image' => $ogImage,
+                'url' => $ogUrl,
+            ],
+        ];
     } elseif ($pageComponent === 'Node' && (!empty($props['breadcrumb']) || !empty($props['subject']))) {
         $crumbs = $props['breadcrumb'] ?? [];
         $lastCrumb = is_array($crumbs) && count($crumbs) ? end($crumbs) : null;
@@ -64,6 +140,34 @@
         $metaTitle = "{$nodeTitle} - " . config('app.name', 'HSCStack');
         $ogTitle = "{$nodeTitle} - HSCStack";
         $metaDescription = "Study materials, chapter breakdown, and lecture notes for {$nodeTitle} - HSCStack.";
+
+        if (!empty($crumbs)) {
+            $breadcrumbElements = [];
+            $accumulatedPath = '/' . data_get($props['subject'], 'slug');
+            
+            $breadcrumbElements[] = [
+                '@type' => 'ListItem',
+                'position' => 1,
+                'name' => data_get($props['subject'], 'name'),
+                'item' => url($accumulatedPath),
+            ];
+
+            $position = 2;
+            foreach ($crumbs as $crumb) {
+                $accumulatedPath .= '/' . data_get($crumb, 'slug');
+                $breadcrumbElements[] = [
+                    '@type' => 'ListItem',
+                    'position' => $position++,
+                    'name' => data_get($crumb, 'name'),
+                    'item' => url($accumulatedPath),
+                ];
+            }
+
+            $jsonLdSchemas[] = [
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => $breadcrumbElements,
+            ];
+        }
     } elseif ($pageComponent === 'Resource' && !empty($props['resource'])) {
         $res = $props['resource'];
         $resTitle = data_get($res, 'title', 'Resource');
@@ -123,8 +227,19 @@
         $metaTitle = 'Content & Copyright Policy - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Content & Copyright Policy - HSCStack';
         $metaDescription = 'Content and Copyright Policy of HSCStack. Information on educational resource fair use and contributor content guidelines.';
+    } elseif ($pageComponent === 'auth/Login' || $pageComponent === 'Login') {
+        $metaTitle = 'Log In - ' . config('app.name', 'HSCStack');
+        $ogTitle = 'Log In to HSCStack';
+        $metaDescription = 'Log in to HSCStack with Google to access study resources, lecture notes, track learning progress, and connect with fellow students.';
+        $ogUrl = url('/login');
     }
 @endphp
+        @if ($isNoIndex)
+            <meta name="robots" content="noindex, nofollow">
+        @else
+            <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+        @endif
+        <link rel="canonical" href="{{ $ogUrl }}">
         <meta name="description" content="{{ $metaDescription }}">
         <meta property="og:title" content="{{ $ogTitle }}">
         <meta property="og:description" content="{{ $metaDescription }}">
@@ -137,6 +252,12 @@
         <meta name="twitter:description" content="{{ $metaDescription }}">
         <meta name="twitter:image" content="{{ $ogImage }}">
         @fonts
+
+        @if (!empty($jsonLdSchemas))
+            <script type="application/ld+json">
+                {!! json_encode(['@context' => 'https://schema.org', '@graph' => $jsonLdSchemas], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
+            </script>
+        @endif
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>

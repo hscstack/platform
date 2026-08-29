@@ -1,2 +1,10 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /api/
+Disallow: /profile
+Disallow: /support/my-tickets
+Disallow: /auth/
+Disallow: /onboarding
+Disallow: /me
+
+Sitemap: https://hscstack.site/sitemap.xml
