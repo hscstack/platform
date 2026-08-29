@@ -7,6 +7,18 @@ import AuthModal from './AuthModal.vue';
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 
+const shareablePages = [
+    'Home',
+    'Node',
+    'Resource',
+    'Blog/Index',
+    'Blog/Show',
+    'User/Show',
+    'Profile',
+];
+
+const shouldShow = computed(() => shareablePages.includes(page.component));
+
 const isMenuOpen = ref(false);
 const isLoading = ref(false);
 const isCopied = ref(false);
@@ -132,8 +144,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <!-- Floating Toolbar (Universally visible across all pages) -->
+    <!-- Floating Toolbar (Visible only on shareable content pages) -->
     <div
+        v-if="shouldShow"
         ref="toolbarRef"
         class="fixed right-5 bottom-6 z-40 sm:right-6 sm:bottom-6"
     >
