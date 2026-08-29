@@ -88,8 +88,8 @@ const getStatusBadge = (status: string) => {
 
 const formatDate = (dateString: string) => {
     if (!dateString) {
-return '';
-}
+        return '';
+    }
 
     const date = new Date(dateString);
 

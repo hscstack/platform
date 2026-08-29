@@ -18,14 +18,30 @@ defineProps<{
     categories: Record<string, string>;
 }>();
 
-const page = usePage();
-const authUser = computed(() => page.props.auth?.user);
+interface UserInfo {
+    id: number;
+    name: string;
+    username?: string;
+    email?: string;
+    image_path?: string;
+}
 
-const form = useForm({
+const page = usePage();
+const authUser = computed<UserInfo | null>(
+    () => (page.props.auth?.user as UserInfo) || null,
+);
+
+const form = useForm<{
+    category: string;
+    subject: string;
+    message: string;
+    attachment: File | null;
+    general?: string;
+}>({
     category: 'general',
     subject: '',
     message: '',
-    attachment: null as File | null,
+    attachment: null,
 });
 
 const previewUrl = ref<string | null>(null);
@@ -200,19 +216,24 @@ const submitTicket = () => {
                     >
                         <img
                             :src="
-                                authUser.image_path ||
-                                `https://api.dicebear.com/7.x/initials/svg?seed=${authUser.name}`
+                                authUser?.image_path ||
+                                `https://api.dicebear.com/7.x/initials/svg?seed=${authUser?.name || 'User'}`
                             "
-                            :alt="authUser.name"
+                            :alt="authUser?.name || 'User'"
                             class="h-6 w-6 rounded-full object-cover"
                         />
                         <div>
                             <span
-                                >সাবমিট করছেন:
-                                <strong>{{ authUser.name }}</strong> ({{
-                                    authUser.email
-                                }})</span
+                                class="font-semibold text-slate-900 dark:text-gray-100"
                             >
+                                {{ authUser?.name }}
+                            </span>
+                            <span
+                                v-if="authUser?.email"
+                                class="ml-1.5 text-slate-400 dark:text-gray-500"
+                            >
+                                ({{ authUser.email }})
+                            </span>
                         </div>
                     </div>
 
