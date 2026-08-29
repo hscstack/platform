@@ -167,8 +167,8 @@ const banDurationPresets = [
 
 const formatDurationText = (minutes: number) => {
     if (!minutes || minutes <= 0) {
-return '0 minutes';
-}
+        return '0 minutes';
+    }
 
     if (minutes >= 1440 && minutes % 1440 === 0) {
         const days = minutes / 1440;
