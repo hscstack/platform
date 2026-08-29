@@ -23,6 +23,7 @@ interface UserInfo {
     name: string;
     username?: string;
     email?: string;
+    image_url?: string | null;
     image_path?: string;
 }
 
@@ -215,10 +216,8 @@ const submitTicket = () => {
                         class="flex items-center gap-3 rounded-xl bg-slate-50 p-3 text-xs font-medium text-slate-600 dark:bg-gray-800/60 dark:text-gray-300"
                     >
                         <img
-                            :src="
-                                authUser?.image_path ||
-                                `https://api.dicebear.com/7.x/initials/svg?seed=${authUser?.name || 'User'}`
-                            "
+                            v-if="authUser?.image_url"
+                            :src="authUser.image_url"
                             :alt="authUser?.name || 'User'"
                             class="h-6 w-6 rounded-full object-cover"
                         />
