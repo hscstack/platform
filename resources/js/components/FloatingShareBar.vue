@@ -10,7 +10,6 @@ const user = computed(() => page.props.auth?.user);
 const shareablePages = [
     'Node',
     'Resource',
-    'Blog/Index',
     'Blog/Show',
     'User/Show',
     'Profile',
