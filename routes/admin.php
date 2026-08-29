@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
+use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
@@ -122,4 +123,11 @@ Route::middleware('permission:manage chat')->group(function () {
     Route::delete('/chat/reports/clear', [ChatSettingsController::class, 'clearReports'])->name('chat.reports.clear');
     Route::delete('/chat/reports/{report}', [ChatSettingsController::class, 'deleteReport'])->name('chat.reports.destroy');
     Route::post('/chat/users/{user}/ban', [ChatSettingsController::class, 'updateUserBan'])->name('chat.users.ban');
+});
+
+// Support Tickets
+Route::middleware('permission:manage tickets')->group(function () {
+    Route::get('/tickets', [AdminSupportTicketController::class, 'index'])->name('tickets.index');
+    Route::patch('/tickets/{ticket}', [AdminSupportTicketController::class, 'update'])->name('tickets.update');
+    Route::delete('/tickets/{ticket}', [AdminSupportTicketController::class, 'destroy'])->name('tickets.destroy');
 });

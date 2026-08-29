@@ -9,6 +9,7 @@ import {
     ExternalLink,
     Heart,
     Instagram,
+    LifeBuoy,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
@@ -122,13 +123,24 @@ const isFullFooter = computed(() => {
                             </li>
                             <li>
                                 <Link
-                                    href="/support"
+                                    href="/donate"
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     <Heart
                                         class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
                                     />
-                                    <span>Support Us</span>
+                                    <span>Donate HSCStack</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/support"
+                                    class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                >
+                                    <LifeBuoy
+                                        class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
+                                    />
+                                    <span>Help & Support</span>
                                 </Link>
                             </li>
                             <li>
@@ -243,10 +255,10 @@ const isFullFooter = computed(() => {
                     Terms
                 </Link>
                 <Link
-                    href="/support"
+                    href="/donate"
                     class="transition hover:text-indigo-600 dark:hover:text-indigo-400"
                 >
-                    Support Us
+                    Donation
                 </Link>
             </div>
 

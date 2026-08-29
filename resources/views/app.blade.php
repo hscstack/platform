@@ -94,10 +94,14 @@
         $metaTitle = 'Contributor Handbook & Guidelines - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Contributor Handbook & Guidelines - HSCStack';
         $metaDescription = 'Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators.';
-    } elseif ($pageComponent === 'Support') {
+    } elseif ($pageComponent === 'Donate') {
         $metaTitle = 'Support & Donate - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Support & Donate - HSCStack';
         $metaDescription = 'Support HSCStack to keep the platform free, ad-free, and accessible to every student in Bangladesh.';
+    } elseif ($pageComponent === 'Support' || $pageComponent === 'SupportMyTickets') {
+        $metaTitle = 'Support Center - ' . config('app.name', 'HSCStack');
+        $ogTitle = 'Support Center - HSCStack';
+        $metaDescription = 'Submit support tickets, report bugs, or request assistance from the HSCStack team.';
     } elseif ($pageComponent === 'ai/Index') {
         $metaTitle = 'HSCStack AI - Smart Learning Assistant - ' . config('app.name', 'HSCStack');
         $ogTitle = 'HSCStack AI - Smart Learning Assistant';

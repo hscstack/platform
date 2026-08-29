@@ -20,6 +20,7 @@ import {
     Search,
     MessageCircle,
     Download,
+    LifeBuoy,
 } from 'lucide-vue-next';
 import {
     computed,
@@ -808,6 +809,17 @@ onBeforeUnmount(() => {
                                     </Link>
 
                                     <Link
+                                        href="/support"
+                                        @click="closeMobileMenu"
+                                        class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200"
+                                    >
+                                        <LifeBuoy
+                                            class="h-4 w-4 text-indigo-500"
+                                        />
+                                        <span>Support Center</span>
+                                    </Link>
+
+                                    <Link
                                         href="/about-us"
                                         @click="closeMobileMenu"
                                         class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200"
@@ -826,14 +838,14 @@ onBeforeUnmount(() => {
                                     </Link>
 
                                     <Link
-                                        href="/support"
+                                        href="/donate"
                                         @click="closeMobileMenu"
                                         class="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900/60 dark:hover:text-gray-200"
                                     >
                                         <HeartHandshake
                                             class="h-4 w-4 text-rose-500"
                                         />
-                                        <span>Support HSCStack</span>
+                                        <span>Donate HSCStack</span>
                                     </Link>
                                 </div>
                             </div>

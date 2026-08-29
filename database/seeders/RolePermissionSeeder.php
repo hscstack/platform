@@ -85,6 +85,11 @@ class RolePermissionSeeder extends Seeder
          */
         Permission::findOrCreate('manage chat');
 
+        /*
+         * Support Ticket management
+         */
+        Permission::findOrCreate('manage tickets');
+
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
 

@@ -7,6 +7,7 @@ import {
     Book,
     Mail,
     MessageCircle,
+    LifeBuoy,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
@@ -24,6 +25,12 @@ const allNavigation = [
     { name: 'Dashboard', to: '/admin', icon: LayoutDashboard },
     { name: 'Manage Contents', to: '/admin/subjects', icon: BookOpen },
     { name: 'Manage Blogs', to: '/admin/blogs', icon: Book },
+    {
+        name: 'Support Tickets',
+        to: '/admin/tickets',
+        icon: LifeBuoy,
+        permission: 'manage tickets',
+    },
     {
         name: 'Site Notice',
         to: '/admin/notice',

@@ -10,6 +10,7 @@ import {
     ArrowRight,
     AlertTriangle,
     ChevronDown,
+    LifeBuoy,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -587,6 +588,41 @@ const submitForm = () => {
                         </div>
                     </div>
                 </transition>
+            </div>
+
+            <!-- Support Center Link -->
+            <div
+                class="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs sm:flex-row sm:items-center dark:border-gray-700 dark:bg-gray-900"
+            >
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                    >
+                        <LifeBuoy class="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h3
+                            class="text-sm font-semibold text-slate-900 dark:text-gray-100"
+                        >
+                            Need Help or Account Support?
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">
+                            Have an issue with your account, notes, or features?
+                            Open a support ticket.
+                        </p>
+                    </div>
+                </div>
+
+                <Link
+                    href="/support"
+                    class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                    <LifeBuoy
+                        class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                    />
+                    <span>Support Center</span>
+                    <ArrowRight class="h-3.5 w-3.5 text-slate-400" />
+                </Link>
             </div>
 
             <!-- Action Buttons -->

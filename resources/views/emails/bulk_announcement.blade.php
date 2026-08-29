@@ -207,7 +207,7 @@
                     &bull;
                     <a href="{{ config('app.url') }}/blogs" target="_blank">Read Blogs</a>
                     &bull;
-                    <a href="{{ config('app.url') }}/support" target="_blank">Support Us</a>
+                    <a href="{{ config('app.url') }}/donate" target="_blank">Support Us</a>
                 </div>
 
                 <p class="footer-notice">

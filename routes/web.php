@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,8 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
     Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
+    Route::get('/support/my-tickets', [SupportTicketController::class, 'myTickets'])->name('support.my-tickets');
+    Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('support.tickets.store');
 
     Route::get('/me', function (Request $request) {
         return redirect()->route('user.profile', ['username' => $request->user()->username]);
@@ -60,7 +63,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
     Route::inertia('/terms-service', 'legal/TermsConditions');
     Route::inertia('/content-policy', 'legal/ContentPolicy');
-    Route::inertia('/support', 'Support');
+    Route::inertia('/donate', 'Donate')->name('donate');
+    Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
     Route::inertia('/join', 'platform/JoinTeam');
     Route::inertia('/guide', 'ContributorGuide');
     Route::inertia('/ai', 'ai/Index');
