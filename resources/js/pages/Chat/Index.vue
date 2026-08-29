@@ -20,11 +20,13 @@ import {
     Radio,
     AtSign,
     LifeBuoy,
+    Users,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
+import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
 import { usePermissions } from '@/lib/usePermissions';
@@ -39,11 +41,23 @@ interface ChatUser {
     roles: string[];
 }
 
+export interface ChatReactorUser {
+    id: number;
+    name: string;
+    username: string;
+    image_url?: string | null;
+    image_path?: string | null;
+    institution?: string | null;
+    is_verified?: boolean;
+    roles?: Array<{ id?: number; name: string }> | string[];
+}
+
 export interface ChatMessageReactionItem {
     emoji: string;
     count: number;
     reacted: boolean;
     users?: string[];
+    reactors?: ChatReactorUser[];
 }
 
 interface ChatMessageItem {
@@ -857,6 +871,79 @@ const reactToMessage = async (message: ChatMessageItem, emoji: string) => {
     }
 };
 
+// Reactor Modal state & methods
+const isReactorsModalOpen = ref(false);
+const activeReactorsMessage = ref<ChatMessageItem | null>(null);
+const selectedReactorTab = ref<string>('all');
+
+const openReactorsModal = (message: ChatMessageItem, initialEmoji?: string) => {
+    if (!message.reactions || message.reactions.length === 0) {
+        return;
+    }
+
+    activeReactorsMessage.value = message;
+    selectedReactorTab.value = initialEmoji || 'all';
+    isReactorsModalOpen.value = true;
+};
+
+const closeReactorsModal = () => {
+    isReactorsModalOpen.value = false;
+    activeReactorsMessage.value = null;
+    selectedReactorTab.value = 'all';
+};
+
+const allReactors = computed(() => {
+    if (!activeReactorsMessage.value?.reactions) {
+return [];
+}
+
+    const list: Array<{ user: ChatReactorUser; emoji: string }> = [];
+
+    for (const r of activeReactorsMessage.value.reactions) {
+        if (r.reactors && Array.isArray(r.reactors)) {
+            for (const u of r.reactors) {
+                list.push({ user: u, emoji: r.emoji });
+            }
+        }
+    }
+
+    return list;
+});
+
+const activeReactorsTotalCount = computed(() => {
+    if (!activeReactorsMessage.value?.reactions) {
+return 0;
+}
+
+    return activeReactorsMessage.value.reactions.reduce(
+        (sum, r) => sum + r.count,
+        0,
+    );
+});
+
+const displayedReactors = computed(() => {
+    if (!activeReactorsMessage.value?.reactions) {
+return [];
+}
+
+    if (selectedReactorTab.value === 'all') {
+        return allReactors.value;
+    }
+
+    const target = activeReactorsMessage.value.reactions.find(
+        (r) => r.emoji === selectedReactorTab.value,
+    );
+
+    if (!target?.reactors) {
+return [];
+}
+
+    return target.reactors.map((u) => ({
+        user: u,
+        emoji: target.emoji,
+    }));
+});
+
 // Report message state & methods
 const reportingMessage = ref<ChatMessageItem | null>(null);
 const reportReason = ref('Inappropriate message or conduct');
@@ -1486,6 +1573,9 @@ onUnmounted(() => {
                                         !!msg.deleted_at
                                     "
                                     @click.stop="reactToMessage(msg, r.emoji)"
+                                    @contextmenu.prevent.stop="
+                                        openReactorsModal(msg, r.emoji)
+                                    "
                                     class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition select-none active:scale-95 disabled:cursor-default"
                                     :class="
                                         r.reacted
@@ -1494,12 +1584,21 @@ onUnmounted(() => {
                                     "
                                     :title="
                                         r.users && r.users.length
-                                            ? `Reacted by: ${r.users.join(', ')}`
+                                            ? `Reacted by: ${r.users.join(', ')} · Right-click to view reactors`
                                             : ''
                                     "
                                 >
                                     <span>{{ r.emoji }}</span>
                                     <span class="font-bold">{{ r.count }}</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    @click.stop="openReactorsModal(msg)"
+                                    class="inline-flex cursor-pointer items-center rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                                    title="View all reactions"
+                                >
+                                    <Users class="h-3 w-3" />
                                 </button>
                             </div>
                         </div>
@@ -1923,6 +2022,29 @@ onUnmounted(() => {
                 <div class="space-y-1 pt-1 text-xs">
                     <button
                         v-if="
+                            mobileActionMessage.reactions &&
+                            mobileActionMessage.reactions.length > 0
+                        "
+                        type="button"
+                        @click="
+                            openReactorsModal(mobileActionMessage);
+                            closeMobileActions();
+                        "
+                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-slate-700 hover:bg-slate-100 active:scale-98 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <Smile class="h-4 w-4 text-amber-500" />
+                        <span>
+                            View Reactions ({{
+                                mobileActionMessage.reactions.reduce(
+                                    (sum, r) => sum + r.count,
+                                    0,
+                                )
+                            }})
+                        </span>
+                    </button>
+
+                    <button
+                        v-if="
                             currentUser &&
                             canPost &&
                             !mobileActionMessage.is_deleted &&
@@ -2113,6 +2235,118 @@ onUnmounted(() => {
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Reactions Modal -->
+        <div
+            v-if="isReactorsModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <div
+                class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+                @click="closeReactorsModal"
+            ></div>
+
+            <div
+                class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all dark:border-zinc-800 dark:bg-zinc-900"
+            >
+                <button
+                    @click="closeReactorsModal"
+                    class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+                >
+                    <X class="h-4 w-4" />
+                </button>
+
+                <div class="mb-4 flex items-center gap-2.5">
+                    <div
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                    >
+                        <Smile class="h-4 w-4 stroke-[2.2]" />
+                    </div>
+                    <div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-zinc-100"
+                        >
+                            Message Reactions
+                        </h3>
+                        <p
+                            class="text-[11px] font-medium text-slate-500 dark:text-zinc-400"
+                        >
+                            {{ activeReactorsTotalCount }} reaction{{
+                                activeReactorsTotalCount === 1 ? '' : 's'
+                            }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div
+                    v-if="
+                        activeReactorsMessage?.reactions &&
+                        activeReactorsMessage.reactions.length > 1
+                    "
+                    class="mb-3 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-2.5 dark:border-zinc-800"
+                >
+                    <button
+                        type="button"
+                        @click="selectedReactorTab = 'all'"
+                        class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition select-none"
+                        :class="
+                            selectedReactorTab === 'all'
+                                ? 'border-indigo-300 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
+                                : 'border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400'
+                        "
+                    >
+                        <span>All</span>
+                        <span class="font-bold">{{
+                            activeReactorsTotalCount
+                        }}</span>
+                    </button>
+                    <button
+                        v-for="r in activeReactorsMessage.reactions"
+                        :key="r.emoji"
+                        type="button"
+                        @click="selectedReactorTab = r.emoji"
+                        class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition select-none"
+                        :class="
+                            selectedReactorTab === r.emoji
+                                ? 'border-indigo-300 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
+                                : 'border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400'
+                        "
+                    >
+                        <span>{{ r.emoji }}</span>
+                        <span class="font-bold">{{ r.count }}</span>
+                    </button>
+                </div>
+
+                <!-- Reactors List -->
+                <div
+                    class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-zinc-800/80"
+                >
+                    <div
+                        v-if="displayedReactors.length === 0"
+                        class="py-6 text-center text-xs text-slate-500 dark:text-zinc-400"
+                    >
+                        No reactions recorded.
+                    </div>
+
+                    <div
+                        v-for="(item, idx) in displayedReactors"
+                        :key="`${item.user.id}-${item.emoji}-${idx}`"
+                        class="flex items-center justify-between gap-2"
+                    >
+                        <UserListItem
+                            :user="item.user"
+                            class="min-w-0 flex-1"
+                        />
+                        <span
+                            class="shrink-0 rounded-lg bg-slate-100 px-2 py-0.5 text-sm dark:bg-zinc-800"
+                        >
+                            {{ item.emoji }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -43,7 +43,7 @@ class ChatMessage extends Model
     {
         $reactions = $this->relationLoaded('reactions')
             ? $this->reactions
-            : $this->reactions()->with('user:id,name,username')->get();
+            : $this->reactions()->with(['user:id,name,username,image_path,institution', 'user.roles:id,name'])->get();
 
         return $reactions
             ->groupBy('emoji')
@@ -53,6 +53,22 @@ class ChatMessage extends Model
                     'count' => $group->count(),
                     'reacted' => $currentUserId ? $group->contains('user_id', $currentUserId) : false,
                     'users' => $group->map(fn ($r) => $r->user?->username ?? $r->user?->name)->filter()->values()->toArray(),
+                    'reactors' => $group->map(function ($r) {
+                        if (! $r->user) {
+                            return null;
+                        }
+
+                        return [
+                            'id' => $r->user->id,
+                            'name' => $r->user->name,
+                            'username' => $r->user->username,
+                            'image_url' => $r->user->image_url,
+                            'image_path' => $r->user->image_path,
+                            'institution' => $r->user->institution,
+                            'is_verified' => (bool) ($r->user->is_verified || ($r->user->relationLoaded('roles') && $r->user->roles->isNotEmpty())),
+                            'roles' => $r->user->relationLoaded('roles') ? $r->user->roles->pluck('name')->toArray() : [],
+                        ];
+                    })->filter()->values()->toArray(),
                 ];
             })
             ->values()
