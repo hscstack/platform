@@ -1234,28 +1234,33 @@ onUnmounted(() => {
             class="mb-3 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
         >
             <div>
-                <h1
-                    class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-zinc-100"
-                >
-                    Global Chat
-                </h1>
-                <div
-                    class="mt-0.5 flex items-center gap-2 text-xs text-slate-500 sm:text-sm dark:text-zinc-400"
-                >
-                    <span>
-                        অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন
-                        শেয়ার করুন।
-                    </span>
-                    <span
-                        v-if="activeUsersCount > 0"
-                        class="inline-flex items-center gap-1 text-[11px] text-slate-400 sm:text-xs dark:text-zinc-500"
+                <div class="flex items-center gap-2.5">
+                    <h1
+                        class="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-zinc-100"
                     >
-                        <span
-                            class="h-1.5 w-1.5 rounded-full bg-green-500"
-                        ></span>
-                        {{ activeUsersCount }} online
-                    </span>
+                        Global Chat
+                    </h1>
+                    <div
+                        v-if="activeUsersCount > 0"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-2xs dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    >
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+                            ></span>
+                            <span
+                                class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"
+                            ></span>
+                        </span>
+                        {{ activeUsersCount }} active
+                    </div>
                 </div>
+                <p
+                    class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-zinc-400"
+                >
+                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
+                    করুন।
+                </p>
             </div>
 
             <div class="flex items-center gap-2">
