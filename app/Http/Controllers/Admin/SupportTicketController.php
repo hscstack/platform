@@ -108,7 +108,7 @@ class SupportTicketController extends Controller
     public function destroy(SupportTicket $ticket)
     {
         if ($ticket->attachment_path && ! str($ticket->attachment_path)->startsWith(['http://', 'https://'])) {
-            Storage::disk('public')->delete($ticket->attachment_path);
+            Storage::delete($ticket->attachment_path);
         }
 
         $ticket->delete();

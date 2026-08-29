@@ -76,7 +76,7 @@ class SupportTicketController extends Controller
 
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
-            $attachmentPath = $request->file('attachment')->store('tickets', 'public');
+            $attachmentPath = $request->file('attachment')->store('tickets');
         }
 
         $ticket = SupportTicket::create([

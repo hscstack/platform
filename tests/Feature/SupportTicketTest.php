@@ -18,7 +18,7 @@ test('support and donate pages load successfully', function () {
 });
 
 test('authenticated user can submit a support ticket and receive email', function () {
-    Storage::fake('public');
+    Storage::fake();
     Mail::fake();
     $user = User::factory()->create();
 
@@ -44,7 +44,7 @@ test('authenticated user can submit a support ticket and receive email', functio
     expect($ticket->ticket_number)->toStartWith('TKT-')
         ->and($ticket->attachment_path)->not->toBeNull();
 
-    Storage::disk('public')->assertExists($ticket->attachment_path);
+    Storage::assertExists($ticket->attachment_path);
 
     Mail::assertQueued(SupportTicketMail::class, function ($mail) use ($user, $ticket) {
         return $mail->hasTo($user->email) && $mail->mailSubject === "[HSCStack Support] Ticket #{$ticket->ticket_number} Received";
@@ -156,13 +156,13 @@ test('admin can reply to a ticket and resolve it', function () {
 });
 
 test('admin can update status and delete a ticket', function () {
-    Storage::fake('public');
+    Storage::fake();
     Mail::fake();
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
     $file = UploadedFile::fake()->image('error.jpg');
-    $path = $file->store('tickets', 'public');
+    $path = $file->store('tickets');
 
     $ticket = SupportTicket::create([
         'user_id' => $admin->id,
@@ -193,7 +193,7 @@ test('admin can update status and delete a ticket', function () {
         ->assertSessionHas('success');
 
     expect(SupportTicket::count())->toBe(0);
-    Storage::disk('public')->assertMissing($path);
+    Storage::assertMissing($path);
 });
 
 test('non-admin user cannot access admin ticket management', function () {

@@ -344,7 +344,7 @@ const submitForm = () => {
                         required
                         placeholder="user@example.com"
                         :disabled="form.processing"
-                        class="w-full rounded-xl border py-3 pr-4 pl-10 text-sm transition outline-none focus:ring-4 dark:bg-gray-950 dark:text-gray-100"
+                        class="w-full rounded-xl border bg-white py-3 pr-4 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
                         :class="
                             form.errors.recipient_email
                                 ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
@@ -392,7 +392,7 @@ const submitForm = () => {
                     required
                     placeholder="e.g. Important Announcement: New Resources & Learning Updates"
                     :disabled="form.processing"
-                    class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none focus:ring-4 dark:bg-gray-950 dark:text-gray-100"
+                    class="w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
                     :class="
                         form.errors.subject
                             ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'

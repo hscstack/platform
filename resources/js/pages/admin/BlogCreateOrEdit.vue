@@ -70,7 +70,7 @@ const submitForm = () => {
                     type="text"
                     id="title"
                     placeholder="e.g. 10 Tips for Cracking BUET"
-                    class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
+                    class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                     :class="
                         form.errors.title
                             ? 'border-rose-500 focus:ring-rose-500/20'
@@ -145,7 +145,7 @@ const submitForm = () => {
                     type="text"
                     id="seo_tags"
                     placeholder="e.g. admission, news, tips"
-                    class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
+                    class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                     :class="
                         form.errors.seo_tags
                             ? 'border-rose-500 focus:ring-rose-500/20'

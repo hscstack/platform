@@ -78,7 +78,7 @@ const submitForm = () => {
                         id="playlist_url"
                         placeholder="https://www.youtube.com/playlist?list=PL..."
                         required
-                        class="w-full rounded-lg border py-2.5 pr-4 pl-11 text-sm transition outline-none"
+                        class="w-full rounded-lg border bg-white py-2.5 pr-4 pl-11 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                         :class="
                             form.errors.playlist_url
                                 ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/20'
