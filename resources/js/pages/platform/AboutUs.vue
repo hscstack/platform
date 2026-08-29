@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft } from 'lucide-vue-next';
 import UserCard from '@/components/UserCard.vue';
 
 defineProps({
     users: Array,
 });
-const goBack = () => {
-    window.history.back();
-};
 </script>
 
 <template>
@@ -25,16 +21,7 @@ const goBack = () => {
         />
     </Head>
 
-    <header class="mx-auto max-w-4xl px-4 pt-16 pb-14 text-center sm:pt-20">
-        <button
-            @click="goBack"
-            class="group mb-5 inline-flex items-center gap-2 text-xs font-bold text-slate-400 transition-colors hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
-            />
-            Go Back
-        </button>
+    <header class="mx-auto max-w-4xl px-4 pt-8 pb-10 text-center sm:pt-12">
         <h1
             class="text-4xl font-black tracking-tight text-slate-950 sm:text-6xl dark:text-gray-100"
         >

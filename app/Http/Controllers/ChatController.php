@@ -79,6 +79,8 @@ class ChatController extends Controller
 
         $allowedEmojis = (array) AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
 
+        $channelName = app()->environment('production') ? 'global-chat' : app()->environment().'.global-chat';
+
         if (! $request->wantsJson() && ! $request->is('api/*')) {
             return Inertia::render('Chat/Index', [
                 'chatState' => [
@@ -92,6 +94,7 @@ class ChatController extends Controller
                     'can_delete' => (bool) $user?->can('manage chat'),
                     'reaction_emojis' => $allowedEmojis,
                     'messages' => $messages,
+                    'channel_name' => $channelName,
                     'pusher_key' => config('broadcasting.connections.pusher.key'),
                     'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
                 ],
@@ -109,6 +112,7 @@ class ChatController extends Controller
             'can_delete' => (bool) $user?->can('manage chat'),
             'reaction_emojis' => $allowedEmojis,
             'messages' => $messages,
+            'channel_name' => $channelName,
             'pusher_key' => config('broadcasting.connections.pusher.key'),
             'pusher_cluster' => config('broadcasting.connections.pusher.options.cluster', 'ap2'),
         ]);
@@ -362,14 +366,19 @@ class ChatController extends Controller
             ], 422);
         }
 
-        $existing = $message->reactions()
+        $existingReaction = $message->reactions()
             ->where('user_id', $user->id)
-            ->where('emoji', $emoji)
             ->first();
 
-        if ($existing) {
-            $existing->delete();
+        if ($existingReaction && $existingReaction->emoji === $emoji) {
+            // Same emoji clicked again -> toggle off / remove
+            $existingReaction->delete();
         } else {
+            // Different emoji or no previous reaction -> remove existing and add new
+            if ($existingReaction) {
+                $existingReaction->delete();
+            }
+
             $message->reactions()->create([
                 'user_id' => $user->id,
                 'emoji' => $emoji,

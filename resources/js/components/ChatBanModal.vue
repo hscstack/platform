@@ -24,11 +24,13 @@ const banUntilInput = ref('');
 const isSubmittingBan = ref(false);
 
 const banPresets = [
-    { label: '1 Hour', hours: 1 },
-    { label: '24 Hours', hours: 24 },
-    { label: '3 Days', hours: 72 },
-    { label: '7 Days', hours: 168 },
-    { label: '30 Days', hours: 720 },
+    { label: '3 Mins', minutes: 3 },
+    { label: '5 Mins', minutes: 5 },
+    { label: '15 Mins', minutes: 15 },
+    { label: '1 Hour', minutes: 60 },
+    { label: '24 Hours', minutes: 24 * 60 },
+    { label: '3 Days', minutes: 3 * 24 * 60 },
+    { label: '7 Days', minutes: 7 * 24 * 60 },
 ];
 
 const formatForDatetimeLocal = (dateString?: string | null) => {
@@ -70,8 +72,8 @@ const formatDate = (isoString?: string | null) => {
     }
 };
 
-const applyBanPreset = (hours: number) => {
-    const futureDate = new Date(Date.now() + hours * 60 * 60 * 1000);
+const applyBanPreset = (minutes: number) => {
+    const futureDate = new Date(Date.now() + minutes * 60 * 1000);
     banUntilInput.value = formatForDatetimeLocal(futureDate.toISOString());
 };
 
@@ -209,7 +211,7 @@ const submitBan = () => {
                                     v-for="preset in banPresets"
                                     :key="preset.label"
                                     type="button"
-                                    @click="applyBanPreset(preset.hours)"
+                                    @click="applyBanPreset(preset.minutes)"
                                     class="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                                 >
                                     +{{ preset.label }}

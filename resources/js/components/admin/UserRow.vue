@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { LogIn, Pencil, Trash2, Ban } from 'lucide-vue-next';
+import { ref } from 'vue';
+import ChatBanModal from '@/components/ChatBanModal.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
@@ -11,6 +13,7 @@ defineProps({
 
 const page = usePage();
 const userId = page.props.auth.user.id;
+const isBanModalOpen = ref(false);
 
 const isChatBanned = (user: any) => {
     if (!user?.chat_banned_until) {
@@ -18,6 +21,10 @@ const isChatBanned = (user: any) => {
     }
 
     return new Date(user.chat_banned_until).getTime() > Date.now();
+};
+
+const openBanModal = () => {
+    isBanModalOpen.value = true;
 };
 
 const getRoleBadgeStyles = (role: string) => {
@@ -59,22 +66,30 @@ const deleteUser = (id: number) => {
                 : '',
         ]"
     >
-        <!-- Left: User Avatar + Name + Email + Role -->
-        <div class="flex min-w-0 flex-1 items-center gap-3">
+        <!-- Left: User Avatar + Name + Email + Role (Clickable to profile) -->
+        <Link
+            :href="user.username ? `/u/${user.username}` : '#'"
+            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+        >
             <div
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 bg-slate-100 text-xs font-bold text-slate-700 uppercase sm:h-10 sm:w-10 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300"
+                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-black/5 bg-slate-100 text-xs font-bold text-slate-700 uppercase sm:h-10 sm:w-10 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300"
             >
-                {{ user.name.charAt(0) }}
+                <img
+                    v-if="user.image_url || user.image_path"
+                    :src="user.image_url || '/storage/' + user.image_path"
+                    :alt="user.name"
+                    class="h-full w-full object-cover"
+                />
+                <span v-else>{{ user.name.charAt(0) }}</span>
             </div>
 
             <div class="flex min-w-0 flex-col">
                 <div class="flex flex-wrap items-center gap-2">
-                    <Link
-                        :href="user.username ? `/u/${user.username}` : '#'"
-                        class="text-sm font-semibold break-words text-slate-900 transition-colors hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                    <span
+                        class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                     >
                         {{ user.name }}
-                    </Link>
+                    </span>
 
                     <span
                         v-if="user.id === userId"
@@ -106,13 +121,14 @@ const deleteUser = (id: number) => {
                     {{ user.email }}
                 </p>
             </div>
-        </div>
+        </Link>
 
         <!-- Right: Actions -->
         <div
             v-if="
                 (user.id !== userId && can('impersonate users')) ||
                 can('edit users') ||
+                can('manage chat') ||
                 (user.id !== userId && can('delete users'))
             "
             class="flex shrink-0 items-center gap-1"
@@ -126,6 +142,25 @@ const deleteUser = (id: number) => {
                 title="Login as user"
             >
                 <LogIn class="h-4 w-4" :stroke-width="1.8" />
+            </button>
+
+            <button
+                v-if="can('manage chat') || can('edit users')"
+                type="button"
+                @click="openBanModal"
+                class="rounded-lg p-1.5 transition-colors"
+                :class="
+                    isChatBanned(user)
+                        ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40'
+                        : 'text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
+                "
+                :title="
+                    isChatBanned(user)
+                        ? 'Edit chat ban timer / Unban'
+                        : 'Ban from chat'
+                "
+            >
+                <Ban class="h-4 w-4" :stroke-width="1.8" />
             </button>
 
             <Link
@@ -147,5 +182,12 @@ const deleteUser = (id: number) => {
                 <Trash2 class="h-4 w-4" :stroke-width="1.8" />
             </button>
         </div>
+
+        <!-- Chat Ban Modal -->
+        <ChatBanModal
+            :is-open="isBanModalOpen"
+            :user="user"
+            @close="isBanModalOpen = false"
+        />
     </div>
 </template>

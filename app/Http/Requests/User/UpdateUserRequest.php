@@ -26,6 +26,15 @@ class UpdateUserRequest extends FormRequest
 
         $rules = [
             'name' => ['sometimes', 'string', 'max:255'],
+            'username' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[a-zA-Z0-9_]+$/',
+                'unique:users,username,'.$user->id,
+            ],
             'email' => ['sometimes', 'email', 'unique:users,email,'.$user->id],
             'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
             'about' => ['sometimes', 'nullable', 'string'],
