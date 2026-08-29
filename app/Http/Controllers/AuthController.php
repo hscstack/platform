@@ -124,11 +124,19 @@ class AuthController extends Controller
                 'unique:users,username',
             ],
             'school' => ['required', 'string', 'max:255'],
+            'image' => ['sometimes', 'nullable', 'image', 'max:5120'],
         ], [
             'school.required' => 'Please enter your school, college, or institution name.',
             'username.regex' => 'Username can only contain letters, numbers, and underscores.',
             'username.unique' => 'This username is already taken. Please choose another one.',
+            'image.image' => 'The uploaded file must be an image (PNG, JPG, JPEG, WEBP).',
+            'image.max' => 'The profile image may not be greater than 5MB.',
         ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('users/profile-images');
+        }
 
         $user = User::where('google_id', $onboardingData['google_id'])
             ->orWhere('email', $onboardingData['email'])
@@ -141,10 +149,18 @@ class AuthController extends Controller
                 'email' => $onboardingData['email'],
                 'google_id' => $onboardingData['google_id'],
                 'institution' => $validated['school'],
+                'image_path' => $imagePath,
                 'email_verified_at' => now(),
             ]);
 
             Mail::to($user->email)->queue(new WelcomeUserMail($user));
+        } else {
+            if ($imagePath) {
+                if ($user->image_path) {
+                    Storage::delete($user->image_path);
+                }
+                $user->update(['image_path' => $imagePath]);
+            }
         }
 
         $request->session()->forget('onboarding_user');

@@ -2,7 +2,9 @@
 
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 
 test('login page is accessible', function () {
@@ -95,6 +97,35 @@ test('completing onboarding creates user, queues welcome mail, and logs in', fun
     Mail::assertQueued(WelcomeUserMail::class, function ($mail) {
         return $mail->hasTo('newuser@example.com');
     });
+});
+
+test('completing onboarding with avatar image upload stores image', function () {
+    Storage::fake();
+    Mail::fake();
+
+    $file = UploadedFile::fake()->image('avatar.jpg');
+
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-67890',
+            'email' => 'photo_user@example.com',
+            'name' => 'Photo User',
+            'avatar' => null,
+        ],
+    ])->post(route('onboarding.complete'), [
+        'name' => 'Photo User',
+        'username' => 'photo_user',
+        'school' => 'Dhaka College',
+        'image' => $file,
+    ]);
+
+    $user = User::where('email', 'photo_user@example.com')->first();
+    $this->assertNotNull($user);
+    $this->assertNotNull($user->image_path);
+    Storage::assertExists($user->image_path);
+
+    $this->assertAuthenticatedAs($user);
+    $response->assertRedirect(route('user.profile', 'photo_user'));
 });
 
 test('completing onboarding validates username uniqueness and format', function () {
