@@ -6,10 +6,10 @@ import {
     GraduationCap,
     AlertCircle,
     ArrowLeft,
-    CheckCircle2,
+    Camera,
     Loader2,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 
 interface OnboardingUser {
     google_id: string;
@@ -25,14 +25,63 @@ const props = defineProps<{
 const page = usePage();
 const flashError = computed(() => (page.props as any).flash?.error);
 
-const form = useForm({
+const form = useForm<{
+    name: string;
+    username: string;
+    school: string;
+    image: File | null;
+}>({
     name: props.user?.name || '',
     username: '',
     school: '',
+    image: null,
+});
+
+const previewUrl = ref<string | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
+const handleImageChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+
+    if (file) {
+        form.image = file;
+
+        if (previewUrl.value) {
+            URL.revokeObjectURL(previewUrl.value);
+        }
+
+        previewUrl.value = URL.createObjectURL(file);
+    }
+};
+
+const triggerFileInput = () => {
+    fileInputRef.value?.click();
+};
+
+const removeCustomImage = () => {
+    form.image = null;
+
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value);
+        previewUrl.value = null;
+    }
+
+    if (fileInputRef.value) {
+        fileInputRef.value.value = '';
+    }
+};
+
+onUnmounted(() => {
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value);
+    }
 });
 
 const submit = () => {
-    form.post('/onboarding');
+    form.post('/onboarding', {
+        forceFormData: true,
+    });
 };
 </script>
 
@@ -88,40 +137,97 @@ const submit = () => {
             <div
                 class="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(8,11,46,0.08)] backdrop-blur-xl sm:p-8 dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
             >
-                <!-- Connected Google Account Badge -->
+                <!-- Connected Google Account Badge & Avatar Upload -->
                 <div
                     v-if="props.user?.email"
-                    class="mb-6 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5 dark:border-gray-800 dark:bg-gray-800/40"
+                    class="mb-6 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-gray-800 dark:bg-gray-800/40"
                 >
-                    <img
-                        v-if="props.user.avatar"
-                        :src="props.user.avatar"
-                        :alt="props.user.name"
-                        class="h-10 w-10 shrink-0 rounded-full border border-slate-200 object-cover dark:border-gray-700"
-                    />
-                    <div
-                        v-else
-                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                    >
-                        {{ props.user.name?.charAt(0)?.toUpperCase() || 'U' }}
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-3.5">
+                        <!-- Avatar with upload trigger overlay -->
+                        <div class="group relative shrink-0">
+                            <img
+                                v-if="previewUrl || props.user.avatar"
+                                :src="previewUrl || props.user.avatar!"
+                                :alt="props.user.name"
+                                class="h-14 w-14 rounded-full border-2 border-indigo-500/20 object-cover shadow-xs dark:border-indigo-400/30"
+                            />
+                            <div
+                                v-else
+                                class="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                            >
+                                {{
+                                    props.user.name?.charAt(0)?.toUpperCase() ||
+                                    'U'
+                                }}
+                            </div>
+
+                            <!-- Camera Overlay Button -->
+                            <button
+                                type="button"
+                                @click="triggerFileInput"
+                                class="absolute -right-1 -bottom-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition hover:scale-110 hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                title="Upload custom photo"
+                            >
+                                <Camera class="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+
+                        <!-- Email & Info -->
+                        <div class="min-w-0 flex-1">
                             <p
                                 class="truncate text-xs font-bold text-slate-800 dark:text-gray-200"
                             >
                                 {{ props.user.email }}
                             </p>
-                            <CheckCircle2
-                                class="h-3.5 w-3.5 shrink-0 text-emerald-500"
-                            />
+                            <p
+                                class="text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Connected via Google
+                            </p>
+                            <div class="mt-1.5 flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    @click="triggerFileInput"
+                                    class="cursor-pointer text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                                >
+                                    {{
+                                        previewUrl
+                                            ? 'Change Photo'
+                                            : 'Upload Photo'
+                                    }}
+                                </button>
+                                <span
+                                    v-if="previewUrl"
+                                    class="text-slate-300 dark:text-gray-600"
+                                    >•</span
+                                >
+                                <button
+                                    v-if="previewUrl"
+                                    type="button"
+                                    @click="removeCustomImage"
+                                    class="cursor-pointer text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:underline dark:text-rose-400"
+                                >
+                                    Reset
+                                </button>
+                            </div>
                         </div>
-                        <p
-                            class="text-[11px] text-slate-400 dark:text-gray-500"
-                        >
-                            Verified via Google
-                        </p>
+
+                        <!-- Hidden File Input -->
+                        <input
+                            ref="fileInputRef"
+                            type="file"
+                            accept="image/*"
+                            class="hidden"
+                            @change="handleImageChange"
+                        />
                     </div>
+
+                    <p
+                        v-if="form.errors.image"
+                        class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400"
+                    >
+                        {{ form.errors.image }}
+                    </p>
                 </div>
 
                 <!-- Onboarding Form -->

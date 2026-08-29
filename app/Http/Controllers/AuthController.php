@@ -6,7 +6,10 @@ use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -63,6 +66,14 @@ class AuthController extends Controller
                 'google_id' => $googleUser->getId(),
                 'email_verified_at' => $user->email_verified_at ?? now(),
             ]);
+
+            // If existing user has no profile photo, download and store their Google avatar
+            if (! $user->image_path && $googleUser->getAvatar()) {
+                $downloadedPath = $this->downloadGoogleAvatar($googleUser->getAvatar());
+                if ($downloadedPath) {
+                    $user->update(['image_path' => $downloadedPath]);
+                }
+            }
 
             Auth::login($user, remember: true);
             $request->session()->regenerate();
@@ -124,11 +135,21 @@ class AuthController extends Controller
                 'unique:users,username',
             ],
             'school' => ['required', 'string', 'max:255'],
+            'image' => ['sometimes', 'nullable', 'image', 'max:5120'],
         ], [
             'school.required' => 'Please enter your school, college, or institution name.',
             'username.regex' => 'Username can only contain letters, numbers, and underscores.',
             'username.unique' => 'This username is already taken. Please choose another one.',
+            'image.image' => 'The uploaded file must be an image (PNG, JPG, JPEG, WEBP).',
+            'image.max' => 'The profile image may not be greater than 5MB.',
         ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('users/profile-images');
+        } elseif (! empty($onboardingData['avatar'])) {
+            $imagePath = $this->downloadGoogleAvatar($onboardingData['avatar']);
+        }
 
         $user = User::where('google_id', $onboardingData['google_id'])
             ->orWhere('email', $onboardingData['email'])
@@ -141,10 +162,18 @@ class AuthController extends Controller
                 'email' => $onboardingData['email'],
                 'google_id' => $onboardingData['google_id'],
                 'institution' => $validated['school'],
+                'image_path' => $imagePath,
                 'email_verified_at' => now(),
             ]);
 
             Mail::to($user->email)->queue(new WelcomeUserMail($user));
+        } else {
+            if ($imagePath) {
+                if ($user->image_path) {
+                    Storage::delete($user->image_path);
+                }
+                $user->update(['image_path' => $imagePath]);
+            }
         }
 
         $request->session()->forget('onboarding_user');
@@ -157,6 +186,44 @@ class AuthController extends Controller
             : route('profile.edit');
 
         return redirect()->intended($defaultUrl)->with('success', 'Account created successfully! Welcome to HSCStack.');
+    }
+
+    private function downloadGoogleAvatar(?string $avatarUrl): ?string
+    {
+        if (! $avatarUrl) {
+            return null;
+        }
+
+        try {
+            // Replace small size parameter (=s96-c) with high-res (=s500-c) if present
+            $highResUrl = preg_replace('/=s\d+(-c)?$/i', '=s500-c', $avatarUrl);
+
+            $response = Http::timeout(6)->get($highResUrl);
+            if (! $response->successful()) {
+                // Fallback to original URL if high-res request fails
+                $response = Http::timeout(6)->get($avatarUrl);
+            }
+
+            if ($response->successful()) {
+                $contents = $response->body();
+                $extension = 'jpg';
+                $contentType = (string) $response->header('Content-Type');
+                if (str_contains($contentType, 'png')) {
+                    $extension = 'png';
+                } elseif (str_contains($contentType, 'webp')) {
+                    $extension = 'webp';
+                }
+
+                $filename = 'users/profile-images/'.Str::random(40).'.'.$extension;
+                Storage::put($filename, $contents);
+
+                return $filename;
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return null;
     }
 
     public function logout(Request $request)

@@ -185,3 +185,43 @@ test('admin can queue broadcast emails specifically to students non-staff users'
         return $mail->hasTo($unsubStudent->email);
     });
 });
+
+test('admin can queue broadcast emails specifically to staff members', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create(['email' => 'admin@example.com']);
+    $admin->assignRole('admin');
+
+    $editor = User::factory()->create(['email' => 'editor@example.com', 'receive_emails' => true]);
+    $editorRole = Role::findOrCreate('editor', 'web');
+    $editor->assignRole($editorRole);
+
+    $student = User::factory()->create(['email' => 'student@example.com', 'receive_emails' => true]);
+    $unsubStaff = User::factory()->create(['email' => 'unsub_staff@example.com', 'receive_emails' => false]);
+    $unsubStaff->assignRole($editorRole);
+
+    $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
+        'recipient_type' => 'staff',
+        'subject' => 'Internal Staff Announcement',
+        'body' => '<p>Meeting at 5 PM.</p>',
+    ]);
+
+    $response->assertRedirect(route('admin.emails.create'));
+    $response->assertSessionHas('success');
+
+    // Subscribed staff members should receive it
+    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($editor) {
+        return $mail->hasTo($editor->email) &&
+            $mail->mailSubject === 'Internal Staff Announcement';
+    });
+
+    // Students should NOT receive it
+    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($student) {
+        return $mail->hasTo($student->email);
+    });
+
+    // Unsubscribed staff should NOT receive it
+    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($unsubStaff) {
+        return $mail->hasTo($unsubStaff->email);
+    });
+});

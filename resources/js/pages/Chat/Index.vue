@@ -502,6 +502,8 @@ const setupRealtime = () => {
                             e.deleted_at || new Date().toISOString();
                         target.content =
                             'This message was deleted by a moderator.';
+                        target.reply_to_id = null;
+                        target.reply_to_content = null;
                     }
                 }
             },
@@ -714,6 +716,8 @@ const deleteMessage = async (messageId: number) => {
                 target.is_deleted = true;
                 target.deleted_at = data.deleted_at || new Date().toISOString();
                 target.content = 'This message was deleted by a moderator.';
+                target.reply_to_id = null;
+                target.reply_to_content = null;
             }
         }
     } catch (e) {

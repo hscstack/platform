@@ -21,6 +21,11 @@ class ChatSettingsController extends Controller
         $bannedWordsText = is_array($bannedWords) ? implode(', ', $bannedWords) : (string) $bannedWords;
         $allowedEmojis = AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
 
+        $durationMinutes = (int) AppSetting::get('global_chat_auto_ban_duration_minutes', 0);
+        if ($durationMinutes <= 0) {
+            $durationMinutes = (int) AppSetting::get('global_chat_auto_ban_duration_hours', 24) * 60;
+        }
+
         return Inertia::render('admin/ChatSettings', [
             'settings' => [
                 'enabled' => (bool) AppSetting::get('global_chat_enabled', true),
@@ -33,6 +38,9 @@ class ChatSettingsController extends Controller
                 'banned_words' => $bannedWordsText,
                 'allowed_emojis' => (array) $allowedEmojis,
                 'bot_username' => (string) AppSetting::get('global_chat_bot_username', 'hscstack'),
+                'auto_ban_enabled' => (bool) AppSetting::get('global_chat_auto_ban_enabled', true),
+                'auto_ban_threshold' => (int) AppSetting::get('global_chat_auto_ban_reports_threshold', 5),
+                'auto_ban_duration_minutes' => $durationMinutes,
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
@@ -93,6 +101,9 @@ class ChatSettingsController extends Controller
             'allowed_emojis' => ['nullable', 'array'],
             'allowed_emojis.*' => ['required', 'string', 'max:32'],
             'bot_username' => ['nullable', 'string', 'max:50', 'exists:users,username'],
+            'auto_ban_enabled' => ['required', 'boolean'],
+            'auto_ban_threshold' => ['required', 'integer', 'min:1', 'max:50'],
+            'auto_ban_duration_minutes' => ['required', 'integer', 'min:1', 'max:43200'],
         ]);
 
         $isEnabled = $validated['audience'] !== 'disabled';
@@ -104,6 +115,9 @@ class ChatSettingsController extends Controller
         AppSetting::set('global_chat_max_length', $validated['max_length'], 'integer');
         AppSetting::set('global_chat_profanity_filter_enabled', $validated['profanity_filter_enabled'], 'boolean');
         AppSetting::set('global_chat_banned_words', $validated['banned_words'] ?? '', 'string');
+        AppSetting::set('global_chat_auto_ban_enabled', $validated['auto_ban_enabled'], 'boolean');
+        AppSetting::set('global_chat_auto_ban_reports_threshold', $validated['auto_ban_threshold'], 'integer');
+        AppSetting::set('global_chat_auto_ban_duration_minutes', $validated['auto_ban_duration_minutes'], 'integer');
 
         $emojis = ! empty($validated['allowed_emojis'])
             ? array_values(array_unique(array_filter($validated['allowed_emojis'])))

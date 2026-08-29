@@ -16,10 +16,30 @@ use Spatie\Permission\Models\Permission;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = User::with('roles');
+
+        if ($request->filled('q')) {
+            $search = trim((string) $request->q);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('institution', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query
+            ->latest('id')
+            ->paginate(15)
+            ->withQueryString();
+
         return Inertia::render('admin/users/Index', [
-            'users' => User::with('roles')->get(),
+            'users' => $users,
+            'filters' => [
+                'q' => $request->q ?? '',
+            ],
         ]);
     }
 

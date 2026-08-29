@@ -28,9 +28,15 @@ class EmailController extends Controller
             ->doesntHave('roles')
             ->count();
 
+        $staffCount = User::where('receive_emails', true)
+            ->whereNotNull('email')
+            ->has('roles')
+            ->count();
+
         return Inertia::render('admin/EmailSend', [
             'recipientCount' => $allSubscribersCount,
             'studentsCount' => $studentsCount,
+            'staffCount' => $staffCount,
         ]);
     }
 
@@ -40,7 +46,7 @@ class EmailController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'recipient_type' => ['required', 'in:all,students,single'],
+            'recipient_type' => ['required', 'in:all,students,staff,single'],
             'recipient_email' => ['required_if:recipient_type,single', 'nullable', 'email', 'max:255'],
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
@@ -82,6 +88,8 @@ class EmailController extends Controller
 
         if ($validated['recipient_type'] === 'students') {
             $usersQuery->doesntHave('roles');
+        } elseif ($validated['recipient_type'] === 'staff') {
+            $usersQuery->has('roles');
         }
 
         $totalRecipients = $usersQuery->count();
@@ -105,7 +113,11 @@ class EmailController extends Controller
             }
         });
 
-        $targetLabel = $validated['recipient_type'] === 'students' ? 'students (non-staff)' : 'all subscribed';
+        $targetLabel = match ($validated['recipient_type']) {
+            'students' => 'students (non-staff)',
+            'staff' => 'staff members',
+            default => 'all subscribed',
+        };
 
         return redirect()
             ->route('admin.emails.create')

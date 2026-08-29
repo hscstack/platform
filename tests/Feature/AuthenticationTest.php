@@ -2,7 +2,10 @@
 
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 
 test('login page is accessible', function () {
@@ -97,6 +100,64 @@ test('completing onboarding creates user, queues welcome mail, and logs in', fun
     });
 });
 
+test('completing onboarding with avatar image upload stores image', function () {
+    Storage::fake();
+    Mail::fake();
+
+    $file = UploadedFile::fake()->image('avatar.jpg');
+
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-67890',
+            'email' => 'photo_user@example.com',
+            'name' => 'Photo User',
+            'avatar' => null,
+        ],
+    ])->post(route('onboarding.complete'), [
+        'name' => 'Photo User',
+        'username' => 'photo_user',
+        'school' => 'Dhaka College',
+        'image' => $file,
+    ]);
+
+    $user = User::where('email', 'photo_user@example.com')->first();
+    $this->assertNotNull($user);
+    $this->assertNotNull($user->image_path);
+    Storage::assertExists($user->image_path);
+
+    $this->assertAuthenticatedAs($user);
+    $response->assertRedirect(route('user.profile', 'photo_user'));
+});
+
+test('completing onboarding downloads and stores google avatar when available', function () {
+    Storage::fake();
+    Mail::fake();
+    Http::fake([
+        'https://lh3.googleusercontent.com/*' => Http::response('fake-avatar-bytes', 200, ['Content-Type' => 'image/jpeg']),
+    ]);
+
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-99999',
+            'email' => 'google_avatar@example.com',
+            'name' => 'Google Avatar User',
+            'avatar' => 'https://lh3.googleusercontent.com/a/some-photo=s96-c',
+        ],
+    ])->post(route('onboarding.complete'), [
+        'name' => 'Google Avatar User',
+        'username' => 'google_avatar_user',
+        'school' => 'Rajshahi College',
+    ]);
+
+    $user = User::where('email', 'google_avatar@example.com')->first();
+    $this->assertNotNull($user);
+    $this->assertNotNull($user->image_path);
+    Storage::assertExists($user->image_path);
+    $this->assertEquals('fake-avatar-bytes', Storage::get($user->image_path));
+
+    $this->assertAuthenticatedAs($user);
+});
+
 test('completing onboarding validates username uniqueness and format', function () {
     User::factory()->create([
         'username' => 'taken_handle',
@@ -175,6 +236,7 @@ test('redirects to custom redirect url after authentication for existing user', 
     $abstractUser->shouldReceive('getEmail')->andReturn('redirect-test@example.com');
     $abstractUser->shouldReceive('getName')->andReturn('Redirect User');
     $abstractUser->shouldReceive('getNickname')->andReturn('redirectuser');
+    $abstractUser->shouldReceive('getAvatar')->andReturn(null);
 
     Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
 
@@ -199,6 +261,7 @@ test('redirects to trusted subdomain after authentication for existing user', fu
     $abstractUser->shouldReceive('getEmail')->andReturn('subdomain@example.com');
     $abstractUser->shouldReceive('getName')->andReturn('Subdomain User');
     $abstractUser->shouldReceive('getNickname')->andReturn('subdomainuser');
+    $abstractUser->shouldReceive('getAvatar')->andReturn(null);
 
     Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
 
@@ -218,6 +281,7 @@ test('existing user logs in with google directly and links google id', function 
     $abstractUser->shouldReceive('getEmail')->andReturn('existing@example.com');
     $abstractUser->shouldReceive('getName')->andReturn('Existing User');
     $abstractUser->shouldReceive('getNickname')->andReturn('existing');
+    $abstractUser->shouldReceive('getAvatar')->andReturn(null);
 
     Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
 
@@ -247,6 +311,7 @@ test('google auth redirects to intended url if set for existing user', function 
     $abstractUser->shouldReceive('getEmail')->andReturn('intended@example.com');
     $abstractUser->shouldReceive('getName')->andReturn('Intended User');
     $abstractUser->shouldReceive('getNickname')->andReturn('intended');
+    $abstractUser->shouldReceive('getAvatar')->andReturn(null);
 
     Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
 

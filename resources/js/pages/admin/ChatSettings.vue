@@ -15,6 +15,7 @@ import {
     X,
     RotateCcw,
     Bot,
+    Gavel,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -33,6 +34,9 @@ interface ChatSettingsProps {
         banned_words: string;
         allowed_emojis?: string[];
         bot_username?: string;
+        auto_ban_enabled: boolean;
+        auto_ban_threshold: number;
+        auto_ban_duration_minutes: number;
     };
     totalMessages: number;
     recentMessagesCount: number;
@@ -78,6 +82,9 @@ const form = useForm({
             ? [...props.settings.allowed_emojis]
             : [...defaultReactionEmojis],
     bot_username: props.settings.bot_username ?? 'hscstack',
+    auto_ban_enabled: props.settings.auto_ban_enabled ?? true,
+    auto_ban_threshold: props.settings.auto_ban_threshold ?? 5,
+    auto_ban_duration_minutes: props.settings.auto_ban_duration_minutes ?? 1440,
 });
 
 const addEmoji = (emojiToAdd?: string) => {
@@ -141,6 +148,42 @@ const lengthPresets = [
     { label: '500 Characters', value: 500 },
     { label: '1000 Characters', value: 1000 },
 ];
+
+const reportThresholdPresets = [
+    { label: '3 Reports', value: 3 },
+    { label: '5 Reports (Default)', value: 5 },
+    { label: '10 Reports', value: 10 },
+    { label: '15 Reports', value: 15 },
+];
+
+const banDurationPresets = [
+    { label: '5 Mins', value: 5 },
+    { label: '15 Mins', value: 15 },
+    { label: '1 Hour', value: 60 },
+    { label: '24 Hours (Default)', value: 1440 },
+    { label: '3 Days', value: 4320 },
+    { label: '7 Days', value: 10080 },
+];
+
+const formatDurationText = (minutes: number) => {
+    if (!minutes || minutes <= 0) {
+        return '0 minutes';
+    }
+
+    if (minutes >= 1440 && minutes % 1440 === 0) {
+        const days = minutes / 1440;
+
+        return `${days} day${days > 1 ? 's' : ''}`;
+    }
+
+    if (minutes >= 60 && minutes % 60 === 0) {
+        const hours = minutes / 60;
+
+        return `${hours} hour${hours > 1 ? 's' : ''}`;
+    }
+
+    return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+};
 </script>
 
 <template>
@@ -670,7 +713,159 @@ const lengthPresets = [
                 </div>
             </div>
 
-            <!-- 7. Allowed Reaction Emojis -->
+            <!-- 7. Auto-Ban on Community Reports Moderation -->
+            <div
+                class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
+            >
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label
+                            class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            <Gavel class="h-4 w-4 text-rose-500" />
+                            Auto-Ban on Community Reports
+                        </label>
+                        <p
+                            class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            Automatically suspend abusive non-staff users from
+                            global chat when a specific message receives a
+                            threshold of community reports.
+                        </p>
+                    </div>
+
+                    <!-- Toggle Switch -->
+                    <button
+                        type="button"
+                        @click="form.auto_ban_enabled = !form.auto_ban_enabled"
+                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                        :class="
+                            form.auto_ban_enabled
+                                ? 'bg-indigo-600 dark:bg-indigo-500'
+                                : 'bg-slate-200 dark:bg-gray-700'
+                        "
+                    >
+                        <span
+                            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+                            :class="
+                                form.auto_ban_enabled
+                                    ? 'translate-x-5'
+                                    : 'translate-x-0'
+                            "
+                        />
+                    </button>
+                </div>
+
+                <div v-if="form.auto_ban_enabled" class="space-y-4 pt-1">
+                    <!-- Report Threshold -->
+                    <div class="space-y-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                        >
+                            Report Threshold (Trigger auto-ban when a message
+                            reaches X distinct reports):
+                        </label>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-for="preset in reportThresholdPresets"
+                                :key="preset.value"
+                                type="button"
+                                @click="form.auto_ban_threshold = preset.value"
+                                class="cursor-pointer rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95"
+                                :class="
+                                    form.auto_ban_threshold === preset.value
+                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                        : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                                "
+                            >
+                                {{ preset.label }}
+                            </button>
+                        </div>
+
+                        <div class="max-w-xs pt-1">
+                            <div class="relative">
+                                <input
+                                    v-model.number="form.auto_ban_threshold"
+                                    type="number"
+                                    min="1"
+                                    max="50"
+                                    class="w-full [appearance:textfield] rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 pr-20 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                />
+                                <span
+                                    class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
+                                >
+                                    reports
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ban Duration -->
+                    <div class="space-y-2">
+                        <label
+                            class="block text-xs font-semibold text-slate-600 dark:text-gray-400"
+                        >
+                            Auto-Ban Suspension Duration (Minutes):
+                        </label>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-for="preset in banDurationPresets"
+                                :key="preset.value"
+                                type="button"
+                                @click="
+                                    form.auto_ban_duration_minutes =
+                                        preset.value
+                                "
+                                class="cursor-pointer rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95"
+                                :class="
+                                    form.auto_ban_duration_minutes ===
+                                    preset.value
+                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                        : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                                "
+                            >
+                                {{ preset.label }}
+                            </button>
+                        </div>
+
+                        <div class="max-w-xs pt-1">
+                            <div class="relative">
+                                <input
+                                    v-model.number="
+                                        form.auto_ban_duration_minutes
+                                    "
+                                    type="number"
+                                    min="1"
+                                    max="43200"
+                                    class="w-full [appearance:textfield] rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 pr-18 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                />
+                                <span
+                                    class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400"
+                                >
+                                    minutes
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-xs text-slate-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400"
+                    >
+                        When a non-staff student's message accumulates
+                        <strong>{{ form.auto_ban_threshold }}</strong> distinct
+                        reports, the system automatically bans them for
+                        <strong>{{
+                            formatDurationText(form.auto_ban_duration_minutes)
+                        }}</strong>
+                        and broadcasts an automated moderation notice in the
+                        chat.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Allowed Reaction Emojis -->
             <div
                 class="space-y-4 border-b border-slate-100 pb-6 dark:border-gray-800"
             >

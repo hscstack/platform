@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -13,7 +14,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return Inertia::render('admin/Dashboard');
+        $totalAccounts = User::count();
+
+        return Inertia::render('admin/Dashboard', [
+            'totalAccounts' => $totalAccounts,
+        ]);
     }
 
     public function analytics(Request $request)
@@ -123,6 +128,7 @@ class DashboardController extends Controller
                 'realtime_users' => $realtimeUsers,
                 'top_sources' => $topSources,
                 'configured' => $isConfigured,
+                'total_accounts' => User::count(),
             ];
         });
 

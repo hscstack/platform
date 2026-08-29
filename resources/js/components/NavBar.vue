@@ -60,6 +60,7 @@ const currentUrl = computed(() => page.url);
 
 const isBlogsActive = computed(() => currentUrl.value.startsWith('/blogs'));
 const isChatActive = computed(() => currentUrl.value.startsWith('/chat'));
+const isAiActive = computed(() => currentUrl.value.startsWith('/ai'));
 const isHomeActive = computed(
     () =>
         currentUrl.value === '/' ||
@@ -317,6 +318,18 @@ onBeforeUnmount(() => {
                         "
                     >
                         Global Chat
+                    </Link>
+
+                    <Link
+                        href="/ai"
+                        class="text-sm font-medium transition-colors"
+                        :class="
+                            isAiActive
+                                ? 'font-semibold text-indigo-600 dark:text-indigo-400'
+                                : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100'
+                        "
+                    >
+                        HSCStack AI
                     </Link>
                 </nav>
 

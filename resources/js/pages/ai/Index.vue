@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
-    Sparkles,
     Bot,
     HeartHandshake,
     Send,
@@ -128,16 +127,6 @@ const handleMockSubmit = (question?: string) => {
     <main class="mx-auto max-w-7xl px-4 pt-10 pb-20 sm:px-6">
         <!-- Hero Header -->
         <div class="mx-auto max-w-3xl text-center">
-            <!-- Launching Badge -->
-            <div
-                class="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1.5 text-xs font-bold text-indigo-700 shadow-xs backdrop-blur-md dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
-            >
-                <Sparkles
-                    class="h-3.5 w-3.5 animate-pulse text-indigo-600 dark:text-indigo-400"
-                />
-                <span>HSCStack AI &bull; Smart Learning Assistant</span>
-            </div>
-
             <h1
                 class="mb-4 text-3xl font-black tracking-tight text-slate-900 sm:text-5xl lg:leading-[1.15] dark:text-gray-100"
             >
@@ -393,20 +382,13 @@ const handleMockSubmit = (question?: string) => {
                         <span>Login to ask question</span>
                     </Link>
 
-                    <!-- Authenticated: Coming Soon Notice with Updated Copy -->
+                    <!-- Authenticated: Coming Soon Notice -->
                     <div
                         v-else
                         class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
                     >
                         <Lock class="h-3.5 w-3.5 text-amber-500" />
-                        <span
-                            >AI সম্পূর্ণ ফ্রি রাখতে সাহায্য করুন &bull;
-                            <Link
-                                href="/support"
-                                class="text-indigo-600 hover:underline dark:text-indigo-400"
-                                >Support Page</Link
-                            ></span
-                        >
+                        <span>Coming Soon</span>
                     </div>
                 </div>
 
