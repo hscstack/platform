@@ -102,7 +102,7 @@ const submitForm = () => {
                         id="name"
                         placeholder="John Doe"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.name
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -134,7 +134,7 @@ const submitForm = () => {
                             id="username"
                             placeholder="johndoe"
                             :disabled="form.processing"
-                            class="w-full rounded-lg border py-2.5 pr-4 pl-8 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                            class="w-full rounded-lg border bg-white py-2.5 pr-4 pl-8 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                             :class="
                                 form.errors.username
                                     ? 'border-rose-500 focus:ring-rose-500/20'
@@ -162,7 +162,7 @@ const submitForm = () => {
                         id="email"
                         placeholder="johndoe@example.com"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.email
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -190,7 +190,7 @@ const submitForm = () => {
                         id="role"
                         v-model="form.role"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.role
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -315,7 +315,7 @@ const submitForm = () => {
                         id="title"
                         placeholder="e.g. Lead Developer, Professor"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.title
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -344,7 +344,7 @@ const submitForm = () => {
                         id="institution"
                         placeholder="University / Company"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.institution
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -371,7 +371,7 @@ const submitForm = () => {
                         id="facebook"
                         placeholder="Facebook profile URL"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.facebook
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -400,7 +400,7 @@ const submitForm = () => {
                         id="github"
                         placeholder="GitHub profile URL"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.github
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -427,7 +427,7 @@ const submitForm = () => {
                         id="instagram"
                         placeholder="Instagram profile URL"
                         :disabled="form.processing"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                         :class="
                             form.errors.instagram
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -455,7 +455,7 @@ const submitForm = () => {
                     rows="4"
                     placeholder="Short bio..."
                     :disabled="form.processing"
-                    class="w-full rounded-lg border px-4 py-2.5 transition outline-none disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                    class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
                     :class="
                         form.errors.about
                             ? 'border-rose-500 focus:ring-rose-500/20'

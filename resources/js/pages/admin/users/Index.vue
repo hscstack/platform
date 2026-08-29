@@ -101,7 +101,7 @@ const clearSearch = () => {
                         type="text"
                         placeholder="Search name, email, username..."
                         @keyup.enter="handleSearch"
-                        class="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-1.5 pr-8 pl-9 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400"
+                        class="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-1.5 pr-8 pl-9 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-900"
                     />
                     <Search
                         class="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"

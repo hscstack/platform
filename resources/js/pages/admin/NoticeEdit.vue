@@ -88,7 +88,7 @@ const submitForm = () => {
                         id="title"
                         placeholder="Important announcement"
                         :disabled="form.processing"
-                        class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
+                        class="w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
                         :class="
                             form.errors.title
                                 ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
@@ -116,7 +116,7 @@ const submitForm = () => {
                         rows="6"
                         placeholder="Write the notice message for visitors..."
                         :disabled="form.processing"
-                        class="w-full rounded-xl border px-4 py-3 text-sm transition outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
+                        class="w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
                         :class="
                             form.errors.message
                                 ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
@@ -179,7 +179,7 @@ const submitForm = () => {
                                 id="button_title"
                                 placeholder="Learn more"
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border bg-white px-4 py-2.5 text-sm transition outline-none focus:ring-4 dark:bg-gray-900"
+                                class="w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                                 :class="
                                     form.errors.button_title
                                         ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
@@ -207,7 +207,7 @@ const submitForm = () => {
                                 id="button_link"
                                 placeholder="https://example.com/details"
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border bg-white px-4 py-2.5 text-sm transition outline-none focus:ring-4 dark:bg-gray-900"
+                                class="w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                                 :class="
                                     form.errors.button_link
                                         ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'

@@ -26,6 +26,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+    html.dark,
+    .dark {
+        color-scheme: dark;
+    }
+
     html,
     body {
         font-stretch: 96%;
@@ -44,6 +49,23 @@
     * {
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    /* Prevent browser autofill from whiting out in dark mode */
+    .dark input:-webkit-autofill,
+    .dark input:-webkit-autofill:hover,
+    .dark input:-webkit-autofill:focus,
+    .dark textarea:-webkit-autofill,
+    .dark textarea:-webkit-autofill:hover,
+    .dark textarea:-webkit-autofill:focus,
+    .dark select:-webkit-autofill,
+    .dark select:-webkit-autofill:hover,
+    .dark select:-webkit-autofill:focus {
+        -webkit-text-fill-color: rgb(243 244 246) !important;
+        -webkit-box-shadow: 0 0 0px 1000px rgb(17 24 39) inset !important;
+        box-shadow: 0 0 0px 1000px rgb(17 24 39) inset !important;
+        caret-color: rgb(243 244 246) !important;
+        transition: background-color 5000s ease-in-out 0s;
     }
 }
 

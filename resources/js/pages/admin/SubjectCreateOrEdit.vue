@@ -114,11 +114,11 @@ const submitForm = () => {
                         type="text"
                         id="name"
                         placeholder="e.g. পদার্থবিজ্ঞান ১ম পত্র"
-                        class="w-full rounded-lg border px-4 py-2.5 transition outline-none"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                         :class="
                             form.errors.name
                                 ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
+                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                         "
                     />
                     <p
@@ -138,7 +138,7 @@ const submitForm = () => {
                     <select
                         v-model="form.course"
                         id="course"
-                        class="w-full rounded-lg border bg-white px-4 py-2.5 transition outline-none dark:bg-gray-900"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none dark:bg-gray-900 dark:text-gray-100"
                         :class="
                             form.errors.course
                                 ? 'border-rose-500 focus:ring-rose-500/20'
@@ -205,16 +205,16 @@ const submitForm = () => {
                                 type="text"
                                 id="english_name"
                                 placeholder="e.g. Physics 1st Paper, Bangla"
-                                class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
+                                class="w-full rounded-lg border bg-white px-3.5 py-2 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                                 :class="
                                     form.errors.english_name
                                         ? 'border-rose-500 focus:ring-rose-500/20'
-                                        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
+                                        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                                 "
                             />
                             <p
                                 v-if="form.errors.english_name"
-                                class="mt-1 text-xs text-rose-600"
+                                class="mt-1 text-sm text-rose-600"
                             >
                                 {{ form.errors.english_name }}
                             </p>
@@ -238,16 +238,16 @@ const submitForm = () => {
                                 v-model.number="form.sort_order"
                                 type="number"
                                 id="sort_order"
-                                class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
+                                class="w-full rounded-lg border bg-white px-3.5 py-2 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                                 :class="
                                     form.errors.sort_order
                                         ? 'border-rose-500 focus:ring-rose-500/20'
-                                        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
+                                        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                                 "
                             />
                             <p
                                 v-if="form.errors.sort_order"
-                                class="mt-1 text-xs text-rose-600"
+                                class="mt-1 text-sm text-rose-600"
                             >
                                 {{ form.errors.sort_order }}
                             </p>
@@ -276,11 +276,11 @@ const submitForm = () => {
                             type="text"
                             id="slug"
                             placeholder="e.g., hsc-physics-1st-paper (leave blank to auto-generate)"
-                            class="w-full rounded-lg border px-3.5 py-2 text-sm transition outline-none"
+                            class="w-full rounded-lg border bg-white px-3.5 py-2 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                             :class="
                                 form.errors.slug
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-900'
+                                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
                         />
                         <p
