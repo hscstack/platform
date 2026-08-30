@@ -17,7 +17,23 @@ const props = defineProps({
 });
 
 const isCreateModalOpen = ref(false);
+const editingSubject = ref<any | null>(null);
 const activeCourse = ref<'all' | 'hsc' | 'ssc'>('all');
+
+const openCreateModal = () => {
+    editingSubject.value = null;
+    isCreateModalOpen.value = true;
+};
+
+const openEditModal = (subject: any) => {
+    editingSubject.value = subject;
+    isCreateModalOpen.value = true;
+};
+
+const handleModalClose = () => {
+    isCreateModalOpen.value = false;
+    editingSubject.value = null;
+};
 
 const filteredSubjects = computed(() => {
     if (activeCourse.value === 'all') {
@@ -49,7 +65,7 @@ const filteredSubjects = computed(() => {
             <div v-if="can('create subjects')" class="flex items-center gap-2">
                 <button
                     type="button"
-                    @click="isCreateModalOpen = true"
+                    @click="openCreateModal"
                     class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700"
                 >
                     <Plus class="h-3.5 w-3.5" :stroke-width="2.2" />
@@ -58,10 +74,11 @@ const filteredSubjects = computed(() => {
             </div>
         </div>
 
-        <!-- Create Subject Modal -->
+        <!-- Create/Edit Subject Modal -->
         <CreateSubjectModal
             :is-open="isCreateModalOpen"
-            @close="isCreateModalOpen = false"
+            :subject="editingSubject"
+            @close="handleModalClose"
         />
 
         <!-- Filter Pills (All / HSC / SSC) -->
@@ -122,6 +139,7 @@ const filteredSubjects = computed(() => {
                     :key="subject.id || subject.name"
                     :admin="true"
                     :subject="subject"
+                    @edit="openEditModal"
                 />
             </div>
 

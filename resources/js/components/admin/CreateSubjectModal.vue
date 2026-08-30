@@ -22,6 +22,16 @@ import { ref, computed, watch } from 'vue';
 
 const props = defineProps<{
     isOpen: boolean;
+    subject?: {
+        id: number;
+        name: string;
+        english_name?: string | null;
+        slug: string;
+        course: string;
+        tailwind_format: string;
+        icon: string;
+        sort_order: number;
+    } | null;
 }>();
 
 const emit = defineEmits<{
@@ -67,14 +77,26 @@ const tailwindFormat = ref('bg-indigo-50 text-indigo-600');
 const icon = ref('BookOpen');
 const sortOrder = ref(0);
 
-const resetForm = () => {
-    name.value = '';
-    englishName.value = '';
-    slug.value = '';
-    course.value = 'hsc';
-    tailwindFormat.value = 'bg-indigo-50 text-indigo-600';
-    icon.value = 'BookOpen';
-    sortOrder.value = 0;
+const initForm = () => {
+    if (props.subject) {
+        name.value = props.subject.name || '';
+        englishName.value = props.subject.english_name || '';
+        slug.value = props.subject.slug || '';
+        course.value = props.subject.course || 'hsc';
+        tailwindFormat.value =
+            props.subject.tailwind_format || 'bg-indigo-50 text-indigo-600';
+        icon.value = props.subject.icon || 'BookOpen';
+        sortOrder.value = props.subject.sort_order ?? 0;
+    } else {
+        name.value = '';
+        englishName.value = '';
+        slug.value = '';
+        course.value = 'hsc';
+        tailwindFormat.value = 'bg-indigo-50 text-indigo-600';
+        icon.value = 'BookOpen';
+        sortOrder.value = 0;
+    }
+
     errorMessage.value = '';
     showAdvanced.value = false;
 };
@@ -83,7 +105,7 @@ watch(
     () => props.isOpen,
     (open) => {
         if (open) {
-            resetForm();
+            initForm();
         }
     },
 );
@@ -106,22 +128,35 @@ const submitForm = () => {
     isSaving.value = true;
     errorMessage.value = '';
 
-    router.post(
-        '/admin/subjects',
-        {
-            name: name.value,
-            english_name: englishName.value || null,
-            slug: slug.value || null,
-            course: course.value,
-            tailwind_format: tailwindFormat.value,
-            icon: icon.value,
-            sort_order: sortOrder.value,
-        },
-        {
+    const payload = {
+        name: name.value,
+        english_name: englishName.value || null,
+        slug: slug.value || null,
+        course: course.value,
+        tailwind_format: tailwindFormat.value,
+        icon: icon.value,
+        sort_order: sortOrder.value,
+    };
+
+    if (props.subject) {
+        router.patch(`/admin/subjects/edit/${props.subject.id}`, payload, {
             preserveScroll: true,
             onSuccess: () => {
                 isSaving.value = false;
-                resetForm();
+                emit('close');
+            },
+            onError: (errors) => {
+                isSaving.value = false;
+                errorMessage.value =
+                    Object.values(errors).flat().join(', ') ||
+                    'Failed to update subject.';
+            },
+        });
+    } else {
+        router.post('/admin/subjects', payload, {
+            preserveScroll: true,
+            onSuccess: () => {
+                isSaving.value = false;
                 emit('close');
             },
             onError: (errors) => {
@@ -130,8 +165,8 @@ const submitForm = () => {
                     Object.values(errors).flat().join(', ') ||
                     'Failed to create subject.';
             },
-        },
-    );
+        });
+    }
 };
 </script>
 
@@ -165,12 +200,18 @@ const submitForm = () => {
                             <h3
                                 class="truncate text-base font-bold text-slate-900 dark:text-gray-100"
                             >
-                                Create Subject
+                                {{
+                                    subject ? 'Edit Subject' : 'Create Subject'
+                                }}
                             </h3>
                             <p
                                 class="truncate text-xs text-slate-500 dark:text-gray-400"
                             >
-                                Add a new subject to the platform
+                                {{
+                                    subject
+                                        ? 'Update subject settings and appearance'
+                                        : 'Add a new subject to the platform'
+                                }}
                             </p>
                         </div>
 
@@ -463,7 +504,11 @@ const submitForm = () => {
                                 />
                                 <FolderPlus v-else class="h-3.5 w-3.5" />
                                 <span>{{
-                                    isSaving ? 'Saving...' : 'Create Subject'
+                                    isSaving
+                                        ? 'Saving...'
+                                        : subject
+                                          ? 'Update Subject'
+                                          : 'Create Subject'
                                 }}</span>
                             </button>
                         </div>

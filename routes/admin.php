@@ -24,7 +24,6 @@ Route::middleware('permission:create subjects')->group(function () {
 });
 
 Route::middleware('permission:edit subjects')->group(function () {
-    Route::get('/subjects/edit/{subject}', [AdminSubjectController::class, 'edit'])->name('subjects.edit');
     Route::patch('/subjects/edit/{subject}', [AdminSubjectController::class, 'update'])->name('subjects.update');
 });
 
