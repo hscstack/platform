@@ -115,9 +115,9 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
     <div class="flex w-full flex-1 flex-col">
         <!-- Compact Page Title Bar -->
         <div
-            class="mb-3.5 flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-gray-800"
+            class="mb-3.5 flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 pb-3 sm:gap-3 dark:border-gray-800"
         >
-            <div class="flex min-w-0 items-center gap-2.5">
+            <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
                 <Link
                     :href="backUrl"
                     class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-2xs transition-colors hover:bg-slate-50 hover:text-slate-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
@@ -126,22 +126,14 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                     <ArrowLeft class="h-4 w-4" :stroke-width="2.2" />
                 </Link>
 
-                <div class="flex min-w-0 flex-wrap items-center gap-2">
-                    <h3
-                        class="truncate text-base font-bold tracking-tight text-slate-900 dark:text-gray-100"
-                    >
-                        {{ parent?.name ? parent.name : subject.name }}
-                    </h3>
-
-                    <span
-                        class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
-                    >
-                        {{ totalItemsCount }}
-                    </span>
-                </div>
+                <h3
+                    class="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-gray-100"
+                >
+                    {{ parent?.name ? parent.name : subject.name }}
+                </h3>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 <!-- Add Folder Dropdown -->
                 <div
                     v-if="can('create nodes')"
@@ -151,13 +143,16 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                     <button
                         type="button"
                         @click="isFolderDropdownOpen = !isFolderDropdownOpen"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 sm:gap-1.5 sm:px-3 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
                         <FolderPlus
                             class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400"
                             :stroke-width="2"
                         />
-                        <span>Add Folder</span>
+                        <span
+                            ><span class="hidden sm:inline">Add </span
+                            >Folder</span
+                        >
                         <ChevronDown class="h-3.5 w-3.5 text-slate-400" />
                     </button>
 
@@ -173,7 +168,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                             "
                             class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Single Folder
+                            Upload Single Folder
                         </button>
                         <button
                             type="button"
@@ -199,10 +194,13 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         @click="
                             isResourceDropdownOpen = !isResourceDropdownOpen
                         "
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700"
+                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700 sm:gap-1.5 sm:px-3"
                     >
                         <Plus class="h-3.5 w-3.5" :stroke-width="2.2" />
-                        <span>Add Resource</span>
+                        <span
+                            ><span class="hidden sm:inline">Add </span
+                            >Resource</span
+                        >
                         <ChevronDown class="h-3.5 w-3.5" />
                     </button>
 
@@ -218,7 +216,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                             "
                             class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Single Resource
+                            Upload Single Resource
                         </button>
                         <button
                             type="button"
@@ -312,7 +310,11 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             </template>
 
             <div v-else class="flex flex-1 items-center justify-center py-12">
-                <EmptyState />
+                <EmptyState
+                    title="No items in this folder"
+                    description="Create a new folder or resource above to get started."
+                    :show-cta="false"
+                />
             </div>
         </div>
     </div>
