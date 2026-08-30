@@ -28,6 +28,7 @@ const isDragging = ref(false);
 const fileLimitError = ref('');
 const errorMessage = ref('');
 const isSaving = ref(false);
+const uploadProgress = ref<number | null>(null);
 
 const namingStrategy = ref<'serial' | 'original'>('serial');
 const namingPrefix = ref('image');
@@ -106,6 +107,7 @@ const clearAll = () => {
     fileLimitError.value = '';
     errorMessage.value = '';
     isSaving.value = false;
+    uploadProgress.value = null;
 };
 
 const handleClose = () => {
@@ -136,6 +138,7 @@ const submitForm = () => {
     }
 
     isSaving.value = true;
+    uploadProgress.value = 0;
     errorMessage.value = '';
 
     const payload: Record<string, any> = {
@@ -150,6 +153,11 @@ const submitForm = () => {
     router.post('/admin/resources/bulk/images', payload, {
         forceFormData: true,
         preserveScroll: true,
+        onProgress: (progress) => {
+            if (progress?.percentage !== undefined) {
+                uploadProgress.value = progress.percentage;
+            }
+        },
         onSuccess: () => {
             clearAll();
             emit('close');
@@ -161,6 +169,7 @@ const submitForm = () => {
         },
         onFinish: () => {
             isSaving.value = false;
+            uploadProgress.value = null;
         },
     });
 };
@@ -458,6 +467,39 @@ const submitForm = () => {
                             </div>
                         </div>
 
+                        <!-- Upload Progress Bar -->
+                        <div
+                            v-if="isSaving && uploadProgress !== null"
+                            class="border-t border-slate-100 bg-slate-50/80 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/80"
+                        >
+                            <div
+                                class="mb-1.5 flex items-center justify-between text-xs"
+                            >
+                                <span
+                                    class="font-medium text-slate-700 dark:text-gray-300"
+                                >
+                                    {{
+                                        uploadProgress >= 100
+                                            ? 'Processing images on server...'
+                                            : 'Uploading images...'
+                                    }}
+                                </span>
+                                <span
+                                    class="font-semibold text-indigo-600 dark:text-indigo-400"
+                                >
+                                    {{ uploadProgress }}%
+                                </span>
+                            </div>
+                            <div
+                                class="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-gray-700"
+                            >
+                                <div
+                                    class="h-full rounded-full bg-indigo-600 transition-all duration-150 ease-out dark:bg-indigo-500"
+                                    :style="{ width: `${uploadProgress}%` }"
+                                ></div>
+                            </div>
+                        </div>
+
                         <!-- Footer -->
                         <div
                             class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/60"
@@ -465,7 +507,8 @@ const submitForm = () => {
                             <button
                                 type="button"
                                 @click="handleClose"
-                                class="cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                                :disabled="isSaving"
+                                class="cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                             >
                                 Cancel
                             </button>
@@ -483,7 +526,10 @@ const submitForm = () => {
                                 />
                                 <span>{{
                                     isSaving
-                                        ? 'Uploading...'
+                                        ? uploadProgress !== null &&
+                                          uploadProgress < 100
+                                            ? `Uploading (${uploadProgress}%)`
+                                            : 'Processing...'
                                         : `Upload ${selectedFiles.length || ''} Images`
                                 }}</span>
                             </button>
