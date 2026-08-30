@@ -1,17 +1,26 @@
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref } from 'vue';
 
-type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark' | 'system';
 
-const theme = ref<Theme>('system');
-const isDark = ref(false);
-let initialized = false;
-let mediaQuery: MediaQueryList | null = null;
+function getInitialTheme(): Theme {
+    if (typeof window === 'undefined') {
+        return 'system';
+    }
 
-function applyTheme(dark: boolean) {
-    document.documentElement.classList.toggle('dark', dark);
+    const stored = localStorage.getItem('theme') as Theme | null;
+
+    if (stored === 'light' || stored === 'dark' || stored === 'system') {
+        return stored;
+    }
+
+    return 'system';
 }
 
 function resolveTheme(t: Theme): boolean {
+    if (typeof window === 'undefined') {
+        return false;
+    }
+
     if (t === 'system') {
         return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
@@ -19,65 +28,56 @@ function resolveTheme(t: Theme): boolean {
     return t === 'dark';
 }
 
-function handleSystemChange() {
-    if (theme.value === 'system') {
-        isDark.value = resolveTheme('system');
-        applyTheme(isDark.value);
+function applyTheme(dark: boolean) {
+    if (typeof document !== 'undefined') {
+        document.documentElement.classList.toggle('dark', dark);
     }
 }
 
-export function useDarkMode() {
-    if (!initialized) {
-        initialized = true;
+const theme = ref<Theme>(getInitialTheme());
+const isDark = ref<boolean>(resolveTheme(theme.value));
 
-        onMounted(() => {
-            const stored = localStorage.getItem('theme') as Theme | null;
+export function setTheme(t: Theme) {
+    theme.value = t;
+    isDark.value = resolveTheme(t);
+    applyTheme(isDark.value);
 
-            if (
-                stored === 'light' ||
-                stored === 'dark' ||
-                stored === 'system'
-            ) {
-                theme.value = stored;
-            } else {
-                theme.value = 'system';
-            }
-
-            isDark.value = resolveTheme(theme.value);
-            applyTheme(isDark.value);
-
-            mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            mediaQuery.addEventListener('change', handleSystemChange);
-
-            window.addEventListener('storage', (e) => {
-                if (e.key === 'theme') {
-                    const val = e.newValue as Theme | null;
-
-                    if (val === 'light' || val === 'dark' || val === 'system') {
-                        theme.value = val;
-                        isDark.value = resolveTheme(val);
-                        applyTheme(isDark.value);
-                    }
-                }
-            });
-        });
-
-        onUnmounted(() => {
-            mediaQuery?.removeEventListener('change', handleSystemChange);
-        });
-
-        watch(theme, (t) => {
-            isDark.value = resolveTheme(t);
-            applyTheme(isDark.value);
-            localStorage.setItem('theme', t);
-        });
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('theme', t);
     }
+}
 
+// Initial apply
+applyTheme(isDark.value);
+
+if (typeof window !== 'undefined') {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', () => {
+        if (theme.value === 'system') {
+            isDark.value = resolveTheme('system');
+            applyTheme(isDark.value);
+        }
+    });
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'theme') {
+            const val = e.newValue as Theme | null;
+
+            if (val === 'light' || val === 'dark' || val === 'system') {
+                theme.value = val;
+                isDark.value = resolveTheme(val);
+                applyTheme(isDark.value);
+            }
+        }
+    });
+}
+
+export function useDarkMode() {
     function toggle() {
         const cycle: Theme[] = ['system', 'light', 'dark'];
         const next = cycle[(cycle.indexOf(theme.value) + 1) % 3];
-        theme.value = next;
+        setTheme(next);
     }
 
-    return { theme, isDark, toggle };
+    return { theme, isDark, toggle, setTheme };
 }
