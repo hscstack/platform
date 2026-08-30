@@ -107,6 +107,20 @@ const chatChannelName = computed(
 const presenceChannelName = computed(() => chatChannelName.value);
 const activeUsersCount = ref(0);
 
+interface TypingUser {
+    id: number;
+    name: string;
+    username?: string;
+    timeout: ReturnType<typeof setTimeout>;
+}
+const typingUsers = ref<Map<number, TypingUser>>(new Map());
+const isPresenceSubscribed = ref(false);
+const presenceMembers = ref<
+    Map<number, { id: number; name: string; username?: string }>
+>(new Map());
+
+const typingUsersList = computed(() => Array.from(typingUsers.value.values()));
+
 const maxMessagesLimit = ref(props.chatState.max_messages ?? 200);
 const maxLengthLimit = ref(props.chatState.max_length ?? 280);
 const messages = ref<ChatMessageItem[]>(props.chatState.messages || []);
@@ -242,6 +256,40 @@ const filteredMentionUsers = computed(() => {
         )
         .slice(0, 5);
 });
+
+let lastTypingSentAt = 0;
+
+const broadcastTyping = () => {
+    if (!currentUser.value || !isPresenceSubscribed.value) {
+        return;
+    }
+
+    const now = Date.now();
+
+    if (now - lastTypingSentAt < 1500) {
+        return;
+    }
+
+    const echo = getEcho(
+        props.chatState.pusher_key,
+        props.chatState.pusher_cluster,
+    );
+
+    if (echo) {
+        const userId = Number(currentUser.value.id);
+        echo.join(presenceChannelName.value).whisper('typing', {
+            id: userId,
+            name: currentUser.value.name,
+            username: currentUser.value.username,
+        });
+        lastTypingSentAt = now;
+    }
+};
+
+const handleInput = () => {
+    checkMentionTrigger();
+    broadcastTyping();
+};
 
 const checkMentionTrigger = () => {
     if (!messageInputRef.value) {
@@ -495,6 +543,20 @@ const setupRealtime = () => {
         .stopListening('.settings.updated')
         .listen('.message.sent', (e: { message: ChatMessageItem }) => {
             if (e && e.message) {
+                if (e.message.user?.id !== undefined) {
+                    const senderId = Number(e.message.user.id);
+
+                    if (!isNaN(senderId) && typingUsers.value.has(senderId)) {
+                        const existing = typingUsers.value.get(senderId);
+
+                        if (existing) {
+                            clearTimeout(existing.timeout);
+                        }
+
+                        typingUsers.value.delete(senderId);
+                    }
+                }
+
                 if (!messages.value.some((m) => m.id === e.message.id)) {
                     messages.value.push(e.message);
 
@@ -651,15 +713,116 @@ const setupPresenceChannel = () => {
     }
 
     echo.join(presenceChannelName.value)
-        .here((users: unknown[]) => {
-            activeUsersCount.value = users.length;
-        })
-        .joining(() => {
-            activeUsersCount.value++;
-        })
-        .leaving(() => {
+        .here(
+            (
+                users: Array<{
+                    id: number | string;
+                    name: string;
+                    username?: string;
+                }>,
+            ) => {
+                isPresenceSubscribed.value = true;
+                activeUsersCount.value = users.length;
+                presenceMembers.value.clear();
+                users.forEach((u) => {
+                    const uid = Number(u.id);
+
+                    if (!isNaN(uid)) {
+                        presenceMembers.value.set(uid, {
+                            id: uid,
+                            name: u.name,
+                            username: u.username,
+                        });
+                    }
+                });
+            },
+        )
+        .joining(
+            (user: {
+                id: number | string;
+                name: string;
+                username?: string;
+            }) => {
+                activeUsersCount.value++;
+                const uid = Number(user.id);
+
+                if (!isNaN(uid)) {
+                    presenceMembers.value.set(uid, {
+                        id: uid,
+                        name: user.name,
+                        username: user.username,
+                    });
+                }
+            },
+        )
+        .leaving((user: { id?: number | string }) => {
             activeUsersCount.value = Math.max(0, activeUsersCount.value - 1);
+
+            if (user?.id !== undefined) {
+                const uid = Number(user.id);
+
+                if (!isNaN(uid)) {
+                    presenceMembers.value.delete(uid);
+
+                    if (typingUsers.value.has(uid)) {
+                        const existing = typingUsers.value.get(uid);
+
+                        if (existing) {
+                            clearTimeout(existing.timeout);
+                        }
+
+                        typingUsers.value.delete(uid);
+                    }
+                }
+            }
         })
+        .listenForWhisper(
+            'typing',
+            (
+                e: { id?: number | string; name?: string; username?: string },
+                metadata?: { user_id?: number | string },
+            ) => {
+                const rawId = metadata?.user_id ?? e?.id;
+
+                if (rawId === undefined || rawId === null) {
+                    return;
+                }
+
+                const senderId = Number(rawId);
+                const currentUserId = currentUser.value?.id
+                    ? Number(currentUser.value.id)
+                    : null;
+
+                if (
+                    isNaN(senderId) ||
+                    (currentUserId !== null && senderId === currentUserId)
+                ) {
+                    return;
+                }
+
+                // Prefer authenticated presence member info from backend presence channel
+                const member = presenceMembers.value.get(senderId);
+                const name = member?.name || e.name || 'Someone';
+                const username = member?.username || e.username;
+
+                const existing = typingUsers.value.get(senderId);
+
+                if (existing) {
+                    clearTimeout(existing.timeout);
+                }
+
+                const timeout = setTimeout(() => {
+                    typingUsers.value.delete(senderId);
+                }, 3000);
+
+                typingUsers.value.set(senderId, {
+                    id: senderId,
+                    name,
+                    username,
+                    timeout,
+                });
+            },
+        )
         .error(() => {
             // Silently ignore presence auth errors (e.g. guest users)
         });
@@ -1232,6 +1395,14 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    isPresenceSubscribed.value = false;
+    presenceMembers.value.clear();
+
+    typingUsers.value.forEach((user) => {
+        clearTimeout(user.timeout);
+    });
+    typingUsers.value.clear();
+
     if (cooldownInterval) {
         clearInterval(cooldownInterval);
     }
@@ -1757,6 +1928,103 @@ onUnmounted(() => {
             <footer
                 class="border-t border-slate-100 bg-white p-3 sm:p-4 dark:border-zinc-800 dark:bg-zinc-900"
             >
+                <!-- Typing Indicator -->
+                <div
+                    v-if="typingUsersList.length > 0"
+                    class="mb-2 flex items-center gap-1.5 px-1 text-xs text-slate-500 transition-all dark:text-zinc-400"
+                >
+                    <div class="flex items-center gap-1">
+                        <span
+                            class="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-indigo-500 [animation-delay:-0.3s]"
+                        ></span>
+                        <span
+                            class="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-indigo-500 [animation-delay:-0.15s]"
+                        ></span>
+                        <span
+                            class="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-indigo-500"
+                        ></span>
+                    </div>
+                    <span class="truncate text-[11px] sm:text-xs">
+                        <template v-if="typingUsersList.length === 1">
+                            <Link
+                                v-if="typingUsersList[0].username"
+                                :href="`/u/${typingUsersList[0].username}`"
+                                class="font-semibold text-slate-700 hover:text-indigo-600 hover:underline dark:text-zinc-300 dark:hover:text-indigo-400"
+                            >
+                                @{{ typingUsersList[0].username }}
+                            </Link>
+                            <span
+                                v-else
+                                class="font-semibold text-slate-700 dark:text-zinc-300"
+                            >
+                                {{ typingUsersList[0].name }}
+                            </span>
+                            <span
+                                class="text-slate-500 italic dark:text-zinc-400"
+                            >
+                                is typing...
+                            </span>
+                        </template>
+                        <template v-else-if="typingUsersList.length === 2">
+                            <Link
+                                v-if="typingUsersList[0].username"
+                                :href="`/u/${typingUsersList[0].username}`"
+                                class="font-semibold text-slate-700 hover:text-indigo-600 hover:underline dark:text-zinc-300 dark:hover:text-indigo-400"
+                            >
+                                @{{ typingUsersList[0].username }}
+                            </Link>
+                            <span
+                                v-else
+                                class="font-semibold text-slate-700 dark:text-zinc-300"
+                            >
+                                {{ typingUsersList[0].name }}
+                            </span>
+                            <span class="text-slate-500 dark:text-zinc-400">
+                                and
+                            </span>
+                            <Link
+                                v-if="typingUsersList[1].username"
+                                :href="`/u/${typingUsersList[1].username}`"
+                                class="font-semibold text-slate-700 hover:text-indigo-600 hover:underline dark:text-zinc-300 dark:hover:text-indigo-400"
+                            >
+                                @{{ typingUsersList[1].username }}
+                            </Link>
+                            <span
+                                v-else
+                                class="font-semibold text-slate-700 dark:text-zinc-300"
+                            >
+                                {{ typingUsersList[1].name }}
+                            </span>
+                            <span
+                                class="text-slate-500 italic dark:text-zinc-400"
+                            >
+                                are typing...
+                            </span>
+                        </template>
+                        <template v-else>
+                            <Link
+                                v-if="typingUsersList[0].username"
+                                :href="`/u/${typingUsersList[0].username}`"
+                                class="font-semibold text-slate-700 hover:text-indigo-600 hover:underline dark:text-zinc-300 dark:hover:text-indigo-400"
+                            >
+                                @{{ typingUsersList[0].username }}
+                            </Link>
+                            <span
+                                v-else
+                                class="font-semibold text-slate-700 dark:text-zinc-300"
+                            >
+                                {{ typingUsersList[0].name }}
+                            </span>
+                            <span
+                                class="text-slate-500 italic dark:text-zinc-400"
+                            >
+                                and {{ typingUsersList.length - 1 }} others are
+                                typing...
+                            </span>
+                        </template>
+                    </span>
+                </div>
+
                 <!-- Active Reply Banner -->
                 <div
                     v-if="activeReplyTo"
@@ -1906,7 +2174,7 @@ onUnmounted(() => {
                                     : 'Send a message...'
                             "
                             :maxlength="maxLengthLimit"
-                            @input="checkMentionTrigger"
+                            @input="handleInput"
                             @click="checkMentionTrigger"
                             @keyup="checkMentionTrigger"
                             @keydown="handleInputKeydown"

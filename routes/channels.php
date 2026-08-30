@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\Broadcast;
 
 // Presence channel for tracking active users on Global Chat.
 Broadcast::channel('global-chat', function ($user) {
-    return ['id' => $user->id, 'name' => $user->name];
+    return ['id' => $user->id, 'name' => $user->name, 'username' => $user->username];
 });
 
 Broadcast::channel('{env}.global-chat', function ($user) {
-    return ['id' => $user->id, 'name' => $user->name];
+    return ['id' => $user->id, 'name' => $user->name, 'username' => $user->username];
 });

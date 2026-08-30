@@ -253,7 +253,7 @@ const submit = () => {
                                 required
                                 placeholder="Your full name"
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
+                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
                                 :class="{
                                     'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
                                         form.errors.name,
@@ -289,7 +289,7 @@ const submit = () => {
                                 required
                                 placeholder="your_username"
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
+                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
                                 :class="{
                                     'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
                                         form.errors.username,
@@ -332,7 +332,7 @@ const submit = () => {
                                 required
                                 placeholder="e.g., Notre Dame College, Dhaka College, BUET"
                                 :disabled="form.processing"
-                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
+                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
                                 :class="{
                                     'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
                                         form.errors.school,
