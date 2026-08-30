@@ -17,6 +17,14 @@ class ShortUrlController extends Controller
             'original_url' => ['required', 'string', 'url', 'max:2048'],
         ]);
 
+        $appUrl = rtrim(config('app.url'), '/');
+
+        if (! str_starts_with($validated['original_url'], $appUrl)) {
+            return response()->json([
+                'message' => 'Only URLs from this website are allowed.',
+            ], 422);
+        }
+
         $response = Http::withHeaders([
             'Authorization' => (string) config('services.short_io.api_key'),
             'Content-Type' => 'application/json',
