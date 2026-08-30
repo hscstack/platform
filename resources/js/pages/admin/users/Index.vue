@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Plus, Search, X } from 'lucide-vue-next';
+import { Plus, Search, ShieldCheck, Users, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 import UserRow from '@/components/admin/UserRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -27,11 +27,17 @@ const props = defineProps<{
     users: PaginatedUsers;
     filters?: {
         q?: string;
+        role?: string;
+    };
+    counts?: {
+        all?: number;
+        staff?: number;
     };
 }>();
 
 const { can } = usePermissions();
 
+const selectedRole = ref(props.filters?.role || 'all');
 const searchQuery = ref(
     props.filters?.q ||
         (typeof window !== 'undefined'
@@ -39,21 +45,35 @@ const searchQuery = ref(
             : ''),
 );
 
+const applyFilters = (role?: string) => {
+    if (role !== undefined) {
+        selectedRole.value = role;
+    }
+
+    const params: Record<string, string> = {};
+
+    if (searchQuery.value.trim()) {
+        params.q = searchQuery.value.trim();
+    }
+
+    if (selectedRole.value && selectedRole.value !== 'all') {
+        params.role = selectedRole.value;
+    }
+
+    router.get('/admin/users', params, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+};
+
 const handleSearch = () => {
-    router.get(
-        '/admin/users',
-        { q: searchQuery.value },
-        { preserveState: true, preserveScroll: true, replace: true },
-    );
+    applyFilters();
 };
 
 const clearSearch = () => {
     searchQuery.value = '';
-    router.get(
-        '/admin/users',
-        { q: '' },
-        { preserveState: true, preserveScroll: true, replace: true },
-    );
+    applyFilters();
 };
 </script>
 
@@ -66,7 +86,7 @@ const clearSearch = () => {
             class="mb-4 flex shrink-0 flex-col gap-3 border-b border-slate-100 pb-3.5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
         >
             <div
-                class="flex items-center justify-between gap-2.5 sm:justify-start"
+                class="flex flex-wrap items-center justify-between gap-2.5 sm:justify-start"
             >
                 <div class="flex items-center gap-2.5">
                     <h3
@@ -80,6 +100,61 @@ const clearSearch = () => {
                     >
                         {{ users.total ?? users.data?.length ?? 0 }}
                     </span>
+                </div>
+
+                <!-- Role Filter Tabs (All / Staff) -->
+                <div
+                    class="inline-flex items-center rounded-xl border border-slate-200/80 bg-slate-100/80 p-1 dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <button
+                        type="button"
+                        @click="applyFilters('all')"
+                        class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all duration-150 active:scale-95"
+                        :class="
+                            selectedRole === 'all'
+                                ? 'bg-white text-slate-900 shadow-2xs dark:bg-gray-800 dark:text-gray-100'
+                                : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-200'
+                        "
+                    >
+                        <Users class="h-3.5 w-3.5" />
+                        <span>All</span>
+                        <span
+                            v-if="counts?.all !== undefined"
+                            class="py-0.2 rounded-md px-1.5 text-[10px] font-bold"
+                            :class="
+                                selectedRole === 'all'
+                                    ? 'bg-slate-100 text-slate-700 dark:bg-gray-700 dark:text-gray-300'
+                                    : 'bg-slate-200/70 text-slate-600 dark:bg-gray-800 dark:text-gray-400'
+                            "
+                        >
+                            {{ counts.all }}
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="applyFilters('staff')"
+                        class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all duration-150 active:scale-95"
+                        :class="
+                            selectedRole === 'staff'
+                                ? 'bg-white text-indigo-600 shadow-2xs dark:bg-gray-800 dark:text-indigo-400'
+                                : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-200'
+                        "
+                    >
+                        <ShieldCheck class="h-3.5 w-3.5" />
+                        <span>Staff Only</span>
+                        <span
+                            v-if="counts?.staff !== undefined"
+                            class="py-0.2 rounded-md px-1.5 text-[10px] font-bold"
+                            :class="
+                                selectedRole === 'staff'
+                                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300'
+                                    : 'bg-slate-200/70 text-slate-600 dark:bg-gray-800 dark:text-gray-400'
+                            "
+                        >
+                            {{ counts.staff }}
+                        </span>
+                    </button>
                 </div>
 
                 <div v-if="can('create users')" class="sm:hidden">
@@ -169,6 +244,35 @@ const clearSearch = () => {
                     class="mt-3.5 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
                 >
                     <span>Clear Search</span>
+                </button>
+            </div>
+
+            <!-- Staff Filter Empty State -->
+            <div
+                v-else-if="selectedRole === 'staff'"
+                class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-12 text-center dark:border-gray-800 dark:bg-gray-900/40"
+            >
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-2xs dark:bg-gray-800"
+                >
+                    <ShieldCheck class="h-5 w-5 text-indigo-500" />
+                </div>
+                <h3
+                    class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
+                >
+                    No staff members found
+                </h3>
+                <p
+                    class="mt-1 max-w-xs text-xs text-slate-500 dark:text-gray-400"
+                >
+                    Currently there are no users assigned to staff roles.
+                </p>
+                <button
+                    @click="applyFilters('all')"
+                    type="button"
+                    class="mt-3.5 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
+                >
+                    <span>Show All Users</span>
                 </button>
             </div>
 

@@ -30,6 +30,17 @@ class UserController extends Controller
             });
         }
 
+        if ($request->filled('role')) {
+            $role = (string) $request->role;
+            if ($role === 'staff') {
+                $query->has('roles');
+            } elseif ($role === 'student') {
+                $query->doesntHave('roles');
+            } elseif (in_array($role, ['admin', 'editor', 'manager'])) {
+                $query->whereHas('roles', fn ($q) => $q->where('name', $role));
+            }
+        }
+
         $users = $query
             ->latest('id')
             ->paginate(15)
@@ -39,6 +50,11 @@ class UserController extends Controller
             'users' => $users,
             'filters' => [
                 'q' => $request->q ?? '',
+                'role' => $request->role ?? 'all',
+            ],
+            'counts' => [
+                'all' => User::count(),
+                'staff' => User::has('roles')->count(),
             ],
         ]);
     }
