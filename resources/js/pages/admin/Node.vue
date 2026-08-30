@@ -221,14 +221,14 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                             @click="isResourceDropdownOpen = false"
                             class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Upload Bulk Images
+                            Upload Multiple Images
                         </Link>
                         <Link
                             :href="`/admin/resources/create/bulk/videos?node_id=${parent.id}&redirect=${page.url}`"
                             @click="isResourceDropdownOpen = false"
                             class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Upload Bulk Videos
+                            Upload Multiple Videos
                         </Link>
                     </div>
                 </div>
