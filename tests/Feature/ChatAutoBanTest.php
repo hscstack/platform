@@ -2,6 +2,7 @@
 
 use App\Models\AppSetting;
 use App\Models\User;
+use App\Services\ChatProfanityFilter;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -109,4 +110,48 @@ test('auto ban is not triggered when disabled in admin settings', function () {
     ])->assertStatus(201);
 
     expect($targetUser->fresh()->isChatBanned())->toBeFalse();
+});
+
+test('profanity filter allows legitimate words containing substrings while blocking actual banned words and obfuscations', function () {
+    AppSetting::set('global_chat_profanity_filter_enabled', true, 'boolean');
+    AppSetting::set('global_chat_banned_words', 'badword, toxic, spammer');
+
+    // Legitimate words containing substrings must NOT be blocked
+    expect(ChatProfanityFilter::hasProfanity('assalamualaikum'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('assalamualaikum brothers'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('walaikumsalam'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('class assignment'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('compass assistant'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('classic physics'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('password passage'))->toBeFalse();
+
+    // Actual banned words and obfuscations MUST be blocked
+    expect(ChatProfanityFilter::hasProfanity('you are badword'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('you are b.a.d.w.o.r.d'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('you are b a d w o r d'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('you are b@dw0rd'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('t.o.x.i.c user'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('t o x i c user'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('t_o_x_i_c'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('t0x1c'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('tooooxic'))->toBeTrue();
+});
+
+test('chat messages replace profanity with system notice instead of blocking the user', function () {
+    AppSetting::set('global_chat_enabled', true, 'boolean');
+    AppSetting::set('global_chat_audience', 'all');
+    AppSetting::set('global_chat_profanity_filter_enabled', true, 'boolean');
+    AppSetting::set('global_chat_banned_words', 'badword, toxic');
+
+    $user = User::factory()->create(['username' => 'chat_sender']);
+
+    $response = $this->actingAs($user)->postJson(route('chat.messages.store'), [
+        'content' => 'What is this badword',
+    ]);
+
+    $response->assertStatus(201);
+    $this->assertDatabaseHas('chat_messages', [
+        'user_id' => $user->id,
+        'content' => '[Message hidden for inappropriate language]',
+    ]);
 });

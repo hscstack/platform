@@ -176,9 +176,7 @@ class ChatController extends Controller
 
         // Check for abusive / prohibited language
         if (ChatProfanityFilter::hasProfanity($content)) {
-            return response()->json([
-                'message' => 'Your message contains inappropriate or prohibited language. If you try again, you may be temporarily banned from chat.',
-            ], 422);
+            $content = '[Message hidden for inappropriate language]';
         }
 
         // Prevent duplicate message sent twice in a streak by the same user
