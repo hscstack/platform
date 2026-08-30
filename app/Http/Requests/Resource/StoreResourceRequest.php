@@ -24,8 +24,6 @@ class StoreResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'redirect' => ['nullable', 'string'],
-
             'node_id' => ['required', 'integer', 'exists:nodes,id'],
             'resource_type' => ['required', 'in:note,pdf,image,video'],
             'title' => ['required', 'string', 'max:100', 'min:2'],

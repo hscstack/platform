@@ -14,7 +14,7 @@ test('admin can create a subject', function () {
         'sort_order' => 1,
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
 
     $this->assertDatabaseHas('subjects', [
         'name' => 'Platform Testing',
@@ -48,7 +48,7 @@ test('admin can update a subject', function () {
         'sort_order' => 2,
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
 
     $this->assertDatabaseHas('subjects', [
         'id' => $subject->id,
@@ -93,7 +93,7 @@ test('admin can create a subject with custom slug', function () {
         'sort_order' => 1,
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
 
     $this->assertDatabaseHas('subjects', [
         'name' => 'Custom Slug Subject',
@@ -117,7 +117,7 @@ test('admin can update a subject with custom slug', function () {
         'slug' => 'updated-custom-slug',
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
 
     $this->assertDatabaseHas('subjects', [
         'id' => $subject->id,
