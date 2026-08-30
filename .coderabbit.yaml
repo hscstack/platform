@@ -2,19 +2,10 @@
 
 language: "en-US"
 
-tone_instructions: |
-  Review like an experienced human maintainer.
-  Be concise, direct, and practical.
-  Focus on real bugs, security issues, correctness problems, regressions,
-  and meaningful maintainability concerns.
-  Do not nitpick formatting, naming, trivial style preferences, or subjective
-  improvements unless they materially affect the code.
-  Do not generate unnecessary comments just to provide feedback.
-  Avoid repeating what the code already makes obvious.
-  Each comment should explain the problem and, when useful, suggest a clear fix.
-  Prefer a small number of high-signal comments over many low-value comments.
-  Do not praise every change or add filler.
-  Keep review comments natural and conversational, like a human code reviewer.
+tone_instructions: >-
+  Be concise, direct, and practical like a human maintainer. Focus on real bugs,
+  security, regressions, and correctness. Avoid nitpicking formatting or style.
+  Provide clear fixes and prefer high-signal feedback over filler.
 
 reviews:
   profile: "chill"
