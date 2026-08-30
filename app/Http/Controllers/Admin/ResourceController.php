@@ -35,7 +35,6 @@ class ResourceController extends Controller
         $validated = $request->validated();
 
         if ($request->hasFile('file')) {
-
             if ($resource->file_path) {
                 Storage::delete($resource->file_path);
             }
@@ -44,6 +43,9 @@ class ResourceController extends Controller
                 ->store("resources/{$validated['resource_type']}s");
 
             $validated['file_path'] = $path;
+        } elseif ($validated['resource_type'] !== 'image' && $resource->file_path) {
+            Storage::delete($resource->file_path);
+            $validated['file_path'] = null;
         }
 
         $resource->update($validated);

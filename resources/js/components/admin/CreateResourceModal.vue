@@ -151,6 +151,8 @@ const submitForm = () => {
 
     if (requiresLink.value && externalUrl.value.trim()) {
         payload.external_url = externalUrl.value.trim();
+    } else if (props.resource) {
+        payload.external_url = null;
     }
 
     if (props.resource) {
@@ -158,14 +160,15 @@ const submitForm = () => {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                isSaving.value = false;
                 emit('close');
             },
             onError: (errors) => {
-                isSaving.value = false;
                 errorMessage.value =
                     Object.values(errors).flat().join(', ') ||
                     'Failed to update resource.';
+            },
+            onFinish: () => {
+                isSaving.value = false;
             },
         });
     } else {
@@ -173,14 +176,15 @@ const submitForm = () => {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                isSaving.value = false;
                 emit('close');
             },
             onError: (errors) => {
-                isSaving.value = false;
                 errorMessage.value =
                     Object.values(errors).flat().join(', ') ||
                     'Failed to create resource.';
+            },
+            onFinish: () => {
+                isSaving.value = false;
             },
         });
     }

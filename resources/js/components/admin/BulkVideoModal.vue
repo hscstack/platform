@@ -77,15 +77,16 @@ const submitForm = () => {
     router.post('/admin/resources/bulk/videos', payload, {
         preserveScroll: true,
         onSuccess: () => {
-            isSaving.value = false;
             resetForm();
             emit('close');
         },
         onError: (errors) => {
-            isSaving.value = false;
             errorMessage.value =
                 Object.values(errors).flat().join(', ') ||
                 'Failed to import playlist.';
+        },
+        onFinish: () => {
+            isSaving.value = false;
         },
     });
 };

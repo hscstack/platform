@@ -93,14 +93,15 @@ const submitForm = () => {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    isSaving.value = false;
                     emit('close');
                 },
                 onError: (errors) => {
-                    isSaving.value = false;
                     errorMessage.value =
                         Object.values(errors).flat().join(', ') ||
                         'Failed to update folder.';
+                },
+                onFinish: () => {
+                    isSaving.value = false;
                 },
             },
         );
@@ -108,14 +109,15 @@ const submitForm = () => {
         router.post(`/admin/subjects/${props.subject.id}/nodes`, payload, {
             preserveScroll: true,
             onSuccess: () => {
-                isSaving.value = false;
                 emit('close');
             },
             onError: (errors) => {
-                isSaving.value = false;
                 errorMessage.value =
                     Object.values(errors).flat().join(', ') ||
                     'Failed to create folder.';
+            },
+            onFinish: () => {
+                isSaving.value = false;
             },
         });
     }
@@ -135,6 +137,8 @@ const submitForm = () => {
             <div
                 v-if="isOpen"
                 class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
+                role="dialog"
+                aria-modal="true"
             >
                 <div
                     class="fixed inset-0 bg-slate-950/40 backdrop-blur-xs dark:bg-black/60"
