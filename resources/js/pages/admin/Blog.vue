@@ -57,7 +57,12 @@ defineProps({
                 />
             </div>
 
-            <EmptyState v-else />
+            <EmptyState
+                v-else
+                title="No blogs found"
+                description="No blog posts have been published yet."
+                :show-cta="false"
+            />
         </div>
     </div>
 </template>

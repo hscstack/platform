@@ -173,7 +173,12 @@ const clearSearch = () => {
             </div>
 
             <!-- Global Empty State -->
-            <EmptyState v-else />
+            <EmptyState
+                v-else
+                title="No users found"
+                description="No registered users found in the system."
+                :show-cta="false"
+            />
 
             <!-- Pagination Bar -->
             <div
