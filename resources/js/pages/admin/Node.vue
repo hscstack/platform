@@ -34,6 +34,7 @@ const isBulkModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
 const editingNode = ref<any | null>(null);
 const isSingleResourceModalOpen = ref(false);
+const editingResource = ref<any | null>(null);
 
 const openCreateNodeModal = () => {
     editingNode.value = null;
@@ -48,6 +49,21 @@ const openEditNodeModal = (node: any) => {
 const handleNodeModalClose = () => {
     isSingleModalOpen.value = false;
     editingNode.value = null;
+};
+
+const openCreateResourceModal = () => {
+    editingResource.value = null;
+    isSingleResourceModalOpen.value = true;
+};
+
+const openEditResourceModal = (resource: any) => {
+    editingResource.value = resource;
+    isSingleResourceModalOpen.value = true;
+};
+
+const handleResourceModalClose = () => {
+    isSingleResourceModalOpen.value = false;
+    editingResource.value = null;
 };
 
 const totalItemsCount = computed(
@@ -203,7 +219,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                             type="button"
                             @click="
                                 isResourceDropdownOpen = false;
-                                isSingleResourceModalOpen = true;
+                                openCreateResourceModal();
                             "
                             class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
@@ -237,12 +253,13 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             @close="handleNodeModalClose"
         />
 
-        <!-- Single Resource Modal -->
+        <!-- Single Resource Modal (Create / Edit) -->
         <CreateResourceModal
             v-if="parent"
             :is-open="isSingleResourceModalOpen"
             :node="parent"
-            @close="isSingleResourceModalOpen = false"
+            :resource="editingResource"
+            @close="handleResourceModalClose"
         />
 
         <!-- Bulk Node Modal -->
@@ -272,6 +289,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         v-for="resource in resources"
                         :key="`resource-${resource.id}`"
                         :resource="resource"
+                        @edit="openEditResourceModal"
                     />
                 </div>
             </template>

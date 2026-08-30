@@ -18,37 +18,6 @@ use Inertia\Inertia;
 
 class ResourceController extends Controller
 {
-    public function create(Request $request)
-    {
-        $node = Node::findOrFail($request->node_id);
-
-        $prev = url()->previous();
-        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit') && ! str_contains($prev, '/resources/'))
-            ? $prev
-            : '/admin/subjects';
-
-        return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' => $redirect,
-            'node' => $node,
-        ]);
-    }
-
-    public function edit(Resource $resource)
-    {
-        $node = $resource->node;
-
-        $prev = url()->previous();
-        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit') && ! str_contains($prev, '/resources/'))
-            ? $prev
-            : '/admin/subjects';
-
-        return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' => $redirect,
-            'node' => $node,
-            'resource' => $resource,
-        ]);
-    }
-
     public function store(StoreResourceRequest $request)
     {
         $validated = $request->validated();
@@ -82,12 +51,7 @@ class ResourceController extends Controller
 
         $resource->update($validated);
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : '/admin/subjects';
-
-        return redirect($redirect)
-            ->with('success', 'Resource updated successfully.');
+        return back()->with('success', 'Resource updated successfully.');
     }
 
     public function destroy(Resource $resource)

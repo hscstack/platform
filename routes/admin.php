@@ -60,7 +60,6 @@ Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class
 
 // Resources
 Route::middleware('permission:create resources')->group(function () {
-    Route::get('/resources/create', [AdminResourceController::class, 'create']);
     Route::get('/resources/create/bulk/images', [AdminResourceController::class, 'createBulkImages']);
     Route::get('/resources/create/bulk/videos', [AdminResourceController::class, 'createBulkVideos']);
     Route::post('/resources', [AdminResourceController::class, 'store']);
@@ -69,7 +68,6 @@ Route::middleware('permission:create resources')->group(function () {
 });
 
 Route::middleware('permission:edit resources')->group(function () {
-    Route::get('/resources/edit/{resource}', [AdminResourceController::class, 'edit']);
     Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update']);
 });
 

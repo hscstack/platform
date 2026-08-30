@@ -20,6 +20,15 @@ const props = defineProps<{
         id: number;
         name: string;
     };
+    resource?: {
+        id: number;
+        node_id: number;
+        resource_type: string;
+        title: string;
+        content?: string | null;
+        external_url?: string | null;
+        file_path?: string | null;
+    } | null;
 }>();
 
 const emit = defineEmits<{
@@ -66,12 +75,21 @@ const requiresLink = computed(() =>
     ['video', 'pdf'].includes(resourceType.value),
 );
 
-const resetForm = () => {
-    resourceType.value = 'image';
-    title.value = '';
-    content.value = '';
-    externalUrl.value = '';
-    file.value = null;
+const initForm = () => {
+    if (props.resource) {
+        resourceType.value = (props.resource.resource_type as any) || 'image';
+        title.value = props.resource.title || '';
+        content.value = props.resource.content || '';
+        externalUrl.value = props.resource.external_url || '';
+        file.value = null;
+    } else {
+        resourceType.value = 'image';
+        title.value = '';
+        content.value = '';
+        externalUrl.value = '';
+        file.value = null;
+    }
+
     errorMessage.value = '';
     isSaving.value = false;
 };
@@ -80,7 +98,7 @@ watch(
     () => props.isOpen,
     (open) => {
         if (open) {
-            resetForm();
+            initForm();
         }
     },
 );
@@ -106,7 +124,7 @@ const submitForm = () => {
         return;
     }
 
-    if (requiresFile.value && !file.value) {
+    if (requiresFile.value && !file.value && !props.resource?.file_path) {
         errorMessage.value = 'Please select an image file to upload.';
 
         return;
@@ -136,21 +154,37 @@ const submitForm = () => {
         payload.external_url = externalUrl.value.trim();
     }
 
-    router.post('/admin/resources', payload, {
-        forceFormData: true,
-        preserveScroll: true,
-        onSuccess: () => {
-            isSaving.value = false;
-            resetForm();
-            emit('close');
-        },
-        onError: (errors) => {
-            isSaving.value = false;
-            errorMessage.value =
-                Object.values(errors).flat().join(', ') ||
-                'Failed to create resource.';
-        },
-    });
+    if (props.resource) {
+        router.post(`/admin/resources/${props.resource.id}/patch`, payload, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                isSaving.value = false;
+                emit('close');
+            },
+            onError: (errors) => {
+                isSaving.value = false;
+                errorMessage.value =
+                    Object.values(errors).flat().join(', ') ||
+                    'Failed to update resource.';
+            },
+        });
+    } else {
+        router.post('/admin/resources', payload, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                isSaving.value = false;
+                emit('close');
+            },
+            onError: (errors) => {
+                isSaving.value = false;
+                errorMessage.value =
+                    Object.values(errors).flat().join(', ') ||
+                    'Failed to create resource.';
+            },
+        });
+    }
 };
 </script>
 
@@ -184,7 +218,9 @@ const submitForm = () => {
                             <h3
                                 class="truncate text-base font-bold text-slate-900 dark:text-gray-100"
                             >
-                                Add Resource
+                                {{
+                                    resource ? 'Edit Resource' : 'Add Resource'
+                                }}
                             </h3>
                             <p
                                 class="truncate text-xs text-slate-500 dark:text-gray-400"
@@ -410,7 +446,11 @@ const submitForm = () => {
                                 />
                                 <Plus v-else class="h-3.5 w-3.5" />
                                 <span>{{
-                                    isSaving ? 'Saving...' : 'Create Resource'
+                                    isSaving
+                                        ? 'Saving...'
+                                        : resource
+                                          ? 'Update Resource'
+                                          : 'Create Resource'
                                 }}</span>
                             </button>
                         </div>
