@@ -1,22 +1,52 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Trash2 } from 'lucide-vue-next';
+import { LogIn, Pencil, Trash2, Ban } from 'lucide-vue-next';
+import { ref } from 'vue';
+import ChatBanModal from '@/components/ChatBanModal.vue';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
+
 defineProps({
     user: Object,
 });
+
 const page = usePage();
 const userId = page.props.auth.user.id;
+const isBanModalOpen = ref(false);
+
+const isChatBanned = (user: any) => {
+    if (!user?.chat_banned_until) {
+        return false;
+    }
+
+    return new Date(user.chat_banned_until).getTime() > Date.now();
+};
+
+const openBanModal = () => {
+    isBanModalOpen.value = true;
+};
 
 const getRoleBadgeStyles = (role: string) => {
     switch (role) {
         case 'admin':
-            return 'bg-red-50 text-red-700 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30';
+            return 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30';
         case 'manager':
-            return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30';
+            return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30';
         case 'editor':
-            return 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30';
+            return 'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-500/10 dark:text-purple-400 dark:ring-purple-500/30';
         default:
-            return 'bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+            return 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20';
+    }
+};
+
+const loginAsUser = (targetUser: any) => {
+    if (
+        confirm(
+            `Login as ${targetUser.name}? You will switch to this user's session.`,
+        )
+    ) {
+        router.post(`/admin/users/${targetUser.id}/login`);
     }
 };
 
@@ -26,87 +56,138 @@ const deleteUser = (id: number) => {
     }
 };
 </script>
+
 <template>
-    <tr
-        class="block border-b border-gray-100 p-5 transition-colors duration-200 last:border-b-0 md:table-row md:border-b md:border-gray-200/60 md:p-0 dark:border-gray-800 dark:md:border-gray-600"
+    <div
+        class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
         :class="[
             user.id === userId
-                ? 'bg-blue-50/50 md:bg-blue-50/30 md:hover:bg-blue-50/50 dark:bg-blue-500/10 dark:md:bg-blue-500/10 dark:md:hover:bg-blue-500/20'
-                : 'bg-white md:hover:bg-gray-50/50 dark:bg-gray-900 dark:md:hover:bg-gray-800',
+                ? 'ring-1 ring-indigo-500/20 dark:ring-indigo-500/30'
+                : '',
         ]"
     >
-        <td
-            class="block py-1.5 font-medium text-gray-900 md:table-cell md:px-6 md:py-4.5 dark:text-gray-100"
+        <!-- Left: User Avatar + Name + Email + Role (Clickable to profile) -->
+        <Link
+            :href="user.username ? `/u/${user.username}` : '#'"
+            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
         >
-            <div class="flex items-center gap-3.5">
-                <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold tracking-wider text-slate-700 uppercase shadow-xs ring-1 ring-black/5 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    {{ user.name.charAt(0) }}
-                </div>
-                <div class="flex min-w-0 flex-col">
-                    <div class="flex items-center gap-1.5">
-                        <span
-                            class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100"
-                            >{{ user.name }}</span
-                        >
-                        <span
-                            v-if="user.id === userId"
-                            class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
-                        >
-                            You
-                        </span>
-                    </div>
+            <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-black/5 bg-slate-100 text-xs font-bold text-slate-700 uppercase sm:h-10 sm:w-10 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300"
+            >
+                <img
+                    v-if="user.image_url || user.image_path"
+                    :src="user.image_url || '/storage/' + user.image_path"
+                    :alt="user.name"
+                    class="h-full w-full object-cover"
+                />
+                <span v-else>{{ user.name.charAt(0) }}</span>
+            </div>
+
+            <div class="flex min-w-0 flex-col">
+                <div class="flex flex-wrap items-center gap-2">
                     <span
-                        class="mt-0.5 truncate text-xs text-gray-400 md:hidden dark:text-gray-500"
+                        class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                     >
-                        {{ user.email }}
+                        {{ user.name }}
+                    </span>
+
+                    <span
+                        v-if="user.id === userId"
+                        class="inline-flex items-center rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 uppercase dark:bg-indigo-500/10 dark:text-indigo-400"
+                    >
+                        You
+                    </span>
+
+                    <span
+                        class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset"
+                        :class="getRoleBadgeStyles(user.roles?.[0]?.name)"
+                    >
+                        {{ user.roles?.[0]?.name ?? 'student' }}
+                    </span>
+
+                    <span
+                        v-if="isChatBanned(user)"
+                        class="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 uppercase ring-1 ring-rose-600/20 ring-inset dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30"
+                        title="Chat banned"
+                    >
+                        <Ban class="h-2.5 w-2.5" />
+                        Chat Banned
                     </span>
                 </div>
-            </div>
-        </td>
 
-        <td
-            class="hidden text-sm font-normal text-gray-600 md:table-cell md:px-6 md:py-4.5 dark:text-gray-400"
+                <p
+                    class="mt-0.5 truncate text-xs text-slate-400 dark:text-gray-500"
+                >
+                    {{ user.email }}
+                </p>
+            </div>
+        </Link>
+
+        <!-- Right: Actions -->
+        <div
+            v-if="
+                (user.id !== userId && can('impersonate users')) ||
+                can('edit users') ||
+                can('manage chat') ||
+                (user.id !== userId && can('delete users'))
+            "
+            class="flex shrink-0 items-center gap-1"
+            @click.stop
         >
-            {{ user.email }}
-        </td>
+            <button
+                v-if="user.id !== userId && can('impersonate users')"
+                type="button"
+                @click="loginAsUser(user)"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600 dark:text-gray-500 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                title="Login as user"
+            >
+                <LogIn class="h-4 w-4" :stroke-width="1.8" />
+            </button>
 
-        <td class="mt-1 block py-1.5 md:mt-0 md:table-cell md:px-6 md:py-4.5">
-            <div class="flex items-center gap-2 md:block">
-                <span
-                    class="w-12 text-xs font-medium text-gray-400 md:hidden dark:text-gray-500"
-                >
-                    Role:
-                </span>
-                <span
-                    class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium tracking-wide capitalize shadow-2xs"
-                    :class="getRoleBadgeStyles(user.roles?.[0]?.name)"
-                >
-                    {{ user.roles?.[0]?.name ?? 'no role' }}
-                </span>
-            </div>
-        </td>
+            <button
+                v-if="can('manage chat') || can('edit users')"
+                type="button"
+                @click="openBanModal"
+                class="rounded-lg p-1.5 transition-colors"
+                :class="
+                    isChatBanned(user)
+                        ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40'
+                        : 'text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
+                "
+                :title="
+                    isChatBanned(user)
+                        ? 'Edit chat ban timer / Unban'
+                        : 'Ban from chat'
+                "
+            >
+                <Ban class="h-4 w-4" :stroke-width="1.8" />
+            </button>
 
-        <td
-            class="mt-3 block border-t border-gray-100 py-2 pt-3 md:mt-0 md:table-cell md:border-t-0 md:px-6 md:py-4.5 md:pt-0 md:text-right dark:border-gray-800"
-        >
-            <div class="flex items-center justify-start gap-3.5 md:justify-end">
-                <Link
-                    :href="`/admin/users/edit/${user.id}`"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-2xs transition-all hover:bg-gray-50 hover:text-blue-600 md:border-0 md:bg-transparent md:p-0 md:text-blue-600 md:shadow-none md:hover:text-blue-700 md:hover:underline dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:md:bg-transparent dark:md:text-blue-400 dark:md:hover:text-blue-400"
-                >
-                    Edit
-                </Link>
+            <Link
+                v-if="can('edit users')"
+                :href="`/admin/users/edit/${user.id}`"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                title="Edit user"
+            >
+                <Pencil class="h-4 w-4" :stroke-width="1.8" />
+            </Link>
 
-                <button
-                    @click="deleteUser(user.id)"
-                    class="inline-flex items-center justify-center gap-1 rounded-lg border border-red-100 bg-red-50/40 px-3 py-1.5 text-xs font-medium text-red-600 shadow-2xs transition-all hover:bg-red-50 hover:text-red-700 md:border-0 md:bg-transparent md:p-0 md:text-red-500 md:shadow-none md:hover:text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:md:bg-transparent dark:md:text-red-400 dark:md:hover:text-red-400"
-                >
-                    <Trash2 class="h-3.5 w-3.5" />
-                    <span class="md:hidden">Delete</span>
-                </button>
-            </div>
-        </td>
-    </tr>
+            <button
+                v-if="user.id !== userId && can('delete users')"
+                @click="deleteUser(user.id)"
+                type="button"
+                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                title="Delete user"
+            >
+                <Trash2 class="h-4 w-4" :stroke-width="1.8" />
+            </button>
+        </div>
+
+        <!-- Chat Ban Modal -->
+        <ChatBanModal
+            :is-open="isBanModalOpen"
+            :user="user"
+            @close="isBanModalOpen = false"
+        />
+    </div>
 </template>

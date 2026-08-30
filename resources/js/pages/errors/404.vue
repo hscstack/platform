@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     HelpCircle,
     ArrowLeft,
     Home,
     BookOpen,
     Users,
-    Info,
+    LifeBuoy,
     ChevronRight,
 } from 'lucide-vue-next';
 
@@ -18,6 +18,11 @@ const goBack = () => {
 </script>
 
 <template>
+    <Head>
+        <title>404 - Page Not Found</title>
+        <meta name="robots" content="noindex, nofollow" />
+    </Head>
+
     <div
         class="relative flex min-h-[calc(100vh-10rem)] items-center justify-center px-4 py-16 sm:px-6 sm:py-24"
     >
@@ -135,16 +140,16 @@ const goBack = () => {
                     </Link>
 
                     <Link
-                        href="/about-us"
+                        href="/support"
                         class="group flex items-center justify-between rounded-xl border border-slate-100 bg-white/40 p-3 text-sm font-medium text-slate-700 transition-all duration-150 hover:border-slate-200 hover:bg-white/80 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-300 dark:hover:border-gray-700 dark:hover:bg-gray-900/80"
                     >
                         <div class="flex items-center gap-3">
                             <div
-                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600 transition-colors group-hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-400 dark:group-hover:bg-sky-500/20"
+                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:group-hover:bg-indigo-500/20"
                             >
-                                <Info class="h-4 w-4" />
+                                <LifeBuoy class="h-4 w-4" />
                             </div>
-                            <span>About Us</span>
+                            <span>Support Center</span>
                         </div>
                         <ChevronRight
                             class="h-4 w-4 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 dark:text-gray-500"

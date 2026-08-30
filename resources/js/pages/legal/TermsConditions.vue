@@ -1,26 +1,31 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     Scale,
-    ArrowLeft,
     FileText,
     HelpCircle,
     AlertCircle,
     Ban,
+    UserCircle,
+    Users,
+    MessageSquare,
+    BookOpen,
+    ThumbsUp,
+    RefreshCw,
 } from 'lucide-vue-next';
 </script>
 
 <template>
-    <header class="mx-auto max-w-3xl px-4 pt-12 pb-8 text-center sm:pt-16">
-        <Link
-            href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
-            />
-            Back to Home
-        </Link>
+    <Head>
+        <title>Terms & Conditions</title>
+        <meta
+            name="description"
+            content="Terms and Conditions of use for the HSCStack open educational platform."
+        />
+        <meta property="og:title" content="Terms & Conditions - HSCStack" />
+    </Head>
+
+    <header class="mx-auto max-w-3xl px-4 pt-8 pb-6 text-center sm:pt-12">
         <h1
             class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
@@ -29,7 +34,7 @@ import {
         <p
             class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
         >
-            সর্বশেষ আপডেট: জুলাই ২০২৬
+            সর্বশেষ আপডেট: আগস্ট ২০২৬
         </p>
     </header>
 
@@ -40,10 +45,10 @@ import {
             <p
                 class="text-sm leading-relaxed font-medium text-slate-600 dark:text-gray-400"
             >
-                এই আর্কাইভ অ্যাক্সেস বা ব্রাউজ করার মাধ্যমে, আপনি নিচের Terms &
-                Conditions মেনে চলতে এবং এতে বাউন্ড থাকতে সম্মত হচ্ছেন। এই
-                নিয়মের কোনো অংশের সাথে আপনি একমত না হলে, আমাদের educational
-                directory ব্যবহার থেকে বিরত থাকুন।
+                এই প্ল্যাটফর্মটি অ্যাক্সেস বা ব্যবহার করার মাধ্যমে, আপনি নিচের
+                Terms & Conditions মেনে চলতে এবং এতে বাউন্ড থাকতে সম্মত হচ্ছেন।
+                এই নিয়মের কোনো অংশের সাথে আপনি একমত না হলে, আমাদের প্ল্যাটফর্ম
+                ব্যবহার থেকে বিরত থাকুন।
             </p>
 
             <hr class="border-slate-100 dark:border-gray-800" />
@@ -64,21 +69,25 @@ import {
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        এই প্ল্যাটফর্ম HSC & SSC স্টুডেন্টদের জন্য একটা fast,
-                        distraction-free স্টাডি আর্কাইভ হিসেবে কাজ করে। আমরা
-                        হোস্ট করি:
+                        HSCStack হলো HSC ও SSC স্টুডেন্টদের জন্য একটি
+                        comprehensive open-learning প্ল্যাটফর্ম। এটি শুধু একটি
+                        সাধারণ আর্কাইভ নয়, বরং এখানে রয়েছে:
                     </p>
                     <ul
                         class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
                     >
+                        <li>Dual curriculum (HSC ও SSC) ভিত্তিক কন্টেন্ট।</li>
                         <li>
-                            ব্যক্তিগতভাবে হাতে লেখা নোট, প্র্যাকটিক্যাল রেকর্ড,
-                            এবং structural গাইড।
+                            ৫ ধরনের স্ট্রাকচার্ড রিসোর্স: নোটস, প্রশ্ন, PDF, ছবি
+                            এবং ভিডিও।
                         </li>
-                        <li>সিলেবাস-এলাইনড publicly available কনটেন্ট।</li>
                         <li>
-                            আগের পরীক্ষার সাইকেলের ঐতিহাসিক public question
-                            bank।
+                            রিয়েল-টাইম কমিউনিটি লাইভ চ্যাট, এডুকেশনাল ব্লগ এবং
+                            ইউজার প্রোফাইল।
+                        </li>
+                        <li>
+                            রিসোর্স কমপ্লিশন ট্র্যাকিং এবং এআই অ্যাসিস্ট্যান্ট
+                            সুবিধা।
                         </li>
                     </ul>
                 </div>
@@ -89,43 +98,175 @@ import {
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
+                    <UserCircle class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ২. অ্যাকাউন্ট ও প্রমাণীকরণ
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        আমাদের প্ল্যাটফর্মে গুগল ওঅথ (Google OAuth 2.0) এর
+                        মাধ্যমে নিরাপদ লগইন ব্যবস্থা রয়েছে, সাধারণ পাসওয়ার্ড
+                        রেজিস্ট্রেশনের প্রয়োজন নেই। নতুন অ্যাকাউন্টের ক্ষেত্রে
+                        স্বয়ংক্রিয়ভাবে একটি ইউজারনেম (যেমন: student_1234) তৈরি
+                        হয়। ব্যবহারকারীরা তাদের প্রোফাইল কাস্টমাইজ করতে পারবেন।
+                        নিজের অ্যাকাউন্টের নিরাপত্তা এবং অ্যাকাউন্টের অধীনে
+                        হওয়া সকল কার্যকলাপের দায়ভার সম্পূর্ণভাবে ব্যবহারকারীর
+                        নিজের।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <Users class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৩. ব্যবহারকারীর আচরণবিধি
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        প্ল্যাটফর্মে একটি সুস্থ শিক্ষার পরিবেশ বজায় রাখতে সকল
+                        ব্যবহারকারীকে সম্মানজনক আচরণ করতে হবে। স্প্যামিং,
+                        হয়রানি বা কাউকে আক্রমণ করে কথা বলা সম্পূর্ণ নিষিদ্ধ।
+                        প্ল্যাটফর্মের চ্যাট এবং অন্যান্য অংশে profanity filter
+                        স্বয়ংক্রিয়ভাবে কাজ করে। এই নিয়মাবলী ভঙ্গ করলে যেকোনো
+                        সময় অ্যাকাউন্ট সাসপেন্ড বা বাতিল করা হতে পারে।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <MessageSquare class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৪. লাইভ চ্যাট নিয়মাবলী
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        কমিউনিটি লাইভ চ্যাটে অশালীন বা আপত্তিকর শব্দ ব্যবহার করা
+                        কঠোরভাবে নিষিদ্ধ, যা স্বয়ংক্রিয় profanity filter
+                        দ্বারা নিয়ন্ত্রিত। স্প্যাম রোধে মেসেজ পাঠানোর মাঝে
+                        নির্দিষ্ট সময়ের cooldown বা রেট লিমিট প্রযোজ্য। চ্যাটে
+                        আপত্তিকর মেসেজ দেখলে ব্যবহারকারীরা রিপোর্ট করতে পারবেন।
+                        ৫ বা ততোধিক রিপোর্ট জমা হলে স্বয়ংক্রিয়ভাবে ২৪ ঘণ্টার
+                        জন্য চ্যাট থেকে ব্যান করা হবে। প্ল্যাটফর্মের স্টাফ বা
+                        মডারেটরদের যেকোনো মেসেজ ডিলিট করা বা ব্যবহারকারীকে ব্যান
+                        করার সম্পূর্ণ অধিকার রয়েছে।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
                     <Scale class="h-4 w-4 stroke-[2.2]" />
                 </div>
                 <div>
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ২. Intellectual Property ও Fair Use
+                        ৫. Intellectual Property ও Fair Use
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        আমাদের original টেক্সট লেআউট, সিস্টেম স্ক্রিপ্ট, এবং
-                        আমাদের নিজস্বভাবে লেখা নোটের মালিকানা আমাদের।
-                        কনট্রিবিউটরদের জমা দেওয়া নোট বা কনটেন্টের মূল মালিকানা
-                        সংশ্লিষ্ট কনট্রিবিউটরের কাছেই থাকে — এই ক্ষেত্রে তারা
-                        শুধুমাত্র HSCStack-কে সংরক্ষণ, প্রদর্শন ও বিতরণের একটি
+                        আমাদের original টেক্সট লেআউট, সিস্টেম স্ক্রিপ্ট, কোড এবং
+                        নিজস্ব ব্লগ আর্টিকেলের মালিকানা আমাদের। কনট্রিবিউটরদের
+                        জমা দেওয়া নোট, ব্লগ বা অন্যান্য কনটেন্টের মূল মালিকানা
+                        সংশ্লিষ্ট কনট্রিবিউটরের কাছেই থাকে — তবে তারা
+                        HSCStack-কে এগুলো সংরক্ষণ, প্রদর্শন ও বিতরণের একটি
                         লাইসেন্স প্রদান করেন, যেমনটি আমাদের
                         <Link
                             href="/content-policy"
                             class="text-indigo-600 underline dark:text-indigo-400"
                             >Content Policy</Link
-                        >-তে বিস্তারিত ব্যাখ্যা করা হয়েছে। স্টুডেন্টদের
-                        প্রাইভেট স্টাডি ব্যবহারের জন্য অ্যাক্সেস দেওয়া হয়।
-                        অফিশিয়াল state board evaluation প্রশ্ন বা public
-                        question structure সম্পূর্ণভাবে
+                        >-তে বিস্তারিত ব্যাখ্যা করা হয়েছে। অফিশিয়াল বোর্ডের
+                        প্রশ্ন বা পাবলিক question structure সম্পূর্ণভাবে
                         <strong class="text-slate-700 dark:text-gray-300"
                             >Fair Use নীতির</strong
                         >
                         আওতায় শেয়ার করা হয়, স্পষ্ট educational backup হিসেবে।
-                        অফিশিয়াল বোর্ড আইটেমের ওপর আমরা কোনো dynamic entity
-                        right দাবি করি না। প্ল্যাটফর্মের ডেটা বাল্ক scrape করা
-                        বা resell করা কঠোরভাবে নিষিদ্ধ।
+                        প্ল্যাটফর্মের ডেটা বাল্ক scrape করা বা resell করা
+                        কঠোরভাবে নিষিদ্ধ।
                     </p>
                 </div>
             </div>
 
-            <!-- Section 3 -->
+            <!-- Section 6 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <BookOpen class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৬. কনটেন্ট ও ব্লগ
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        ব্লগ সেকশনে শিক্ষামূলক ও তথ্যবহুল আর্টিকেল পাবলিশ করার
+                        সুযোগ রয়েছে। ব্লগে অন্য ব্যবহারকারীদের আর্টিকেলে কমেন্ট
+                        করা এবং রিঅ্যাকশন (love) দেওয়ার ব্যবস্থা আছে।
+                        ব্যবহারকারীদের উচিত মানসম্মত ও গঠনমূলক ব্লগ পাবলিশ করা
+                        এবং কমেন্ট সেকশনে ভদ্রতা বজায় রাখা। অন্যের কপিরাইটযুক্ত
+                        লেখা নিজের নামে পাবলিশ করা যাবে না।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 7 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <ThumbsUp class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৭. কমিউনিটি ফিচার
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        HSCStack-এ রয়েছে ফোল্ডার ভোটিং (আপভোট/ডাউনভোট),
+                        প্রোফাইল অ্যাক্টিভিটি স্ট্রিম, সাজেস্টেড মেম্বারস এবং
+                        ইউজার অ্যাপ্রিসিয়েশন (appreciations)। এই ফিচারগুলো একে
+                        অপরকে সাহায্য করার জন্য ডিজাইন করা হয়েছে। কমিউনিটির
+                        ভোটিং সিস্টেম বা অ্যাপ্রিসিয়েশন ফিচারের কোনো অপব্যবহার
+                        বা ম্যানিপুলেশন করা কঠোরভাবে নিষিদ্ধ।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 8 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -136,21 +277,22 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৩. এডুকেশনাল Accuracy সংক্রান্ত Disclaimer
+                        ৮. এডুকেশনাল Accuracy সংক্রান্ত Disclaimer
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        আমরা clean curation এবং accuracy বজায় রাখার চেষ্টা
-                        করলেও, সবকিছু "as-is" ভিত্তিতে শেয়ার করা হয়। আমরা কোনো
-                        performance warranty দিই না, এবং সঠিক লার্নিং
-                        প্যারামিটার বজায় রাখতে ব্যবহারকারীদের উচিত অফিশিয়াল
-                        টেক্সটবুকের সাথে ডেটা স্ট্রিম মিলিয়ে দেখা।
+                        আমরা clean curation এবং accuracy বজায় রাখার সর্বোচ্চ
+                        চেষ্টা করলেও, সবকিছু "as-is" ভিত্তিতে শেয়ার করা হয়।
+                        আমরা কোনো performance warranty বা শতভাগ সঠিকতার
+                        গ্যারান্টি দিই না। সঠিক লার্নিং প্যারামিটার বজায় রাখতে
+                        ব্যবহারকারীদের উচিত অফিশিয়াল টেক্সটবুক এবং শিক্ষকদের
+                        গাইডলাইনের সাথে ডেটা মিলিয়ে দেখা।
                     </p>
                 </div>
             </div>
 
-            <!-- Section 4 -->
+            <!-- Section 9 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -161,21 +303,23 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৪. দায়বদ্ধতার সীমাবদ্ধতা
+                        ৯. দায়বদ্ধতার সীমাবদ্ধতা
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        আর্কাইভাল কনটেন্ট ব্যবহারের কারণে সরাসরি বা পরোক্ষভাবে
-                        ঘটা কোনো internal data outage, গ্রেডিং ডিসক্রেপ্যান্সি,
-                        বা contextual error-এর জন্য আমাদের প্ল্যাটফর্ম এবং
-                        ডেভেলপমেন্ট মেইনটেইনাররা কোনো আইনি দায়বদ্ধতার সম্মুখীন
-                        হবে না।
+                        প্ল্যাটফর্মে থাকা কোনো রিসোর্স, রিয়েল-টাইম লাইভ চ্যাট
+                        বা থার্ড-পার্টি কনটেন্ট ব্যবহারের কারণে সরাসরি বা
+                        পরোক্ষভাবে ঘটা কোনো অ্যাকাডেমিক ক্ষতি, গ্রেডিং
+                        ডিসক্রেপ্যান্সি, বা ডেটা হারানোর জন্য আমাদের প্ল্যাটফর্ম
+                        এবং ডেভেলপাররা কোনো আইনি দায়বদ্ধতার সম্মুখীন হবেন না।
+                        প্ল্যাটফর্মটি ব্যবহারকারীকে নিজ দায়িত্বে ব্যবহার করতে
+                        হবে।
                     </p>
                 </div>
             </div>
 
-            <!-- Section 5 (NEW) -->
+            <!-- Section 10 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -186,26 +330,49 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৫. অ্যাকাউন্ট স্থগিতকরণ ও বাতিলকরণ
+                        ১০. অ্যাকাউন্ট স্থগিতকরণ ও বাতিলকরণ
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                     >
-                        HSCStack এই Terms & Conditions, আমাদের
+                        আমাদের Terms & Conditions,
                         <Link
                             href="/content-policy"
                             class="text-indigo-600 underline dark:text-indigo-400"
                             >Content Policy</Link
-                        >, অথবা প্ল্যাটফর্মের জন্য নিরাপত্তাঝুঁকি তৈরি করে এমন
-                        যেকোনো অ্যাকাউন্ট (কনট্রিবিউটর বা ব্যবহারকারী) সীমিত,
-                        স্থগিত বা স্থায়ীভাবে বাতিল করার অধিকার সংরক্ষণ করে। এর
-                        মধ্যে থাকতে পারে — কপিরাইট লঙ্ঘন, স্প্যাম বা
-                        প্রতারণামূলক submission, ক্ষতিকর ফাইল আপলোড, অথবা
-                        প্ল্যাটফর্মের সিস্টেম বা অন্য ব্যবহারকারীদের ক্ষতি করার
-                        চেষ্টা। সিদ্ধান্ত নেওয়ার আগে HSCStack পরিস্থিতি
-                        অনুযায়ী পর্যালোচনা করার চেষ্টা করবে, তবে গুরুতর
-                        নিরাপত্তা ঝুঁকির ক্ষেত্রে তাৎক্ষণিক ব্যবস্থা নেওয়া হতে
-                        পারে।
+                        >, অথবা প্ল্যাটফর্মের নিরাপত্তা বিঘ্নিত করলে মডারেটর বা
+                        অ্যাডমিন যেকোনো অ্যাকাউন্ট (ছাত্র বা কনট্রিবিউটর) স্থগিত
+                        বা বাতিল করার অধিকার রাখেন। লাইভ চ্যাটে স্বয়ংক্রিয়
+                        ব্যান ছাড়াও মডারেটররা ম্যানুয়ালি ব্যবস্থা নিতে পারেন।
+                        গুরুতর নিয়মভঙ্গ, স্প্যামিং বা কপিরাইট লঙ্ঘনের ক্ষেত্রে
+                        কোনো পূর্ব নোটিশ ছাড়াই কন্টেন্ট রিমুভ বা অ্যাকাউন্ট
+                        স্থায়ীভাবে ডিলিট করা হতে পারে।
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 11 -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <RefreshCw class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ১১. পরিবর্তন ও আপডেট
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        HSCStack যেকোনো সময় এই Terms & Conditions আপডেট বা
+                        পরিবর্তন করার অধিকার সংরক্ষণ করে। গুরুত্বপূর্ণ কোনো
+                        পরিবর্তন হলে তা প্ল্যাটফর্মে নোটিফিকেশন বা ঘোষণার
+                        মাধ্যমে জানিয়ে দেওয়া হবে। পরিবর্তিত শর্তাবলী মেনে
+                        নিয়ে প্ল্যাটফর্ম ব্যবহার চালিয়ে যাওয়া মানে আপনি নতুন
+                        শর্তাবলীতে সম্মত।
                     </p>
                 </div>
             </div>

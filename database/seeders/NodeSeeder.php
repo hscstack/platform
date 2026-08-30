@@ -152,7 +152,9 @@ class NodeSeeder extends Seeder
         foreach ($data as $subjectName => $chapters) {
 
             $subjectId = $subjects[$subjectName] ?? null;
-            if (!$subjectId) continue;
+            if (! $subjectId) {
+                continue;
+            }
 
             foreach ($chapters as $index => $chapter) {
 
@@ -160,7 +162,7 @@ class NodeSeeder extends Seeder
                     'subject_id' => $subjectId,
                     'parent_id' => null,
                     'name' => $chapter,
-                    'slug' => Str::slug($chapter . '-' . $subjectName),
+                    'slug' => Str::slug($chapter.'-'.$subjectName),
                     'sort_order' => $index,
                     'created_at' => now(),
                     'updated_at' => now(),

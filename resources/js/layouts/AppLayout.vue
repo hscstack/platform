@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FloatingShareBar from '@/components/FloatingShareBar.vue';
 import Footer from '@/components/Footer.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import NavBar from '@/components/NavBar.vue';
@@ -23,14 +24,14 @@ import ToastNotification from '@/components/ToastNotification.vue';
             ></div>
         </div>
 
-        <div class="relative z-10 flex min-h-screen flex-col justify-between">
-            <div>
-                <NavBar />
+        <div class="relative z-10 flex min-h-screen flex-col">
+            <NavBar />
+            <main class="min-h-[calc(100vh-4rem)] flex-1">
                 <slot />
-            </div>
-
-            <Footer />
+            </main>
+            <Footer v-if="$page.component !== 'Chat/Index'" />
         </div>
+        <FloatingShareBar />
         <ToastNotification />
     </div>
 </template>

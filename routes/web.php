@@ -1,124 +1,98 @@
-    <?php
+<?php
 
-    use App\Http\Controllers\AboutUsController;
-    use App\Http\Controllers\Admin\AuthController;
-    use App\Http\Controllers\Admin\BlogController as AdminBlogController;
-    use App\Http\Controllers\Admin\DashboardController;
-    use App\Http\Controllers\Admin\NodeController as AdminNodeController;
-    use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
-    use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
-    use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
-    use App\Http\Controllers\Admin\UserController as AdminUserController;
-    use App\Http\Controllers\BlogController;
-    use App\Http\Controllers\NodeController;
-    use App\Http\Controllers\ResourceController;
-    use App\Http\Controllers\SubjectController;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Cache;
-    use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AboutUsController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\NodeController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\ShortUrlController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\UserProfileController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
+Route::middleware('throttle:60,1')->get('/api/auth/status', function (Request $request) {
+    return response()->json([
+        'authenticated' => Auth::check(),
+        'user' => $request->user(),
+    ]);
+});
 
+Route::middleware(['throttle:60,1', 'auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');
+    Route::post('/blogs/{blog}/react', [BlogController::class, 'toggleReaction'])->name('blogs.react');
+    Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
+    Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
+    Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
+    Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
+    Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
+    Route::get('/support/my-tickets', [SupportTicketController::class, 'myTickets'])->name('support.my-tickets');
+    Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('support.tickets.store');
 
+    Route::get('/me', function (Request $request) {
+        return redirect()->route('user.profile', ['username' => $request->user()->username]);
+    })->name('me');
 
+    // Global Chat Actions
+    Route::post('/api/chat/messages', [ChatController::class, 'store'])->name('chat.messages.store');
+    Route::delete('/api/chat/messages/{message}', [ChatController::class, 'destroy'])->name('chat.messages.destroy');
+    Route::post('/api/chat/reports', [ChatController::class, 'report'])->name('chat.reports.store');
+    Route::middleware('throttle:60,1')->post('/api/chat/messages/{message}/reactions', [ChatController::class, 'toggleReaction'])->name('chat.messages.react');
+});
 
-    Route::prefix('admin')->middleware(['throttle:45,1', 'auth', 'verified', 'permission:view admin'])->name('admin.')->group(function () {
+// Global Chat Messages List (Public Read)
+Route::middleware('throttle:60,1')->get('/api/chat/messages', [ChatController::class, 'index'])->name('chat.messages.index');
 
-        Route::get('/', [DashboardController::class, 'index'])->name('index');
+Route::prefix('admin')
+    ->middleware(['throttle:45,1', 'auth', 'verified', 'permission:view admin'])
+    ->name('admin.')
+    ->group(base_path('routes/admin.php'));
 
-        Route::get('/subjects', [AdminSubjectController::class, 'index'])->name("subjects.index");
-        Route::get('/subjects/create', [AdminSubjectController::class, 'create'])->name("subjects.create");
-        Route::get('/subjects/edit/{subject}', [AdminSubjectController::class, 'edit'])->name("subjects.edit");
+Route::get('/local/oauth2callback', function (Request $request) {
+    abort_unless(app()->environment('local'), 403);
 
-        Route::get('/blogs', [AdminBlogController::class, 'index'])->name("blogs.index");
-        Route::get('/blogs/create', [AdminBlogController::class, 'create'])->name("blogs.create");
-        Route::get('/blogs/edit/{blog}', [AdminBlogController::class, 'edit'])->name("blogs.edit");
+    dd($request->code);
+});
 
-        Route::get('/subjects/{subject:slug}/nodes/create', [AdminNodeController::class, 'create'])->name('nodes.create');
-        Route::get('/nodes/edit/{node}', [AdminNodeController::class, 'edit'])->name('nodes.edit');
+Route::middleware('throttle:60,1')->group(function () {
+    Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
+    Route::inertia('/terms-service', 'legal/TermsConditions');
+    Route::inertia('/content-policy', 'legal/ContentPolicy');
+    Route::inertia('/donate', 'Donate')->name('donate');
+    Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
+    Route::inertia('/join', 'platform/JoinTeam');
+    Route::inertia('/guide', 'ContributorGuide');
+    Route::inertia('/ai', 'ai/Index');
+    Route::inertia('/projects', 'Projects');
 
-        Route::get('/resources/create', [AdminResourceController::class, 'create']);
-        Route::get('/resources/create/bulk/images', [AdminResourceController::class, 'createBulkImages']);
-        Route::get('/resources/create/bulk/videos', [AdminResourceController::class, 'createBulkVideos']);
-        Route::get('/resources/edit/{resource}', [AdminResourceController::class, 'edit']);
+    Route::get('/about-us', [AboutUsController::class, 'index']);
 
-        Route::get('/users', [AdminUserController::class, 'index'])->name("users.index");
-        Route::get('/users/create', [AdminUserController::class, 'create']);
-        Route::get('/users/edit/{user}', [AdminUserController::class, 'edit']);
+    Route::get('/login', [AuthController::class, 'index'])->name('login');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+    Route::get('/onboarding', [AuthController::class, 'showOnboarding'])->name('onboarding');
+    Route::post('/onboarding', [AuthController::class, 'completeOnboarding'])->name('onboarding.complete');
 
-        Route::get('/notice', [AdminNoticeController::class, 'edit'])->name('notice.edit');
-        Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
+    Route::get('/blogs', [BlogController::class, 'index']);
+    Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
-        Route::patch('/subjects/edit/{subject}', [AdminSubjectController::class, 'update'])->middleware("permission:edit subjects")->name("subjects.update");
-        Route::post('/subjects', [AdminSubjectController::class, 'store'])->middleware("permission:create subjects")->name("subjects.store");
+    Route::get('/', [SubjectController::class, 'index'])
+        ->defaults('course', 'hsc')
+        ->name('index');
 
-        Route::post('/blogs/edit/{blog}/patch', [AdminBlogController::class, 'update'])->middleware("permission:edit blogs")->name("blogs.update");
-        Route::post('/blogs', [AdminBlogController::class, 'store'])->middleware("permission:create blogs")->name("blogs.store");
+    Route::get('/ssc', [SubjectController::class, 'index'])
+        ->defaults('course', 'ssc')
+        ->name('ssc.index');
 
-        Route::post('/subjects/{subject}/nodes', [AdminNodeController::class, 'store'])->middleware("permission:create nodes")->name('nodes.store');
-        Route::patch('/subjects/{subject}/nodes/{node}', [AdminNodeController::class, 'update'])->middleware("permission:edit nodes")->name('nodes.patch');
-
-        Route::post('/resources', [AdminResourceController::class, 'store'])->middleware("permission:create resources");
-        Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update'])->middleware("permission:edit resources");
-
-        Route::post('/resources/bulk/images', [AdminResourceController::class, 'storeBulkImages'])->middleware("permission:create resources");
-        Route::post('/resources/bulk/videos', [AdminResourceController::class, 'storeBulkVideos'])->middleware("permission:create resources");
-
-        Route::patch('/notice', [AdminNoticeController::class, 'update'])->middleware("permission:edit notice")->name('notice.update');
-        Route::post('/clear-cache', function () {
-            Cache::flush();
-            return back()->with('success', 'Cache cleared.');
-        })->middleware("permission:clear cache");
-
-        Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy'])->middleware("permission:delete resources");
-        Route::delete('/subjects/{subject}', [AdminSubjectController::class, 'destroy'])->middleware("permission:delete subjects");
-        Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->middleware("permission:delete blogs");
-        Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middleware("permission:delete nodes");
-
-        Route::middleware('permission:manage users')->group(function () {
-            Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
-            Route::post('/users', [AdminUserController::class, 'store'])->name("users.store");
-        });
-        Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name("users.update");
-    });
-
-    Route::post('/login', [AuthController::class, 'login'])
-        ->middleware('throttle:10,1');
-
-
-
-    Route::get('/local/oauth2callback', function (Request $request) {
-        abort_unless(app()->environment('local'), 403);
-
-        dd($request->code);
-    });
-
-
-    Route::middleware('throttle:60,1')->group(function () {
-        Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
-        Route::inertia('/terms-service', 'legal/TermsConditions');
-        Route::inertia('/content-policy', 'legal/ContentPolicy');
-        Route::inertia('/support', 'Support');
-        Route::inertia('/join', 'platform/JoinTeam');
-        Route::inertia('/guide', 'ContributorGuide');
-        Route::inertia('/ai', 'ai/Index');
-
-        Route::get('/about-us', [AboutUsController::class, 'index']);
-
-        Route::get('/login', [AuthController::class, 'index'])->name('login');
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-        Route::get('/blogs', [BlogController::class, 'index']);
-        Route::get('/blogs/{blog}', [BlogController::class, 'show']);
-
-        Route::get('/', [SubjectController::class, 'index'])
-            ->defaults('course', 'hsc')
-            ->name('index');
-
-        Route::get('/ssc', [SubjectController::class, 'index'])
-            ->defaults('course', 'ssc')
-            ->name('ssc.index');
-
-        Route::get('/resources/{id}', [ResourceController::class, 'show']);
-        Route::get('/{subject:slug}', [SubjectController::class, 'show']);
-        Route::get('/{subject:slug}/{path}', [NodeController::class, 'show'])->where('path', '.*');
-    });
+    Route::get('/resources/{id}', [ResourceController::class, 'show']);
+    Route::get('/{subject:slug}', [SubjectController::class, 'show']);
+    Route::get('/{subject:slug}/{path}', [NodeController::class, 'show'])->where('path', '.*');
+});

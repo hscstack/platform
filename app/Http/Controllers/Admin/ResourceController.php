@@ -7,58 +7,28 @@ use App\Http\Requests\Resource\BulkImageStoreRequest;
 use App\Http\Requests\Resource\BulkVideoStoreRequest;
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
-use App\Models\Node;
 use App\Models\Resource;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 
 class ResourceController extends Controller
 {
-
-    public function create(Request $request)
-    {
-        $node = Node::findOrFail($request->node_id);
-
-
-        return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' => url()->previous(),
-            'node' => $node
-        ]);
-    }
-    public function edit(Resource $resource)
-    {
-        $node = $resource->node;
-
-
-        return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' =>  url()->previous(),
-            'node' => $node,
-            'resource' => $resource,
-        ]);
-    }
-
     public function store(StoreResourceRequest $request)
     {
         $validated = $request->validated();
         $validated['user_id'] = Auth::id();
 
         if ($request->hasFile('file')) {
-            $path    = $request->file('file')->store("resources/{$validated['resource_type']}s");
+            $path = $request->file('file')->store("resources/{$validated['resource_type']}s");
             $validated['file_path'] = $path;
         }
 
         Resource::create($validated);
 
-        $redirect = $validated['redirect'] ?? explode('/resources', url()->previous())[0];
-
-
-        return redirect($redirect)->with('success', 'Resource created successfully.');
+        return back()->with('success', 'Resource created successfully.');
     }
-
 
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
@@ -78,10 +48,7 @@ class ResourceController extends Controller
 
         $resource->update($validated);
 
-        $redirect = $validated['redirect'] ?? '/admin/subjects';
-
-        return redirect($redirect)
-            ->with('success', 'Resource updated successfully.');
+        return back()->with('success', 'Resource updated successfully.');
     }
 
     public function destroy(Resource $resource)
@@ -95,19 +62,7 @@ class ResourceController extends Controller
         return redirect()->back()->with('success', 'Resource deleted successfully.');
     }
 
-    function createBulkImages(Request $request)
-    {
-        $redirect = $request->input('redirect', url()->previous());
-        $node = Node::findOrFail($request->node_id);
-
-
-        return Inertia::render('admin/resources/BulkImageCreate', [
-            'redirect' => $redirect,
-            'node' => $node
-        ]);
-    }
-
-    function storeBulkImages(BulkImageStoreRequest $request)
+    public function storeBulkImages(BulkImageStoreRequest $request)
     {
         $validated = $request->validated();
 
@@ -123,24 +78,10 @@ class ResourceController extends Controller
             }
         });
 
-
-        return redirect($validated['redirect'])->with('success', 'Bulk images uploaded successfully.');
+        return back()->with('success', 'Images uploaded successfully.');
     }
 
-    function createBulkVideos(Request $request)
-    {
-        $redirect = $request->input('redirect', url()->previous());
-        $node = Node::findOrFail($request->node_id);
-
-
-        return Inertia::render('admin/resources/BulkVideoCreate', [
-            'redirect' => $redirect,
-            'node' => $node
-        ]);
-    }
-
-
-    function storeBulkVideos(BulkVideoStoreRequest $request)
+    public function storeBulkVideos(BulkVideoStoreRequest $request)
     {
         $validated = $request->validated();
 
@@ -151,8 +92,8 @@ class ResourceController extends Controller
 
         $playlistId = $query['list'] ?? null;
 
-        if (!$playlistId) {
-            return back()->with("error", "Invalid Youtube URL");
+        if (! $playlistId) {
+            return back()->with('error', 'Invalid Youtube URL');
         }
 
         $videos = [];
@@ -167,8 +108,8 @@ class ResourceController extends Controller
                 'key' => config('services.youtube.key'),
             ]);
 
-            if (!$response->successful()) {
-                return back()->with("error", "Unable to fetch youtube url");
+            if (! $response->successful()) {
+                return back()->with('error', 'Unable to fetch youtube url');
             }
 
             $data = $response->json();
@@ -184,35 +125,22 @@ class ResourceController extends Controller
             $pageToken = $data['nextPageToken'] ?? null;
         } while ($pageToken);
 
-
         // Apply naming strategy
         foreach ($videos as $index => &$video) {
-
             if ($validated['naming_strategy'] === 'youtube') {
                 $video['title'] = $video['title'];
-            }
-
-            if ($validated['naming_strategy'] === 'serial') {
-                $video['title'] = str_pad(
-                    $request->start_number + $index,
-                    2,
-                    '0',
-                    STR_PAD_LEFT
-                );
-            }
-
-            if ($validated['naming_strategy'] === 'prefix') {
+            } else {
                 $number = str_pad(
-                    $validated['start_number'] + $index,
+                    ($validated['start_number'] ?? 1) + $index,
                     2,
                     '0',
                     STR_PAD_LEFT
                 );
 
-                $video['title'] = "{$validated['naming_prefix']} - {$number}";
+                $prefix = trim($validated['naming_prefix'] ?? '');
+                $video['title'] = $prefix !== '' ? "{$prefix} - {$number}" : $number;
             }
         }
-
 
         $userId = Auth::id();
 
@@ -230,6 +158,6 @@ class ResourceController extends Controller
             }
         });
 
-        return redirect($validated['redirect'])->with('success', 'Bulk Videos uploaded successfully.');
+        return back()->with('success', 'YouTube playlist imported successfully.');
     }
 }

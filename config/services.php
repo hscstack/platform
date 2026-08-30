@@ -46,5 +46,22 @@ return [
         'key' => env('YOUTUBE_API_KEY'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
+    'posthog' => [
+        'api_key' => env('POSTHOG_API_KEY'),
+        'host' => env('POSTHOG_HOST', 'https://us.i.posthog.com'),
+        'project_id' => env('POSTHOG_PROJECT_ID'),
+        'personal_api_key' => env('POSTHOG_PERSONAL_API_KEY'),
+    ],
+
+    'short_io' => [
+        'api_key' => env('SHORT_IO_API_KEY'),
+        'domain' => env('SHORT_IO_DOMAIN'),
+    ],
 
 ];

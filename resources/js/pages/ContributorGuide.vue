@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
-    ArrowLeft,
     UserPlus,
     CheckCircle2,
     ShieldAlert,
     HelpCircle,
     MessageCircle,
     Layers,
+    ChevronDown,
 } from 'lucide-vue-next';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 
 const quickLinks = [
+    { num: '00', id: 'faq', label: 'FAQ' },
     { num: '01', id: 'getting-started', label: 'Start Here' },
     { num: '02', id: 'dashboard', label: 'Dashboard' },
     { num: '03', id: 'manage-contents', label: 'Manage Contents' },
@@ -22,7 +26,103 @@ const quickLinks = [
     { num: '08', id: 'troubleshooting', label: 'Toast Messages' },
 ];
 
-const activeId = ref('getting-started');
+const activeId = ref('faq');
+const openFaqIndex = ref<number | null>(0);
+const INITIAL_FAQ_COUNT = 4;
+const isFaqExpanded = ref(false);
+
+const visibleFaqs = computed(() => {
+    return isFaqExpanded.value ? faqs : faqs.slice(0, INITIAL_FAQ_COUNT);
+});
+
+const toggleFaqExpand = () => {
+    isFaqExpanded.value = !isFaqExpanded.value;
+
+    if (
+        !isFaqExpanded.value &&
+        openFaqIndex.value !== null &&
+        openFaqIndex.value >= INITIAL_FAQ_COUNT
+    ) {
+        openFaqIndex.value = null;
+    }
+};
+
+const toggleFaq = (index: number) => {
+    openFaqIndex.value = openFaqIndex.value === index ? null : index;
+};
+
+const faqs = [
+    {
+        question: 'HSCStack কী এবং এটি কাদের জন্য?',
+        answer: 'HSCStack হলো বাংলাদেশের HSC ও SSC শিক্ষার্থীদের জন্য তৈরি একটি ওপেন রিসোর্স প্ল্যাটফর্ম। এখানে চ্যাপ্টার ও সাবজেক্ট অনুযায়ী প্রয়োজনীয় ক্লাস নোট, পিডিএফ, ছবি, ভিডিও এবং পরীক্ষার প্রশ্নপত্র একসাথে ফ্রি-তে খুঁজে পাওয়া যায়।',
+        type: 'text',
+    },
+    {
+        question: 'ওয়েবসাইট সম্পর্কিত নতুন আপডেট বা ঘোষণা কোথায় পাওয়া যাবে?',
+        answer: 'প্ল্যাটফর্মের সাম্প্রতিক ফিচার, কনটেন্ট আপডেট এবং গুরুত্বপূর্ণ সকল ঘোষণা পেতে ফলো করুন আমাদের অফিশিয়াল ',
+        linkText: 'Facebook পেজ',
+        linkUrl: 'https://facebook.com/hscstackbd',
+        answerAfter: '।',
+        type: 'externalLink',
+    },
+    {
+        question: 'ওয়েবসাইটটি কীভাবে অর্থায়ন করা হয়?',
+        answer: 'এটি একটি অলাভজনক উদ্যোগ। আমাদের কনট্রিবিউটর এবং শিক্ষার্থীরাই মূলত আমাদের আর্থিক অনুদান দিয়ে থাকেন। আমাদের সাপোর্ট করতে ভিজিট করুন ',
+        linkText: 'আমাদের সাপোর্ট পেজ',
+        linkUrl: '/donate',
+        answerAfter: '।',
+        type: 'link',
+    },
+    {
+        question: 'এটি কে বা কারা পরিচালনা করে?',
+        answer: 'এটি কোনো বাণিজ্যিক প্রতিষ্ঠান নয়; দেশজুড়ে ছড়িয়ে থাকা একদল উদ্যমী শিক্ষার্থী স্বেচ্ছাশ্রমে প্ল্যাটফর্মটি পরিচালনা ও কনটেন্ট কিউরেট করে থাকে। আমাদের টিম সম্পর্কে আরও জানতে পড়ুন ',
+        linkText: 'আমাদের কথা',
+        linkUrl: '/about-us',
+        answerAfter: '।',
+        type: 'link',
+    },
+    {
+        question: 'HSCStack কি ওপেন সোর্স?',
+        answer: 'হ্যাঁ! HSCStack সম্পূর্ণ ওপেন সোর্স একটি প্ল্যাটফর্ম। কোডবেসে কাজ করা, বাক ফিক্স করা কিংবা নতুন ফিচার যোগ করার জন্য আমাদের ',
+        linkText: 'GitHub রিপোজিটরি',
+        linkUrl: 'https://github.com/hscstack/platform',
+        answerAfter: ' ভিজিট করতে পারো।',
+        type: 'externalLink',
+    },
+    {
+        question: 'রিসোর্স দেখার জন্য কি কোনো অ্যাকাউন্ট তৈরি করতে হবে?',
+        answer: 'না, রিসোর্স খোঁজা, পড়া বা ডাউনলোড করার জন্য কোনো অ্যাকাউন্ট খোলার প্রয়োজন নেই। যেকোনো শিক্ষার্থী ফ্রিতে সরাসরি রিসোর্সগুলো ব্রাউজ ও ব্যবহার করতে পারবে।',
+        type: 'text',
+    },
+    {
+        question: 'আমি কি আমার তৈরি নোট বা রিসোর্স আপলোড করতে পারব?',
+        answer: 'কনটেন্টের মান এবং নির্ভুলতা নিশ্চিত করতে রিসোর্স আপলোডের সুবিধাটি শুধুমাত্র ভেরিফাইড মেম্বারদের জন্য নির্ধারিত। মেম্বারশিপের আবেদন করতে ',
+        linkText: 'এখানে ক্লিক করুন',
+        linkUrl: '/join',
+        answerAfter: '।',
+        type: 'link',
+    },
+    {
+        question: 'এখানে কী কী ধরনের স্টাডি মেটেরিয়াল পাওয়া যাবে?',
+        answer: 'এখানে অধ্যায়ভিত্তিক হ্যান্ডরিটেন নোটস, লেকচার শিট, সাজেস্টভ প্রশ্ন ব্যাঙ্ক, ডায়াগ্রাম এবং বিভিন্ন প্রয়োজনীয় টিউটোরিয়াল ও প্র্যাক্টিক্যাল গাইড পাওয়া যাবে।',
+        type: 'text',
+    },
+    {
+        question: 'ওয়েবসাইটটি ফোনে অ্যাপ হিসেবে ব্যবহার করা যাবে?',
+        answer: 'হ্যাঁ, প্ল্যাটফর্মটি PWA (Progressive Web App) সাপোর্টেড। ব্রাউজারের "Add to Home Screen" বা ইনস্টল পপআপ থেকে এক ক্লিকেই অ্যাপের মতো ফোনে ইনস্টল করে নেওয়া যায়।',
+        type: 'text',
+    },
+    {
+        question:
+            'ডেভেলপমেন্টে সাহায্য করতে বা কোড কন্ট্রিবিউট করতে চাইলে করণীয় কী?',
+        answer: 'HSCStack-এর ওপেন ডেভেলপমেন্ট টিমে যোগ দিতে আমাদের ',
+        linkText: 'আবেদন ফর্মে',
+        linkUrl: '/join',
+        answerAfter:
+            ' অ্যাপ্লাই করতে পারো। আবেদন গৃহীত হলে কোর ডেভেলপার হিসেবে কোডবেসে কাজ করার সুযোগ মিলবে।',
+        type: 'link',
+    },
+];
 let observer: IntersectionObserver | null = null;
 let isManualClick = false;
 let clickTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -101,16 +201,23 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header class="mx-auto max-w-4xl px-4 pt-8 pb-4 text-center sm:pt-12">
-        <Link
-            href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-4 w-4 transition-transform group-hover:-translate-x-1"
-            />
-            Back to Home
-        </Link>
+    <Head>
+        <title>Contributor Handbook & Guidelines</title>
+        <meta
+            name="description"
+            content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."
+        />
+        <meta
+            property="og:title"
+            content="Contributor Handbook & Guidelines - HSCStack"
+        />
+        <meta
+            property="og:description"
+            content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."
+        />
+    </Head>
+
+    <header class="mx-auto max-w-4xl px-4 pt-6 pb-4 text-center sm:pt-10">
         <h1
             class="mb-3 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
@@ -143,7 +250,7 @@ onUnmounted(() => {
                 </div>
                 <span
                     class="text-[11px] font-bold text-slate-400 dark:text-gray-500"
-                    >8 Chapters</span
+                    >9 Sections</span
                 >
             </div>
 
@@ -182,6 +289,106 @@ onUnmounted(() => {
         <div
             class="space-y-12 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-10 dark:border-gray-700 dark:bg-gray-900"
         >
+            <!-- Section 00: FAQ (Frequently Asked Questions) -->
+            <section
+                id="faq"
+                class="scroll-mt-44 space-y-5 border-b border-slate-100 pb-12 dark:border-gray-800"
+            >
+                <div class="flex items-center gap-2">
+                    <span
+                        class="inline-flex items-center justify-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-black text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                        >00</span
+                    >
+                    <h2
+                        class="text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
+                    >
+                        Frequently Asked Questions (FAQ)
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
+                >
+                    HSCStack প্ল্যাটফর্ম সম্পর্কিত সাধারণ প্রশ্ন ও উত্তর:
+                </p>
+
+                <div class="space-y-3 pt-2">
+                    <div
+                        v-for="(faq, index) in visibleFaqs"
+                        :key="index"
+                        class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/50 transition-colors dark:border-gray-800 dark:bg-gray-800/40"
+                    >
+                        <button
+                            type="button"
+                            @click="toggleFaq(index)"
+                            class="flex w-full items-center justify-between gap-4 p-4 text-left font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                        >
+                            <span class="text-sm sm:text-base">{{
+                                faq.question
+                            }}</span>
+                            <ChevronDown
+                                class="h-4 w-4 shrink-0 transition-transform duration-200"
+                                :class="{
+                                    'rotate-180 text-indigo-600 dark:text-indigo-400':
+                                        openFaqIndex === index,
+                                }"
+                            />
+                        </button>
+
+                        <div
+                            v-show="openFaqIndex === index"
+                            class="border-t border-slate-100 px-4 pt-3 pb-4 text-sm leading-relaxed text-slate-600 dark:border-gray-800 dark:text-gray-300"
+                        >
+                            <template v-if="faq.type === 'text'">
+                                {{ faq.answer }}
+                            </template>
+                            <template v-else-if="faq.type === 'link'">
+                                {{ faq.answer }}
+                                <Link
+                                    :href="faq.linkUrl"
+                                    class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
+                                >
+                                    {{ faq.linkText }}
+                                </Link>
+                                {{ faq.answerAfter }}
+                            </template>
+                            <template v-else-if="faq.type === 'externalLink'">
+                                {{ faq.answer }}
+                                <a
+                                    :href="faq.linkUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
+                                >
+                                    {{ faq.linkText }}
+                                </a>
+                                {{ faq.answerAfter }}
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Expand / Collapse Toggle -->
+                    <div
+                        v-if="faqs.length > INITIAL_FAQ_COUNT"
+                        class="pt-2 text-center"
+                    >
+                        <button
+                            type="button"
+                            @click="toggleFaqExpand"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300"
+                        >
+                            <span v-if="!isFaqExpanded"
+                                >Show all {{ faqs.length }} questions</span
+                            >
+                            <span v-else>Show less</span>
+                            <ChevronDown
+                                class="h-3.5 w-3.5 transition-transform duration-200"
+                                :class="{ 'rotate-180': isFaqExpanded }"
+                            />
+                        </button>
+                    </div>
+                </div>
+            </section>
+
             <!-- Section 01: Welcome & Getting Started -->
             <section id="getting-started" class="scroll-mt-44 space-y-5">
                 <div class="flex items-center gap-2">
@@ -207,7 +414,9 @@ onUnmounted(() => {
                     কোনো technical জ্ঞানের প্রয়োজন নেই।
                 </p>
 
+                <!-- Become Contributor CTA (Only for guests) -->
                 <div
+                    v-if="!user"
                     class="flex flex-col items-start justify-between gap-4 rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 sm:flex-row sm:items-center sm:p-6 dark:border-indigo-500/30 dark:bg-indigo-500/10"
                 >
                     <div class="flex items-start gap-3.5">
@@ -242,9 +451,8 @@ onUnmounted(() => {
                     class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
                 >
                     আপনার account approve হওয়ার পর, আপনি কী ধরনের কাজ করবেন তার
-                    ভিত্তিতে আপনাকে একটি নির্দিষ্ট role প্রদান করা হবে, এবং সেই
-                    সাথে আপনার ব্যক্তিগত login credentials (email ও password)
-                    পাঠানো হবে।
+                    ভিত্তিতে আপনাকে একটি নির্দিষ্ট role প্রদান করা হবে, এবং আপনি
+                    আপনার Google account দিয়ে সরাসরি login করতে পারবেন।
                 </p>
             </section>
 
@@ -638,9 +846,10 @@ onUnmounted(() => {
                         class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
                     >
                         যেকোনো সময় আপনি আপনার account details update করতে
-                        পারবেন। Profile photo-এর জন্য Imgur বা PostImages-এর মতো
-                        কোনো service-এ ছবি আপলোড করে, সেই direct link আপনার
-                        profile-এ ব্যবহার করুন।
+                        পারবেন। Profile photo সরাসরি আপলোড করুন — PNG, JPG বা
+                        WEBP ফরম্যাটে, সর্বোচ্চ 2MB সাইজের মধ্যে। এছাড়া bio,
+                        institution, এবং social links (Facebook, Instagram,
+                        GitHub) যোগ করতে পারবেন।
                     </p>
                 </div>
             </section>
@@ -716,17 +925,17 @@ onUnmounted(() => {
                     class="mx-auto max-w-md text-xs leading-relaxed font-normal text-slate-300 sm:text-sm"
                 >
                     কোনো সমস্যায় পড়লে বা কোনো specific section manage করার
-                    permission প্রয়োজন হলে, সরাসরি WhatsApp-এ যোগাযোগ করুন।
+                    permission প্রয়োজন হলে, সরাসরি আমাদের সাথে যোগাযোগ করুন।
                 </p>
                 <div class="pt-2">
                     <a
-                        href="https://wa.me/8801909131512"
+                        href="https://facebook.com/hscstackbd"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 sm:w-auto sm:text-sm"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-500 sm:w-auto sm:text-sm"
                     >
                         <MessageCircle class="h-4 w-4" />
-                        Chat on WhatsApp
+                        Message us
                     </a>
                 </div>
             </div>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
-    ArrowLeft,
     Megaphone,
     FolderHeart,
     MessageSquare,
@@ -68,29 +67,28 @@ const currentRoleTitle = computed(() => {
     );
 });
 
-// ডাইনামিক হোয়াটসঅ্যাপ লিংক জেনারেটর
-const whatsappLink = computed(() => {
-    const baseNumber = '8801909131512';
-    const text = encodeURIComponent(
-        `Hello, I want to join as a ${currentRoleTitle.value}.`,
-    );
-
-    return `https://wa.me/${baseNumber}?text=${text}`;
-});
+const facebookPageUrl = 'https://facebook.com/hscstackbd';
 </script>
 
 <template>
+    <Head>
+        <title>Join the Team - Become a Contributor</title>
+        <meta
+            name="description"
+            content="Join HSCStack as a Campus Promoter, Resource Curator, Social Media Moderator, Blog Writer, or Software Developer."
+        />
+        <meta
+            property="og:title"
+            content="Join the Team - Become a Contributor - HSCStack"
+        />
+        <meta
+            property="og:description"
+            content="Join HSCStack as a Campus Promoter, Resource Curator, Social Media Moderator, Blog Writer, or Software Developer."
+        />
+    </Head>
+
     <!-- Header -->
-    <header class="mx-auto max-w-3xl px-4 pt-12 pb-10 text-center sm:pt-16">
-        <Link
-            href="/"
-            class="group mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
-            />
-            Back to Home
-        </Link>
+    <header class="mx-auto max-w-3xl px-4 pt-8 pb-8 text-center sm:pt-12">
         <h1
             class="mb-4 text-4xl leading-tight font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
@@ -208,14 +206,16 @@ const whatsappLink = computed(() => {
                             <h4
                                 class="text-xs font-bold text-slate-900 dark:text-gray-100"
                             >
-                                About Us Recognition
+                                About Us Recognition & Verified Badge
                             </h4>
                             <p
                                 class="mt-1 text-xs leading-relaxed font-medium text-slate-800 dark:text-gray-200"
                             >
                                 আমাদের অনুমোদিত প্রমোটর, কিউরেটর, মডারেটর,
-                                রাইটার এবং ডেভেলপারদের অবদানকে সম্মান জানাতে
-                                আমাদের অফিশিয়াল
+                                রাইটার এবং ডেভেলপারদের প্রোফাইলে একটি অফিশিয়াল
+                                <strong>Verified Contributor Badge</strong>
+                                যুক্ত হবে এবং তাদের অবদানকে সম্মান জানাতে আমাদের
+                                অফিশিয়াল
                                 <strong
                                     class="text-blue-800 underline dark:text-blue-300"
                                     ><Link href="/about-us"
@@ -242,13 +242,13 @@ const whatsappLink = computed(() => {
                         </p>
 
                         <a
-                            :href="whatsappLink"
+                            :href="facebookPageUrl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none active:scale-[0.98]"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/20 focus:outline-none active:scale-[0.98]"
                         >
                             <MessageSquareShare class="h-4 w-4" />
-                            Message on WhatsApp
+                            Message us
                         </a>
                     </div>
                 </div>

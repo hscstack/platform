@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Blog;
+use App\Models\Notice;
 use App\Models\Resource;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -37,7 +38,13 @@ class DeleteUnusedImages extends Command
                 ->toArray()
         );
 
-
+        $this->cleanDirectory(
+            'notices',
+            Notice::whereNotNull('image')
+                ->where('image', 'not like', 'http%')
+                ->pluck('image')
+                ->toArray()
+        );
 
         $this->info('Done.');
     }
@@ -47,10 +54,10 @@ class DeleteUnusedImages extends Command
         $files = Storage::allFiles($directory);
 
         foreach ($files as $file) {
-            if (!in_array($file, $usedFiles, true)) {
+            if (! in_array($file, $usedFiles, true)) {
                 $this->line("Unused: {$file}");
 
-                if (!$this->option('dry-run')) {
+                if (! $this->option('dry-run')) {
                     Storage::delete($file);
                 }
             }

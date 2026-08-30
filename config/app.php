@@ -15,6 +15,11 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'version' => env('APP_VERSION')
+        ?: (file_exists(base_path('version.txt')) ? trim((string) file_get_contents(base_path('version.txt'))) : null)
+        ?: trim((string) @exec('git describe --tags --abbrev=0 2>/dev/null'))
+        ?: 'v2.5.0',
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -123,8 +128,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'admin_email'    => env('ADMIN_EMAIL'),
-    'admin_name'     => env('ADMIN_NAME', 'ADMIN'),
-    'admin_password' => env('ADMIN_PASSWORD'),
+    'admin_email' => env('ADMIN_EMAIL'),
+    'admin_name' => env('ADMIN_NAME', 'ADMIN'),
 
 ];

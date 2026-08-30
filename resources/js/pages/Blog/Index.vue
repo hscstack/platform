@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router, Link } from '@inertiajs/vue3';
+import { router, Link, Head } from '@inertiajs/vue3';
 import { Search, X, ArrowRight, AlertTriangle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
@@ -23,6 +23,22 @@ const clearSearch = () => {
 </script>
 
 <template>
+    <Head>
+        <title>Educational Blogs & Study Guides</title>
+        <meta
+            name="description"
+            content="Read study tips, educational articles, subject advice, and preparation guides for HSC and SSC students on HSCStack."
+        />
+        <meta
+            property="og:title"
+            content="Educational Blogs & Study Guides - HSCStack"
+        />
+        <meta
+            property="og:description"
+            content="Read study tips, educational articles, subject advice, and preparation guides for HSC and SSC students on HSCStack."
+        />
+    </Head>
+
     <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div
             class="mb-10 flex flex-col gap-6 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800"
@@ -53,7 +69,7 @@ const clearSearch = () => {
                             type="text"
                             placeholder="আর্টিকেল খুঁজুন..."
                             @keyup.enter="handleSearch"
-                            class="w-full rounded-xl border border-slate-200 py-3 pr-10 pl-11 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
+                            class="w-full rounded-xl border border-slate-200 bg-white py-3 pr-10 pl-11 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                         />
 
                         <button
@@ -81,7 +97,7 @@ const clearSearch = () => {
 
         <div
             v-if="blogs.data.length > 0"
-            class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
+            class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8"
         >
             <BlogCard v-for="blog in blogs.data" :key="blog.id" :blog="blog" />
         </div>

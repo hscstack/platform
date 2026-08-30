@@ -1,8 +1,9 @@
 <?php
 
+use App\Models\Subject;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 test('guests cannot access the admin dashboard', function () {
     $response = $this->get('/admin/');
@@ -52,4 +53,109 @@ test('authorized users can access the admin dashboard through a role with view a
     $response = $this->actingAs($user)->get('/admin/');
 
     $response->assertStatus(200);
+});
+
+test('authenticated user can view their profile', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/profile');
+
+    $response->assertStatus(200);
+});
+
+test('authenticated user can update their profile without changing email', function () {
+    $user = User::factory()->create([
+        'name' => 'Old Name',
+        'email' => 'original@example.com',
+    ]);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => 'New Name',
+        'email' => 'changed@example.com',
+        'institution' => 'Tech Corp',
+        'facebook' => 'https://facebook.com/new',
+        'github' => 'https://github.com/new',
+        'instagram' => 'https://instagram.com/new',
+        'about' => 'Hello world bio',
+    ]);
+
+    $response->assertRedirect(route('profile.edit'));
+    $response->assertSessionHas('success', 'Profile updated successfully.');
+    expect($user->fresh()->name)->toBe('New Name')
+        ->and($user->fresh()->institution)->toBe('Tech Corp')
+        ->and($user->fresh()->email)->toBe('original@example.com');
+});
+
+test('non-authorized users cannot access admin user edit route without edit users permission', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+    $targetUser = User::factory()->create();
+
+    $response = $this->actingAs($admin)->get("/admin/users/edit/{$targetUser->id}");
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
+});
+
+test('users with edit users permission can access admin user edit route', function () {
+    $admin = adminUserWithPermissions(['view admin', 'edit users']);
+    $targetUser = User::factory()->create();
+
+    $response = $this->actingAs($admin)->get("/admin/users/edit/{$targetUser->id}");
+
+    $response->assertStatus(200);
+});
+
+test('users without view users permission cannot access admin users list', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+
+    $response = $this->actingAs($admin)->get('/admin/users');
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
+});
+
+test('users with view users permission can access admin users list', function () {
+    $admin = adminUserWithPermissions(['view admin', 'view users']);
+
+    $response = $this->actingAs($admin)->get('/admin/users');
+
+    $response->assertStatus(200);
+});
+
+test('users without create subjects permission cannot create subjects via post', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+
+    $response = $this->actingAs($admin)->post('/admin/subjects', [
+        'name' => 'Unauthorized Subject',
+    ]);
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
+});
+
+test('users without create blogs permission cannot view blog create page', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+
+    $response = $this->actingAs($admin)->get('/admin/blogs/create');
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
+});
+
+test('users without create nodes permission cannot create node via post', function () {
+    $admin = adminUserWithPermissions(['view admin']);
+    $subject = Subject::create([
+        'name' => 'Chemistry',
+        'slug' => 'chemistry',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-emerald-500',
+        'icon' => 'flask',
+    ]);
+
+    $response = $this->actingAs($admin)->post("/admin/subjects/{$subject->id}/nodes", [
+        'name' => 'Unauthorized Folder',
+    ]);
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('error', 'You do not have permission to perform this action.');
 });

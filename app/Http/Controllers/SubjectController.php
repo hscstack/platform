@@ -6,38 +6,50 @@ use App\Models\Blog;
 use App\Models\Node;
 use App\Models\Notice;
 use App\Models\Subject;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class SubjectController extends Controller
 {
-    public function index($course)
+    public function index(Request $request, $course)
     {
-        $homeData = Cache::rememberForever("home_page_data_{$course}", function () use ($course) {
-            $subjects = Subject::orderBy('sort_order', 'asc')
+        // If visiting root '/' and user explicitly preferred 'ssc', redirect cleanly on server side
+        if ($request->path() === '/' && $request->cookie('preferred_course') === 'ssc') {
+            return redirect('/ssc');
+        }
+        $subjects = Cache::rememberForever("home_page_subjects_{$course}", function () use ($course) {
+            return Subject::orderBy('sort_order', 'asc')
                 ->where('course', $course)
                 ->withCount([
                     'nodes' => function ($query) {
                         $query->whereNull('parent_id');
-                    }
+                    },
                 ])
-                ->get();
-
-
-            return  [
-                'subjects' => $subjects->toArray(),
-                'featured_blogs' => Blog::where('is_featured', true)
-                    ->where('is_published', true)
-                    ->with('user:id,name')
-                    ->latest()
-                    ->limit(3)
-                    ->get()
-                    ->toArray(),
-                'notice' => Notice::activeForDisplay()?->toArray(),
-            ];
+                ->get()
+                ->toArray();
         });
 
-        return Inertia::render('Home', $homeData);
+        $featuredBlogs = Cache::remember('home_page_featured_blogs', now()->addDay(), function () {
+            return Blog::where('is_featured', true)
+                ->where('is_published', true)
+                ->with('user:id,name,username')
+                ->withCount(['reactions', 'comments'])
+                ->inRandomOrder()
+                ->limit(3)
+                ->get()
+                ->toArray();
+        });
+
+        $notice = Cache::rememberForever('home_page_notice', function () {
+            return Notice::activeForDisplay()?->toArray();
+        });
+
+        return Inertia::render('Home', [
+            'subjects' => $subjects,
+            'featured_blogs' => $featuredBlogs,
+            'notice' => $notice,
+        ]);
     }
 
     public function show(Subject $subject)
@@ -45,16 +57,21 @@ class SubjectController extends Controller
         $nodes = Cache::rememberForever("subject_page_{$subject->id}", function () use ($subject) {
             return Node::where('subject_id', $subject->id)
                 ->whereNull('parent_id')
+                ->withCount(['children', 'resources', 'upvotes', 'downvotes'])
                 ->orderBy('sort_order')
-                ->withCount(['children', 'resources'])
                 ->get(['id', 'name', 'slug'])->toArray();
         });
 
         return Inertia::render('Node', [
             'subject' => $subject,
+            'currentNode' => null,
             'nodes' => $nodes,
             'breadcrumb' => [],
             'resources' => [],
+            'upvotesCount' => 0,
+            'downvotesCount' => 0,
+            'userVote' => null,
+            'upvoters' => [],
         ]);
     }
 }

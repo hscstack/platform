@@ -11,7 +11,7 @@ class AboutUsController extends Controller
     public function index()
     {
         $users = Cache::rememberForever('about_us_info', function () {
-            return User::with('roles')->get()->toArray();
+            return User::has('roles')->with('roles')->get()->toArray();
         });
 
         return Inertia::render('platform/AboutUs', [

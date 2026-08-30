@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { ArrowLeft } from 'lucide-vue-next';
+import { Head, Link } from '@inertiajs/vue3';
 import UserCard from '@/components/UserCard.vue';
 
 defineProps({
     users: Array,
 });
-const goBack = () => {
-    window.history.back();
-};
 </script>
 
 <template>
-    <header class="mx-auto max-w-4xl px-4 pt-16 pb-14 text-center sm:pt-20">
-        <button
-            @click="goBack"
-            class="group mb-5 inline-flex items-center gap-2 text-xs font-bold text-slate-400 transition-colors hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400"
-        >
-            <ArrowLeft
-                class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
-            />
-            Go Back
-        </button>
+    <Head>
+        <title>About Us & Core Team</title>
+        <meta
+            name="description"
+            content="Meet the creators, developers, campus promoters, and resource curators behind HSCStack."
+        />
+        <meta property="og:title" content="About Us & Core Team - HSCStack" />
+        <meta
+            property="og:description"
+            content="Meet the creators, developers, campus promoters, and resource curators behind HSCStack."
+        />
+    </Head>
+
+    <header class="mx-auto max-w-4xl px-4 pt-8 pb-10 text-center sm:pt-12">
         <h1
             class="text-4xl font-black tracking-tight text-slate-950 sm:text-6xl dark:text-gray-100"
         >
@@ -38,15 +38,14 @@ const goBack = () => {
                 v-for="member in users"
                 :key="member.name"
                 :member="member"
-                :id="member.id"
             />
 
             <div
-                class="flex flex-col justify-between rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/40 p-8 text-center dark:border-gray-700 dark:bg-gray-800/40"
+                class="flex flex-col justify-between rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center shadow-xs dark:border-gray-800 dark:bg-gray-900/40"
             >
-                <div class="my-auto space-y-3 py-8">
+                <div class="my-auto space-y-2.5 py-6">
                     <h3
-                        class="text-lg font-extrabold text-slate-900 dark:text-gray-100"
+                        class="text-base font-extrabold text-slate-900 dark:text-gray-100"
                     >
                         Want your card here?
                     </h3>
@@ -60,7 +59,7 @@ const goBack = () => {
                 </div>
                 <Link
                     href="/join"
-                    class="inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-xs font-bold text-white shadow-sm transition-all hover:bg-slate-900 active:scale-[0.98] dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    class="inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-slate-800 active:scale-[0.98] dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                 >
                     Apply for a Role
                 </Link>

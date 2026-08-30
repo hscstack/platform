@@ -34,7 +34,7 @@ return new class extends Migration
                     DB::table('resources')
                         ->where('id', $resource->id)
                         ->update([
-                            'file_path' => 'storage/' . ltrim($resource->file_path, '/'),
+                            'file_path' => 'storage/'.ltrim($resource->file_path, '/'),
                         ]);
                 }
             });

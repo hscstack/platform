@@ -16,6 +16,16 @@ class UpdateSubjectRequest extends FormRequest
     {
         return true;
     }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('slug')) {
+            $this->merge([
+                'slug' => Str::slug($this->slug),
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -26,11 +36,12 @@ class UpdateSubjectRequest extends FormRequest
         $subject = $this->route('subject');
 
         return [
-            'name'            => ['sometimes', 'string', 'max:100', 'min:3', Rule::unique('subjects', 'name')->ignore($subject->id),],
+            'name' => ['sometimes', 'string', 'max:100', 'min:3', Rule::unique('subjects', 'name')->ignore($subject->id)],
+            'english_name' => ['nullable', 'string', 'max:100'],
             'tailwind_format' => ['sometimes', 'string', 'max:100'],
-            'icon'            => ['sometimes', 'string', 'max:50'],
-            'sort_order'      => ['sometimes', 'integer'],
-            'slug'            => ['sometimes', 'string'],
+            'icon' => ['sometimes', 'string', 'max:50'],
+            'sort_order' => ['sometimes', 'integer'],
+            'slug' => ['sometimes', 'string', 'max:100', Rule::unique('subjects', 'slug')->ignore($subject->id)],
             'course' => ['sometimes', 'string', 'in:ssc,hsc'],
         ];
     }

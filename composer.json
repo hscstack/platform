@@ -12,11 +12,12 @@
         "php": "^8.3",
         "google/apiclient": "^2.15",
         "inertiajs/inertia-laravel": "^3.0",
-        "jaybizzle/crawler-detect": "^1.4",
         "laravel/framework": "^13.7",
+        "laravel/socialite": "^5.30",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
         "league/flysystem-aws-s3-v3": "^3.35",
+        "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-permission": "^8.0",
         "spatie/laravel-sitemap": "^8.0"
     },

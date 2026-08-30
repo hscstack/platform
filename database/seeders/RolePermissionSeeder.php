@@ -63,18 +63,32 @@ class RolePermissionSeeder extends Seeder
 
         /*
          * User management.
-         * Includes creating, editing, deleting users,
-         * assigning roles, and assigning permissions.
          */
-        Permission::findOrCreate('manage users');
+        Permission::findOrCreate('view users');
+        Permission::findOrCreate('create users');
+        Permission::findOrCreate('edit users');
+        Permission::findOrCreate('delete users');
+        Permission::findOrCreate('impersonate users');
+
+        /*
+         * Email management
+         */
+        Permission::findOrCreate('send email');
 
         /*
          * Maintenance
          */
         Permission::findOrCreate('clear cache');
 
+        /*
+         * Global Chat management
+         */
+        Permission::findOrCreate('manage chat');
 
-
+        /*
+         * Support Ticket management
+         */
+        Permission::findOrCreate('manage tickets');
 
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
@@ -90,7 +104,6 @@ class RolePermissionSeeder extends Seeder
         ]);
         // Managers can access the admin panel.
         // Additional manager permissions can be added here in the future if needed.
-
 
     }
 }

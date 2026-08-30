@@ -15,13 +15,6 @@ class UpdateUserRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
-        if (!$this->filled('password')) {
-            $this->replace($this->except('password'));
-        }
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -32,23 +25,29 @@ class UpdateUserRequest extends FormRequest
         $user = $this->route('user');
 
         $rules = [
-            'name'        => ['sometimes', 'string', 'max:255'],
-            'email'       => ['sometimes', 'email', 'unique:users,email,' . $user->id],
-            'password'    => ['sometimes', 'nullable', 'string', 'min:6'],
-            'file'        => ['sometimes', 'nullable', 'image', 'max:2048'],
-            'about'       => ['sometimes', 'nullable', 'string'],
-            'title'       => ['sometimes', 'nullable', 'string'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'username' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[a-zA-Z0-9_]+$/',
+                'unique:users,username,'.$user->id,
+            ],
+            'email' => ['sometimes', 'email', 'unique:users,email,'.$user->id],
+            'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
+            'about' => ['sometimes', 'nullable', 'string'],
+            'title' => ['sometimes', 'nullable', 'string'],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'facebook'    => ['sometimes', 'nullable', 'string', 'max:255'],
-            'instagram'   => ['sometimes', 'nullable', 'string', 'max:255'],
-            'github'      => ['sometimes', 'nullable', 'string', 'max:255'],
+            'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'github' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'role' => ['sometimes', 'nullable', 'string'],
+            'permissions' => ['sometimes', 'nullable', 'array'],
+            'permissions.*' => ['string', 'exists:permissions,name'],
+            'chat_banned_until' => ['sometimes', 'nullable', 'date'],
         ];
-
-        if ($this->user()->can('manage users')) {
-            $rules['role'] = ['sometimes', 'string'];
-            $rules['permissions'] = ['sometimes', 'array'];
-            $rules['permissions.*'] = ['string', 'exists:permissions,name'];
-        }
 
         return $rules;
     }

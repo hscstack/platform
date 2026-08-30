@@ -1,30 +1,65 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
 import {
     LayoutDashboard,
     Users,
     BookOpen,
     Bell,
     Book,
-    User,
+    Mail,
+    MessageCircle,
+    LifeBuoy,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import DesktopSidebar from '@/components/admin/DesktopSidebar.vue';
 import MobileSideBar from '@/components/admin/MobileSideBar.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import NavBar from '@/components/NavBar.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 const isMobileSidebarOpen = ref(false);
-const myId = usePage().props.auth.user.id;
-const navigation = [
+
+const allNavigation = [
     { name: 'Dashboard', to: '/admin', icon: LayoutDashboard },
     { name: 'Manage Contents', to: '/admin/subjects', icon: BookOpen },
     { name: 'Manage Blogs', to: '/admin/blogs', icon: Book },
-    { name: 'Site Notice', to: '/admin/notice', icon: Bell },
-    { name: 'Users', to: '/admin/users', icon: Users },
-    { name: 'My Profile', to: `/admin/users/edit/${myId}`, icon: User },
+    {
+        name: 'Support Tickets',
+        to: '/admin/tickets',
+        icon: LifeBuoy,
+        permission: 'manage tickets',
+    },
+    {
+        name: 'Site Notice',
+        to: '/admin/notice',
+        icon: Bell,
+        permission: 'edit notice',
+    },
+    {
+        name: 'Global Chat',
+        to: '/admin/chat',
+        icon: MessageCircle,
+        permission: 'manage chat',
+    },
+    {
+        name: 'Users',
+        to: '/admin/users',
+        icon: Users,
+        permission: 'view users',
+    },
+    {
+        name: 'Send Emails',
+        to: '/admin/emails/send',
+        icon: Mail,
+        permission: 'send email',
+    },
 ];
+
+const navigation = computed(() =>
+    allNavigation.filter((item) => !item.permission || can(item.permission)),
+);
 
 const openMobileSidebar = () => {
     isMobileSidebarOpen.value = true;
@@ -38,41 +73,31 @@ const closeMobileSidebar = () => {
 <template>
     <LoadingSpinner />
     <div
-        class="relative min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-indigo-600 selection:text-white dark:bg-gray-950 dark:text-gray-100"
+        class="min-h-screen bg-slate-100/70 font-sans text-slate-900 antialiased selection:bg-indigo-600 selection:text-white dark:bg-gray-950 dark:text-gray-100"
     >
-        <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-            <div
-                class="absolute -top-[30%] left-1/2 h-[900px] w-[1200px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.18)_0%,rgba(165,180,252,0.05)_50%,transparent_70%)] blur-[120px] dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.06)_0%,rgba(165,180,252,0.02)_50%,transparent_70%)]"
-            ></div>
-            <div
-                class="absolute top-[20%] -right-[10%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.15)_0%,transparent_65%)] blur-[100px] dark:bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.05)_0%,transparent_65%)]"
-            ></div>
-            <div
-                class="absolute -bottom-[10%] -left-[10%] h-[700px] w-[700px] rounded-full bg-[radial-gradient(circle_at_center,rgba(244,63,94,0.06)_0%,transparent_70%)] blur-[110px] dark:bg-[radial-gradient(circle_at_center,rgba(244,63,94,0.02)_0%,transparent_70%)]"
-            ></div>
-        </div>
-
-        <div class="relative z-10 flex min-h-screen flex-col">
+        <div class="flex min-h-screen flex-col">
             <NavBar :is-admin="true" />
 
+            <!-- Mobile Subheader / Menu Bar -->
             <div
-                class="flex items-center gap-3 border-b border-slate-200/80 bg-white/60 px-4 py-3 backdrop-blur-md md:hidden dark:border-gray-700/80 dark:bg-gray-900/60"
+                class="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 shadow-2xs md:hidden dark:border-gray-800 dark:bg-gray-900"
             >
                 <button
                     @click="openMobileSidebar"
-                    class="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                    class="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 active:bg-slate-200 dark:text-gray-400 dark:hover:bg-gray-800"
                 >
                     ☰
                 </button>
                 <span
-                    class="text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                    >Dashboard Menu</span
+                    class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-gray-400"
+                    >Menu</span
                 >
             </div>
 
             <div class="flex flex-1">
+                <!-- Sidebar -->
                 <aside
-                    class="hidden w-64 border-r border-slate-200/80 bg-white/40 backdrop-blur-md md:block dark:border-gray-700/80 dark:bg-gray-900/40"
+                    class="hidden w-64 shrink-0 border-r border-slate-200/90 bg-white md:block dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div
                         class="sticky top-16 flex h-[calc(100vh-4rem)] flex-col justify-between p-4"
@@ -87,8 +112,15 @@ const closeMobileSidebar = () => {
                     @close="closeMobileSidebar"
                 />
 
-                <main class="flex flex-1 flex-col overflow-x-hidden p-6 lg:p-8">
-                    <slot />
+                <!-- Main Content Area -->
+                <main
+                    class="flex flex-1 flex-col overflow-x-hidden p-3.5 sm:p-6 lg:p-8"
+                >
+                    <div
+                        class="flex w-full flex-1 flex-col rounded-xl border border-slate-200/90 bg-white p-4.5 shadow-2xs sm:p-7 md:p-8 dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <slot />
+                    </div>
                 </main>
             </div>
         </div>

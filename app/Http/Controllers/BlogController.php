@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BlogNotificationMail;
 use App\Models\Blog;
+use App\Models\BlogComment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class BlogController extends Controller
@@ -22,7 +25,8 @@ class BlogController extends Controller
                 'views',
                 'created_at',
             ])
-            ->with('user:id,name')
+            ->with('user:id,name,username')
+            ->withCount(['reactions', 'comments'])
             ->where('is_published', true);
 
         if ($request->filled('q')) {
@@ -52,12 +56,97 @@ class BlogController extends Controller
     {
         abort_unless($blog->is_published, 404);
 
-        $blog->load('user:id,name');
-
+        $blog->load('user:id,name,username,image_path');
         $blog->increment('views');
+
+        $reactionsCount = $blog->reactions()->count();
+
+        $reactors = $blog->reactions()
+            ->with(['user:id,name,username,image_path,institution'])
+            ->latest('id')
+            ->limit(50)
+            ->get()
+            ->pluck('user')
+            ->filter()
+            ->values();
+
+        $comments = $blog->comments()
+            ->with(['user:id,name,username,image_path,institution'])
+            ->latest()
+            ->get();
+
+        $isReacted = auth()->check()
+            ? $blog->reactions()->where('user_id', auth()->id())->exists()
+            : false;
 
         return Inertia::render('Blog/Show', [
             'blog' => $blog,
+            'reactionsCount' => $reactionsCount,
+            'isReacted' => $isReacted,
+            'reactors' => $reactors,
+            'comments' => $comments,
         ]);
+    }
+
+    public function toggleReaction(Blog $blog)
+    {
+        $user = auth()->user();
+        $existing = $blog->reactions()->where('user_id', $user->id)->first();
+
+        if ($existing) {
+            $existing->delete();
+        } else {
+            $blog->reactions()->create(['user_id' => $user->id]);
+
+            $reactionsCount = $blog->reactions()->count();
+            $milestones = [1, 10, 25, 50, 100, 250, 500, 1000];
+            $isMilestone = in_array($reactionsCount, $milestones, true) || ($reactionsCount > 1000 && $reactionsCount % 500 === 0);
+
+            if ($isMilestone) {
+                $blog->loadMissing('user:id,name,email,receive_emails');
+
+                if ($blog->user && $blog->user_id !== $user->id && $blog->user->email && $blog->user->receive_emails !== false) {
+                    Mail::to($blog->user->email)->queue(BlogNotificationMail::forReactionMilestone($blog, $user, $reactionsCount));
+                }
+            }
+        }
+
+        return back();
+    }
+
+    public function storeComment(Request $request, Blog $blog)
+    {
+        $userId = auth()->id();
+
+        if ($blog->comments()->where('user_id', $userId)->exists()) {
+            return back()->with('error', 'You have already posted a comment on this blog.');
+        }
+
+        $validated = $request->validate([
+            'content' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $comment = $blog->comments()->create([
+            'user_id' => $userId,
+            'content' => trim($validated['content']),
+        ]);
+
+        $comment->load(['user:id,name,username,image_path,institution', 'user.roles:id,name']);
+        $blog->loadMissing('user:id,name,email,receive_emails');
+
+        if ($blog->user && $blog->user_id !== $userId && $blog->user->email && $blog->user->receive_emails !== false) {
+            Mail::to($blog->user->email)->queue(BlogNotificationMail::forComment($blog, $comment));
+        }
+
+        return back()->with('success', 'Comment posted successfully.');
+    }
+
+    public function destroyComment(BlogComment $comment)
+    {
+        abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('view admin'), 403);
+
+        $comment->delete();
+
+        return back()->with('success', 'Comment deleted successfully.');
     }
 }

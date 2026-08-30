@@ -24,19 +24,19 @@ class StoreUserRequest extends FormRequest
     {
         return [
 
-            'name'        => ['required', 'string', 'max:255'],
-            'email'       => ['required', 'email', 'unique:users,email'],
-            'password'    => ['required', 'string', 'min:6'],
-            'role'        => ['required', 'string', 'exists:roles,name'],
-            'permissions'   => ['required', 'array'],
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['nullable', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_]+$/', 'unique:users,username'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'role' => ['nullable', 'string'],
+            'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
-            'file'       => ['nullable', 'image', 'max:2048'],
-            'about'       => ['nullable', 'string'],
-            'title'       => ['nullable', 'string'],
+            'file' => ['nullable', 'image', 'max:2048'],
+            'about' => ['nullable', 'string'],
+            'title' => ['nullable', 'string'],
             'institution' => ['nullable', 'string', 'max:255'],
-            'facebook'    => ['nullable', 'string', 'max:255'],
-            'instagram'    => ['nullable', 'string', 'max:255'],
-            'github'      => ['nullable', 'string', 'max:255'],
+            'facebook' => ['nullable', 'string', 'max:255'],
+            'instagram' => ['nullable', 'string', 'max:255'],
+            'github' => ['nullable', 'string', 'max:255'],
         ];
     }
 

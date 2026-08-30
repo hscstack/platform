@@ -38,12 +38,15 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'app_version' => config('app.version'),
             'auth' => [
                 'user' => $request->user(),
+                'can_access_admin' => $request->user()?->can('view admin') ?? false,
+                'permissions' => $request->user()?->getAllPermissions()->pluck('name')->toArray() ?? [],
             ],
             'flash' => [
-                'success' => fn() => $request->session()->get('success'), 
-                'error'   => fn() => $request->session()->get('error'),   
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
             ],
         ];
     }

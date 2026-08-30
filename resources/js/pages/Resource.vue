@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
-    FileText,
-    Image as ImageIcon,
     Download,
     AlertCircle,
     ArrowLeft,
@@ -11,9 +9,15 @@ import {
     Minimize2,
     RotateCcw,
     User,
-    FilePlay,
+    Image as ImageIcon,
+    LogIn,
+    X,
+    ExternalLink,
+    CheckCircle2,
 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import UserListItem from '@/components/UserListItem.vue';
+import YouTubePlayer from '../components/YouTubePlayer.vue';
 
 const props = defineProps({
     resource: {
@@ -28,9 +32,142 @@ const props = defineProps({
         type: Number,
         default: null,
     },
+    isCompleted: {
+        type: Boolean,
+        default: false,
+    },
+    completionsCount: {
+        type: Number,
+        default: 0,
+    },
+    completers: {
+        type: Array as () => any[],
+        default: () => [],
+    },
 });
-console.log(props.previousResourceId);
-console.log(props.nextResourceId);
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
+const showAuthModal = ref(false);
+const showCompletersModal = ref(false);
+const authModalMessage = ref('Please sign in to continue.');
+
+// Optimistic Completion state
+const localIsCompleted = ref(props.isCompleted);
+const localCompletionsCount = ref(props.completionsCount);
+const localCompleters = ref<any[]>([...(props.completers || [])]);
+const isTogglingCompletion = ref(false);
+
+watch(
+    () => props.isCompleted,
+    (val) => {
+        localIsCompleted.value = val;
+    },
+);
+
+watch(
+    () => props.completionsCount,
+    (val) => {
+        localCompletionsCount.value = val;
+    },
+);
+
+watch(
+    () => props.completers,
+    (val) => {
+        localCompleters.value = [...(val || [])];
+    },
+);
+
+const handleToggleComplete = () => {
+    if (!user.value) {
+        authModalMessage.value =
+            'Please sign in to mark study materials as completed and track your syllabus progress.';
+        showAuthModal.value = true;
+
+        return;
+    }
+
+    if (isTogglingCompletion.value) {
+        return;
+    }
+
+    // Optimistic update
+    if (localIsCompleted.value) {
+        localIsCompleted.value = false;
+        localCompletionsCount.value = Math.max(
+            0,
+            localCompletionsCount.value - 1,
+        );
+        localCompleters.value = localCompleters.value.filter(
+            (c: any) => c.id !== user.value?.id,
+        );
+    } else {
+        localIsCompleted.value = true;
+        localCompletionsCount.value += 1;
+
+        if (user.value) {
+            localCompleters.value = [
+                {
+                    id: user.value.id,
+                    name: user.value.name,
+                    image_url: user.value.image_url,
+                    image_path: user.value.image_path,
+                    institution: user.value.institution,
+                },
+                ...localCompleters.value.filter(
+                    (c: any) => c.id !== user.value.id,
+                ),
+            ];
+        }
+    }
+
+    isTogglingCompletion.value = true;
+    router.post(
+        `/resources/${props.resource.id}/complete`,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => {
+                isTogglingCompletion.value = false;
+            },
+        },
+    );
+};
+
+const isImageLoaded = ref(false);
+
+watch(
+    () => props.resource?.file_url,
+    () => {
+        isImageLoaded.value = false;
+    },
+);
+
+const handleDownload = () => {
+    if (!user.value) {
+        authModalMessage.value =
+            'Please sign in to download full-resolution study materials.';
+        showAuthModal.value = true;
+
+        return;
+    }
+
+    if (props.resource?.file_url) {
+        const downloadUrl = props.resource.file_url.includes('?')
+            ? `${props.resource.file_url}&download=1`
+            : `${props.resource.file_url}?download=1`;
+
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = props.resource.title || 'download';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+};
 
 const isFullscreen = ref(false);
 
@@ -136,331 +273,366 @@ watch(isFullscreen, (val) => {
         document.body.style.overflow = val ? 'hidden' : '';
     }
 });
-
-const parseYoutubeUrl = (url) => {
-    try {
-        const parsed = new URL(url);
-
-        let videoId = null;
-
-        if (parsed.hostname.includes('youtube.com')) {
-            if (parsed.pathname === '/watch') {
-                videoId = parsed.searchParams.get('v');
-            } else if (parsed.pathname.startsWith('/embed/')) {
-                videoId = parsed.pathname.split('/embed/')[1];
-            } else if (parsed.pathname.startsWith('/shorts/')) {
-                videoId = parsed.pathname.split('/shorts/')[1];
-            }
-        }
-
-        if (parsed.hostname === 'youtu.be') {
-            videoId = parsed.pathname.slice(1);
-        }
-
-        if (!videoId) {
-            return null;
-        }
-
-        return `https://www.youtube.com/embed/${videoId}`;
-    } catch {
-        return 'https://www.youtube.com/embed/NpEaa2P7qZI';
-    }
-};
 </script>
 
 <template>
+    <Head>
+        <title>{{ resource.title }}</title>
+        <meta
+            name="description"
+            :content="`Study material: ${resource.title} (${resource.type}) on HSCStack - Open Learning Platform.`"
+        />
+        <meta property="og:title" :content="`${resource.title} - HSCStack`" />
+        <meta
+            property="og:description"
+            :content="`Study material: ${resource.title} (${resource.type}) on HSCStack.`"
+        />
+    </Head>
+
     <div
-        class="mx-auto flex min-h-[75vh] max-w-4xl flex-col justify-start px-4 pt-4 pb-20 sm:px-6 sm:pt-4"
+        class="mx-auto flex max-w-5xl flex-col justify-start px-3 pt-3 pb-24 sm:px-6"
     >
-        <div class="mb-2">
-            <button
-                @click="handleBack"
-                class="group inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+        <!-- Flat, Minimal Media Header -->
+        <div class="mb-3 flex items-center justify-between gap-3">
+            <!-- Left: Back Button + Title -->
+            <div class="flex min-w-0 items-center gap-2.5">
+                <button
+                    @click="handleBack"
+                    type="button"
+                    aria-label="Go back"
+                    class="group flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs transition hover:border-slate-300 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-700 dark:hover:text-indigo-400"
+                    title="Back"
+                >
+                    <ArrowLeft
+                        class="h-4 w-4 transition-transform group-hover:-translate-x-0.5"
+                    />
+                </button>
+
+                <h1
+                    class="truncate text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
+                    :title="resource.title"
+                >
+                    {{ resource.title }}
+                </h1>
+            </div>
+
+            <!-- Right: Action Buttons -->
+            <div class="flex shrink-0 items-center gap-2">
+                <!-- Mark as Done / Completed Button (Auth-guarded) -->
+                <div class="flex items-center gap-1.5">
+                    <button
+                        @click="handleToggleComplete"
+                        type="button"
+                        class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold shadow-xs transition active:scale-95"
+                        :class="
+                            localIsCompleted
+                                ? 'border-emerald-500/40 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/70 hover:text-emerald-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-900/50 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-400'
+                        "
+                        :title="
+                            localIsCompleted
+                                ? 'Marked as completed (click to undo)'
+                                : 'Mark as done'
+                        "
+                    >
+                        <CheckCircle2
+                            class="h-3.5 w-3.5 stroke-[2.2] transition-colors"
+                            :class="
+                                localIsCompleted
+                                    ? 'fill-emerald-600/20 text-emerald-600 dark:text-emerald-400'
+                                    : ''
+                            "
+                        />
+                        <span class="text-xs font-semibold">{{
+                            localIsCompleted ? 'Done' : 'Mark as Done'
+                        }}</span>
+                    </button>
+
+                    <!-- Completers Avatar Stack & Counter Trigger -->
+                    <button
+                        v-if="localCompletionsCount > 0"
+                        @click="showCompletersModal = true"
+                        type="button"
+                        class="flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 shadow-xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800"
+                        title="View students who completed this"
+                    >
+                        <div class="flex -space-x-1.5 overflow-hidden">
+                            <div
+                                v-for="completer in localCompleters.slice(0, 3)"
+                                :key="completer.id"
+                                class="inline-block h-5 w-5 rounded-full ring-2 ring-white dark:ring-gray-900"
+                            >
+                                <img
+                                    v-if="
+                                        completer.image_url ||
+                                        completer.image_path
+                                    "
+                                    :src="
+                                        completer.image_url ||
+                                        '/storage/' + completer.image_path
+                                    "
+                                    :alt="completer.name"
+                                    class="h-full w-full rounded-full object-cover"
+                                />
+                                <div
+                                    v-else
+                                    class="flex h-full w-full items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                                >
+                                    {{ completer.name?.charAt(0) || 'U' }}
+                                </div>
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs font-bold text-slate-700 dark:text-gray-300"
+                        >
+                            {{ localCompletionsCount }}
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Watch on YouTube Action (For Video Resources) -->
+                <a
+                    v-if="
+                        resource.resource_type === 'video' && resource.file_url
+                    "
+                    :href="resource.file_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-red-900/50 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                    title="Watch on YouTube"
+                >
+                    <ExternalLink class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">Watch on YouTube</span>
+                </a>
+
+                <!-- Download Button (Auth-guarded, only for downloadable files, NOT for video) -->
+                <button
+                    v-if="
+                        resource.file_url && resource.resource_type !== 'video'
+                    "
+                    @click="handleDownload"
+                    type="button"
+                    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    title="Download Resource"
+                >
+                    <Download class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">Download</span>
+                </button>
+
+                <!-- Fullscreen Action (for images) -->
+                <button
+                    v-if="resource.resource_type === 'image'"
+                    @click="toggleFullscreen"
+                    type="button"
+                    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                    title="View Fullscreen"
+                >
+                    <Maximize2 class="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span class="hidden sm:inline">Full Screen</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pure Media Canvas -->
+        <div
+            v-if="resource.resource_type === 'image'"
+            class="relative flex min-h-[55vh] w-full items-center justify-center sm:min-h-[70vh]"
+        >
+            <!-- Skeleton Loader Placeholder -->
+            <div
+                v-if="!isImageLoaded"
+                class="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-100/70 dark:border-gray-800 dark:bg-gray-900/60"
             >
-                <ArrowLeft
-                    class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
-                />
-                Back
-            </button>
+                <div class="flex animate-pulse flex-col items-center gap-3">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-200/90 text-slate-400 dark:bg-gray-800 dark:text-gray-600"
+                    >
+                        <ImageIcon class="h-6 w-6 stroke-[1.8]" />
+                    </div>
+                    <div
+                        class="h-2.5 w-28 rounded-full bg-slate-200/80 dark:bg-gray-800"
+                    ></div>
+                </div>
+            </div>
+
+            <img
+                :src="resource.file_url"
+                :alt="resource.title"
+                @load="isImageLoaded = true"
+                class="max-h-[85vh] w-auto max-w-full rounded-2xl border border-slate-200/90 bg-white object-contain shadow-sm transition-opacity duration-300 select-none dark:border-gray-800 dark:bg-gray-900"
+                :class="{
+                    'opacity-0': !isImageLoaded,
+                    'opacity-100': isImageLoaded,
+                }"
+            />
+        </div>
+
+        <div v-else-if="resource.resource_type === 'video'">
+            <YouTubePlayer :url="resource.file_url" :title="resource.title" />
+        </div>
+
+        <div v-else-if="resource.resource_type === 'note'">
+            <div
+                class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div
+                    class="prose max-w-none text-sm leading-relaxed whitespace-pre-line text-slate-800 sm:text-base dark:text-gray-200"
+                >
+                    {{ resource.content }}
+                </div>
+            </div>
         </div>
 
         <div
-            class="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            v-else
+            class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-xs dark:border-gray-800 dark:bg-gray-900"
         >
             <div
-                class="border-b border-slate-100 bg-slate-50/50 p-5 sm:p-6 dark:border-gray-800 dark:bg-gray-800/50"
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
             >
-                <div
-                    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                <AlertCircle class="h-6 w-6 stroke-[2.2]" />
+            </div>
+
+            <h3
+                class="mt-4 text-base font-bold text-slate-900 dark:text-gray-100"
+            >
+                Unsupported Preview:
+                <span class="text-indigo-600 capitalize dark:text-indigo-400">{{
+                    resource.resource_type
+                }}</span>
+            </h3>
+            <p
+                class="mx-auto mt-2 max-w-sm text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400"
+            >
+                The file can't be shown here. Please download.
+            </p>
+
+            <div class="mt-6 flex justify-center">
+                <button
+                    v-if="resource.file_url"
+                    @click="handleDownload"
+                    type="button"
+                    class="inline-flex cursor-pointer touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all duration-200 hover:bg-indigo-700 active:scale-95"
                 >
-                    <div class="min-w-0">
+                    <Download class="h-4 w-4 stroke-[2.5]" />
+                    Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Author Credit & Notes (Below Media) -->
+        <div
+            v-if="
+                resource.user?.name ||
+                resource.resource_type === 'video' ||
+                (resource.content && resource.resource_type !== 'note')
+            "
+            class="mt-3.5 space-y-2.5"
+        >
+            <div
+                v-if="resource.user?.name"
+                class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400"
+            >
+                <Link
+                    :href="
+                        resource.user?.username
+                            ? `/u/${resource.user.username}`
+                            : '#'
+                    "
+                    class="group inline-flex items-center gap-1.5 transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    <User
+                        class="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 dark:text-gray-500"
+                    />
+                    <span>
+                        Shared by
                         <span
-                            class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1 text-xs font-bold tracking-wider text-slate-600 uppercase dark:bg-gray-800 dark:text-gray-400"
+                            class="font-bold text-slate-700 group-hover:underline dark:text-gray-300"
                         >
-                            <FileText
-                                v-if="resource.resource_type === 'note'"
-                                class="h-3 w-3"
-                            />
-                            <ImageIcon
-                                v-else-if="resource.resource_type === 'image'"
-                                class="h-3 w-3"
-                            />
-                            <FilePlay
-                                v-else-if="resource.resource_type === 'video'"
-                                class="h-3 w-3"
-                            />
-
-                            <Download v-else class="h-3 w-3" />
-                            {{ resource.resource_type }}
+                            {{ resource.user.name }}
                         </span>
-
-                        <h1
-                            class="mt-2 text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
-                        >
-                            {{ resource.title }}
-                        </h1>
-
-                        <Link
-                            v-if="resource.user?.name"
-                            :href="`/about-us#${resource.user.id}`"
-                            class="group mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 transition-all hover:bg-indigo-50 hover:text-indigo-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
-                        >
-                            <User
-                                class="h-3.5 w-3.5 stroke-[2.2] text-slate-500 group-hover:text-indigo-600 dark:text-gray-400 dark:group-hover:text-indigo-400"
-                            />
-                            <span>
-                                Shared by
-                                <span
-                                    class="font-bold text-indigo-600 group-hover:underline dark:text-indigo-400"
-                                >
-                                    {{ resource.user.name }}
-                                </span>
-                            </span>
-                        </Link>
-                    </div>
-
-                    <div
-                        v-if="resource.resource_type === 'image'"
-                        class="flex items-center gap-2 self-start sm:self-center"
-                    >
-                        <a
-                            v-if="resource.file_url"
-                            :href="resource.file_url"
-                            download
-                            target="_blank"
-                            class="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.98] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                        >
-                            <Download class="h-4 w-4 stroke-[2.2]" />
-                            Download
-                        </a>
-
-                        <button
-                            @click="toggleFullscreen"
-                            class="inline-flex h-9 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
-                            title="View Fullscreen"
-                        >
-                            <Maximize2 class="h-4 w-4 stroke-[2.2]" />
-                            Full Screen
-                        </button>
-                    </div>
-                </div>
+                    </span>
+                </Link>
             </div>
 
-            <div v-if="resource.resource_type === 'note'" class="p-6 sm:p-8">
-                <div
-                    class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
+            <!-- YouTube Educational Disclaimer (For Videos) with Official Legal Reference -->
+            <div
+                v-if="resource.resource_type === 'video'"
+                class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs leading-relaxed text-slate-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-400"
+            >
+                <span class="font-bold text-slate-900 dark:text-gray-200"
+                    >Note:</span
                 >
-                    <h3
-                        class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                    >
-                        Note:
-                    </h3>
-                    <p
-                        class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
-                    >
-                        {{ resource.content }}
-                    </p>
-                </div>
-            </div>
-
-            <div v-else-if="resource.resource_type === 'image'">
-                <div
-                    v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div
-                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
-                    >
-                        <h3
-                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >
-                            Note:
-                        </h3>
-                        <p
-                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
-                        >
-                            {{ resource.content }}
-                        </p>
-                    </div>
-                </div>
-
-                <div
-                    class="flex justify-center bg-slate-950/5 p-4 sm:p-8 dark:bg-white/10"
-                >
-                    <div
-                        class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
-                    >
-                        <img
-                            :src="resource.file_url"
-                            :alt="resource.title"
-                            class="max-h-[70vh] w-auto object-contain select-none"
-                        />
-                    </div>
-                </div>
-            </div>
-            <div v-else-if="resource.resource_type === 'video'">
-                <div
-                    v-if="resource.content"
-                    class="border-b border-slate-100 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div
-                        class="prose max-w-none text-sm leading-relaxed font-medium text-slate-700 sm:text-base dark:text-gray-300"
-                    >
-                        <h3
-                            class="mb-2 text-xs font-black tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >
-                            Note:
-                        </h3>
-                        <p
-                            class="whitespace-pre-line selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-300"
-                        >
-                            This content is hosted on YouTube by the original
-                            creator. We have embedded it here for educational
-                            reference only.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-slate-950/5 p-4 sm:p-8 dark:bg-white/10">
-                    <div
-                        class="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-200 bg-black shadow-sm dark:border-gray-700"
-                    >
-                        <iframe
-                            :src="parseYoutubeUrl(resource.file_url)"
-                            :title="resource.title"
-                            class="absolute inset-0 h-full w-full"
-                            allow="
-                                accelerometer;
-                                autoplay;
-                                clipboard-write;
-                                encrypted-media;
-                                gyroscope;
-                                picture-in-picture;
-                                web-share;
-                            "
-                            allowfullscreen
-                        ></iframe>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="p-6 text-center sm:p-10">
-                <div
-                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
-                >
-                    <AlertCircle class="h-6 w-6 stroke-[2.2]" />
-                </div>
-
-                <h3
-                    class="mt-4 text-base font-bold text-slate-900 dark:text-gray-100"
-                >
-                    Unsupported Preview:
-                    <span
-                        class="text-indigo-600 capitalize dark:text-indigo-400"
-                        >{{ resource.resource_type }}</span
-                    >
-                </h3>
-                <p
-                    class="mx-auto mt-2 max-w-sm text-xs font-medium text-slate-500 sm:text-sm dark:text-gray-400"
-                >
-                    The file can't be shown here. Please download.
-                </p>
-
-                <div class="mt-6 flex justify-center">
+                <p class="mt-0.5">
+                    This content is hosted on YouTube by the original creator
+                    and embedded for educational reference in compliance with
                     <a
-                        v-if="resource.file_url"
-                        :href="resource.file_url"
-                        download
+                        href="https://www.youtube.com/static?template=terms"
                         target="_blank"
-                        class="inline-flex touch-manipulation items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 active:scale-[0.98]"
+                        rel="noopener noreferrer"
+                        class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
-                        <Download class="h-4 w-4 stroke-[2.5]" />
-                        Download
-                    </a>
-                    <div
-                        v-else
-                        class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
-                    >
-                        No download target generated for this asset.
-                    </div>
-                </div>
+                        YouTube's Terms of Service </a
+                    >.
+                </p>
+            </div>
+
+            <!-- Author Note (For Images & other resources if provided) -->
+            <div
+                v-else-if="
+                    resource.content && resource.resource_type !== 'note'
+                "
+                class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs leading-relaxed text-slate-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-400"
+            >
+                <span class="font-bold text-slate-900 dark:text-gray-200"
+                    >Note:</span
+                >
+                <p class="mt-1 whitespace-pre-line">{{ resource.content }}</p>
             </div>
         </div>
     </div>
 
-    <!-- User Friendly Sticky Floating Navigation Strip -->
+    <!-- Floating Bottom Navigation (Centered pill, no overlap with bottom-right floating share bar) -->
     <div
-        class="pointer-events-none fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-slate-900/10 via-slate-900/5 to-transparent pt-10 pb-6"
+        v-if="previousResourceId || nextResourceId"
+        class="pointer-events-none fixed inset-x-0 bottom-6 z-30 flex justify-center px-4"
     >
-        <div class="pointer-events-auto mx-auto max-w-4xl px-4 sm:px-6">
-            <div
-                class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90"
+        <div
+            class="pointer-events-auto flex items-center gap-1 rounded-full border border-slate-200/90 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/95"
+        >
+            <Link
+                v-if="previousResourceId"
+                :href="`/resources/${previousResourceId}`"
+                replace
+                class="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-indigo-600 active:scale-95 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
             >
-                <div>
-                    <Link
-                        v-if="previousResourceId"
-                        :href="`/resources/${previousResourceId}`"
-                        replace
-                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                    >
-                        <ArrowLeft
-                            class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
-                        />
-                        <span class="xs:inline hidden">Previous Page</span>
-                        <span class="xs:hidden">Prev Page</span>
-                    </Link>
-                    <span
-                        v-else
-                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"
-                        >First Page</span
-                    >
-                </div>
+                <ArrowLeft class="h-3.5 w-3.5" />
+                <span>Prev</span>
+            </Link>
+            <span
+                v-else
+                class="inline-flex h-8 items-center px-3 text-xs font-medium text-slate-300 select-none dark:text-gray-600"
+            >
+                First
+            </span>
 
-                <div
-                    class="hidden text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none sm:block dark:text-gray-500"
-                >
-                    Quick Navigation
-                </div>
+            <span class="h-3.5 w-px bg-slate-200 dark:bg-gray-700"></span>
 
-                <div>
-                    <Link
-                        v-if="nextResourceId"
-                        :href="`/resources/${nextResourceId}`"
-                        replace
-                        class="group inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 active:scale-[0.97] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                    >
-                        <span class="xs:inline hidden">Next Page</span>
-                        <span class="xs:hidden">Next Page</span>
-                        <ArrowRight
-                            class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                        />
-                    </Link>
-                    <span
-                        v-else
-                        class="inline-flex h-10 items-center px-4 text-xs font-bold text-slate-300 select-none dark:text-gray-600"
-                        >Last Page</span
-                    >
-                </div>
-            </div>
+            <Link
+                v-if="nextResourceId"
+                :href="`/resources/${nextResourceId}`"
+                replace
+                class="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-indigo-600 active:scale-95 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+            >
+                <span>Next</span>
+                <ArrowRight class="h-3.5 w-3.5" />
+            </Link>
+            <span
+                v-else
+                class="inline-flex h-8 items-center px-3 text-xs font-medium text-slate-300 select-none dark:text-gray-600"
+            >
+                Last
+            </span>
         </div>
     </div>
 
@@ -487,9 +659,17 @@ const parseYoutubeUrl = (url) => {
                 </div>
 
                 <button
+                    @click="handleDownload"
+                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    title="Download Image"
+                >
+                    <Download class="h-5 w-5" />
+                </button>
+
+                <button
                     v-if="scale > 1"
                     @click="resetZoom"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Reset Zoom"
                 >
                     <RotateCcw class="h-5 w-5" />
@@ -497,7 +677,7 @@ const parseYoutubeUrl = (url) => {
 
                 <button
                     @click="toggleFullscreen"
-                    class="rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
                     title="Exit Fullscreen"
                 >
                     <Minimize2 class="h-5 w-5" />
@@ -513,6 +693,141 @@ const parseYoutubeUrl = (url) => {
                 }"
             />
         </div>
+    </Teleport>
+
+    <!-- Minimal Sign-in Dialog for Guests (Download & Completion Auth Guard) -->
+    <Teleport to="body">
+        <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+        >
+            <div
+                v-if="showAuthModal"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs dark:bg-black/50"
+            >
+                <div
+                    class="relative w-full max-w-xs rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <button
+                        @click="showAuthModal = false"
+                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                    >
+                        <X class="h-3.5 w-3.5" />
+                    </button>
+
+                    <h3
+                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        Sign in required
+                    </h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                        {{ authModalMessage }}
+                    </p>
+
+                    <div class="mt-4 flex items-center gap-2">
+                        <Link
+                            :href="`/login?redirect=${encodeURIComponent($page.url)}`"
+                            @click="showAuthModal = false"
+                            class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                        >
+                            <LogIn class="h-3.5 w-3.5" />
+                            <span>Sign in</span>
+                        </Link>
+                        <button
+                            @click="showAuthModal = false"
+                            class="cursor-pointer rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <!-- Students who Completed Modal -->
+    <Teleport to="body">
+        <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+        >
+            <div
+                v-if="showCompletersModal"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs dark:bg-black/50"
+                @click.self="showCompletersModal = false"
+            >
+                <div
+                    class="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <button
+                        @click="showCompletersModal = false"
+                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                    >
+                        <X class="h-4 w-4" />
+                    </button>
+
+                    <div class="mb-4 flex items-center gap-2.5">
+                        <div
+                            class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                        >
+                            <CheckCircle2 class="h-4 w-4 stroke-[2.2]" />
+                        </div>
+                        <div>
+                            <h3
+                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                Completed By
+                            </h3>
+                            <p
+                                class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                            >
+                                {{ localCompletionsCount }} student{{
+                                    localCompletionsCount === 1 ? '' : 's'
+                                }}
+                                marked this as done
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
+                    >
+                        <div
+                            v-if="localCompleters.length === 0"
+                            class="py-6 text-center text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            No completions recorded yet.
+                        </div>
+
+                        <UserListItem
+                            v-for="completer in localCompleters"
+                            :key="completer.id"
+                            :user="completer"
+                            theme="emerald"
+                        />
+
+                        <div
+                            v-if="
+                                localCompletionsCount > localCompleters.length
+                            "
+                            class="py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400"
+                        >
+                            and
+                            {{ localCompletionsCount - localCompleters.length }}
+                            more...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </Teleport>
 </template>
 

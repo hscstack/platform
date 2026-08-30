@@ -21,7 +21,7 @@ class BlogFactory extends Factory
         $title = fake()->sentence();
 
         return [
-            'user_id' => User::query()->inRandomOrder()->value('id'),
+            'user_id' => User::query()->inRandomOrder()->value('id') ?? User::factory(),
 
             'title' => $title,
             'slug' => fake()->unique()->slug(),
@@ -29,7 +29,7 @@ class BlogFactory extends Factory
             'excerpt' => fake()->paragraph(),
             'content' => fake()->paragraphs(5, true),
 
-            'featured_image_path' => 'https://picsum.photos/800/600?random=' . fake()->numberBetween(1, 1000),
+            'featured_image_path' => 'https://picsum.photos/800/600?random='.fake()->numberBetween(1, 1000),
 
             'is_published' => true,
             'is_featured' => fake()->boolean(20),

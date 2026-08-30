@@ -36,7 +36,7 @@ return new class extends Migration
                 DB::table('blogs')
                     ->where('id', $blog->id)
                     ->update([
-                        'featured_image_path' => '/storage/' . ltrim($blog->featured_image_path, '/'),
+                        'featured_image_path' => '/storage/'.ltrim($blog->featured_image_path, '/'),
                     ]);
             });
 

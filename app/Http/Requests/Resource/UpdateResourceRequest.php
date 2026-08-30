@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Resource;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,11 +15,10 @@ class UpdateResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'redirect'      => ['nullable', 'string'],
-            'node_id'       => ['required', 'integer', 'exists:nodes,id'],
+            'node_id' => ['required', 'integer', 'exists:nodes,id'],
             'resource_type' => ['required', 'in:note,pdf,image,video'],
-            'title'         => ['required', 'string', 'max:100', 'min:2'],
-            'content'       => ['nullable', 'string'],
+            'title' => ['required', 'string', 'max:100', 'min:2'],
+            'content' => ['nullable', 'string'],
 
             'file' => [
                 'nullable',
@@ -29,7 +27,7 @@ class UpdateResourceRequest extends FormRequest
                 'mimes:jpg,jpeg,png',
                 Rule::requiredIf(
                     $this->resource_type === 'image'
-                        && !$this->route('resource')->file_path
+                        && ! $this->route('resource')->file_path
                 ),
             ],
 
