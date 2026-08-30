@@ -67,14 +67,7 @@ class SupportTicketController extends Controller
                 'category' => $category,
                 'search' => $search,
             ],
-            'categories' => [
-                SupportTicket::CATEGORY_GENERAL => 'General Inquiry',
-                SupportTicket::CATEGORY_BUG_REPORT => 'Bug Report',
-                SupportTicket::CATEGORY_MISSING_RESOURCE => 'Missing / Broken Resource',
-                SupportTicket::CATEGORY_ACCOUNT_ISSUE => 'Account Issue',
-                SupportTicket::CATEGORY_SUGGESTION => 'Suggestion / Feedback',
-                SupportTicket::CATEGORY_OTHER => 'Other',
-            ],
+            'categories' => SupportTicket::getCategories(),
         ]);
     }
 
