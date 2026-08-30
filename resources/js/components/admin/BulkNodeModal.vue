@@ -329,7 +329,7 @@ const totalFoldersCount = computed(() => {
                                             v-model="subfoldersInput"
                                             rows="3"
                                             placeholder="Classes&#10;Handnotes&#10;Practicals"
-                                            class="dark:bg-gray-850 w-full rounded-lg border border-slate-300 bg-white p-2.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:text-gray-100"
+                                            class="w-full rounded-lg border border-slate-300 bg-white p-2.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                         />
                                     </div>
 
@@ -343,7 +343,7 @@ const totalFoldersCount = computed(() => {
                                             v-model="subfolderSlugsInput"
                                             rows="3"
                                             placeholder="classes&#10;handnotes&#10;practicals"
-                                            class="dark:bg-gray-850 w-full rounded-lg border border-slate-300 bg-white p-2.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:text-gray-100"
+                                            class="w-full rounded-lg border border-slate-300 bg-white p-2.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                         />
                                     </div>
                                 </div>
@@ -388,13 +388,13 @@ const totalFoldersCount = computed(() => {
                                                 v-model="node.name"
                                                 type="text"
                                                 placeholder="Folder name"
-                                                class="dark:bg-gray-850 w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:text-gray-100"
+                                                class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                             />
                                             <input
                                                 v-model="node.slug"
                                                 type="text"
                                                 placeholder="Slug (leave empty for auto)"
-                                                class="w-full rounded-md border border-slate-200 bg-white/80 px-2.5 py-1 font-mono text-[11px] text-slate-600 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                                                class="w-full rounded-md border border-slate-200 bg-white/80 px-2.5 py-1 font-mono text-[11px] text-slate-600 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:placeholder:text-gray-500"
                                             />
                                         </div>
                                         <button

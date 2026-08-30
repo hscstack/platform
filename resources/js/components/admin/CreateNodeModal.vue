@@ -258,7 +258,7 @@ const submitForm = () => {
                                             v-model="slug"
                                             type="text"
                                             placeholder="Auto-generated if empty"
-                                            class="dark:bg-gray-850 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:text-gray-100"
+                                            class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                         />
                                     </div>
 
@@ -275,7 +275,7 @@ const submitForm = () => {
                                             v-model.number="sortOrder"
                                             type="number"
                                             placeholder="0"
-                                            class="dark:bg-gray-850 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:text-gray-100"
+                                            class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                         />
                                     </div>
                                 </div>
