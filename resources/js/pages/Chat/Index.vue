@@ -114,6 +114,10 @@ interface TypingUser {
     timeout: ReturnType<typeof setTimeout>;
 }
 const typingUsers = ref<Map<number, TypingUser>>(new Map());
+const isPresenceSubscribed = ref(false);
+const presenceMembers = ref<
+    Map<number, { id: number; name: string; username?: string }>
+>(new Map());
 
 const typingUsersList = computed(() => Array.from(typingUsers.value.values()));
 
@@ -256,7 +260,7 @@ const filteredMentionUsers = computed(() => {
 let lastTypingSentAt = 0;
 
 const broadcastTyping = () => {
-    if (!currentUser.value) {
+    if (!currentUser.value || !isPresenceSubscribed.value) {
         return;
     }
 
@@ -266,19 +270,19 @@ const broadcastTyping = () => {
         return;
     }
 
-    lastTypingSentAt = now;
-
     const echo = getEcho(
         props.chatState.pusher_key,
         props.chatState.pusher_cluster,
     );
 
     if (echo) {
+        const userId = Number(currentUser.value.id);
         echo.join(presenceChannelName.value).whisper('typing', {
-            id: currentUser.value.id,
+            id: userId,
             name: currentUser.value.name,
             username: currentUser.value.username,
         });
+        lastTypingSentAt = now;
     }
 };
 
@@ -539,17 +543,18 @@ const setupRealtime = () => {
         .stopListening('.settings.updated')
         .listen('.message.sent', (e: { message: ChatMessageItem }) => {
             if (e && e.message) {
-                if (
-                    e.message.user?.id &&
-                    typingUsers.value.has(e.message.user.id)
-                ) {
-                    const existing = typingUsers.value.get(e.message.user.id);
+                if (e.message.user?.id !== undefined) {
+                    const senderId = Number(e.message.user.id);
 
-                    if (existing) {
-                        clearTimeout(existing.timeout);
+                    if (!isNaN(senderId) && typingUsers.value.has(senderId)) {
+                        const existing = typingUsers.value.get(senderId);
+
+                        if (existing) {
+                            clearTimeout(existing.timeout);
+                        }
+
+                        typingUsers.value.delete(senderId);
                     }
-
-                    typingUsers.value.delete(e.message.user.id);
                 }
 
                 if (!messages.value.some((m) => m.id === e.message.id)) {
@@ -708,46 +713,112 @@ const setupPresenceChannel = () => {
     }
 
     echo.join(presenceChannelName.value)
-        .here((users: unknown[]) => {
-            activeUsersCount.value = users.length;
-        })
-        .joining(() => {
-            activeUsersCount.value++;
-        })
-        .leaving((user: { id?: number }) => {
+        .here(
+            (
+                users: Array<{
+                    id: number | string;
+                    name: string;
+                    username?: string;
+                }>,
+            ) => {
+                isPresenceSubscribed.value = true;
+                activeUsersCount.value = users.length;
+                presenceMembers.value.clear();
+                users.forEach((u) => {
+                    const uid = Number(u.id);
+
+                    if (!isNaN(uid)) {
+                        presenceMembers.value.set(uid, {
+                            id: uid,
+                            name: u.name,
+                            username: u.username,
+                        });
+                    }
+                });
+            },
+        )
+        .joining(
+            (user: {
+                id: number | string;
+                name: string;
+                username?: string;
+            }) => {
+                activeUsersCount.value++;
+                const uid = Number(user.id);
+
+                if (!isNaN(uid)) {
+                    presenceMembers.value.set(uid, {
+                        id: uid,
+                        name: user.name,
+                        username: user.username,
+                    });
+                }
+            },
+        )
+        .leaving((user: { id?: number | string }) => {
             activeUsersCount.value = Math.max(0, activeUsersCount.value - 1);
 
-            if (user?.id && typingUsers.value.has(user.id)) {
-                const existing = typingUsers.value.get(user.id);
+            if (user?.id !== undefined) {
+                const uid = Number(user.id);
 
-                if (existing) {
-                    clearTimeout(existing.timeout);
+                if (!isNaN(uid)) {
+                    presenceMembers.value.delete(uid);
+
+                    if (typingUsers.value.has(uid)) {
+                        const existing = typingUsers.value.get(uid);
+
+                        if (existing) {
+                            clearTimeout(existing.timeout);
+                        }
+
+                        typingUsers.value.delete(uid);
+                    }
                 }
-
-                typingUsers.value.delete(user.id);
             }
         })
         .listenForWhisper(
             'typing',
-            (e: { id?: number; name?: string; username?: string }) => {
-                if (!e?.id || e.id === currentUser.value?.id) {
+            (
+                e: { id?: number | string; name?: string; username?: string },
+                metadata?: { user_id?: number | string },
+            ) => {
+                const rawId = metadata?.user_id ?? e?.id;
+
+                if (rawId === undefined || rawId === null) {
                     return;
                 }
 
-                const existing = typingUsers.value.get(e.id);
+                const senderId = Number(rawId);
+                const currentUserId = currentUser.value?.id
+                    ? Number(currentUser.value.id)
+                    : null;
+
+                if (
+                    isNaN(senderId) ||
+                    (currentUserId !== null && senderId === currentUserId)
+                ) {
+                    return;
+                }
+
+                // Prefer authenticated presence member info from backend presence channel
+                const member = presenceMembers.value.get(senderId);
+                const name = member?.name || e.name || 'Someone';
+                const username = member?.username || e.username;
+
+                const existing = typingUsers.value.get(senderId);
 
                 if (existing) {
                     clearTimeout(existing.timeout);
                 }
 
                 const timeout = setTimeout(() => {
-                    typingUsers.value.delete(e.id!);
+                    typingUsers.value.delete(senderId);
                 }, 3000);
 
-                typingUsers.value.set(e.id, {
-                    id: e.id,
-                    name: e.name || 'Someone',
-                    username: e.username,
+                typingUsers.value.set(senderId, {
+                    id: senderId,
+                    name,
+                    username,
                     timeout,
                 });
             },
@@ -1324,6 +1395,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    isPresenceSubscribed.value = false;
+    presenceMembers.value.clear();
+
     typingUsers.value.forEach((user) => {
         clearTimeout(user.timeout);
     });
