@@ -14,6 +14,8 @@ class SupportTicket extends Model
 
     public const CATEGORY_GENERAL = 'general';
 
+    public const CATEGORY_APPLY_ROLE = 'apply_role';
+
     public const CATEGORY_BUG_REPORT = 'bug_report';
 
     public const CATEGORY_MISSING_RESOURCE = 'missing_resource';
@@ -31,6 +33,19 @@ class SupportTicket extends Model
     public const STATUS_RESOLVED = 'resolved';
 
     public const STATUS_CLOSED = 'closed';
+
+    public static function getCategories(): array
+    {
+        return [
+            self::CATEGORY_GENERAL => 'General Inquiry',
+            self::CATEGORY_APPLY_ROLE => 'Apply for Contributor Role',
+            self::CATEGORY_BUG_REPORT => 'Bug Report',
+            self::CATEGORY_MISSING_RESOURCE => 'Missing / Broken Resource',
+            self::CATEGORY_ACCOUNT_ISSUE => 'Account Issue',
+            self::CATEGORY_SUGGESTION => 'Suggestion / Feedback',
+            self::CATEGORY_OTHER => 'Other',
+        ];
+    }
 
     protected $fillable = [
         'ticket_number',

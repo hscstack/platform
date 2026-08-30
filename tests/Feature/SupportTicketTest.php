@@ -51,6 +51,25 @@ test('authenticated user can submit a support ticket and receive email', functio
     });
 });
 
+test('authenticated user can submit a ticket to apply for a role', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->post('/support/tickets', [
+        'category' => 'apply_role',
+        'subject' => 'Application for Resource Curator',
+        'message' => 'I would like to apply for the Resource Curator role.',
+    ]);
+
+    $response->assertRedirect('/support/my-tickets');
+
+    $this->assertDatabaseHas('support_tickets', [
+        'user_id' => $user->id,
+        'category' => 'apply_role',
+        'subject' => 'Application for Resource Curator',
+        'status' => 'open',
+    ]);
+});
+
 test('my tickets page loads for authenticated user and redirects for guest', function () {
     $this->get('/support/my-tickets')->assertRedirect('/login');
 

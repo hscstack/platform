@@ -32,6 +32,15 @@ const authUser = computed<UserInfo | null>(
     () => (page.props.auth?.user as UserInfo) || null,
 );
 
+const urlParams =
+    typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search)
+        : null;
+
+const initialCategory = urlParams?.get('category') || 'general';
+const initialSubject = urlParams?.get('subject') || '';
+const initialMessage = urlParams?.get('message') || '';
+
 const form = useForm<{
     category: string;
     subject: string;
@@ -39,10 +48,20 @@ const form = useForm<{
     attachment: File | null;
     general?: string;
 }>({
-    category: 'general',
-    subject: '',
-    message: '',
+    category: initialCategory,
+    subject: initialSubject,
+    message: initialMessage,
     attachment: null,
+});
+
+const loginRedirectUrl = computed(() => {
+    if (typeof window !== 'undefined') {
+        const fullPath = window.location.pathname + window.location.search;
+
+        return `/login?redirect=${encodeURIComponent(fullPath)}`;
+    }
+
+    return '/login?redirect=/support';
 });
 
 const previewUrl = ref<string | null>(null);
@@ -123,7 +142,7 @@ const submitTicket = () => {
                     class="mt-6 flex flex-col justify-center gap-3 sm:flex-row"
                 >
                     <Link
-                        href="/login?redirect=/support"
+                        :href="loginRedirectUrl"
                         class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-95 dark:shadow-indigo-500/30"
                     >
                         <span>লগইন করুন</span>
