@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import {
-    Plus,
-    FolderPlus,
-    ArrowLeft,
-    ChevronDown,
-    Layers,
-} from 'lucide-vue-next';
+import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
@@ -183,12 +177,9 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                                 isFolderDropdownOpen = false;
                                 isBulkModalOpen = true;
                             "
-                            class="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            <span>Bulk Add Folders</span>
-                            <Layers
-                                class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
-                            />
+                            Add Multiple Folders
                         </button>
                     </div>
                 </div>
