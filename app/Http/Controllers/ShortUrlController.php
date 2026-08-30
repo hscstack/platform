@@ -17,9 +17,10 @@ class ShortUrlController extends Controller
             'original_url' => ['required', 'string', 'url', 'max:2048'],
         ]);
 
-        $appUrl = rtrim(config('app.url'), '/');
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+        $originalHost = parse_url($validated['original_url'], PHP_URL_HOST);
 
-        if (! str_starts_with($validated['original_url'], $appUrl)) {
+        if ($appHost && strcasecmp((string) $originalHost, (string) $appHost) !== 0) {
             return response()->json([
                 'message' => 'Only URLs from this website are allowed.',
             ], 422);
