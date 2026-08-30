@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AppSetting;
 use App\Models\Blog;
 use App\Models\Node;
 use App\Models\NodeVote;
@@ -206,4 +207,34 @@ test('public profile returns created folders in recent activities', function () 
         ->where('recentActivities.folders.0.subtitle', 'Physics')
         ->where('recentActivities.folders.0.url', '/physics/thermodynamics-chapter')
     );
+});
+
+test('profile update rejects inappropriate words in name, username, about, or institution', function () {
+    AppSetting::set('global_chat_banned_words', 'badword, offensive');
+
+    $user = User::factory()->create(['username' => 'clean_user']);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => 'Badword Person',
+        'username' => 'clean_user',
+    ]);
+    $response->assertSessionHasErrors(['name']);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => 'John Doe',
+        'username' => 'offensive_user',
+    ]);
+    $response->assertSessionHasErrors(['username']);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => 'John Doe',
+        'about' => 'This is badword content',
+    ]);
+    $response->assertSessionHasErrors(['about']);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => 'John Doe',
+        'institution' => 'Offensive College',
+    ]);
+    $response->assertSessionHasErrors(['institution']);
 });

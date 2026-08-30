@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
+use App\Rules\CleanText;
+use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -85,10 +87,13 @@ class AuthController extends Controller
             return redirect()->intended($defaultUrl);
         }
 
+        $rawName = $googleUser->getName() ?? $googleUser->getNickname() ?? '';
+        $cleanGoogleName = ChatProfanityFilter::hasProfanity($rawName) ? 'Student' : $rawName;
+
         $request->session()->put('onboarding_user', [
             'google_id' => $googleUser->getId(),
             'email' => $googleUser->getEmail(),
-            'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? '',
+            'name' => $cleanGoogleName,
             'avatar' => $googleUser->getAvatar() ?? null,
         ]);
 
@@ -125,7 +130,7 @@ class AuthController extends Controller
         $onboardingData = $request->session()->get('onboarding_user');
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', new CleanText],
             'username' => [
                 'required',
                 'string',
@@ -133,8 +138,9 @@ class AuthController extends Controller
                 'max:30',
                 'regex:/^[a-zA-Z0-9_]+$/',
                 'unique:users,username',
+                new CleanText,
             ],
-            'school' => ['required', 'string', 'max:255'],
+            'school' => ['required', 'string', 'max:255', new CleanText],
             'image' => ['sometimes', 'nullable', 'image', 'max:5120'],
         ], [
             'school.required' => 'Please enter your school, college, or institution name.',
