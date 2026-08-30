@@ -17,7 +17,7 @@ import {
     Sparkles,
     Check,
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 
 interface Role {
@@ -243,6 +243,15 @@ const submitModalApplication = () => {
         },
     });
 };
+
+const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && isModalOpen.value) {
+        closeModal();
+    }
+};
+
+onMounted(() => window.addEventListener('keydown', handleKeydown));
+onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
 </script>
 
 <template>
@@ -510,6 +519,9 @@ const submitModalApplication = () => {
     <!-- Application Modal -->
     <div
         v-if="isModalOpen"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="apply-modal-title"
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
         @click.self="closeModal"
     >
@@ -528,6 +540,7 @@ const submitModalApplication = () => {
                     </div>
                     <div>
                         <h3
+                            id="apply-modal-title"
                             class="text-sm font-bold text-slate-900 dark:text-gray-100"
                         >
                             Contributor Application
