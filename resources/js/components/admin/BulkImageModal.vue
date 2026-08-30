@@ -56,21 +56,17 @@ const addFiles = (files: FileList | File[]) => {
         file.type.startsWith('image/'),
     );
 
-    const availableSlots = MAX_IMAGES - selectedFiles.value.length;
+    if (imageFiles.length === 0) {
+        return;
+    }
 
-    if (availableSlots <= 0) {
-        fileLimitError.value = `You can only upload a maximum of ${MAX_IMAGES} images at once.`;
+    if (selectedFiles.value.length + imageFiles.length > MAX_IMAGES) {
+        fileLimitError.value = 'অনুগ্রহ করে ২০টি বা তার কম ছবি নির্বাচন করুন।';
 
         return;
     }
 
-    const filesToAdd = imageFiles.slice(0, availableSlots);
-
-    if (imageFiles.length > availableSlots) {
-        fileLimitError.value = `Only the first ${availableSlots} image(s) were added. Maximum limit is ${MAX_IMAGES} images.`;
-    }
-
-    filesToAdd.forEach((file) => {
+    imageFiles.forEach((file) => {
         selectedFiles.value.push({
             id: `${file.name}-${Date.now()}-${Math.random()}`,
             file,
