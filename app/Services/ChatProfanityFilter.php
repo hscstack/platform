@@ -55,18 +55,6 @@ class ChatProfanityFilter
     }
 
     /**
-     * Mask/Censor message with a system notice if abusive or prohibited language is detected.
-     */
-    public static function maskProfanity(string $text, string $notice = '[Message hidden for inappropriate language]'): string
-    {
-        if (self::hasProfanity($text)) {
-            return $notice;
-        }
-
-        return $text;
-    }
-
-    /**
      * Normalize text by replacing leet-speak substitutions and collapsing repeated characters.
      */
     public static function normalize(string $text): string

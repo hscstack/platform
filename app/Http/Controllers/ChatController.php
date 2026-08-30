@@ -174,8 +174,10 @@ class ChatController extends Controller
 
         $content = trim($validated['content']);
 
-        // Mask/Censor abusive or prohibited language with asterisks (e.g. ****)
-        $content = ChatProfanityFilter::maskProfanity($content);
+        // Check for abusive / prohibited language
+        if (ChatProfanityFilter::hasProfanity($content)) {
+            $content = '[Message hidden for inappropriate language]';
+        }
 
         // Prevent duplicate message sent twice in a streak by the same user
         $lastMessage = ChatMessage::where('user_id', $user->id)
