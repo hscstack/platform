@@ -22,11 +22,6 @@ class SubjectController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        return Inertia::render('admin/SubjectCreateOrEdit');
-    }
-
     public function edit(Subject $subject)
     {
         return Inertia::render('admin/SubjectCreateOrEdit', [
@@ -38,7 +33,7 @@ class SubjectController extends Controller
     {
         Subject::create($request->validated());
 
-        return redirect()->route('admin.subjects.index');
+        return back()->with('success', 'Subject created successfully.');
     }
 
     public function update(UpdateSubjectRequest $request, Subject $subject)

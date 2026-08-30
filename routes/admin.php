@@ -20,7 +20,6 @@ Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analy
 Route::get('/subjects', [AdminSubjectController::class, 'index'])->name('subjects.index');
 
 Route::middleware('permission:create subjects')->group(function () {
-    Route::get('/subjects/create', [AdminSubjectController::class, 'create'])->name('subjects.create');
     Route::post('/subjects', [AdminSubjectController::class, 'store'])->name('subjects.store');
 });
 
