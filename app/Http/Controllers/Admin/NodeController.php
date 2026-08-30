@@ -190,6 +190,130 @@ class NodeController extends Controller
         return redirect($redirect)->with('success', 'Node updated successfully.');
     }
 
+    public function batchStore(Request $request, Subject $subject)
+    {
+        $request->validate([
+            'parent_id' => 'nullable|exists:nodes,id',
+            'nodes' => 'required|array|min:1',
+            'nodes.*.name' => 'required|string|max:255',
+            'nodes.*.slug' => 'nullable|string|max:255',
+            'nodes.*.children' => 'nullable|array',
+        ]);
+
+        $parentId = $request->input('parent_id');
+        $parent = null;
+        if ($parentId) {
+            $parent = Node::where('id', $parentId)->where('subject_id', $subject->id)->firstOrFail();
+        }
+
+        $inputNodes = $request->input('nodes');
+
+        // 1. Check duplicate slugs among incoming root items
+        $incomingRootSlugs = [];
+        foreach ($inputNodes as $nodeData) {
+            $nodeName = trim($nodeData['name'] ?? '');
+            if (empty($nodeName)) {
+                continue;
+            }
+            $rawSlug = ! empty($nodeData['slug']) ? $nodeData['slug'] : $nodeName;
+            $slug = Str::slug($rawSlug);
+
+            if (in_array($slug, $incomingRootSlugs, true)) {
+                return back()->withErrors([
+                    'slug' => "Duplicate slug '{$slug}' found in your submitted chapter list.",
+                ])->withInput();
+            }
+            $incomingRootSlugs[] = $slug;
+
+            // Check if slug already exists in database for this subject and parent
+            $exists = Node::where('subject_id', $subject->id)
+                ->where('parent_id', $parent?->id)
+                ->where('slug', $slug)
+                ->exists();
+
+            if ($exists) {
+                return back()->withErrors([
+                    'slug' => "Folder with slug '{$slug}' already exists in this location.",
+                ])->withInput();
+            }
+
+            // Check duplicate child slugs within this chapter
+            if (! empty($nodeData['children']) && is_array($nodeData['children'])) {
+                $incomingChildSlugs = [];
+                foreach ($nodeData['children'] as $childItem) {
+                    $childName = is_array($childItem) ? ($childItem['name'] ?? '') : (string) $childItem;
+                    $childName = trim($childName);
+                    if (empty($childName)) {
+                        continue;
+                    }
+                    $childRawSlug = is_array($childItem) && ! empty($childItem['slug']) ? $childItem['slug'] : $childName;
+                    $childSlug = Str::slug($childRawSlug);
+
+                    if (in_array($childSlug, $incomingChildSlugs, true)) {
+                        return back()->withErrors([
+                            'slug' => "Duplicate sub-folder slug '{$childSlug}' found under chapter '{$nodeName}'.",
+                        ])->withInput();
+                    }
+                    $incomingChildSlugs[] = $childSlug;
+                }
+            }
+        }
+
+        $baseSortOrder = Node::where('subject_id', $subject->id)
+            ->where('parent_id', $parent?->id)
+            ->max('sort_order') ?? 0;
+
+        $createdCount = 0;
+
+        \DB::transaction(function () use ($inputNodes, $subject, $parent, $baseSortOrder, &$createdCount) {
+            foreach ($inputNodes as $index => $nodeData) {
+                $nodeName = trim($nodeData['name']);
+                if (empty($nodeName)) {
+                    continue;
+                }
+
+                $rawSlug = ! empty($nodeData['slug']) ? $nodeData['slug'] : $nodeName;
+                $slug = Str::slug($rawSlug);
+
+                $node = Node::create([
+                    'user_id' => auth()->id(),
+                    'subject_id' => $subject->id,
+                    'parent_id' => $parent?->id,
+                    'name' => $nodeName,
+                    'slug' => $slug,
+                    'sort_order' => $baseSortOrder + $index + 1,
+                ]);
+
+                $createdCount++;
+
+                // Create children if any
+                if (! empty($nodeData['children']) && is_array($nodeData['children'])) {
+                    foreach ($nodeData['children'] as $childIndex => $childItem) {
+                        $childName = is_array($childItem) ? ($childItem['name'] ?? '') : (string) $childItem;
+                        $childName = trim($childName);
+                        if (empty($childName)) {
+                            continue;
+                        }
+
+                        $childRawSlug = is_array($childItem) && ! empty($childItem['slug']) ? $childItem['slug'] : $childName;
+                        $childSlug = Str::slug($childRawSlug);
+
+                        Node::create([
+                            'user_id' => auth()->id(),
+                            'subject_id' => $subject->id,
+                            'parent_id' => $node->id,
+                            'name' => $childName,
+                            'slug' => $childSlug,
+                            'sort_order' => $childIndex,
+                        ]);
+                    }
+                }
+            }
+        });
+
+        return back()->with('success', "Successfully generated {$createdCount} folders with subfolders!");
+    }
+
     public function destroy(Node $node)
     {
         $node->delete();
