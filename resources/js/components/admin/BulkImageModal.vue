@@ -29,6 +29,7 @@ const fileLimitError = ref('');
 const errorMessage = ref('');
 const isSaving = ref(false);
 const uploadProgress = ref<number | null>(null);
+const isProcessingServer = ref(false);
 
 const namingStrategy = ref<'serial' | 'original'>('serial');
 const namingPrefix = ref('image');
@@ -108,6 +109,7 @@ const clearAll = () => {
     errorMessage.value = '';
     isSaving.value = false;
     uploadProgress.value = null;
+    isProcessingServer.value = false;
 };
 
 const handleClose = () => {
@@ -139,6 +141,7 @@ const submitForm = () => {
 
     isSaving.value = true;
     uploadProgress.value = 0;
+    isProcessingServer.value = false;
     errorMessage.value = '';
 
     const payload: Record<string, any> = {
@@ -155,10 +158,20 @@ const submitForm = () => {
         preserveScroll: true,
         onProgress: (progress) => {
             if (progress?.percentage !== undefined) {
-                uploadProgress.value = progress.percentage;
+                if (progress.percentage >= 100) {
+                    uploadProgress.value = 95;
+                    isProcessingServer.value = true;
+                } else {
+                    uploadProgress.value = Math.min(
+                        Math.round(progress.percentage * 0.9),
+                        90,
+                    );
+                    isProcessingServer.value = false;
+                }
             }
         },
         onSuccess: () => {
+            uploadProgress.value = 100;
             clearAll();
             emit('close');
         },
@@ -170,6 +183,7 @@ const submitForm = () => {
         onFinish: () => {
             isSaving.value = false;
             uploadProgress.value = null;
+            isProcessingServer.value = false;
         },
     });
 };
@@ -476,18 +490,26 @@ const submitForm = () => {
                                 class="mb-1.5 flex items-center justify-between text-xs"
                             >
                                 <span
-                                    class="font-medium text-slate-700 dark:text-gray-300"
+                                    class="flex items-center gap-1.5 font-medium text-slate-700 dark:text-gray-300"
                                 >
+                                    <Loader2
+                                        v-if="isProcessingServer"
+                                        class="h-3 w-3 animate-spin text-indigo-600 dark:text-indigo-400"
+                                    />
                                     {{
-                                        uploadProgress >= 100
-                                            ? 'Processing images on server...'
+                                        isProcessingServer
+                                            ? 'Images transferred! Saving & processing on server...'
                                             : 'Uploading images...'
                                     }}
                                 </span>
                                 <span
                                     class="font-semibold text-indigo-600 dark:text-indigo-400"
                                 >
-                                    {{ uploadProgress }}%
+                                    {{
+                                        isProcessingServer
+                                            ? 'Processing...'
+                                            : `${uploadProgress}%`
+                                    }}
                                 </span>
                             </div>
                             <div
@@ -495,6 +517,10 @@ const submitForm = () => {
                             >
                                 <div
                                     class="h-full rounded-full bg-indigo-600 transition-all duration-150 ease-out dark:bg-indigo-500"
+                                    :class="{
+                                        'animate-pulse opacity-90':
+                                            isProcessingServer,
+                                    }"
                                     :style="{ width: `${uploadProgress}%` }"
                                 ></div>
                             </div>
@@ -526,10 +552,9 @@ const submitForm = () => {
                                 />
                                 <span>{{
                                     isSaving
-                                        ? uploadProgress !== null &&
-                                          uploadProgress < 100
-                                            ? `Uploading (${uploadProgress}%)`
-                                            : 'Processing...'
+                                        ? isProcessingServer
+                                            ? 'Saving to server...'
+                                            : `Uploading (${uploadProgress}%)`
                                         : `Upload ${selectedFiles.length || ''} Images`
                                 }}</span>
                             </button>
