@@ -138,15 +138,15 @@ test('profanity filter allows legitimate words like assalamualaikum and class wh
     expect(ChatProfanityFilter::hasProfanity('তুই একটা চোদা'))->toBeTrue();
 });
 
-test('chat messages mask profanity with asterisks instead of blocking the user', function () {
+test('chat messages mask profanity with system notice instead of blocking the user', function () {
     AppSetting::set('global_chat_enabled', true, 'boolean');
     AppSetting::set('global_chat_audience', 'all');
     AppSetting::set('global_chat_profanity_filter_enabled', true, 'boolean');
     AppSetting::set('global_chat_banned_words', 'fuck, bitch, shit');
 
     expect(ChatProfanityFilter::maskProfanity('Hello assalamualaikum brother'))->toBe('Hello assalamualaikum brother');
-    expect(ChatProfanityFilter::maskProfanity('What the fuck is this shit'))->toBe('What the **** is this ****');
-    expect(ChatProfanityFilter::maskProfanity('f.u.c.k you'))->toBe('******* you');
+    expect(ChatProfanityFilter::maskProfanity('What the fuck is this shit'))->toBe('[Message hidden for inappropriate language]');
+    expect(ChatProfanityFilter::maskProfanity('f.u.c.k you'))->toBe('[Message hidden for inappropriate language]');
 
     $user = User::factory()->create(['username' => 'chat_sender']);
 
@@ -157,6 +157,6 @@ test('chat messages mask profanity with asterisks instead of blocking the user',
     $response->assertStatus(201);
     $this->assertDatabaseHas('chat_messages', [
         'user_id' => $user->id,
-        'content' => 'What the **** is this',
+        'content' => '[Message hidden for inappropriate language]',
     ]);
 });

@@ -55,50 +55,12 @@ class ChatProfanityFilter
     }
 
     /**
-     * Mask/Censor banned or abusive words with asterisks (e.g. ****).
+     * Mask/Censor message with a system notice if abusive or prohibited language is detected.
      */
-    public static function maskProfanity(string $text, string $replacementChar = '*'): string
+    public static function maskProfanity(string $text, string $notice = '[Message hidden for inappropriate language]'): string
     {
-        $enabled = AppSetting::get('global_chat_profanity_filter_enabled', true);
-        if (! $enabled) {
-            return $text;
-        }
-
-        $bannedWords = self::getBannedWords();
-        if (empty($bannedWords)) {
-            return $text;
-        }
-
-        $substitutions = [
-            '@' => 'a', '4' => 'a', '$' => 's', '5' => 's',
-            '1' => 'i', '!' => 'i', '|' => 'i', '0' => 'o',
-            '3' => 'e', '8' => 'b', '+' => 't', '7' => 't',
-        ];
-
-        foreach ($bannedWords as $word) {
-            $word = trim($word);
-            if ($word === '') {
-                continue;
-            }
-
-            $chars = preg_split('//u', mb_strtolower($word), -1, PREG_SPLIT_NO_EMPTY);
-            $charPatterns = [];
-            foreach ($chars as $c) {
-                $equiv = [preg_quote($c, '/')];
-                foreach ($substitutions as $sym => $target) {
-                    if ($target === $c) {
-                        $equiv[] = preg_quote($sym, '/');
-                    }
-                }
-                $charPatterns[] = '(?:'.implode('|', array_unique($equiv)).')+';
-            }
-
-            $wordRegex = implode('[._\-*~\s]*', $charPatterns);
-            $pattern = '/(?<=^|[^\p{L}\p{N}])('.$wordRegex.')(?=[^\p{L}\p{N}]|$)/ui';
-
-            $text = (string) preg_replace_callback($pattern, function ($m) use ($replacementChar) {
-                return str_repeat($replacementChar, mb_strlen($m[1]));
-            }, $text);
+        if (self::hasProfanity($text)) {
+            return $notice;
         }
 
         return $text;
