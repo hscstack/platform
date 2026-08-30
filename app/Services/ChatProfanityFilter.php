@@ -24,23 +24,30 @@ class ChatProfanityFilter
 
         $normalized = self::normalize($text);
 
+        // 1. Remove punctuation separators within words (e.g. "f.u.c.k", "s_e_x", "a-s-s")
+        $strippedPunctuation = preg_replace('/(?<=\p{L})[._\-*~]+(?=\p{L})/u', '', $normalized);
+
+        // 2. Collapse spaced-out single letters (e.g. "f u c k" -> "fuck", "a s s" -> "ass")
+        $collapsedSpaces = preg_replace_callback('/\b(?:\p{L}\s+){2,}\p{L}\b/u', function ($m) {
+            return preg_replace('/\s+/u', '', $m[0]);
+        }, $strippedPunctuation);
+
+        $variants = [$text, $normalized, $strippedPunctuation, $collapsedSpaces];
+
         foreach ($bannedWords as $word) {
             $word = trim(mb_strtolower($word));
             if ($word === '') {
                 continue;
             }
 
-            // Exact word boundary matching or normalized substring matching
             $escaped = preg_quote($word, '/');
-            if (preg_match("/\b{$escaped}\b/ui", $text) || preg_match("/\b{$escaped}\b/ui", $normalized)) {
-                return true;
-            }
+            // Unicode-safe word boundary pattern to prevent substring false-positives (e.g. "ass" in "assalamualaikum")
+            $pattern = '/(?<=^|[^\p{L}\p{N}])'.$escaped.'(?=[^\p{L}\p{N}]|$)/ui';
 
-            // Compact match without spaces or special symbols (e.g. f.u.c.k or f_u_c_k)
-            $compactText = preg_replace('/[^\p{L}\p{N}]/u', '', $normalized);
-            $compactWord = preg_replace('/[^\p{L}\p{N}]/u', '', $word);
-            if ($compactWord !== '' && str_contains($compactText, $compactWord)) {
-                return true;
+            foreach ($variants as $variant) {
+                if (preg_match($pattern, $variant)) {
+                    return true;
+                }
             }
         }
 

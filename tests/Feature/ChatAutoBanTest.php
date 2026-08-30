@@ -2,6 +2,7 @@
 
 use App\Models\AppSetting;
 use App\Models\User;
+use App\Services\ChatProfanityFilter;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -109,4 +110,30 @@ test('auto ban is not triggered when disabled in admin settings', function () {
     ])->assertStatus(201);
 
     expect($targetUser->fresh()->isChatBanned())->toBeFalse();
+});
+
+test('profanity filter allows legitimate words like assalamualaikum and class while blocking actual profanity and obfuscations', function () {
+    AppSetting::set('global_chat_profanity_filter_enabled', true, 'boolean');
+    AppSetting::set('global_chat_banned_words', 'ass, fuck, sex, bitch, চোদা');
+
+    // Legitimate words containing substrings must NOT be blocked
+    expect(ChatProfanityFilter::hasProfanity('assalamualaikum'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('assalamualaikum brothers'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('walaikumsalam'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('class assignment'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('compass assistant'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('classic physics'))->toBeFalse();
+    expect(ChatProfanityFilter::hasProfanity('password passage'))->toBeFalse();
+
+    // Actual profanity and obfuscations MUST be blocked
+    expect(ChatProfanityFilter::hasProfanity('you are an ass'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('you are an a.s.s'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('you are an a s s'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('you are an @$$'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('f.u.c.k you'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('f u c k you'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('s_e_x'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('s3x'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('5ex'))->toBeTrue();
+    expect(ChatProfanityFilter::hasProfanity('তুই একটা চোদা'))->toBeTrue();
 });
