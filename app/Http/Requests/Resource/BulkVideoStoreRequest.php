@@ -23,7 +23,6 @@ class BulkVideoStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'redirect' => 'required|url',
             'playlist_url' => ['required', 'url'],
             'naming_strategy' => ['required', 'in:youtube,serial,prefix'],
             'start_number' => [
@@ -36,7 +35,6 @@ class BulkVideoStoreRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                'required_if:naming_strategy,prefix',
             ],
             'node_id' => ['required', 'exists:nodes,id'],
         ];

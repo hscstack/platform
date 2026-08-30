@@ -27,7 +27,6 @@ class UpdateNodeRequest extends FormRequest
             'slug' => ['sometimes', 'nullable', 'string', 'max:200'],
             'parent_id' => ['sometimes', 'nullable', 'integer'],
             'sort_order' => ['sometimes', 'nullable', 'integer'],
-            'redirect' => ['nullable', 'string'],
         ];
     }
 }

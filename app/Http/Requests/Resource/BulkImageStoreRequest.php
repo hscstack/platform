@@ -23,8 +23,6 @@ class BulkImageStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
-            'redirect' => 'required|url',
             'node_id' => 'required|exists:nodes,id',
             'custom_titles' => 'required|array|max:20',
             'custom_titles.*' => 'required|string|max:100',

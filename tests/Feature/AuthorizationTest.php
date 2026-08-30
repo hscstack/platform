@@ -122,10 +122,12 @@ test('users with view users permission can access admin users list', function ()
     $response->assertStatus(200);
 });
 
-test('users without create subjects permission cannot view subject create page', function () {
+test('users without create subjects permission cannot create subjects via post', function () {
     $admin = adminUserWithPermissions(['view admin']);
 
-    $response = $this->actingAs($admin)->get('/admin/subjects/create');
+    $response = $this->actingAs($admin)->post('/admin/subjects', [
+        'name' => 'Unauthorized Subject',
+    ]);
 
     $response->assertStatus(302);
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');
@@ -140,7 +142,7 @@ test('users without create blogs permission cannot view blog create page', funct
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');
 });
 
-test('users without create nodes permission cannot view node create page', function () {
+test('users without create nodes permission cannot create node via post', function () {
     $admin = adminUserWithPermissions(['view admin']);
     $subject = Subject::create([
         'name' => 'Chemistry',
@@ -150,7 +152,9 @@ test('users without create nodes permission cannot view node create page', funct
         'icon' => 'flask',
     ]);
 
-    $response = $this->actingAs($admin)->get("/admin/subjects/{$subject->slug}/nodes/create");
+    $response = $this->actingAs($admin)->post("/admin/subjects/{$subject->id}/nodes", [
+        'name' => 'Unauthorized Folder',
+    ]);
 
     $response->assertStatus(302);
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');

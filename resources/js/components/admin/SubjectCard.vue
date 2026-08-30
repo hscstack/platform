@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 
 import {
     Search,
@@ -21,6 +21,10 @@ const { can } = usePermissions();
 const { subject } = defineProps({
     subject: Object,
 });
+
+const emit = defineEmits<{
+    (e: 'edit', subject: any): void;
+}>();
 
 const icons = {
     Atom,
@@ -91,20 +95,21 @@ const handleDelete = () => {
             class="flex shrink-0 items-center gap-1"
             @click.stop
         >
-            <Link
+            <button
                 v-if="can('edit subjects')"
-                :href="`/admin/subjects/edit/${subject.id}`"
-                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                type="button"
+                @click="emit('edit', subject)"
+                class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                 title="Edit Subject"
             >
                 <Pencil class="h-4 w-4" :stroke-width="1.8" />
-            </Link>
+            </button>
 
             <button
                 v-if="can('delete subjects')"
                 type="button"
                 @click="handleDelete"
-                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 title="Delete Subject"
             >
                 <Trash2 class="h-4 w-4" :stroke-width="1.8" />

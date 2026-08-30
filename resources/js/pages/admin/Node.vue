@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import {
-    Plus,
-    FolderPlus,
-    ArrowLeft,
-    ChevronDown,
-    Layers,
-} from 'lucide-vue-next';
+import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
+import BulkImageModal from '@/components/admin/BulkImageModal.vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
+import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
+import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
+import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -29,6 +27,42 @@ const isFolderDropdownOpen = ref(false);
 const resourceDropdownRef = ref<HTMLElement | null>(null);
 const folderDropdownRef = ref<HTMLElement | null>(null);
 const isBulkModalOpen = ref(false);
+const isBulkImageModalOpen = ref(false);
+const isBulkVideoModalOpen = ref(false);
+const isSingleModalOpen = ref(false);
+const editingNode = ref<any | null>(null);
+const isSingleResourceModalOpen = ref(false);
+const editingResource = ref<any | null>(null);
+
+const openCreateNodeModal = () => {
+    editingNode.value = null;
+    isSingleModalOpen.value = true;
+};
+
+const openEditNodeModal = (node: any) => {
+    editingNode.value = node;
+    isSingleModalOpen.value = true;
+};
+
+const handleNodeModalClose = () => {
+    isSingleModalOpen.value = false;
+    editingNode.value = null;
+};
+
+const openCreateResourceModal = () => {
+    editingResource.value = null;
+    isSingleResourceModalOpen.value = true;
+};
+
+const openEditResourceModal = (resource: any) => {
+    editingResource.value = resource;
+    isSingleResourceModalOpen.value = true;
+};
+
+const handleResourceModalClose = () => {
+    isSingleResourceModalOpen.value = false;
+    editingResource.value = null;
+};
 
 const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
@@ -131,29 +165,25 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         v-if="isFolderDropdownOpen"
                         class="absolute right-0 z-10 mt-1.5 w-44 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <Link
-                            :href="
-                                parent
-                                    ? `/admin/subjects/${subject.slug}/nodes/create?parent_id=${parent.id}`
-                                    : `/admin/subjects/${subject.slug}/nodes/create`
+                        <button
+                            type="button"
+                            @click="
+                                isFolderDropdownOpen = false;
+                                openCreateNodeModal();
                             "
-                            @click="isFolderDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
                             Single Folder
-                        </Link>
+                        </button>
                         <button
                             type="button"
                             @click="
                                 isFolderDropdownOpen = false;
                                 isBulkModalOpen = true;
                             "
-                            class="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            <span>Bulk Add Folders</span>
-                            <Layers
-                                class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
-                            />
+                            Add Multiple Folders
                         </button>
                     </div>
                 </div>
@@ -178,33 +208,60 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
                     <div
                         v-if="isResourceDropdownOpen"
-                        class="absolute right-0 z-10 mt-1.5 w-44 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+                        class="absolute right-0 z-10 mt-1.5 w-48 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <Link
-                            :href="`/admin/resources/create?node_id=${parent.id}`"
-                            @click="isResourceDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                        <button
+                            type="button"
+                            @click="
+                                isResourceDropdownOpen = false;
+                                openCreateResourceModal();
+                            "
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Single File
-                        </Link>
-                        <Link
-                            :href="`/admin/resources/create/bulk/images?node_id=${parent.id}&redirect=${page.url}`"
-                            @click="isResourceDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            Single Resource
+                        </button>
+                        <button
+                            type="button"
+                            @click="
+                                isResourceDropdownOpen = false;
+                                isBulkImageModalOpen = true;
+                            "
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Upload Bulk Images
-                        </Link>
-                        <Link
-                            :href="`/admin/resources/create/bulk/videos?node_id=${parent.id}&redirect=${page.url}`"
-                            @click="isResourceDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            Upload Multiple Images
+                        </button>
+                        <button
+                            type="button"
+                            @click="
+                                isResourceDropdownOpen = false;
+                                isBulkVideoModalOpen = true;
+                            "
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Upload Bulk Videos
-                        </Link>
+                            Upload Multiple Videos
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Single Node Modal (Create / Edit) -->
+        <CreateNodeModal
+            :is-open="isSingleModalOpen"
+            :subject="subject"
+            :parent="parent"
+            :node="editingNode"
+            @close="handleNodeModalClose"
+        />
+
+        <!-- Single Resource Modal (Create / Edit) -->
+        <CreateResourceModal
+            v-if="parent"
+            :is-open="isSingleResourceModalOpen"
+            :node="parent"
+            :resource="editingResource"
+            @close="handleResourceModalClose"
+        />
 
         <!-- Bulk Node Modal -->
         <BulkNodeModal
@@ -212,6 +269,22 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             :subject="subject"
             :parent="parent"
             @close="isBulkModalOpen = false"
+        />
+
+        <!-- Bulk Images Modal -->
+        <BulkImageModal
+            v-if="parent"
+            :is-open="isBulkImageModalOpen"
+            :node="parent"
+            @close="isBulkImageModalOpen = false"
+        />
+
+        <!-- Bulk Videos Modal -->
+        <BulkVideoModal
+            v-if="parent"
+            :is-open="isBulkVideoModalOpen"
+            :node="parent"
+            @close="isBulkVideoModalOpen = false"
         />
 
         <div class="flex flex-1 flex-col">
@@ -227,11 +300,13 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         v-for="node in nodes"
                         :key="`node-${node.id}`"
                         :node="node"
+                        @edit="openEditNodeModal"
                     />
                     <ResourceRow
                         v-for="resource in resources"
                         :key="`resource-${resource.id}`"
                         :resource="resource"
+                        @edit="openEditResourceModal"
                     />
                 </div>
             </template>

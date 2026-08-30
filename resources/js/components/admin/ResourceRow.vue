@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import {
     Book,
     File,
@@ -9,10 +9,17 @@ import {
     Pencil,
     Trash2,
 } from 'lucide-vue-next';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 const { resource } = defineProps({
     resource: Object,
 });
+
+const emit = defineEmits<{
+    (e: 'edit', resource: any): void;
+}>();
 
 const handleDelete = () => {
     if (confirm('Are you sure you want to delete this Resource?')) {
@@ -67,17 +74,23 @@ const handleDelete = () => {
         </div>
 
         <!-- Right: Actions -->
-        <div class="flex shrink-0 items-center gap-1" @click.stop>
-            <Link
-                :href="`/admin/resources/edit/${resource.id}`"
-                target="_self"
-                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-amber-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-amber-400"
+        <div
+            v-if="can('edit resources') || can('delete resources')"
+            class="flex shrink-0 items-center gap-1"
+            @click.stop
+        >
+            <button
+                v-if="can('edit resources')"
+                type="button"
+                @click="emit('edit', resource)"
+                class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-amber-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-amber-400"
                 title="Edit Resource"
             >
                 <Pencil class="h-4 w-4" :stroke-width="1.8" />
-            </Link>
+            </button>
 
             <button
+                v-if="can('delete resources')"
                 type="button"
                 @click="handleDelete"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"

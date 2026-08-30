@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import CreateSubjectModal from '@/components/admin/CreateSubjectModal.vue';
 import SubjectCard from '@/components/admin/SubjectCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { usePermissions } from '@/lib/usePermissions';
@@ -15,7 +16,24 @@ const props = defineProps({
     },
 });
 
+const isCreateModalOpen = ref(false);
+const editingSubject = ref<any | null>(null);
 const activeCourse = ref<'all' | 'hsc' | 'ssc'>('all');
+
+const openCreateModal = () => {
+    editingSubject.value = null;
+    isCreateModalOpen.value = true;
+};
+
+const openEditModal = (subject: any) => {
+    editingSubject.value = subject;
+    isCreateModalOpen.value = true;
+};
+
+const handleModalClose = () => {
+    isCreateModalOpen.value = false;
+    editingSubject.value = null;
+};
 
 const filteredSubjects = computed(() => {
     if (activeCourse.value === 'all') {
@@ -45,15 +63,23 @@ const filteredSubjects = computed(() => {
             </div>
 
             <div v-if="can('create subjects')" class="flex items-center gap-2">
-                <Link
-                    href="/admin/subjects/create"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700"
+                <button
+                    type="button"
+                    @click="openCreateModal"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700"
                 >
                     <Plus class="h-3.5 w-3.5" :stroke-width="2.2" />
                     <span>Create Subject</span>
-                </Link>
+                </button>
             </div>
         </div>
+
+        <!-- Create/Edit Subject Modal -->
+        <CreateSubjectModal
+            :is-open="isCreateModalOpen"
+            :subject="editingSubject"
+            @close="handleModalClose"
+        />
 
         <!-- Filter Pills (All / HSC / SSC) -->
         <div class="mb-4 flex items-center gap-1.5">
@@ -113,6 +139,7 @@ const filteredSubjects = computed(() => {
                     :key="subject.id || subject.name"
                     :admin="true"
                     :subject="subject"
+                    @edit="openEditModal"
                 />
             </div>
 

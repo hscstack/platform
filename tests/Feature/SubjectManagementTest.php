@@ -14,7 +14,8 @@ test('admin can create a subject', function () {
         'sort_order' => 1,
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
+    $response->assertSessionHas('success', 'Subject created successfully.');
 
     $this->assertDatabaseHas('subjects', [
         'name' => 'Platform Testing',
@@ -48,7 +49,8 @@ test('admin can update a subject', function () {
         'sort_order' => 2,
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
+    $response->assertSessionHas('success', 'Subject updated successfully.');
 
     $this->assertDatabaseHas('subjects', [
         'id' => $subject->id,
@@ -74,6 +76,7 @@ test('admin can delete a subject', function () {
     $response = $this->actingAs($admin)->delete("/admin/subjects/{$subject->id}");
 
     $response->assertRedirect();
+    $response->assertSessionHas('success', 'Subject deleted successfully.');
 
     $this->assertDatabaseMissing('subjects', [
         'id' => $subject->id,
@@ -93,7 +96,8 @@ test('admin can create a subject with custom slug', function () {
         'sort_order' => 1,
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
+    $response->assertSessionHas('success', 'Subject created successfully.');
 
     $this->assertDatabaseHas('subjects', [
         'name' => 'Custom Slug Subject',
@@ -117,7 +121,8 @@ test('admin can update a subject with custom slug', function () {
         'slug' => 'updated-custom-slug',
     ]);
 
-    $response->assertRedirect(route('admin.subjects.index'));
+    $response->assertRedirect();
+    $response->assertSessionHas('success', 'Subject updated successfully.');
 
     $this->assertDatabaseHas('subjects', [
         'id' => $subject->id,

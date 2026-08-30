@@ -7,48 +7,14 @@ use App\Http\Requests\Resource\BulkImageStoreRequest;
 use App\Http\Requests\Resource\BulkVideoStoreRequest;
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
-use App\Models\Node;
 use App\Models\Resource;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 
 class ResourceController extends Controller
 {
-    public function create(Request $request)
-    {
-        $node = Node::findOrFail($request->node_id);
-
-        $prev = url()->previous();
-        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit') && ! str_contains($prev, '/resources/'))
-            ? $prev
-            : '/admin/subjects';
-
-        return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' => $redirect,
-            'node' => $node,
-        ]);
-    }
-
-    public function edit(Resource $resource)
-    {
-        $node = $resource->node;
-
-        $prev = url()->previous();
-        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit') && ! str_contains($prev, '/resources/'))
-            ? $prev
-            : '/admin/subjects';
-
-        return Inertia::render('admin/ResourceCreateOrEdit', [
-            'redirect' => $redirect,
-            'node' => $node,
-            'resource' => $resource,
-        ]);
-    }
-
     public function store(StoreResourceRequest $request)
     {
         $validated = $request->validated();
@@ -61,11 +27,7 @@ class ResourceController extends Controller
 
         Resource::create($validated);
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : '/admin/subjects';
-
-        return redirect($redirect)->with('success', 'Resource created successfully.');
+        return back()->with('success', 'Resource created successfully.');
     }
 
     public function update(UpdateResourceRequest $request, Resource $resource)
@@ -86,12 +48,7 @@ class ResourceController extends Controller
 
         $resource->update($validated);
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : '/admin/subjects';
-
-        return redirect($redirect)
-            ->with('success', 'Resource updated successfully.');
+        return back()->with('success', 'Resource updated successfully.');
     }
 
     public function destroy(Resource $resource)
@@ -103,23 +60,6 @@ class ResourceController extends Controller
         $resource->delete();
 
         return redirect()->back()->with('success', 'Resource deleted successfully.');
-    }
-
-    public function createBulkImages(Request $request)
-    {
-        $redirect = $request->input('redirect');
-        if (empty($redirect) || str_contains($redirect, '/create') || str_contains($redirect, '/edit')) {
-            $prev = url()->previous();
-            $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
-                ? $prev
-                : '/admin/subjects';
-        }
-        $node = Node::findOrFail($request->node_id);
-
-        return Inertia::render('admin/resources/BulkImageCreate', [
-            'redirect' => $redirect,
-            'node' => $node,
-        ]);
     }
 
     public function storeBulkImages(BulkImageStoreRequest $request)
@@ -138,28 +78,7 @@ class ResourceController extends Controller
             }
         });
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : '/admin/subjects';
-
-        return redirect($redirect)->with('success', 'Bulk images uploaded successfully.');
-    }
-
-    public function createBulkVideos(Request $request)
-    {
-        $redirect = $request->input('redirect');
-        if (empty($redirect) || str_contains($redirect, '/create') || str_contains($redirect, '/edit')) {
-            $prev = url()->previous();
-            $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
-                ? $prev
-                : '/admin/subjects';
-        }
-        $node = Node::findOrFail($request->node_id);
-
-        return Inertia::render('admin/resources/BulkVideoCreate', [
-            'redirect' => $redirect,
-            'node' => $node,
-        ]);
+        return back()->with('success', 'Images uploaded successfully.');
     }
 
     public function storeBulkVideos(BulkVideoStoreRequest $request)
@@ -208,29 +127,18 @@ class ResourceController extends Controller
 
         // Apply naming strategy
         foreach ($videos as $index => &$video) {
-
             if ($validated['naming_strategy'] === 'youtube') {
                 $video['title'] = $video['title'];
-            }
-
-            if ($validated['naming_strategy'] === 'serial') {
-                $video['title'] = str_pad(
-                    $request->start_number + $index,
-                    2,
-                    '0',
-                    STR_PAD_LEFT
-                );
-            }
-
-            if ($validated['naming_strategy'] === 'prefix') {
+            } else {
                 $number = str_pad(
-                    $validated['start_number'] + $index,
+                    ($validated['start_number'] ?? 1) + $index,
                     2,
                     '0',
                     STR_PAD_LEFT
                 );
 
-                $video['title'] = "{$validated['naming_prefix']} - {$number}";
+                $prefix = trim($validated['naming_prefix'] ?? '');
+                $video['title'] = $prefix !== '' ? "{$prefix} - {$number}" : $number;
             }
         }
 
@@ -250,10 +158,6 @@ class ResourceController extends Controller
             }
         });
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : '/admin/subjects';
-
-        return redirect($redirect)->with('success', 'Bulk Videos uploaded successfully.');
+        return back()->with('success', 'YouTube playlist imported successfully.');
     }
 }

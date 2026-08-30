@@ -52,43 +52,6 @@ class NodeController extends Controller
         ]);
     }
 
-    public function create(Subject $subject, Request $request)
-    {
-        $parent = null;
-
-        if ($request->parent_id) {
-            $parent = Node::where('id', $request->parent_id)
-                ->where('subject_id', $subject->id)
-                ->firstOrFail();
-        }
-
-        $prev = url()->previous();
-        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
-            ? $prev
-            : route('admin.nodes.index', ['subject' => $subject->slug]);
-
-        return Inertia::render('admin/NodeCreateOrEdit', [
-            'subject' => $subject,
-            'parent' => $parent,
-            'redirect' => $redirect,
-        ]);
-    }
-
-    public function edit(Node $node)
-    {
-        $prev = url()->previous();
-        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
-            ? $prev
-            : route('admin.nodes.index', ['subject' => $node->subject->slug]);
-
-        return Inertia::render('admin/NodeCreateOrEdit', [
-            'subject' => $node->subject,
-            'node' => $node,
-            'parent' => $node->parent,
-            'redirect' => $redirect,
-        ]);
-    }
-
     public function store(StoreNodeRequest $request, Subject $subject)
     {
         $validated = $request->validated();
@@ -127,11 +90,7 @@ class NodeController extends Controller
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : route('admin.nodes.index', ['subject' => $subject->slug]);
-
-        return redirect($redirect)->with('success', 'Node created successfully.');
+        return back()->with('success', 'Folder created successfully.');
     }
 
     public function update(UpdateNodeRequest $request, Subject $subject, Node $node)
@@ -183,11 +142,7 @@ class NodeController extends Controller
 
         $node->save();
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : route('admin.nodes.index', ['subject' => $subject->slug]);
-
-        return redirect($redirect)->with('success', 'Node updated successfully.');
+        return back()->with('success', 'Folder updated successfully.');
     }
 
     public function batchStore(Request $request, Subject $subject)

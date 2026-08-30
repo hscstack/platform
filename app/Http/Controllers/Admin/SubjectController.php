@@ -22,30 +22,18 @@ class SubjectController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        return Inertia::render('admin/SubjectCreateOrEdit');
-    }
-
-    public function edit(Subject $subject)
-    {
-        return Inertia::render('admin/SubjectCreateOrEdit', [
-            'subject' => $subject,
-        ]);
-    }
-
     public function store(StoreSubjectRequest $request)
     {
         Subject::create($request->validated());
 
-        return redirect()->route('admin.subjects.index');
+        return back()->with('success', 'Subject created successfully.');
     }
 
     public function update(UpdateSubjectRequest $request, Subject $subject)
     {
         $subject->update($request->validated());
 
-        return redirect()->route('admin.subjects.index');
+        return back()->with('success', 'Subject updated successfully.');
     }
 
     public function destroy(Subject $subject)
