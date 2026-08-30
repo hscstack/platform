@@ -141,28 +141,30 @@ const submitForm = () => {
         router.patch(`/admin/subjects/edit/${props.subject.id}`, payload, {
             preserveScroll: true,
             onSuccess: () => {
-                isSaving.value = false;
                 emit('close');
             },
             onError: (errors) => {
-                isSaving.value = false;
                 errorMessage.value =
                     Object.values(errors).flat().join(', ') ||
                     'Failed to update subject.';
+            },
+            onFinish: () => {
+                isSaving.value = false;
             },
         });
     } else {
         router.post('/admin/subjects', payload, {
             preserveScroll: true,
             onSuccess: () => {
-                isSaving.value = false;
                 emit('close');
             },
             onError: (errors) => {
-                isSaving.value = false;
                 errorMessage.value =
                     Object.values(errors).flat().join(', ') ||
                     'Failed to create subject.';
+            },
+            onFinish: () => {
+                isSaving.value = false;
             },
         });
     }

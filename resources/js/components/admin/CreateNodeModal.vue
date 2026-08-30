@@ -93,14 +93,15 @@ const submitForm = () => {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    isSaving.value = false;
                     emit('close');
                 },
                 onError: (errors) => {
-                    isSaving.value = false;
                     errorMessage.value =
                         Object.values(errors).flat().join(', ') ||
                         'Failed to update folder.';
+                },
+                onFinish: () => {
+                    isSaving.value = false;
                 },
             },
         );
@@ -108,14 +109,15 @@ const submitForm = () => {
         router.post(`/admin/subjects/${props.subject.id}/nodes`, payload, {
             preserveScroll: true,
             onSuccess: () => {
-                isSaving.value = false;
                 emit('close');
             },
             onError: (errors) => {
-                isSaving.value = false;
                 errorMessage.value =
                     Object.values(errors).flat().join(', ') ||
                     'Failed to create folder.';
+            },
+            onFinish: () => {
+                isSaving.value = false;
             },
         });
     }

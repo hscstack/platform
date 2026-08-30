@@ -155,15 +155,16 @@ const submitForm = () => {
         forceFormData: true,
         preserveScroll: true,
         onSuccess: () => {
-            isSaving.value = false;
             clearAll();
             emit('close');
         },
         onError: (errors) => {
-            isSaving.value = false;
             errorMessage.value =
                 Object.values(errors).flat().join(', ') ||
                 'Failed to upload images.';
+        },
+        onFinish: () => {
+            isSaving.value = false;
         },
     });
 };
