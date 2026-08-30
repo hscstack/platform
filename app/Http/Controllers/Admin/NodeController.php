@@ -52,21 +52,6 @@ class NodeController extends Controller
         ]);
     }
 
-    public function edit(Node $node)
-    {
-        $prev = url()->previous();
-        $redirect = (! empty($prev) && ! str_contains($prev, '/create') && ! str_contains($prev, '/edit'))
-            ? $prev
-            : route('admin.nodes.index', ['subject' => $node->subject->slug]);
-
-        return Inertia::render('admin/NodeCreateOrEdit', [
-            'subject' => $node->subject,
-            'node' => $node,
-            'parent' => $node->parent,
-            'redirect' => $redirect,
-        ]);
-    }
-
     public function store(StoreNodeRequest $request, Subject $subject)
     {
         $validated = $request->validated();
@@ -157,11 +142,7 @@ class NodeController extends Controller
 
         $node->save();
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : route('admin.nodes.index', ['subject' => $subject->slug]);
-
-        return redirect($redirect)->with('success', 'Node updated successfully.');
+        return back()->with('success', 'Folder updated successfully.');
     }
 
     public function batchStore(Request $request, Subject $subject)

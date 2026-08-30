@@ -51,7 +51,6 @@ Route::middleware('permission:create nodes')->group(function () {
 });
 
 Route::middleware('permission:edit nodes')->group(function () {
-    Route::get('/nodes/edit/{node}', [AdminNodeController::class, 'edit'])->name('nodes.edit');
     Route::patch('/subjects/{subject}/nodes/{node}', [AdminNodeController::class, 'update'])->name('nodes.patch');
 });
 

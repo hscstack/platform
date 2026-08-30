@@ -32,7 +32,23 @@ const resourceDropdownRef = ref<HTMLElement | null>(null);
 const folderDropdownRef = ref<HTMLElement | null>(null);
 const isBulkModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
+const editingNode = ref<any | null>(null);
 const isSingleResourceModalOpen = ref(false);
+
+const openCreateNodeModal = () => {
+    editingNode.value = null;
+    isSingleModalOpen.value = true;
+};
+
+const openEditNodeModal = (node: any) => {
+    editingNode.value = node;
+    isSingleModalOpen.value = true;
+};
+
+const handleNodeModalClose = () => {
+    isSingleModalOpen.value = false;
+    editingNode.value = null;
+};
 
 const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
@@ -139,7 +155,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                             type="button"
                             @click="
                                 isFolderDropdownOpen = false;
-                                isSingleModalOpen = true;
+                                openCreateNodeModal();
                             "
                             class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
@@ -212,12 +228,13 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             </div>
         </div>
 
-        <!-- Single Node Modal -->
+        <!-- Single Node Modal (Create / Edit) -->
         <CreateNodeModal
             :is-open="isSingleModalOpen"
             :subject="subject"
             :parent="parent"
-            @close="isSingleModalOpen = false"
+            :node="editingNode"
+            @close="handleNodeModalClose"
         />
 
         <!-- Single Resource Modal -->
@@ -249,6 +266,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         v-for="node in nodes"
                         :key="`node-${node.id}`"
                         :node="node"
+                        @edit="openEditNodeModal"
                     />
                     <ResourceRow
                         v-for="resource in resources"

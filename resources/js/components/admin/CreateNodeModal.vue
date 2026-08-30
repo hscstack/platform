@@ -21,6 +21,12 @@ const props = defineProps<{
         id: number;
         name: string;
     } | null;
+    node?: {
+        id: number;
+        name: string;
+        slug: string;
+        sort_order?: number;
+    } | null;
 }>();
 
 const emit = defineEmits<{
@@ -34,10 +40,17 @@ const showAdvanced = ref(false);
 const isSaving = ref(false);
 const errorMessage = ref('');
 
-const resetForm = () => {
-    name.value = '';
-    slug.value = '';
-    sortOrder.value = 0;
+const initForm = () => {
+    if (props.node) {
+        name.value = props.node.name || '';
+        slug.value = props.node.slug || '';
+        sortOrder.value = props.node.sort_order ?? 0;
+    } else {
+        name.value = '';
+        slug.value = '';
+        sortOrder.value = 0;
+    }
+
     errorMessage.value = '';
     showAdvanced.value = false;
 };
@@ -46,7 +59,7 @@ watch(
     () => props.isOpen,
     (open) => {
         if (open) {
-            resetForm();
+            initForm();
         }
     },
 );
@@ -67,19 +80,36 @@ const submitForm = () => {
     isSaving.value = true;
     errorMessage.value = '';
 
-    router.post(
-        `/admin/subjects/${props.subject.id}/nodes`,
-        {
-            name: name.value,
-            slug: slug.value || null,
-            parent_id: props.parent?.id || null,
-            sort_order: sortOrder.value,
-        },
-        {
+    const payload = {
+        name: name.value,
+        slug: slug.value || null,
+        parent_id: props.parent?.id || null,
+        sort_order: sortOrder.value,
+    };
+
+    if (props.node) {
+        router.patch(
+            `/admin/subjects/${props.subject.id}/nodes/${props.node.id}`,
+            payload,
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    isSaving.value = false;
+                    emit('close');
+                },
+                onError: (errors) => {
+                    isSaving.value = false;
+                    errorMessage.value =
+                        Object.values(errors).flat().join(', ') ||
+                        'Failed to update folder.';
+                },
+            },
+        );
+    } else {
+        router.post(`/admin/subjects/${props.subject.id}/nodes`, payload, {
             preserveScroll: true,
             onSuccess: () => {
                 isSaving.value = false;
-                resetForm();
                 emit('close');
             },
             onError: (errors) => {
@@ -88,8 +118,8 @@ const submitForm = () => {
                     Object.values(errors).flat().join(', ') ||
                     'Failed to create folder.';
             },
-        },
-    );
+        });
+    }
 };
 </script>
 
@@ -123,7 +153,7 @@ const submitForm = () => {
                             <h3
                                 class="truncate text-base font-bold text-slate-900 dark:text-gray-100"
                             >
-                                Create Folder
+                                {{ node ? 'Edit Folder' : 'Create Folder' }}
                             </h3>
                             <p
                                 class="truncate text-xs text-slate-500 dark:text-gray-400"
@@ -274,7 +304,11 @@ const submitForm = () => {
                                 />
                                 <FolderPlus v-else class="h-3.5 w-3.5" />
                                 <span>{{
-                                    isSaving ? 'Creating...' : 'Create Folder'
+                                    isSaving
+                                        ? 'Saving...'
+                                        : node
+                                          ? 'Update Folder'
+                                          : 'Create Folder'
                                 }}</span>
                             </button>
                         </div>

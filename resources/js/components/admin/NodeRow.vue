@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { Folder, Pencil, Trash2 } from 'lucide-vue-next';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -8,6 +8,10 @@ const { can } = usePermissions();
 const { node } = defineProps({
     node: Object,
 });
+
+const emit = defineEmits<{
+    (e: 'edit', node: any): void;
+}>();
 
 const handleDelete = () => {
     if (confirm('Are you sure you want to delete this Folder?')) {
@@ -44,21 +48,22 @@ const handleDelete = () => {
             class="flex shrink-0 items-center gap-1"
             @click.stop
         >
-            <Link
+            <button
                 v-if="can('edit nodes')"
-                :href="`/admin/nodes/edit/${node.id}`"
-                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                title="Edit Node"
+                type="button"
+                @click="emit('edit', node)"
+                class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                title="Edit Folder"
             >
                 <Pencil class="h-4 w-4" :stroke-width="1.8" />
-            </Link>
+            </button>
 
             <button
                 v-if="can('delete nodes')"
                 type="button"
                 @click="handleDelete"
-                class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
-                title="Delete Node"
+                class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                title="Delete Folder"
             >
                 <Trash2 class="h-4 w-4" :stroke-width="1.8" />
             </button>
