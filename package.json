@@ -1,11 +1,12 @@
-{
+
   "$schema": "https://www.schemastore.org/package.json",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build",
     "build:ssr": "vite build && vite build --ssr",
-    "dev": "vite",
+    "dev": "composer run dev",
+    "dev:server": "vite",
     "format": "prettier --write resources/",
     "format:check": "prettier --check resources/",
     "lint": "eslint . --fix",
