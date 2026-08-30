@@ -2,7 +2,9 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
+import BulkImageModal from '@/components/admin/BulkImageModal.vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
+import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
 import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
@@ -25,6 +27,8 @@ const isFolderDropdownOpen = ref(false);
 const resourceDropdownRef = ref<HTMLElement | null>(null);
 const folderDropdownRef = ref<HTMLElement | null>(null);
 const isBulkModalOpen = ref(false);
+const isBulkImageModalOpen = ref(false);
+const isBulkVideoModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
 const editingNode = ref<any | null>(null);
 const isSingleResourceModalOpen = ref(false);
@@ -204,7 +208,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
                     <div
                         v-if="isResourceDropdownOpen"
-                        class="absolute right-0 z-10 mt-1.5 w-44 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+                        class="absolute right-0 z-10 mt-1.5 w-48 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
                     >
                         <button
                             type="button"
@@ -216,20 +220,26 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         >
                             Single Resource
                         </button>
-                        <Link
-                            :href="`/admin/resources/create/bulk/images?node_id=${parent.id}&redirect=${page.url}`"
-                            @click="isResourceDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                        <button
+                            type="button"
+                            @click="
+                                isResourceDropdownOpen = false;
+                                isBulkImageModalOpen = true;
+                            "
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
                             Upload Multiple Images
-                        </Link>
-                        <Link
-                            :href="`/admin/resources/create/bulk/videos?node_id=${parent.id}&redirect=${page.url}`"
-                            @click="isResourceDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                        </button>
+                        <button
+                            type="button"
+                            @click="
+                                isResourceDropdownOpen = false;
+                                isBulkVideoModalOpen = true;
+                            "
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
                             Upload Multiple Videos
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -259,6 +269,22 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             :subject="subject"
             :parent="parent"
             @close="isBulkModalOpen = false"
+        />
+
+        <!-- Bulk Images Modal -->
+        <BulkImageModal
+            v-if="parent"
+            :is-open="isBulkImageModalOpen"
+            :node="parent"
+            @close="isBulkImageModalOpen = false"
+        />
+
+        <!-- Bulk Videos Modal -->
+        <BulkVideoModal
+            v-if="parent"
+            :is-open="isBulkVideoModalOpen"
+            :node="parent"
+            @close="isBulkVideoModalOpen = false"
         />
 
         <div class="flex flex-1 flex-col">

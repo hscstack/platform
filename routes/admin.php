@@ -60,8 +60,6 @@ Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class
 
 // Resources
 Route::middleware('permission:create resources')->group(function () {
-    Route::get('/resources/create/bulk/images', [AdminResourceController::class, 'createBulkImages']);
-    Route::get('/resources/create/bulk/videos', [AdminResourceController::class, 'createBulkVideos']);
     Route::post('/resources', [AdminResourceController::class, 'store']);
     Route::post('/resources/bulk/images', [AdminResourceController::class, 'storeBulkImages']);
     Route::post('/resources/bulk/videos', [AdminResourceController::class, 'storeBulkVideos']);
