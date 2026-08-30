@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Profile;
 
+use App\Rules\CleanText;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,7 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', new CleanText],
             'username' => [
                 'sometimes',
                 'string',
@@ -32,10 +33,11 @@ class UpdateProfileRequest extends FormRequest
                 'max:30',
                 'regex:/^[a-zA-Z0-9_]+$/',
                 Rule::unique('users', 'username')->ignore($this->user()->id),
+                new CleanText,
             ],
             'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
-            'about' => ['sometimes', 'nullable', 'string'],
-            'institution' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'about' => ['sometimes', 'nullable', 'string', 'max:1000', new CleanText],
+            'institution' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
             'github' => ['sometimes', 'nullable', 'string', 'max:255'],

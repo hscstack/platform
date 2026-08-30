@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Rules\CleanText;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,7 +26,7 @@ class UpdateUserRequest extends FormRequest
         $user = $this->route('user');
 
         $rules = [
-            'name' => ['sometimes', 'string', 'max:255'],
+            'name' => ['sometimes', 'string', 'max:255', new CleanText],
             'username' => [
                 'sometimes',
                 'nullable',
@@ -34,12 +35,13 @@ class UpdateUserRequest extends FormRequest
                 'max:30',
                 'regex:/^[a-zA-Z0-9_]+$/',
                 'unique:users,username,'.$user->id,
+                new CleanText,
             ],
             'email' => ['sometimes', 'email', 'unique:users,email,'.$user->id],
             'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
-            'about' => ['sometimes', 'nullable', 'string'],
-            'title' => ['sometimes', 'nullable', 'string'],
-            'institution' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'about' => ['sometimes', 'nullable', 'string', 'max:1000', new CleanText],
+            'title' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
+            'institution' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
             'github' => ['sometimes', 'nullable', 'string', 'max:255'],
