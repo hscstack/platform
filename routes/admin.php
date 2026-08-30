@@ -48,7 +48,6 @@ Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->middlew
 // Nodes (Folders)
 Route::middleware('permission:create nodes')->group(function () {
     Route::post('/subjects/{subject}/nodes/batch', [AdminNodeController::class, 'batchStore'])->name('nodes.batch');
-    Route::get('/subjects/{subject:slug}/nodes/create', [AdminNodeController::class, 'create'])->name('nodes.create');
     Route::post('/subjects/{subject}/nodes', [AdminNodeController::class, 'store'])->name('nodes.store');
 });
 

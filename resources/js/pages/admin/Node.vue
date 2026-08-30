@@ -9,6 +9,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
+import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -29,6 +30,7 @@ const isFolderDropdownOpen = ref(false);
 const resourceDropdownRef = ref<HTMLElement | null>(null);
 const folderDropdownRef = ref<HTMLElement | null>(null);
 const isBulkModalOpen = ref(false);
+const isSingleModalOpen = ref(false);
 
 const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
@@ -131,17 +133,16 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         v-if="isFolderDropdownOpen"
                         class="absolute right-0 z-10 mt-1.5 w-44 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <Link
-                            :href="
-                                parent
-                                    ? `/admin/subjects/${subject.slug}/nodes/create?parent_id=${parent.id}`
-                                    : `/admin/subjects/${subject.slug}/nodes/create`
+                        <button
+                            type="button"
+                            @click="
+                                isFolderDropdownOpen = false;
+                                isSingleModalOpen = true;
                             "
-                            @click="isFolderDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
                             Single Folder
-                        </Link>
+                        </button>
                         <button
                             type="button"
                             @click="
@@ -205,6 +206,14 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                 </div>
             </div>
         </div>
+
+        <!-- Single Node Modal -->
+        <CreateNodeModal
+            :is-open="isSingleModalOpen"
+            :subject="subject"
+            :parent="parent"
+            @close="isSingleModalOpen = false"
+        />
 
         <!-- Bulk Node Modal -->
         <BulkNodeModal
