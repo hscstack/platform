@@ -17,6 +17,15 @@ class ShortUrlController extends Controller
             'original_url' => ['required', 'string', 'url', 'max:2048'],
         ]);
 
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+        $originalHost = parse_url($validated['original_url'], PHP_URL_HOST);
+
+        if ($appHost && strcasecmp((string) $originalHost, (string) $appHost) !== 0) {
+            return response()->json([
+                'message' => 'Only URLs from this website are allowed.',
+            ], 422);
+        }
+
         $response = Http::withHeaders([
             'Authorization' => (string) config('services.short_io.api_key'),
             'Content-Type' => 'application/json',

@@ -894,8 +894,8 @@ const closeReactorsModal = () => {
 
 const allReactors = computed(() => {
     if (!activeReactorsMessage.value?.reactions) {
-return [];
-}
+        return [];
+    }
 
     const list: Array<{ user: ChatReactorUser; emoji: string }> = [];
 
@@ -912,8 +912,8 @@ return [];
 
 const activeReactorsTotalCount = computed(() => {
     if (!activeReactorsMessage.value?.reactions) {
-return 0;
-}
+        return 0;
+    }
 
     return activeReactorsMessage.value.reactions.reduce(
         (sum, r) => sum + r.count,
@@ -923,8 +923,8 @@ return 0;
 
 const displayedReactors = computed(() => {
     if (!activeReactorsMessage.value?.reactions) {
-return [];
-}
+        return [];
+    }
 
     if (selectedReactorTab.value === 'all') {
         return allReactors.value;
@@ -935,8 +935,8 @@ return [];
     );
 
     if (!target?.reactors) {
-return [];
-}
+        return [];
+    }
 
     return target.reactors.map((u) => ({
         user: u,

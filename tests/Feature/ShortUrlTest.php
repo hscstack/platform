@@ -15,6 +15,7 @@ test('authenticated user can generate short url via short.io', function () {
     $user = User::factory()->create();
 
     config([
+        'app.url' => 'https://hscstack.com',
         'services.short_io.api_key' => 'test-api-key',
         'services.short_io.domain' => 'go.hscstack.com',
     ]);
@@ -60,10 +61,28 @@ test('validates original_url is a valid url', function () {
         ->assertJsonValidationErrors(['original_url']);
 });
 
+test('rejects urls from external domains', function () {
+    $user = User::factory()->create();
+
+    config([
+        'app.url' => 'https://hscstack.com',
+    ]);
+
+    $response = $this->actingAs($user)->postJson(route('short-urls.store'), [
+        'original_url' => 'https://google.com/malicious',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'message' => 'Only URLs from this website are allowed.',
+        ]);
+});
+
 test('handles short.io api errors gracefully', function () {
     $user = User::factory()->create();
 
     config([
+        'app.url' => 'https://hscstack.com',
         'services.short_io.api_key' => 'test-api-key',
         'services.short_io.domain' => 'go.hscstack.com',
     ]);
