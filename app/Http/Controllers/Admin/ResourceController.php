@@ -61,11 +61,7 @@ class ResourceController extends Controller
 
         Resource::create($validated);
 
-        $redirect = (! empty($validated['redirect']) && ! str_contains($validated['redirect'], '/create') && ! str_contains($validated['redirect'], '/edit'))
-            ? $validated['redirect']
-            : '/admin/subjects';
-
-        return redirect($redirect)->with('success', 'Resource created successfully.');
+        return back()->with('success', 'Resource created successfully.');
     }
 
     public function update(UpdateResourceRequest $request, Resource $resource)

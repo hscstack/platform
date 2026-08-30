@@ -10,6 +10,7 @@ import {
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
+import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -31,6 +32,7 @@ const resourceDropdownRef = ref<HTMLElement | null>(null);
 const folderDropdownRef = ref<HTMLElement | null>(null);
 const isBulkModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
+const isSingleResourceModalOpen = ref(false);
 
 const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
@@ -181,13 +183,16 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         v-if="isResourceDropdownOpen"
                         class="absolute right-0 z-10 mt-1.5 w-44 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <Link
-                            :href="`/admin/resources/create?node_id=${parent.id}`"
-                            @click="isResourceDropdownOpen = false"
-                            class="block rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                        <button
+                            type="button"
+                            @click="
+                                isResourceDropdownOpen = false;
+                                isSingleResourceModalOpen = true;
+                            "
+                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         >
-                            Single File
-                        </Link>
+                            Single Resource
+                        </button>
                         <Link
                             :href="`/admin/resources/create/bulk/images?node_id=${parent.id}&redirect=${page.url}`"
                             @click="isResourceDropdownOpen = false"
@@ -213,6 +218,14 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             :subject="subject"
             :parent="parent"
             @close="isSingleModalOpen = false"
+        />
+
+        <!-- Single Resource Modal -->
+        <CreateResourceModal
+            v-if="parent"
+            :is-open="isSingleResourceModalOpen"
+            :node="parent"
+            @close="isSingleResourceModalOpen = false"
         />
 
         <!-- Bulk Node Modal -->
