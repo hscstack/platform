@@ -35,7 +35,6 @@ class BulkVideoStoreRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                'required_if:naming_strategy,prefix',
             ],
             'node_id' => ['required', 'exists:nodes,id'],
         ];

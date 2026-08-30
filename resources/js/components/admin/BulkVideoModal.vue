@@ -4,7 +4,6 @@ import {
     Youtube,
     FileSpreadsheet,
     Hash,
-    Tag,
     Info,
     X,
     Loader2,
@@ -25,16 +24,16 @@ const emit = defineEmits<{
 }>();
 
 const playlistUrl = ref('');
-const namingStrategy = ref<'youtube' | 'serial' | 'prefix'>('youtube');
-const namingPrefix = ref('');
+const namingStrategy = ref<'serial' | 'youtube'>('serial');
+const namingPrefix = ref('video');
 const startNumber = ref(1);
 const isSaving = ref(false);
 const errorMessage = ref('');
 
 const resetForm = () => {
     playlistUrl.value = '';
-    namingStrategy.value = 'youtube';
-    namingPrefix.value = '';
+    namingStrategy.value = 'serial';
+    namingPrefix.value = 'video';
     startNumber.value = 1;
     errorMessage.value = '';
     isSaving.value = false;
@@ -193,36 +192,17 @@ const submitForm = () => {
                             </div>
 
                             <!-- Naming Strategy Selection -->
-                            <div class="space-y-2">
-                                <label
-                                    class="block text-xs font-bold text-slate-700 dark:text-gray-300"
+                            <div
+                                class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-gray-700/80 dark:bg-gray-800/40"
+                            >
+                                <h4
+                                    class="text-xs font-bold text-slate-800 dark:text-gray-200"
                                 >
-                                    Resource Naming Strategy
-                                </label>
+                                    Resource Naming Settings
+                                </h4>
 
-                                <div
-                                    class="grid grid-cols-1 gap-2 sm:grid-cols-3"
-                                >
-                                    <!-- Strategy 1: YouTube Title -->
-                                    <label
-                                        class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 text-xs transition dark:bg-gray-900"
-                                        :class="
-                                            namingStrategy === 'youtube'
-                                                ? 'border-indigo-600 font-semibold text-indigo-700 ring-1 ring-indigo-600 dark:border-indigo-500 dark:text-indigo-300'
-                                                : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400'
-                                        "
-                                    >
-                                        <input
-                                            type="radio"
-                                            value="youtube"
-                                            v-model="namingStrategy"
-                                            class="text-indigo-600 focus:ring-indigo-500"
-                                        />
-                                        <FileSpreadsheet class="h-3.5 w-3.5" />
-                                        <span>YouTube Title</span>
-                                    </label>
-
-                                    <!-- Strategy 2: Serial -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <!-- Strategy 1: Serial -->
                                     <label
                                         class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 text-xs transition dark:bg-gray-900"
                                         :class="
@@ -238,50 +218,47 @@ const submitForm = () => {
                                             class="text-indigo-600 focus:ring-indigo-500"
                                         />
                                         <Hash class="h-3.5 w-3.5" />
-                                        <span>Sequential (01)</span>
+                                        <span>Serial Numbers</span>
                                     </label>
 
-                                    <!-- Strategy 3: Prefix -->
+                                    <!-- Strategy 2: YouTube Title -->
                                     <label
                                         class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 text-xs transition dark:bg-gray-900"
                                         :class="
-                                            namingStrategy === 'prefix'
+                                            namingStrategy === 'youtube'
                                                 ? 'border-indigo-600 font-semibold text-indigo-700 ring-1 ring-indigo-600 dark:border-indigo-500 dark:text-indigo-300'
                                                 : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400'
                                         "
                                     >
                                         <input
                                             type="radio"
-                                            value="prefix"
+                                            value="youtube"
                                             v-model="namingStrategy"
                                             class="text-indigo-600 focus:ring-indigo-500"
                                         />
-                                        <Tag class="h-3.5 w-3.5" />
-                                        <span>Prefix + Serial</span>
+                                        <FileSpreadsheet class="h-3.5 w-3.5" />
+                                        <span>YouTube Titles</span>
                                     </label>
                                 </div>
 
-                                <!-- Dynamic Options for Prefix / Serial -->
+                                <!-- Dynamic Options for Serial -->
                                 <div
-                                    v-if="namingStrategy !== 'youtube'"
-                                    class="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2"
+                                    v-if="namingStrategy === 'serial'"
+                                    class="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2"
                                 >
-                                    <div
-                                        v-if="namingStrategy === 'prefix'"
-                                        class="space-y-1"
-                                    >
+                                    <div class="space-y-1">
                                         <label
                                             for="modal_video_naming_prefix"
                                             class="block text-[11px] font-semibold text-slate-700 dark:text-gray-300"
                                         >
-                                            Prefix String
+                                            Prefix
                                         </label>
                                         <input
                                             id="modal_video_naming_prefix"
                                             v-model="namingPrefix"
                                             type="text"
-                                            placeholder="e.g. Lecture"
-                                            class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                            placeholder="e.g. video"
+                                            class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                         />
                                     </div>
 
@@ -298,7 +275,7 @@ const submitForm = () => {
                                             type="number"
                                             min="1"
                                             placeholder="1"
-                                            class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                            class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                         />
                                     </div>
                                 </div>

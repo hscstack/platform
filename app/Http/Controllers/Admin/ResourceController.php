@@ -127,29 +127,18 @@ class ResourceController extends Controller
 
         // Apply naming strategy
         foreach ($videos as $index => &$video) {
-
             if ($validated['naming_strategy'] === 'youtube') {
                 $video['title'] = $video['title'];
-            }
-
-            if ($validated['naming_strategy'] === 'serial') {
-                $video['title'] = str_pad(
-                    $request->start_number + $index,
-                    2,
-                    '0',
-                    STR_PAD_LEFT
-                );
-            }
-
-            if ($validated['naming_strategy'] === 'prefix') {
+            } else {
                 $number = str_pad(
-                    $validated['start_number'] + $index,
+                    ($validated['start_number'] ?? 1) + $index,
                     2,
                     '0',
                     STR_PAD_LEFT
                 );
 
-                $video['title'] = "{$validated['naming_prefix']} - {$number}";
+                $prefix = trim($validated['naming_prefix'] ?? '');
+                $video['title'] = $prefix !== '' ? "{$prefix} - {$number}" : $number;
             }
         }
 
