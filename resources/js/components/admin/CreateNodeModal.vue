@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import {
-    FolderPlus,
     X,
     Loader2,
     AlertCircle,
@@ -296,13 +295,12 @@ const submitForm = () => {
                             <button
                                 type="submit"
                                 :disabled="isSaving || !name.trim()"
-                                class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Loader2
                                     v-if="isSaving"
                                     class="h-3.5 w-3.5 animate-spin"
                                 />
-                                <FolderPlus v-else class="h-3.5 w-3.5" />
                                 <span>{{
                                     isSaving
                                         ? 'Saving...'

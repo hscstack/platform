@@ -10,7 +10,6 @@ import {
     X,
     Loader2,
     AlertCircle,
-    Plus,
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 
@@ -438,13 +437,12 @@ const submitForm = () => {
                             <button
                                 type="submit"
                                 :disabled="isSaving || !title.trim()"
-                                class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Loader2
                                     v-if="isSaving"
                                     class="h-3.5 w-3.5 animate-spin"
                                 />
-                                <Plus v-else class="h-3.5 w-3.5" />
                                 <span>{{
                                     isSaving
                                         ? 'Saving...'

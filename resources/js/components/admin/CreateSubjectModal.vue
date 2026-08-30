@@ -14,7 +14,6 @@ import {
     ChevronDown,
     ChevronRight,
     X,
-    FolderPlus,
     Loader2,
     AlertCircle,
 } from 'lucide-vue-next';
@@ -322,9 +321,7 @@ const submitForm = () => {
                                 >
                                     Subject Icon
                                 </label>
-                                <div
-                                    class="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-9"
-                                >
+                                <div class="flex flex-wrap gap-2">
                                     <button
                                         type="button"
                                         v-for="(
@@ -332,7 +329,8 @@ const submitForm = () => {
                                         ) in icons"
                                         :key="iconKey"
                                         @click="icon = iconKey"
-                                        class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border p-2 text-center transition"
+                                        :title="iconKey"
+                                        class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border transition"
                                         :class="
                                             icon === iconKey
                                                 ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300'
@@ -341,12 +339,8 @@ const submitForm = () => {
                                     >
                                         <component
                                             :is="iconComponent"
-                                            class="h-4 w-4 shrink-0"
+                                            class="h-4.5 w-4.5 shrink-0"
                                         />
-                                        <span
-                                            class="max-w-full truncate text-[10px] font-medium"
-                                            >{{ iconKey }}</span
-                                        >
                                     </button>
                                 </div>
                             </div>
@@ -496,13 +490,12 @@ const submitForm = () => {
                             <button
                                 type="submit"
                                 :disabled="isSaving || !name.trim()"
-                                class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Loader2
                                     v-if="isSaving"
                                     class="h-3.5 w-3.5 animate-spin"
                                 />
-                                <FolderPlus v-else class="h-3.5 w-3.5" />
                                 <span>{{
                                     isSaving
                                         ? 'Saving...'
