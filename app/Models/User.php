@@ -93,7 +93,9 @@ class User extends Authenticatable
             return null;
         }
 
-        return Storage::url($this->image_path);
+        return str($this->image_path)->startsWith(['http://', 'https://'])
+            ? $this->image_path
+            : Storage::url($this->image_path);
     }
 
     protected function casts(): array

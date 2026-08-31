@@ -60,7 +60,12 @@ const avatarBgClass = computed(() => {
         >
             <img
                 v-if="user.image_url || user.image_path"
-                :src="user.image_url || '/storage/' + user.image_path"
+                :src="
+                    user.image_url ||
+                    (user.image_path?.startsWith('http')
+                        ? user.image_path
+                        : '/storage/' + user.image_path)
+                "
                 :alt="user.name"
                 class="h-full w-full object-cover"
             />

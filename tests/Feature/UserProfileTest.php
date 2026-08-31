@@ -7,6 +7,7 @@ use App\Models\NodeVote;
 use App\Models\ResourceCompletion;
 use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
 test('public user profile can be rendered by username', function () {
@@ -237,4 +238,15 @@ test('profile update rejects inappropriate words in name, username, about, or in
         'institution' => 'Offensive College',
     ]);
     $response->assertSessionHasErrors(['institution']);
+});
+
+test('user image_url accessor handles storage paths and full URLs dynamically', function () {
+    $user1 = User::factory()->create(['image_path' => 'avatars/sample.jpg']);
+    expect($user1->image_url)->toBe(Storage::url('avatars/sample.jpg'));
+
+    $user2 = User::factory()->create(['image_path' => 'https://lh3.googleusercontent.com/a/sample-avatar']);
+    expect($user2->image_url)->toBe('https://lh3.googleusercontent.com/a/sample-avatar');
+
+    $user3 = User::factory()->create(['image_path' => null]);
+    expect($user3->image_url)->toBeNull();
 });
