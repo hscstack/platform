@@ -13,6 +13,7 @@ use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -56,10 +57,12 @@ class ForumController extends Controller
             });
         }
 
-        $subjects = Subject::select('id', 'name', 'course', 'slug')
-            ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
-            ->orderBy('sort_order')
-            ->get();
+        $subjects = Cache::remember('forum_filter_subjects', now()->addDay(), function () {
+            return Subject::select('id', 'name', 'course', 'slug')
+                ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
+                ->orderBy('sort_order')
+                ->get();
+        });
 
         return Inertia::render('Forum/Index', [
             'posts' => $posts,
@@ -160,10 +163,12 @@ class ForumController extends Controller
             abort(403, $reason ?: 'Creating new questions is temporarily paused.');
         }
 
-        $subjects = Subject::select('id', 'name', 'course', 'slug')
-            ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
-            ->orderBy('sort_order')
-            ->get();
+        $subjects = Cache::remember('forum_filter_subjects', now()->addDay(), function () {
+            return Subject::select('id', 'name', 'course', 'slug')
+                ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
+                ->orderBy('sort_order')
+                ->get();
+        });
 
         return Inertia::render('Forum/Create', [
             'subjects' => $subjects,
