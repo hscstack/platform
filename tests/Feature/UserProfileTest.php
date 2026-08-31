@@ -2,9 +2,9 @@
 
 use App\Models\AppSetting;
 use App\Models\Blog;
+use App\Models\ForumAnswer;
+use App\Models\ForumPost;
 use App\Models\Node;
-use App\Models\NodeVote;
-use App\Models\ResourceCompletion;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -65,7 +65,7 @@ test('public profile renders authored blogs when available', function () {
     );
 });
 
-test('public profile accurately displays completed study topics and activities', function () {
+test('public profile accurately displays forum questions, answers, and activities', function () {
     $user = User::factory()->create(['username' => 'studious_student']);
     $subject = Subject::create([
         'name' => 'Physics',
@@ -79,16 +79,20 @@ test('public profile accurately displays completed study topics and activities',
         'name' => 'Vector',
         'slug' => 'vector',
     ]);
-    $resource = App\Models\Resource::create([
+
+    $post = ForumPost::create([
+        'user_id' => $user->id,
+        'curriculum' => 'hsc',
+        'subject_id' => $subject->id,
         'node_id' => $node->id,
-        'title' => 'Vector Lecture Notes',
-        'resource_type' => 'image',
-        'file_path' => 'resources/vector.jpg',
+        'title' => 'How to calculate cross product angle?',
+        'body' => 'Need help with vector cross product.',
     ]);
 
-    ResourceCompletion::create([
+    $answer = ForumAnswer::create([
+        'forum_post_id' => $post->id,
         'user_id' => $user->id,
-        'resource_id' => $resource->id,
+        'body' => 'Use A x B = |A||B|sin(theta) formula.',
     ]);
 
     $response = $this->get('/u/studious_student');
@@ -96,10 +100,14 @@ test('public profile accurately displays completed study topics and activities',
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
-        ->where('stats.completedResourcesCount', 1)
-        ->has('recentCompletions', 1)
-        ->where('recentCompletions.0.title', 'Vector Lecture Notes')
-        ->has('recentActivities.completions', 1)
+        ->where('stats.questionsCount', 1)
+        ->where('stats.answersCount', 1)
+        ->has('forumPosts', 1)
+        ->where('forumPosts.0.title', 'How to calculate cross product angle?')
+        ->has('forumAnswers', 1)
+        ->where('forumAnswers.0.body', 'Use A x B = |A||B|sin(theta) formula.')
+        ->has('recentActivities.forum_posts', 1)
+        ->has('recentActivities.forum_answers', 1)
     );
 });
 
@@ -126,7 +134,7 @@ test('public profile includes both contributors and random users in suggestions'
     );
 });
 
-test('public profile displays latest upvoted folders in recent activity', function () {
+test('public profile displays created folders in recent activity', function () {
     $user = User::factory()->create(['username' => 'voter_student']);
     $subject = Subject::create([
         'name' => 'Higher Math',
@@ -137,22 +145,10 @@ test('public profile displays latest upvoted folders in recent activity', functi
     ]);
 
     $parentFolder = Node::create([
+        'user_id' => $user->id,
         'subject_id' => $subject->id,
         'name' => 'Calculus',
         'slug' => 'calculus',
-    ]);
-
-    $childFolder = Node::create([
-        'subject_id' => $subject->id,
-        'parent_id' => $parentFolder->id,
-        'name' => 'Differentiation Master Notes',
-        'slug' => 'diff-notes',
-    ]);
-
-    NodeVote::create([
-        'node_id' => $childFolder->id,
-        'user_id' => $user->id,
-        'type' => 'up',
     ]);
 
     $response = $this->get('/u/voter_student');
@@ -160,11 +156,8 @@ test('public profile displays latest upvoted folders in recent activity', functi
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
-        ->where('stats.upvotesCount', 1)
-        ->has('recentActivities.upvotes', 1)
-        ->where('recentActivities.upvotes.0.title', 'Differentiation Master Notes')
-        ->where('recentActivities.upvotes.0.subtitle', 'Higher Math · Calculus')
-        ->where('recentActivities.upvotes.0.url', '/higher-math/calculus/diff-notes')
+        ->has('recentActivities.folders', 1)
+        ->where('recentActivities.folders.0.title', 'Calculus')
     );
 });
 

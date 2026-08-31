@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Mail\UserAppreciationMail;
 use App\Models\BlogComment;
 use App\Models\BlogReaction;
+use App\Models\ForumAnswer;
+use App\Models\ForumPost;
 use App\Models\Node;
-use App\Models\NodeVote;
 use App\Models\Resource;
-use App\Models\ResourceCompletion;
 use App\Models\User;
 use App\Models\UserAppreciation;
 use Illuminate\Support\Facades\Mail;
@@ -21,12 +21,18 @@ class UserProfileController extends Controller
         $user = User::where('username', $username)
             ->firstOrFail();
 
-        // Study Completions
-        $completedResourcesCount = $user->completedResources()->count();
-        $recentCompletions = $user->completedResources()
-            ->with(['node:id,name,subject_id', 'node.subject:id,name'])
-            ->latest('resource_completions.created_at')
-            ->take(6)
+        // Forum Contributions
+        $questionsCount = ForumPost::where('user_id', $user->id)->count();
+        $answersCount = ForumAnswer::where('user_id', $user->id)->count();
+        $forumPosts = ForumPost::where('user_id', $user->id)
+            ->with(['subject:id,name,course,slug', 'node:id,name,slug'])
+            ->latest()
+            ->take(5)
+            ->get();
+        $forumAnswers = ForumAnswer::where('user_id', $user->id)
+            ->with(['post:id,title,slug,curriculum,is_answered'])
+            ->latest()
+            ->take(5)
             ->get();
 
         // Contributor Stats & Blogs
@@ -34,11 +40,10 @@ class UserProfileController extends Controller
             ->where('is_published', true)
             ->withCount(['reactions', 'comments'])
             ->latest()
-            ->take(3)
+            ->take(5)
             ->get();
         $blogsCount = $user->blogs()->where('is_published', true)->count();
         $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
-        $upvotesCount = NodeVote::where('user_id', $user->id)->where('type', 'up')->count();
         $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
 
         // Appreciations (Received & Given)
@@ -60,7 +65,35 @@ class UserProfileController extends Controller
             ->take(30)
             ->get();
 
-        // Recent Community Activities (Folders created, uploads, completed topics, comments made, reactions given, upvoted folders, appreciations given)
+        // Recent Community Activities
+        $recentForumPosts = ForumPost::where('user_id', $user->id)
+            ->latest('id')
+            ->take(3)
+            ->get()
+            ->map(fn ($post) => [
+                'type' => 'forum_post',
+                'title' => $post->title,
+                'subtitle' => strtoupper($post->curriculum).' Forum Question',
+                'url' => "/forum/questions/{$post->slug}",
+                'created_at' => $post->created_at?->diffForHumans(),
+                'timestamp' => $post->created_at?->timestamp ?? 0,
+            ]);
+
+        $recentForumAnswers = ForumAnswer::where('user_id', $user->id)
+            ->with('post:id,title,slug')
+            ->latest('id')
+            ->take(3)
+            ->get()
+            ->map(fn ($ans) => [
+                'type' => 'forum_answer',
+                'title' => $ans->post?->title ?? 'Forum Question',
+                'content' => $ans->body,
+                'url' => $ans->post ? "/forum/questions/{$ans->post->slug}" : null,
+                'created_at' => $ans->created_at?->diffForHumans(),
+                'timestamp' => $ans->created_at?->timestamp ?? 0,
+            ])
+            ->filter(fn ($item) => $item['url'] !== null);
+
         $recentFolders = Node::where('user_id', $user->id)
             ->with([
                 'subject:id,name,slug',
@@ -100,21 +133,6 @@ class UserProfileController extends Controller
                 'timestamp' => $item->created_at?->timestamp ?? 0,
             ]);
 
-        $recentCompleted = ResourceCompletion::where('user_id', $user->id)
-            ->with(['resource:id,title,node_id', 'resource.node:id,name,subject_id', 'resource.node.subject:id,name'])
-            ->latest()
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'completion',
-                'title' => $item->resource?->title,
-                'subtitle' => $item->resource?->node?->subject?->name.' · '.$item->resource?->node?->name,
-                'url' => $item->resource ? "/resources/{$item->resource->id}" : null,
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['title'] !== null);
-
         $recentReactions = BlogReaction::where('user_id', $user->id)
             ->with('blog:id,title,slug')
             ->latest()
@@ -143,36 +161,6 @@ class UserProfileController extends Controller
                 'timestamp' => $item->created_at?->timestamp ?? 0,
             ])
             ->filter(fn ($item) => $item['title'] !== null);
-
-        $recentUpvotes = NodeVote::where('user_id', $user->id)
-            ->where('type', 'up')
-            ->with([
-                'node.subject:id,name,slug',
-                'node.parent:id,name,slug',
-                'node.parent.parent:id,name,slug',
-            ])
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(function ($item) {
-                $node = $item->node;
-                if (! $node) {
-                    return null;
-                }
-
-                $url = $this->buildNodeUrl($node);
-
-                return [
-                    'type' => 'upvote',
-                    'title' => $node->name,
-                    'subtitle' => $node->subject?->name.($node->parent ? ' · '.$node->parent->name : ''),
-                    'url' => $url,
-                    'created_at' => $item->created_at?->diffForHumans(),
-                    'timestamp' => $item->created_at?->timestamp ?? 0,
-                ];
-            })
-            ->filter()
-            ->values();
 
         $recentAppreciations = UserAppreciation::where('appreciator_id', $user->id)
             ->with('user:id,name,username')
@@ -227,26 +215,27 @@ class UserProfileController extends Controller
                 'is_staff' => $user->is_verified,
             ],
             'stats' => [
-                'completedResourcesCount' => $completedResourcesCount,
+                'questionsCount' => $questionsCount,
+                'answersCount' => $answersCount,
                 'blogsCount' => $blogsCount,
-                'upvotesCount' => $upvotesCount,
-                'totalBlogViews' => (int) $totalBlogViews,
                 'sharedResourcesCount' => $sharedResourcesCount,
+                'totalBlogViews' => (int) $totalBlogViews,
             ],
             'appreciationsCount' => $appreciationsCount,
             'appreciatingCount' => $appreciatingCount,
             'isAppreciated' => $isAppreciated,
             'appreciators' => $appreciators,
             'appreciating' => $appreciating,
-            'recentCompletions' => $recentCompletions,
+            'forumPosts' => $forumPosts,
+            'forumAnswers' => $forumAnswers,
             'blogs' => $publishedBlogs,
             'recentActivities' => [
+                'forum_posts' => $recentForumPosts->values(),
+                'forum_answers' => $recentForumAnswers->values(),
                 'folders' => $recentFolders->values(),
                 'uploads' => $recentUploads->values(),
-                'completions' => $recentCompleted->values(),
                 'reactions' => $recentReactions->values(),
                 'comments' => $recentComments->values(),
-                'upvotes' => $recentUpvotes->values(),
                 'appreciations' => $recentAppreciations->values(),
             ],
             'suggestedUsers' => $suggestedUsers,
