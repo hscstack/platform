@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ForumNotificationMail;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Rules\CleanText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ForumAnswerController extends Controller
@@ -31,7 +33,7 @@ class ForumAnswerController extends Controller
             $imagePath = $request->file('image')->store('forum/answers');
         }
 
-        $post->answers()->create([
+        $answer = $post->answers()->create([
             'user_id' => auth()->id(),
             'parent_id' => $parentId,
             'body' => $validated['body'],
@@ -39,6 +41,13 @@ class ForumAnswerController extends Controller
         ]);
 
         $post->increment('answers_count');
+
+        // Send mail notification to post author only (if commenter is not the author)
+        $author = $post->user;
+        $currentUser = auth()->user();
+        if ($author && $currentUser && $author->id !== $currentUser->id && $author->email && $author->receive_emails !== false) {
+            Mail::to($author->email)->queue(ForumNotificationMail::forAnswer($post, $answer, $author, $currentUser));
+        }
 
         return back()->with('success', 'Answer posted!');
     }
