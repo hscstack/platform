@@ -586,26 +586,26 @@ const submitForm = () => {
             </div>
         </form>
 
-        <!-- Recently Delivered Email Audit Log -->
+        <!-- Email Audit Logs -->
         <div
             v-if="recentLogs && recentLogs.length > 0"
             class="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-gray-900"
         >
             <div class="mb-4 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <CheckCircle2
-                        class="h-5 w-5 text-emerald-600 dark:text-emerald-400"
+                    <Mail
+                        class="h-5 w-5 text-indigo-600 dark:text-indigo-400"
                     />
                     <h3
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        Delivered Email Audit Log (Live Success List)
+                        Email Delivery Logs
                     </h3>
                 </div>
                 <span
                     class="text-xs font-semibold text-slate-400 dark:text-gray-500"
                 >
-                    Latest {{ recentLogs.length }} sent messages
+                    Latest {{ recentLogs.length }} email attempts
                 </span>
             </div>
 
@@ -618,7 +618,7 @@ const submitForm = () => {
                             <th class="pb-3 font-bold">Recipient</th>
                             <th class="pb-3 font-bold">Subject</th>
                             <th class="pb-3 font-bold">Status</th>
-                            <th class="pb-3 font-bold">Delivered At</th>
+                            <th class="pb-3 font-bold">Date</th>
                         </tr>
                     </thead>
                     <tbody
@@ -643,7 +643,13 @@ const submitForm = () => {
                             <td
                                 class="py-3 pr-3 font-semibold text-slate-700 dark:text-gray-300"
                             >
-                                {{ log.subject }}
+                                <div>{{ log.subject }}</div>
+                                <div
+                                    v-if="log.error_message"
+                                    class="mt-1 text-[11px] font-normal text-rose-600 dark:text-rose-400"
+                                >
+                                    {{ log.error_message }}
+                                </div>
                             </td>
                             <td class="py-3 pr-3">
                                 <span
@@ -654,7 +660,11 @@ const submitForm = () => {
                                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
                                     "
                                 >
-                                    <CheckCircle2 class="h-3 w-3" />
+                                    <CheckCircle2
+                                        v-if="log.status === 'sent'"
+                                        class="h-3 w-3"
+                                    />
+                                    <AlertCircle v-else class="h-3 w-3" />
                                     <span>{{ log.status }}</span>
                                 </span>
                             </td>

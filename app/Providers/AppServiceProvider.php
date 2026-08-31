@@ -19,6 +19,7 @@ use App\Observers\SubjectObserver;
 use App\Observers\UserObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -51,6 +52,7 @@ class AppServiceProvider extends ServiceProvider
         User::observe(UserObserver::class);
 
         Event::listen(MessageSent::class, LogSentEmailListener::class);
+        Event::listen(JobFailed::class, [LogSentEmailListener::class, 'handleJobFailed']);
     }
 
     /**

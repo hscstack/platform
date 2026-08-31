@@ -4,6 +4,8 @@ namespace App\Listeners;
 
 use App\Models\SentEmailLog;
 use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Mail\SendQueuedMailable;
+use Illuminate\Queue\Events\JobFailed;
 use Symfony\Component\Mime\Address;
 
 class LogSentEmailListener
@@ -25,5 +27,33 @@ class LogSentEmailListener
             'status' => 'sent',
             'sent_at' => now(),
         ]);
+    }
+
+    public function handleJobFailed(JobFailed $event): void
+    {
+        if ($event->job->resolveName() !== SendQueuedMailable::class) {
+            return;
+        }
+
+        try {
+            $payload = $event->job->payload();
+            $command = unserialize($payload['data']['command'] ?? '');
+            $mailable = $command->mailable ?? null;
+
+            if ($mailable) {
+                $to = collect($mailable->to ?? [])->pluck('address')->filter()->implode(', ');
+                $subject = $mailable->subject ?? '(No Subject)';
+
+                SentEmailLog::create([
+                    'recipient_email' => $to ?: 'unknown@example.com',
+                    'subject' => $subject,
+                    'status' => 'failed',
+                    'error_message' => str($event->exception->getMessage())->limit(500),
+                    'sent_at' => now(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
     }
 }
