@@ -235,7 +235,7 @@
         $metaTitle = "{$postTitle} - " . config('app.name', 'HSCStack');
         $ogTitle = "{$postTitle} - HSCStack Forum";
         $metaDescription = str($postBody)->limit(160, '...');
-        $ogImage = data_get($post, 'image_url') ?: (data_get($post, 'image_path') ? \Illuminate\Support\Facades\Storage::url(data_get($post, 'image_path')) : $defaultOgImage);
+        $ogImage = data_get($post, 'image_url') ?: (data_get($post, 'image_path') ? \Illuminate\Support\Facades\Storage::url(data_get($post, 'image_path')) : ($s3Url ? "{$s3Url}/images/og_forum.png" : url('/images/og_forum.png')));
         $ogType = 'article';
         $ogUrl = data_get($post, 'slug') ? url('/forum/questions/' . data_get($post, 'slug')) : url()->current();
 
@@ -289,11 +289,13 @@
         $metaTitle = 'Community Q&A Forum - Study Questions & Discussion - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Community Q&A Forum - HSCStack';
         $metaDescription = 'Ask questions, get help with difficult HSC & SSC academic problems, share answers, and collaborate with peers across Bangladesh on HSCStack Forum.';
+        $ogImage = $s3Url ? "{$s3Url}/images/og_forum.png" : url('/images/og_forum.png');
         $ogUrl = url('/forum');
     } elseif ($pageComponent === 'Forum/Create') {
         $metaTitle = 'Ask a Question - HSCStack Forum';
         $ogTitle = 'Ask a Question - HSCStack Forum';
         $metaDescription = 'Post an academic question or study doubt on HSCStack Forum to get answers from peers and educators.';
+        $ogImage = $s3Url ? "{$s3Url}/images/og_forum.png" : url('/images/og_forum.png');
         $ogUrl = url('/forum/ask');
     } elseif ($pageComponent === 'auth/Login' || $pageComponent === 'Login') {
         $metaTitle = 'Log In - ' . config('app.name', 'HSCStack');
