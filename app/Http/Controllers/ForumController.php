@@ -70,10 +70,8 @@ class ForumController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $slug): Response
+    public function show(Request $request, ForumPost $post): Response
     {
-        $post = ForumPost::where('slug', $slug)->firstOrFail();
-
         $user = auth()->user();
         if (! $post->is_published && (! $user || ! $user->can('view admin'))) {
             abort(404);

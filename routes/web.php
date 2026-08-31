@@ -97,7 +97,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/blogs', [BlogController::class, 'index']);
     Route::get('/blogs/{blog}', [BlogController::class, 'show']);
     Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
-    Route::get('/forum/questions/{post}', [ForumController::class, 'show'])->name('forum.show');
+    Route::get('/forum/questions/{post:slug}', [ForumController::class, 'show'])->name('forum.show');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
