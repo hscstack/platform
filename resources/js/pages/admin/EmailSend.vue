@@ -122,84 +122,39 @@ const submitForm = () => {
 </script>
 
 <template>
-    <Head title="Emails — Admin" />
+    <Head title="Send Email - Admin" />
 
-    <div class="flex w-full flex-1 flex-col">
-        <!-- Emails Admin Header & Tab System -->
-        <div class="mb-6 space-y-4">
-            <div
-                class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
-            >
-                <div>
-                    <h1
-                        class="text-2xl font-black text-slate-900 dark:text-gray-100"
-                    >
-                        Emails
-                    </h1>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        Compose broadcast announcements and view email delivery
-                        logs.
-                    </p>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <!-- Preview Trigger Button -->
-                    <button
-                        type="button"
-                        @click="showPreviewModal = true"
-                        class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-slate-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                    >
-                        <Eye
-                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                        />
-                        <span>Preview Mail</span>
-                    </button>
-
-                    <!-- Recipient Count Badge -->
-                    <div
-                        class="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 dark:border-gray-800 dark:bg-gray-950"
-                    >
-                        <Users
-                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                        />
-                        <div
-                            class="text-xs font-semibold text-slate-600 dark:text-gray-400"
-                        >
-                            Subscribers:
-                            <span
-                                class="font-bold text-slate-900 dark:text-gray-100"
-                                >{{ recipientCount }}</span
-                            >
-                        </div>
-                    </div>
-                </div>
+    <div class="space-y-5">
+        <!-- Minimal Top Header -->
+        <div
+            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+            <div>
+                <h1
+                    class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
+                >
+                    Email Management
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-gray-400">
+                    Compose broadcast announcements and view real-time email
+                    delivery logs.
+                </p>
             </div>
 
-            <!-- Tab Navigation Bar -->
+            <!-- Header Quick Tabs -->
             <div
-                class="flex items-center gap-2 border-b border-slate-200 pb-3 dark:border-gray-800"
+                class="flex max-w-full items-center gap-1.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
             >
                 <Link
                     href="/admin/emails/send"
-                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition"
-                    :class="
-                        $page.url.startsWith('/admin/emails/send')
-                            ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
-                    "
+                    class="shrink-0 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                 >
-                    <Send class="h-3.5 w-3.5" />
-                    <span>Send Broadcast</span>
+                    Send Email
                 </Link>
 
                 <Link
                     href="/admin/emails/logs"
-                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition"
-                    :class="
-                        $page.url.startsWith('/admin/emails/logs')
-                            ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
-                    "
+                    class="flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                 >
                     <Mail class="h-3.5 w-3.5" />
                     <span>Delivery Logs</span>
