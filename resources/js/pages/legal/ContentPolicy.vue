@@ -13,6 +13,7 @@ import {
     ThumbsUp,
     Copyright,
     RefreshCw,
+    HelpCircle,
 } from 'lucide-vue-next';
 </script>
 
@@ -82,6 +83,10 @@ import {
                         <li>
                             ৫ ধরনের রিসোর্স (Notes, Questions, PDFs, Images,
                             Videos)
+                        </li>
+                        <li>
+                            একাডেমিক ফোরামের প্রশ্নোত্তর ও সমাধান (ছবি ও
+                            ডায়াগ্রাম সহ)
                         </li>
                         <li>
                             Embedded YouTube classes (Custom Native Player-এর
@@ -265,7 +270,68 @@ import {
                 </div>
             </div>
 
-            <!-- Section 5 -->
+            <!-- Section 5: Forum Q&A Policy -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <HelpCircle class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৫. একাডেমিক ফোরাম ও প্রশ্নোত্তর নীতিমালা
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        HSCStack ফোরামে শিক্ষার্থী ও শিক্ষকরা পড়াশোনা সংক্রান্ত
+                        বিভিন্ন প্রশ্ন ও উত্তরের মাধ্যমে পরস্পরের সাথে জ্ঞান
+                        বিনিময় করেন। এই কমিউনিটির মান ও নিরাপত্তা বজায় রাখতে
+                        নিচের নীতিমালাসমূহ প্রযোজ্য:
+                    </p>
+                    <ul
+                        class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        <li>
+                            <strong>প্রাসঙ্গিকতা ও স্পষ্টতা:</strong> ফোরাম
+                            শুধুমাত্র একাডেমিক পড়াশোনা, সিলেবাস, গাণিতিক সমস্যা
+                            সমাধান এবং শিক্ষামূলক নির্দেশনার জন্য উন্মুক্ত।
+                            অপ্রাসঙ্গিক, বিজ্ঞাপনমূলক বা রাজনৈতিক আলোচনা পোস্ট
+                            করা যাবে না।
+                        </li>
+                        <li>
+                            <strong>ডুপ্লিকেট ও স্প্যাম রোধ:</strong> প্রশ্ন
+                            করার পূর্বে সার্চ বারের মাধ্যমে যাচাই করতে হবে যে
+                            একই প্রশ্ন পূর্বে ফোরামে আলোচনা করা হয়েছে কিনা।
+                        </li>
+                        <li>
+                            <strong>ছবি ও ডায়াগ্রাম সংযুক্তি:</strong> প্রশ্নের
+                            সাথে প্রাসঙ্গিক ডায়াগ্রাম বা বইয়ের পৃষ্ঠার স্পষ্ট
+                            ছবি সংযুক্ত করা যাবে (সর্বোচ্চ ৫ মেগাবাইট)।
+                            কপিরাইটযুক্ত কোনো গোপনীয় নথি, পরীক্ষার প্রশ্নফাঁস
+                            সংক্রান্ত উপাদান বা আপত্তিকর ছবি আপলোড করা সম্পূর্ণ
+                            নিষিদ্ধ।
+                        </li>
+                        <li>
+                            <strong>ভোট ও কমিউনিটি রেটিং:</strong> ফোরামের আপভোট
+                            ও ডাউনভোট সিস্টেম শুধুমাত্র সমাধানের নির্ভুলতা ও মান
+                            নির্ধারণের জন্য। কোনো প্রকার ভোট কারচুপি বা
+                            বিদ্বেষমূলক ডাউনভোটিং প্ল্যাটফর্মের আচরণবিধি লঙ্ঘন
+                            হিসেবে গণ্য হবে।
+                        </li>
+                        <li>
+                            <strong>মডারেশন ও কনটেন্ট অপসারণ:</strong>
+                            বিভ্রান্তিকর তথ্য বা অসদাচরণমূলক যেকোনো প্রশ্ন বা
+                            উত্তর মডারেটররা সম্পাদনা বা মুছে দেওয়ার অধিকার
+                            সংরক্ষণ করেন।
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 6 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -276,7 +342,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৫. Attribution এবং Redistribution
+                        ৬. Attribution এবং Redistribution
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -310,7 +376,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 6 -->
+            <!-- Section 7 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -321,7 +387,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৬. Contributor Account Removal
+                        ৭. Contributor Account Removal
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -353,7 +419,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 7 -->
+            <!-- Section 8 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -364,7 +430,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৭. Embedded YouTube Content
+                        ৮. Embedded YouTube Content
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -396,7 +462,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 8 -->
+            <!-- Section 9 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -407,7 +473,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৮. Blogs এবং Articles
+                        ৯. Blogs এবং Articles
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -440,7 +506,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 9 -->
+            <!-- Section 10 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -451,7 +517,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৯. কমিউনিটি ইন্টারঅ্যাকশন
+                        ১০. কমিউনিটি ইন্টারঅ্যাকশন
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -482,7 +548,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 10 -->
+            <!-- Section 11 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -493,7 +559,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ১০. Copyright এবং Removal Requests
+                        ১১. Copyright এবং Removal Requests
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -513,7 +579,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 11 -->
+            <!-- Section 12 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -524,7 +590,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ১১. Content Review and Modification
+                        ১২. Content Review and Modification
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"

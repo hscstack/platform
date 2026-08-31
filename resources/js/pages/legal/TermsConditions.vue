@@ -86,6 +86,9 @@ import {
                             ইউজার প্রোফাইল।
                         </li>
                         <li>
+                            একাডেমিক ফোরাম ও পারস্পরিক প্রশ্নোত্তর ব্যবস্থা।
+                        </li>
+                        <li>
                             রিসোর্স কমপ্লিশন ট্র্যাকিং এবং এআই অ্যাসিস্ট্যান্ট
                             সুবিধা।
                         </li>
@@ -176,7 +179,51 @@ import {
                 </div>
             </div>
 
-            <!-- Section 5 -->
+            <!-- Section 5: Forum Terms -->
+            <div class="flex items-start gap-4">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                    <HelpCircle class="h-4 w-4 stroke-[2.2]" />
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        ৫. একাডেমিক ফোরাম ব্যবহারের শর্তাবলী
+                    </h2>
+                    <p
+                        class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        HSCStack ফোরাম শিক্ষার্থীদের প্রশ্ন করা ও শিক্ষামূলক
+                        সমাধান পাওয়ার একটি উন্মুক্ত মাধ্যম। ফোরাম ব্যবহারের
+                        ক্ষেত্রে নিচের শর্তসমূহ প্রযোজ্য:
+                    </p>
+                    <ul
+                        class="mt-2 list-disc space-y-1 pl-5 text-sm font-medium text-slate-500 dark:text-gray-400"
+                    >
+                        <li>
+                            ফোরামে প্রশ্ন বা উত্তর দেওয়ার জন্য প্ল্যাটফর্মে
+                            সাইন-ইন করা আবশ্যক।
+                        </li>
+                        <li>
+                            প্রশ্ন করার পূর্বে ব্যবহারকারীকে অ্যান্টি-স্প্যাম ও
+                            নির্দেশিকা মেনে চলার অঙ্গীকার প্রদান করতে হবে।
+                        </li>
+                        <li>
+                            প্রশ্নে বা উত্তরে আপলোডকৃত যেকোনো ছবি, চিত্র বা
+                            লেখার স্বত্ব ও যথার্থতার দায় পোস্টকারী ব্যবহারকারীর।
+                        </li>
+                        <li>
+                            পরীক্ষায় অসদুপায়, প্রশ্নফাঁস বা কোনো কপিরাইটযুক্ত
+                            গোপনীয় উপাদান শেয়ার করা সম্পূর্ণ নিষিদ্ধ এবং এর ফলে
+                            স্থায়ীভাবে অ্যাকাউন্ট বাতিল হতে পারে।
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 6 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -187,7 +234,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৫. Intellectual Property ও Fair Use
+                        ৬. Intellectual Property ও Fair Use
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -214,7 +261,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 6 -->
+            <!-- Section 7 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -225,7 +272,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৬. কনটেন্ট ও ব্লগ
+                        ৭. কনটেন্ট ও ব্লগ
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -240,7 +287,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 7 -->
+            <!-- Section 8 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -251,7 +298,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৭. কমিউনিটি ফিচার
+                        ৮. কমিউনিটি ফিচার
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -266,7 +313,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 8 -->
+            <!-- Section 9 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -277,7 +324,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৮. এডুকেশনাল Accuracy সংক্রান্ত Disclaimer
+                        ৯. এডুকেশনাল Accuracy সংক্রান্ত Disclaimer
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -292,7 +339,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 9 -->
+            <!-- Section 10 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -303,7 +350,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ৯. দায়বদ্ধতার সীমাবদ্ধতা
+                        ১০. দায়বদ্ধতার সীমাবদ্ধতা
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -319,7 +366,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 10 -->
+            <!-- Section 11 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -330,7 +377,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ১০. অ্যাকাউন্ট স্থগিতকরণ ও বাতিলকরণ
+                        ১১. অ্যাকাউন্ট স্থগিতকরণ ও বাতিলকরণ
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
@@ -351,7 +398,7 @@ import {
                 </div>
             </div>
 
-            <!-- Section 11 -->
+            <!-- Section 12 -->
             <div class="flex items-start gap-4">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
@@ -362,7 +409,7 @@ import {
                     <h2
                         class="text-base font-bold text-slate-900 dark:text-gray-100"
                     >
-                        ১১. পরিবর্তন ও আপডেট
+                        ১২. পরিবর্তন ও আপডেট
                     </h2>
                     <p
                         class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"

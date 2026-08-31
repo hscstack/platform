@@ -4,6 +4,9 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ForumAnswerController;
+use App\Http\Controllers\ForumController;
+use App\Http\Controllers\ForumVoteController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
@@ -33,6 +36,16 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
     Route::get('/support/my-tickets', [SupportTicketController::class, 'myTickets'])->name('support.my-tickets');
     Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('support.tickets.store');
+
+    // Forum Authenticated Actions
+    Route::get('/forum/ask', [ForumController::class, 'create'])->name('forum.create');
+    Route::post('/forum', [ForumController::class, 'store'])->name('forum.store');
+    Route::delete('/forum/posts/{post:id}', [ForumController::class, 'destroy'])->name('forum.destroy');
+    Route::post('/forum/posts/{post:id}/toggle-answered', [ForumController::class, 'toggleAnswered'])->name('forum.toggle-answered');
+    Route::post('/forum/posts/{post:id}/answers', [ForumAnswerController::class, 'store'])->name('forum.answers.store');
+    Route::delete('/forum/answers/{answer}', [ForumAnswerController::class, 'destroy'])->name('forum.answers.destroy');
+    Route::post('/forum/posts/{post:id}/vote', [ForumVoteController::class, 'votePost'])->name('forum.posts.vote');
+    Route::post('/forum/answers/{answer}/vote', [ForumVoteController::class, 'voteAnswer'])->name('forum.answers.vote');
 
     Route::get('/me', function (Request $request) {
         return redirect()->route('user.profile', ['username' => $request->user()->username]);
@@ -81,6 +94,8 @@ Route::middleware('throttle:60,1')->group(function () {
 
     Route::get('/blogs', [BlogController::class, 'index']);
     Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+    Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
+    Route::get('/forum/questions/{post:slug}', [ForumController::class, 'show'])->name('forum.show');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
