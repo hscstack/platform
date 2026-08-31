@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ForumNotificationMail;
+use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Rules\CleanText;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -15,6 +17,33 @@ class ForumAnswerController extends Controller
 {
     public function store(Request $request, ForumPost $post): RedirectResponse
     {
+        $user = auth()->user();
+
+        // Check if user is suspended
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
+        // Check if discussion is approved
+        if (! $post->isApproved()) {
+            return back()->with('error', 'This discussion is currently not open for new replies.');
+        }
+
+        // Check if discussion is locked
+        if ($post->is_locked) {
+            return back()->with('error', 'This discussion has been locked. New replies are disabled.');
+        }
+
+        // Check if global forum commenting is enabled
+        $isCommentsEnabled = (bool) AppSetting::get('forum_comments_enabled', true);
+        if (! $isCommentsEnabled && (! $user || ! $user->can('view admin'))) {
+            $reason = AppSetting::get('forum_disabled_reason', 'Submitting comments is temporarily paused.');
+
+            return back()->with('error', $reason ?: 'Submitting comments is temporarily paused.');
+        }
+
         $validated = $request->validate([
             'body' => ['required', 'string', 'min:2', 'max:10000', new CleanText],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
@@ -54,7 +83,7 @@ class ForumAnswerController extends Controller
 
     public function destroy(ForumAnswer $answer): RedirectResponse
     {
-        abort_unless(auth()->id() === $answer->user_id, 403);
+        abort_unless(auth()->id() === $answer->user_id || auth()->user()?->can('manage forums'), 403);
 
         $post = $answer->post;
         $replies = $answer->replies;
@@ -77,5 +106,37 @@ class ForumAnswerController extends Controller
         }
 
         return back()->with('success', 'Deleted.');
+    }
+
+    public function report(Request $request, ForumAnswer $answer): JsonResponse
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        if ($answer->reports()->where('reporter_id', $user->id)->exists()) {
+            return response()->json([
+                'message' => 'You have already reported this answer.',
+            ], 422);
+        }
+
+        $author = $answer->user;
+
+        $report = $answer->reports()->create([
+            'reporter_id' => $user->id,
+            'reported_user_id' => $author?->id,
+            'reported_user_name' => $author?->name,
+            'reported_user_username' => $author?->username,
+            'content_snapshot' => $answer->body,
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Answer reported successfully. Our moderation team will review it.',
+            'report_id' => $report->id,
+        ], 201);
     }
 }

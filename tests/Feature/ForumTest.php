@@ -9,6 +9,12 @@ use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Permission;
+
+beforeEach(function () {
+    Permission::findOrCreate('view admin', 'web');
+    Permission::findOrCreate('manage forums', 'web');
+});
 
 test('unauthenticated users can view forum index and show', function () {
     $user = User::factory()->create();
@@ -473,4 +479,204 @@ test('email is not queued if author opted out of emails', function () {
         ->assertSessionHas('success');
 
     Mail::assertNothingQueued();
+});
+
+test('unauthenticated users filtering by my_posts receive zero questions', function () {
+    $user = User::factory()->create();
+    ForumPost::create([
+        'user_id' => $user->id,
+        'curriculum' => 'hsc',
+        'title' => 'Sample Post for Guest Filter Test',
+        'body' => 'Content of the question.',
+    ]);
+
+    $response = $this->get('/forum?my_posts=1');
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Forum/Index')
+            ->has('posts.data', 0)
+        );
+});
+
+test('users cannot reply to unapproved discussions', function () {
+    $author = User::factory()->create();
+    $regularUser = User::factory()->create();
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo('manage forums');
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'curriculum' => 'hsc',
+        'title' => 'Unpublished Question',
+        'body' => 'Body of unpublished question.',
+        'moderation_status' => 'rejected',
+    ]);
+
+    // Regular user cannot reply
+    $this->actingAs($regularUser)
+        ->post("/forum/posts/{$post->id}/answers", [
+            'body' => 'Attempting reply to unpublished post.',
+        ])
+        ->assertSessionHas('error');
+
+    expect(ForumAnswer::where('forum_post_id', $post->id)->count())->toBe(0);
+
+    // Moderator also cannot reply while unapproved
+    $this->actingAs($moderator)
+        ->post("/forum/posts/{$post->id}/answers", [
+            'body' => 'Moderator administrative reply.',
+        ])
+        ->assertSessionHas('error');
+
+    expect(ForumAnswer::where('forum_post_id', $post->id)->count())->toBe(0);
+});
+
+test('submitting question with auto approval mode sets moderation_status to approved', function () {
+    AppSetting::set('forum_approval_mode', 'auto');
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post(route('forum.store'), [
+            'title' => 'Auto Approved Question Title',
+            'body' => 'Body of auto approved question with enough details.',
+            'curriculum' => 'hsc',
+        ])
+        ->assertRedirect();
+
+    $post = ForumPost::where('title', 'Auto Approved Question Title')->first();
+    expect($post)->not->toBeNull();
+    expect($post->moderation_status)->toBe('approved');
+});
+
+test('submitting question with manual approval mode sets moderation_status to pending', function () {
+    AppSetting::set('forum_approval_mode', 'manual');
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post(route('forum.store'), [
+            'title' => 'Manual Pending Question Title',
+            'body' => 'Body of manual pending question with enough details.',
+            'curriculum' => 'ssc',
+        ])
+        ->assertRedirect();
+
+    $post = ForumPost::where('title', 'Manual Pending Question Title')->first();
+    expect($post)->not->toBeNull();
+    expect($post->moderation_status)->toBe('pending');
+});
+
+test('author and admin can view pending or flagged questions but other users get 404', function () {
+    $author = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $admin = User::factory()->create();
+    $admin->givePermissionTo('view admin');
+
+    $pendingPost = ForumPost::factory()->create([
+        'user_id' => $author->id,
+        'moderation_status' => 'pending',
+    ]);
+
+    $flaggedPost = ForumPost::factory()->create([
+        'user_id' => $author->id,
+        'moderation_status' => 'flagged',
+    ]);
+
+    // Author can view
+    $this->actingAs($author)->get(route('forum.show', $pendingPost))->assertStatus(200);
+    $this->actingAs($author)->get(route('forum.show', $flaggedPost))->assertStatus(200);
+
+    // Admin can view
+    $this->actingAs($admin)->get(route('forum.show', $pendingPost))->assertStatus(200);
+    $this->actingAs($admin)->get(route('forum.show', $flaggedPost))->assertStatus(200);
+
+    // Other user gets 404
+    $this->actingAs($otherUser)->get(route('forum.show', $pendingPost))->assertSee('errors\/404');
+    $this->actingAs($otherUser)->get(route('forum.show', $flaggedPost))->assertSee('errors\/404');
+
+    // Guest gets 404
+    $this->get(route('forum.show', $pendingPost))->assertSee('errors\/404');
+});
+
+test('suspended user cannot access ask question page', function () {
+    $suspendedUser = User::factory()->create([
+        'banned_until' => now()->addDays(2),
+    ]);
+
+    $this->actingAs($suspendedUser)
+        ->get('/forum/ask')
+        ->assertRedirect(route('forum.index'))
+        ->assertSessionHas('error');
+});
+
+test('suspended user cannot create forum questions', function () {
+    $suspendedUser = User::factory()->create([
+        'banned_until' => now()->addDays(2),
+    ]);
+
+    $this->actingAs($suspendedUser)
+        ->post('/forum', [
+            'title' => 'Suspended user question title',
+            'body' => 'Suspended user question body content here.',
+            'curriculum' => 'hsc',
+        ])
+        ->assertSessionHas('error');
+
+    expect(ForumPost::where('user_id', $suspendedUser->id)->count())->toBe(0);
+});
+
+test('suspended user cannot reply to forum questions', function () {
+    $author = User::factory()->create();
+    $suspendedUser = User::factory()->create([
+        'banned_until' => now()->addDays(2),
+    ]);
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'curriculum' => 'hsc',
+        'title' => 'Active Forum Question Title',
+        'body' => 'Active forum question body content.',
+    ]);
+
+    $this->actingAs($suspendedUser)
+        ->post("/forum/posts/{$post->id}/answers", [
+            'body' => 'Attempted answer by suspended user.',
+        ])
+        ->assertSessionHas('error');
+
+    expect(ForumAnswer::where('user_id', $suspendedUser->id)->count())->toBe(0);
+});
+
+test('suspended user cannot vote on forum questions or answers', function () {
+    $author = User::factory()->create();
+    $suspendedUser = User::factory()->create([
+        'banned_until' => now()->addDays(2),
+    ]);
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'curriculum' => 'hsc',
+        'title' => 'Active Question for Voting Test',
+        'body' => 'Question body.',
+    ]);
+
+    $answer = $post->answers()->create([
+        'user_id' => $author->id,
+        'body' => 'Answer body.',
+    ]);
+
+    // Vote on post
+    $this->actingAs($suspendedUser)
+        ->post("/forum/posts/{$post->id}/vote", ['value' => 1])
+        ->assertSessionHas('error');
+
+    expect($post->fresh()->vote_score)->toBe(0);
+
+    // Vote on answer
+    $this->actingAs($suspendedUser)
+        ->post("/forum/answers/{$answer->id}/vote", ['value' => 1])
+        ->assertSessionHas('error');
+
+    expect($answer->fresh()->vote_score)->toBe(0);
 });

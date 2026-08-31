@@ -36,6 +36,7 @@ const emit = defineEmits<{
 
 const page = usePage();
 const user = computed(() => (page.props.auth as any)?.user);
+const isUserBanned = computed(() => Boolean(user.value?.is_banned));
 const showAuthModal = ref(false);
 
 const upvotes = ref(props.initialUpvotes || 0);
@@ -72,7 +73,7 @@ const vote = (value: 1 | -1) => {
         return;
     }
 
-    if (isVoting.value) {
+    if (isUserBanned.value || isVoting.value) {
         return;
     }
 
@@ -168,8 +169,12 @@ const vote = (value: 1 | -1) => {
         <button
             type="button"
             @click.stop="vote(1)"
+            :disabled="isUserBanned"
+            :title="
+                isUserBanned ? 'Voting is disabled while suspended' : 'Upvote'
+            "
             :aria-label="'Upvote ' + votableType"
-            class="inline-flex items-center justify-center rounded-xl transition-colors active:scale-95"
+            class="inline-flex items-center justify-center rounded-xl transition-colors active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             :class="[
                 direction === 'vertical'
                     ? 'min-w-[34px] flex-col px-2 py-1'
@@ -202,8 +207,12 @@ const vote = (value: 1 | -1) => {
         <button
             type="button"
             @click.stop="vote(-1)"
+            :disabled="isUserBanned"
+            :title="
+                isUserBanned ? 'Voting is disabled while suspended' : 'Downvote'
+            "
             :aria-label="'Downvote ' + votableType"
-            class="inline-flex items-center justify-center rounded-xl transition-colors active:scale-95"
+            class="inline-flex items-center justify-center rounded-xl transition-colors active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             :class="[
                 direction === 'vertical'
                     ? 'min-w-[34px] flex-col px-2 py-1'
