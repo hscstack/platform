@@ -79,8 +79,11 @@ class ForumAnswerController extends Controller
         $currentUser = auth()->user();
 
         // Notify target user (post author for root answers, or specific author for replies)
+        $replyUserId = $validated['reply_to_user_id'] ?? null;
+        $isParticipant = $replyUserId && ($post->user_id === $replyUserId || $post->answers()->where('user_id', $replyUserId)->exists());
+
         $targetUser = $parentId
-            ? (! empty($validated['reply_to_user_id']) ? User::find($validated['reply_to_user_id']) : ($parent->user ?? null))
+            ? ($isParticipant ? User::find($replyUserId) : ($parent->user ?? null))
             : $post->user;
 
         if ($targetUser && $currentUser && $targetUser->id !== $currentUser->id) {
