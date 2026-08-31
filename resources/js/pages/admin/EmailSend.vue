@@ -14,6 +14,7 @@ import {
     X,
     Upload,
     Trash2,
+    CheckCircle2,
 } from 'lucide-vue-next';
 
 import { computed, ref } from 'vue';
@@ -31,6 +32,18 @@ const props = defineProps({
     staffCount: {
         type: Number,
         default: 0,
+    },
+    recentLogs: {
+        type: Array as () => Array<{
+            id: number;
+            recipient_email: string;
+            recipient_name?: string | null;
+            subject: string;
+            status: string;
+            sent_at?: string | null;
+            created_at: string;
+        }>,
+        default: () => [],
     },
 });
 
@@ -572,6 +585,87 @@ const submitForm = () => {
                 </div>
             </div>
         </form>
+
+        <!-- Recently Delivered Email Audit Log -->
+        <div
+            v-if="recentLogs && recentLogs.length > 0"
+            class="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <div class="mb-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <CheckCircle2
+                        class="h-5 w-5 text-emerald-600 dark:text-emerald-400"
+                    />
+                    <h3
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        Delivered Email Audit Log (Live Success List)
+                    </h3>
+                </div>
+                <span
+                    class="text-xs font-semibold text-slate-400 dark:text-gray-500"
+                >
+                    Latest {{ recentLogs.length }} sent messages
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr
+                            class="border-b border-slate-100 text-slate-400 dark:border-gray-800 dark:text-gray-500"
+                        >
+                            <th class="pb-3 font-bold">Recipient</th>
+                            <th class="pb-3 font-bold">Subject</th>
+                            <th class="pb-3 font-bold">Status</th>
+                            <th class="pb-3 font-bold">Delivered At</th>
+                        </tr>
+                    </thead>
+                    <tbody
+                        class="divide-y divide-slate-100 dark:divide-gray-800/60"
+                    >
+                        <tr
+                            v-for="log in recentLogs"
+                            :key="log.id"
+                            class="hover:bg-slate-50/50 dark:hover:bg-gray-800/40"
+                        >
+                            <td
+                                class="py-3 pr-3 font-medium text-slate-800 dark:text-gray-200"
+                            >
+                                {{ log.recipient_email }}
+                                <span
+                                    v-if="log.recipient_name"
+                                    class="block text-[11px] text-slate-400 dark:text-gray-500"
+                                >
+                                    {{ log.recipient_name }}
+                                </span>
+                            </td>
+                            <td
+                                class="py-3 pr-3 font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                {{ log.subject }}
+                            </td>
+                            <td class="py-3 pr-3">
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase"
+                                    :class="
+                                        log.status === 'sent'
+                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                                    "
+                                >
+                                    <CheckCircle2 class="h-3 w-3" />
+                                    <span>{{ log.status }}</span>
+                                </span>
+                            </td>
+                            <td class="py-3 text-slate-400 dark:text-gray-500">
+                                {{ log.sent_at || log.created_at }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Live PC / Desktop Email Client Preview Modal -->

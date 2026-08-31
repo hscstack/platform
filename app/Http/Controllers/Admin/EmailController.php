@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\BulkAnnouncementMail;
+use App\Models\SentEmailLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,10 +34,15 @@ class EmailController extends Controller
             ->has('roles')
             ->count();
 
+        $recentLogs = SentEmailLog::latest('id')
+            ->limit(20)
+            ->get();
+
         return Inertia::render('admin/EmailSend', [
             'recipientCount' => $allSubscribersCount,
             'studentsCount' => $studentsCount,
             'staffCount' => $staffCount,
+            'recentLogs' => $recentLogs,
         ]);
     }
 
