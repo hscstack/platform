@@ -7,7 +7,7 @@ use App\Events\ChatMessageReacted;
 use App\Events\ChatMessageSent;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
-use App\Models\ChatReport;
+use App\Models\Report;
 use App\Models\User;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
@@ -37,9 +37,9 @@ class ChatController extends Controller
             $reason = ! empty($customReason) ? $customReason : 'Global chat is currently disabled for maintenance.';
         } elseif (! $user) {
             $reason = 'Please sign in to join the conversation.';
-        } elseif ($user->isChatBanned()) {
-            $bannedUntilFormatted = $user->chat_banned_until->diffForHumans();
-            $reason = "You are temporarily banned from chat until {$user->chat_banned_until->toDateTimeString()} ({$bannedUntilFormatted}).";
+        } elseif ($user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+            $reason = "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).";
         } elseif ($audience === 'verified_members') {
             if ($user->is_verified || $user->can('view admin')) {
                 $canPost = true;
@@ -142,12 +142,12 @@ class ChatController extends Controller
             return response()->json(['message' => $msg], 403);
         }
 
-        // Check if user is chat banned
-        if ($user->isChatBanned()) {
-            $bannedUntilFormatted = $user->chat_banned_until->diffForHumans();
+        // Check if user is banned
+        if ($user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
 
             return response()->json([
-                'message' => "You are banned from sending messages until {$user->chat_banned_until->toDateTimeString()} ({$bannedUntilFormatted}).",
+                'message' => "You are suspended from sending messages until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).",
             ], 403);
         }
 
@@ -285,6 +285,7 @@ class ChatController extends Controller
         abort_unless($user, 401, 'Unauthenticated');
 
         $validated = $request->validate([
+            'message_id' => ['nullable', 'integer', 'exists:chat_messages,id'],
             'reported_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'reported_user_name' => ['nullable', 'string', 'max:255'],
             'reported_user_username' => ['nullable', 'string', 'max:255'],
@@ -294,9 +295,15 @@ class ChatController extends Controller
         ]);
 
         // Prevent duplicate reporting of the exact same message content by the same user
-        $alreadyReported = ChatReport::where('reporter_id', $user->id)
-            ->where('message_content', $validated['message_content'])
-            ->where('reported_user_id', $validated['reported_user_id'] ?? null)
+        $alreadyReported = Report::where('reporter_id', $user->id)
+            ->where('reportable_type', ChatMessage::class)
+            ->where(function ($q) use ($validated) {
+                if (! empty($validated['message_id'])) {
+                    $q->where('reportable_id', $validated['message_id']);
+                } else {
+                    $q->where('content_snapshot', $validated['message_content']);
+                }
+            })
             ->exists();
 
         if ($alreadyReported) {
@@ -305,12 +312,14 @@ class ChatController extends Controller
             ], 422);
         }
 
-        $report = ChatReport::create([
+        $report = Report::create([
             'reporter_id' => $user->id,
             'reported_user_id' => $validated['reported_user_id'] ?? null,
             'reported_user_name' => $validated['reported_user_name'] ?? null,
             'reported_user_username' => $validated['reported_user_username'] ?? null,
-            'message_content' => $validated['message_content'],
+            'reportable_type' => ChatMessage::class,
+            'reportable_id' => $validated['message_id'] ?? null,
+            'content_snapshot' => $validated['message_content'],
             'message_sent_at' => $validated['message_sent_at'] ?? null,
             'reason' => $validated['reason'] ?? 'Inappropriate message',
             'status' => 'pending',
@@ -327,15 +336,16 @@ class ChatController extends Controller
         if ($autoBanEnabled && ! empty($validated['reported_user_id']) && $threshold > 0) {
             $reportedUser = User::find($validated['reported_user_id']);
             if ($reportedUser && ! $reportedUser->can('view admin')) {
-                $totalReportsForMessage = ChatReport::where('reported_user_id', $reportedUser->id)
-                    ->where('message_content', $validated['message_content'])
+                $totalReportsForMessage = Report::where('reported_user_id', $reportedUser->id)
+                    ->where('reportable_type', ChatMessage::class)
+                    ->where('content_snapshot', $validated['message_content'])
                     ->count();
 
                 if ($totalReportsForMessage >= $threshold) {
-                    $wasAlreadyBanned = $reportedUser->isChatBanned();
+                    $wasAlreadyBanned = $reportedUser->isBanned();
                     $banUntil = now()->addMinutes(max(1, $durationMinutes));
                     $reportedUser->update([
-                        'chat_banned_until' => $banUntil,
+                        'banned_until' => $banUntil,
                     ]);
 
                     if (! $wasAlreadyBanned) {
@@ -362,9 +372,9 @@ class ChatController extends Controller
         $user = $request->user();
         abort_unless($user, 401, 'Unauthenticated');
 
-        if ($user->isChatBanned()) {
+        if ($user->isBanned()) {
             return response()->json([
-                'message' => 'You cannot react to messages while chat banned.',
+                'message' => 'You cannot react to messages while suspended.',
             ], 403);
         }
 
