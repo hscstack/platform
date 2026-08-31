@@ -1167,6 +1167,7 @@ const submitReport = async () => {
                 'X-CSRF-TOKEN': token || '',
             },
             body: JSON.stringify({
+                message_id: reportingMessage.value.id,
                 reported_user_id: reportingMessage.value.user.id,
                 reported_user_name: reportingMessage.value.user.name,
                 reported_user_username: reportingMessage.value.user.username,

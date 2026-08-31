@@ -228,6 +228,75 @@
         $metaTitle = 'Content & Copyright Policy - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Content & Copyright Policy - HSCStack';
         $metaDescription = 'Content and Copyright Policy of HSCStack. Information on educational resource fair use and contributor content guidelines.';
+    } elseif ($pageComponent === 'Forum/Show' && !empty($props['post'])) {
+        $post = $props['post'];
+        $postTitle = data_get($post, 'title', 'Question');
+        $postBody = strip_tags((string) data_get($post, 'body', ''));
+        $metaTitle = "{$postTitle} - " . config('app.name', 'HSCStack');
+        $ogTitle = "{$postTitle} - HSCStack Forum";
+        $metaDescription = str($postBody)->limit(160, '...');
+        $ogImage = data_get($post, 'image_url') ?: (data_get($post, 'image_path') ? \Illuminate\Support\Facades\Storage::url(data_get($post, 'image_path')) : ($s3Url ? "{$s3Url}/images/og_forum.png" : url('/images/og_forum.png')));
+        $ogType = 'article';
+        $ogUrl = data_get($post, 'slug') ? url('/forum/questions/' . data_get($post, 'slug')) : url()->current();
+
+        $authorName = data_get($post, 'user.name', 'HSCStack Student');
+        $authorUsername = data_get($post, 'user.username');
+        $authorUrl = $authorUsername ? url('/u/' . $authorUsername) : null;
+        $upvoteCount = (int) data_get($post, 'upvotes_count', 0);
+        $answerCount = (int) data_get($post, 'answers_count', 0);
+
+        $questionSchema = [
+            '@type' => 'QAPage',
+            'mainEntity' => [
+                '@type' => 'Question',
+                'name' => $postTitle,
+                'text' => $postBody,
+                'answerCount' => $answerCount,
+                'upvoteCount' => $upvoteCount,
+                'dateCreated' => data_get($post, 'created_at'),
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => $authorName,
+                    'url' => $authorUrl,
+                ],
+            ],
+        ];
+
+        $answersList = data_get($props, 'answers.data', []);
+        if (!empty($answersList) && is_array($answersList)) {
+            $suggestedAnswers = [];
+            foreach (array_slice($answersList, 0, 5) as $ans) {
+                $suggestedAnswers[] = [
+                    '@type' => 'Answer',
+                    'text' => strip_tags((string) data_get($ans, 'body', '')),
+                    'dateCreated' => data_get($ans, 'created_at'),
+                    'upvoteCount' => (int) data_get($ans, 'upvotes_count', 0),
+                    'url' => $ogUrl . '#answer-' . data_get($ans, 'id'),
+                    'author' => [
+                        '@type' => 'Person',
+                        'name' => data_get($ans, 'user.name', 'Student'),
+                        'url' => data_get($ans, 'user.username') ? url('/u/' . data_get($ans, 'user.username')) : null,
+                    ],
+                ];
+            }
+            if (!empty($suggestedAnswers)) {
+                $questionSchema['mainEntity']['suggestedAnswer'] = $suggestedAnswers;
+            }
+        }
+
+        $jsonLdSchemas[] = $questionSchema;
+    } elseif ($pageComponent === 'Forum/Index') {
+        $metaTitle = 'Community Q&A Forum - Study Questions & Discussion - ' . config('app.name', 'HSCStack');
+        $ogTitle = 'Community Q&A Forum - HSCStack';
+        $metaDescription = 'Ask questions, get help with difficult HSC & SSC academic problems, share answers, and collaborate with peers across Bangladesh on HSCStack Forum.';
+        $ogImage = $s3Url ? "{$s3Url}/images/og_forum.png" : url('/images/og_forum.png');
+        $ogUrl = url('/forum');
+    } elseif ($pageComponent === 'Forum/Create') {
+        $metaTitle = 'Ask a Question - HSCStack Forum';
+        $ogTitle = 'Ask a Question - HSCStack Forum';
+        $metaDescription = 'Post an academic question or study doubt on HSCStack Forum to get answers from peers and educators.';
+        $ogImage = $s3Url ? "{$s3Url}/images/og_forum.png" : url('/images/og_forum.png');
+        $ogUrl = url('/forum/ask');
     } elseif ($pageComponent === 'auth/Login' || $pageComponent === 'Login') {
         $metaTitle = 'Log In - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Log In to HSCStack';

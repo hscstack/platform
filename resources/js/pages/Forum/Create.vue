@@ -9,6 +9,7 @@ import {
     Search,
     FileText,
     CheckCircle,
+    Loader2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -45,12 +46,26 @@ const modalConfirmed = ref(false);
 const imagePreview = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
+const safeSubjects = computed<Subject[]>(() => {
+    if (Array.isArray(props.subjects)) {
+        return props.subjects;
+    }
+
+    if (props.subjects && typeof props.subjects === 'object') {
+        return Object.values(props.subjects) as Subject[];
+    }
+
+    return [];
+});
+
 const filteredSubjects = computed(() => {
-    return props.subjects.filter((s) => s.course === form.curriculum);
+    return safeSubjects.value.filter((s) => s && s.course === form.curriculum);
 });
 
 const selectedSubject = computed(() => {
-    return props.subjects.find((s) => s.id === Number(form.subject_id));
+    return safeSubjects.value.find(
+        (s) => s && s.id === Number(form.subject_id),
+    );
 });
 
 const currentSubjectNodes = computed(() => {
@@ -77,6 +92,17 @@ const handleFileChange = (e: Event) => {
         const file = target.files[0];
         form.image = file;
         imagePreview.value = URL.createObjectURL(file);
+    }
+};
+
+const handleFileDrop = (e: DragEvent) => {
+    if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
+        const file = e.dataTransfer.files[0];
+
+        if (file.type.startsWith('image/')) {
+            form.image = file;
+            imagePreview.value = URL.createObjectURL(file);
+        }
     }
 };
 
@@ -255,10 +281,10 @@ const submit = () => {
                             <option value="">
                                 {{
                                     !form.subject_id
-                                        ? 'Other / General'
+                                        ? 'Select a subject first'
                                         : currentSubjectNodes.length === 0
-                                          ? 'Other / General'
-                                          : 'Other / General'
+                                          ? 'No chapters available'
+                                          : 'All Chapters / Topics (Optional)'
                                 }}
                             </option>
                             <option
@@ -344,11 +370,18 @@ const submit = () => {
                             type="file"
                             id="post-image-file"
                             accept="image/jpeg,image/png,image/jpg,image/webp"
+                            @click="
+                                (e) =>
+                                    ((e.target as HTMLInputElement).value = '')
+                            "
                             @change="handleFileChange"
                             class="hidden"
                         />
                         <label
                             for="post-image-file"
+                            @dragover.prevent
+                            @dragenter.prevent
+                            @drop.prevent="handleFileDrop"
                             class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-indigo-500 hover:bg-indigo-50/20 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-indigo-500"
                         >
                             <Upload
@@ -540,7 +573,11 @@ const submit = () => {
                                 :disabled="!modalConfirmed || form.processing"
                                 class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <Send class="h-3.5 w-3.5" />
+                                <Loader2
+                                    v-if="form.processing"
+                                    class="h-3.5 w-3.5 animate-spin"
+                                />
+                                <Send v-else class="h-3.5 w-3.5" />
                                 <span>{{
                                     form.processing
                                         ? 'Posting...'

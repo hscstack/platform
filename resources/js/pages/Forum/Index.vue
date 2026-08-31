@@ -10,6 +10,7 @@ import {
     SlidersHorizontal,
     RotateCcw,
     Check,
+    Lock,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -86,7 +87,11 @@ const props = defineProps<{
         status?: string | null;
         search?: string | null;
         sort?: string | null;
+        my_posts?: string | null;
     };
+    postingEnabled?: boolean;
+    commentsEnabled?: boolean;
+    disabledReason?: string;
 }>();
 
 const page = usePage();
@@ -101,6 +106,7 @@ const currentStatus = computed(() => props.filters.status || '');
 const currentCurriculum = computed(() => props.filters.curriculum || '');
 const currentSubjectId = computed(() => props.filters.subject_id || '');
 const currentNodeId = computed(() => props.filters.node_id || '');
+const currentMyPosts = computed(() => props.filters.my_posts || '');
 
 const sortOptions = [
     { key: 'recent', label: 'Recent' },
@@ -120,6 +126,7 @@ const draftStatus = ref(currentStatus.value);
 const draftCurriculum = ref(currentCurriculum.value);
 const draftSubjectId = ref(currentSubjectId.value);
 const draftNodeId = ref(currentNodeId.value);
+const draftMyPosts = ref(currentMyPosts.value);
 
 const openFilterModal = () => {
     draftSort.value = currentSort.value;
@@ -127,19 +134,36 @@ const openFilterModal = () => {
     draftCurriculum.value = currentCurriculum.value;
     draftSubjectId.value = currentSubjectId.value;
     draftNodeId.value = currentNodeId.value;
+    draftMyPosts.value = currentMyPosts.value;
     showFilterModal.value = true;
 };
 
-const modalFilteredSubjects = computed(() => {
-    if (!draftCurriculum.value) {
+const safeSubjects = computed<Subject[]>(() => {
+    if (Array.isArray(props.subjects)) {
         return props.subjects;
     }
 
-    return props.subjects.filter((s) => s.course === draftCurriculum.value);
+    if (props.subjects && typeof props.subjects === 'object') {
+        return Object.values(props.subjects) as Subject[];
+    }
+
+    return [];
+});
+
+const modalFilteredSubjects = computed(() => {
+    if (!draftCurriculum.value) {
+        return safeSubjects.value;
+    }
+
+    return safeSubjects.value.filter(
+        (s) => s && s.course === draftCurriculum.value,
+    );
 });
 
 const modalSelectedSubject = computed(() => {
-    return props.subjects.find((s) => s.id === Number(draftSubjectId.value));
+    return safeSubjects.value.find(
+        (s) => s && s.id === Number(draftSubjectId.value),
+    );
 });
 
 const modalSubjectNodes = computed(() => {
@@ -150,7 +174,7 @@ watch(draftCurriculum, () => {
     // If subject does not match new curriculum, reset subject and node
     if (draftSubjectId.value) {
         const found = modalFilteredSubjects.value.some(
-            (s) => s.id === Number(draftSubjectId.value),
+            (s) => s && s.id === Number(draftSubjectId.value),
         );
 
         if (!found) {
@@ -175,8 +199,9 @@ const selectedSubjectName = computed(() => {
     }
 
     return (
-        props.subjects.find((s) => s.id === Number(currentSubjectId.value))
-            ?.name || null
+        safeSubjects.value.find(
+            (s) => s && s.id === Number(currentSubjectId.value),
+        )?.name || null
     );
 });
 
@@ -185,9 +210,9 @@ const selectedNodeName = computed(() => {
         return null;
     }
 
-    for (const subj of props.subjects) {
-        const node = subj.nodes?.find(
-            (n) => n.id === Number(currentNodeId.value),
+    for (const subj of safeSubjects.value) {
+        const node = subj?.nodes?.find(
+            (n) => n && n.id === Number(currentNodeId.value),
         );
 
         if (node) {
@@ -221,6 +246,10 @@ const activeFilterCount = computed(() => {
         count++;
     }
 
+    if (currentMyPosts.value) {
+        count++;
+    }
+
     return count;
 });
 
@@ -232,6 +261,7 @@ const applyFilters = (newFilters: Record<string, any>) => {
         status: currentStatus.value || undefined,
         sort: currentSort.value !== 'recent' ? currentSort.value : undefined,
         search: searchQuery.value.trim() || undefined,
+        my_posts: currentMyPosts.value || undefined,
         ...newFilters,
     };
 
@@ -256,6 +286,7 @@ const handleApplyModalFilters = () => {
         curriculum: draftCurriculum.value || undefined,
         subject_id: draftSubjectId.value || undefined,
         node_id: draftNodeId.value || undefined,
+        my_posts: draftMyPosts.value || undefined,
     });
 };
 
@@ -265,6 +296,7 @@ const handleResetModalFilters = () => {
     draftCurriculum.value = '';
     draftSubjectId.value = '';
     draftNodeId.value = '';
+    draftMyPosts.value = '';
 };
 
 const setCurriculum = (curriculum: string) => {
@@ -291,6 +323,10 @@ const setSort = (sortKey: string) => {
     applyFilters({ sort: sortKey });
 };
 
+const setMyPosts = (val: boolean) => {
+    applyFilters({ my_posts: val ? '1' : undefined });
+};
+
 const handleSearch = () => {
     applyFilters({ search: searchQuery.value });
 };
@@ -305,7 +341,15 @@ const resetAllFilters = () => {
     router.get('/forum');
 };
 
+const isUserBanned = computed(() => {
+    return Boolean(user.value?.is_banned);
+});
+
 const handleAskQuestion = () => {
+    if (props.postingEnabled === false || isUserBanned.value) {
+        return;
+    }
+
     if (!user.value) {
         showAuthModal.value = true;
     } else {
@@ -388,10 +432,34 @@ function timeAgo(dateString?: string): string {
                 <button
                     type="button"
                     @click="handleAskQuestion"
-                    class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-[0.98] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
+                    :disabled="props.postingEnabled === false || isUserBanned"
+                    :title="
+                        isUserBanned
+                            ? 'You are temporarily suspended from community participation'
+                            : props.postingEnabled === false
+                              ? props.disabledReason ||
+                                'Question posting is temporarily paused'
+                              : 'Ask Question'
+                    "
+                    class="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold shadow-xs transition sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
+                    :class="[
+                        props.postingEnabled === false || isUserBanned
+                            ? 'cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-gray-800 dark:text-gray-500'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]',
+                    ]"
                 >
-                    <Plus class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    <span>Ask Question</span>
+                    <Lock
+                        v-if="props.postingEnabled === false || isUserBanned"
+                        class="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                    />
+                    <Plus v-else class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span>{{
+                        isUserBanned
+                            ? 'Account Suspended'
+                            : props.postingEnabled === false
+                              ? 'Posting Paused'
+                              : 'Ask Question'
+                    }}</span>
                 </button>
             </div>
         </div>
@@ -452,6 +520,22 @@ function timeAgo(dateString?: string): string {
                 >
                     {{ activeFilterCount }}
                 </span>
+            </button>
+
+            <!-- My Posts Filter (only shown when logged in) -->
+            <button
+                v-if="user"
+                type="button"
+                @click="setMyPosts(!currentMyPosts)"
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold shadow-2xs transition active:scale-95 sm:px-3 sm:py-2.5"
+                :class="[
+                    currentMyPosts
+                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800',
+                ]"
+                title="Show only my questions"
+            >
+                <span>Mine</span>
             </button>
         </div>
 
@@ -557,6 +641,22 @@ function timeAgo(dateString?: string): string {
                 </button>
             </span>
 
+            <!-- My Posts Badge -->
+            <span
+                v-if="currentMyPosts"
+                class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1 font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+            >
+                <span>My Questions</span>
+                <button
+                    type="button"
+                    @click="setMyPosts(false)"
+                    class="cursor-pointer rounded p-0.5 hover:bg-indigo-200/50 dark:hover:bg-indigo-800/50"
+                    aria-label="Remove my posts filter"
+                >
+                    <X class="h-3 w-3" />
+                </button>
+            </span>
+
             <!-- Clear All Action -->
             <button
                 type="button"
@@ -573,11 +673,12 @@ function timeAgo(dateString?: string): string {
             <article
                 v-for="post in posts.data"
                 :key="post.id"
-                class="group rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition duration-150 hover:border-slate-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+                class="group cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition duration-150 hover:border-slate-300 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+                @click="router.visit('/forum/questions/' + post.slug)"
             >
                 <div class="flex items-start gap-3 sm:gap-4">
                     <!-- Left: Vote Controls (Vertical on all screens) -->
-                    <div class="shrink-0 pt-0.5">
+                    <div class="shrink-0 pt-0.5" @click.stop>
                         <ForumVoteButtons
                             votableType="post"
                             :votableId="post.id"
@@ -647,7 +748,7 @@ function timeAgo(dateString?: string): string {
                         >
                             <Link
                                 :href="`/forum/questions/${post.slug}`"
-                                class="hover:text-indigo-600 hover:underline dark:hover:text-indigo-400"
+                                class="hover:text-indigo-600 dark:hover:text-indigo-400"
                             >
                                 {{ post.title }}
                             </Link>
@@ -678,6 +779,7 @@ function timeAgo(dateString?: string): string {
                                 <Link
                                     v-if="post.user?.username"
                                     :href="`/u/${post.user.username}`"
+                                    @click.stop
                                     class="inline-flex items-center gap-1.5 font-medium text-slate-700 hover:text-indigo-600 hover:underline dark:text-gray-300 dark:hover:text-indigo-400"
                                 >
                                     <div
@@ -771,10 +873,26 @@ function timeAgo(dateString?: string): string {
                 <button
                     type="button"
                     @click="handleAskQuestion"
-                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700"
+                    :disabled="props.postingEnabled === false || isUserBanned"
+                    class="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold shadow-xs transition"
+                    :class="[
+                        props.postingEnabled === false || isUserBanned
+                            ? 'cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-gray-800 dark:text-gray-500'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700',
+                    ]"
                 >
-                    <Plus class="h-4 w-4" />
-                    <span>Ask Question</span>
+                    <Lock
+                        v-if="props.postingEnabled === false || isUserBanned"
+                        class="h-4 w-4"
+                    />
+                    <Plus v-else class="h-4 w-4" />
+                    <span>{{
+                        isUserBanned
+                            ? 'Account Suspended'
+                            : props.postingEnabled === false
+                              ? 'Posting Paused'
+                              : 'Ask Question'
+                    }}</span>
                 </button>
             </div>
         </div>

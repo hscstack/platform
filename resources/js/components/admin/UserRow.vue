@@ -15,12 +15,14 @@ const page = usePage();
 const userId = page.props.auth.user.id;
 const isBanModalOpen = ref(false);
 
-const isChatBanned = (user: any) => {
-    if (!user?.chat_banned_until) {
+const isBanned = (user: any) => {
+    const banUntil = user?.banned_until;
+
+    if (!banUntil) {
         return false;
     }
 
-    return new Date(user.chat_banned_until).getTime() > Date.now();
+    return new Date(banUntil).getTime() > Date.now();
 };
 
 const openBanModal = () => {
@@ -106,12 +108,12 @@ const deleteUser = (id: number) => {
                     </span>
 
                     <span
-                        v-if="isChatBanned(user)"
+                        v-if="isBanned(user)"
                         class="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 uppercase ring-1 ring-rose-600/20 ring-inset dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30"
-                        title="Chat banned"
+                        title="Suspended from community"
                     >
                         <Ban class="h-2.5 w-2.5" />
-                        Chat Banned
+                        Suspended
                     </span>
                 </div>
 
@@ -129,6 +131,7 @@ const deleteUser = (id: number) => {
                 (user.id !== userId && can('impersonate users')) ||
                 can('edit users') ||
                 can('manage chat') ||
+                can('manage forums') ||
                 (user.id !== userId && can('delete users'))
             "
             class="flex shrink-0 items-center gap-1"
@@ -145,19 +148,23 @@ const deleteUser = (id: number) => {
             </button>
 
             <button
-                v-if="can('manage chat') || can('edit users')"
+                v-if="
+                    can('manage chat') ||
+                    can('manage forums') ||
+                    can('edit users')
+                "
                 type="button"
                 @click="openBanModal"
                 class="rounded-lg p-1.5 transition-colors"
                 :class="
-                    isChatBanned(user)
+                    isBanned(user)
                         ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40'
                         : 'text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
                 "
                 :title="
-                    isChatBanned(user)
-                        ? 'Edit chat ban timer / Unban'
-                        : 'Ban from chat'
+                    isBanned(user)
+                        ? 'Edit suspension timer / Lift suspension'
+                        : 'Suspend user'
                 "
             >
                 <Ban class="h-4 w-4" :stroke-width="1.8" />

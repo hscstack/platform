@@ -18,5 +18,6 @@ class CacheHelper
         Cache::forget('home_page_subjects_ssc');
         Cache::forget('home_page_featured_blogs');
         Cache::forget('home_page_notice');
+        Cache::forget('forum_filter_subjects');
     }
 }

@@ -61,7 +61,7 @@ test('reporting message triggers auto-ban dynamically with 5 mins duration', fun
         'reason' => 'Abusive text',
     ])->assertStatus(201);
 
-    expect($badUser->fresh()->isChatBanned())->toBeFalse();
+    expect($badUser->fresh()->isBanned())->toBeFalse();
 
     // Report 2
     $this->actingAs($reporter2)->postJson(route('chat.reports.store'), [
@@ -72,7 +72,7 @@ test('reporting message triggers auto-ban dynamically with 5 mins duration', fun
         'reason' => 'Abusive text',
     ])->assertStatus(201);
 
-    expect($badUser->fresh()->isChatBanned())->toBeFalse();
+    expect($badUser->fresh()->isBanned())->toBeFalse();
 
     // Report 3 (Hits threshold of 3)
     $this->actingAs($reporter3)->postJson(route('chat.reports.store'), [
@@ -84,9 +84,9 @@ test('reporting message triggers auto-ban dynamically with 5 mins duration', fun
     ])->assertStatus(201);
 
     $badUserFresh = $badUser->fresh();
-    expect($badUserFresh->isChatBanned())->toBeTrue();
-    expect($badUserFresh->chat_banned_until)->not->toBeNull();
-    expect(now()->diffInMinutes($badUserFresh->chat_banned_until))->toBeGreaterThanOrEqual(4);
+    expect($badUserFresh->isBanned())->toBeTrue();
+    expect($badUserFresh->banned_until)->not->toBeNull();
+    expect(now()->diffInMinutes($badUserFresh->banned_until))->toBeGreaterThanOrEqual(4);
 });
 
 test('auto ban is not triggered when disabled in admin settings', function () {
@@ -109,7 +109,7 @@ test('auto ban is not triggered when disabled in admin settings', function () {
         'message_content' => $messageContent,
     ])->assertStatus(201);
 
-    expect($targetUser->fresh()->isChatBanned())->toBeFalse();
+    expect($targetUser->fresh()->isBanned())->toBeFalse();
 });
 
 test('profanity filter allows legitimate words containing substrings while blocking actual banned words and obfuscations', function () {

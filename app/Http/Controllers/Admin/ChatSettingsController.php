@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use App\Models\ChatMessageReaction;
-use App\Models\ChatReport;
+use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,13 +44,14 @@ class ChatSettingsController extends Controller
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
-            'pendingReportsCount' => ChatReport::where('status', 'pending')->count(),
+            'pendingReportsCount' => Report::where('status', 'pending')->where('reportable_type', ChatMessage::class)->count(),
         ]);
     }
 
     public function reports()
     {
-        $reports = ChatReport::with(['reporter:id,name,username', 'reportedUser:id,name,username,chat_banned_until'])
+        $reports = Report::with(['reporter:id,name,username', 'reportedUser:id,name,username,banned_until'])
+            ->where('reportable_type', ChatMessage::class)
             ->latest('id')
             ->take(100)
             ->get()
@@ -69,10 +70,10 @@ class ChatSettingsController extends Controller
                     'id' => $report->reportedUser->id,
                     'name' => $report->reportedUser->name,
                     'username' => $report->reportedUser->username,
-                    'chat_banned_until' => $report->reportedUser->chat_banned_until?->toIso8601String(),
-                    'is_chat_banned' => $report->reportedUser->isChatBanned(),
+                    'banned_until' => $report->reportedUser->banned_until?->toIso8601String(),
+                    'is_banned' => $report->reportedUser->isBanned(),
                 ] : null,
-                'message_content' => $report->message_content,
+                'message_content' => $report->content_snapshot,
                 'message_sent_at' => $report->message_sent_at?->toIso8601String(),
                 'reason' => $report->reason,
                 'status' => $report->status,
@@ -81,9 +82,9 @@ class ChatSettingsController extends Controller
 
         return Inertia::render('admin/chat/Reports', [
             'reports' => $reports,
-            'pendingCount' => ChatReport::where('status', 'pending')->count(),
-            'reviewedCount' => ChatReport::where('status', 'reviewed')->count(),
-            'dismissedCount' => ChatReport::where('status', 'dismissed')->count(),
+            'pendingCount' => Report::where('status', 'pending')->where('reportable_type', ChatMessage::class)->count(),
+            'reviewedCount' => Report::where('status', 'reviewed')->where('reportable_type', ChatMessage::class)->count(),
+            'dismissedCount' => Report::where('status', 'dismissed')->where('reportable_type', ChatMessage::class)->count(),
         ]);
     }
 
@@ -151,8 +152,10 @@ class ChatSettingsController extends Controller
         return back()->with('success', 'All chat messages have been cleared.');
     }
 
-    public function updateReportStatus(Request $request, ChatReport $report)
+    public function updateReportStatus(Request $request, Report $report)
     {
+        abort_unless($report->reportable_type === ChatMessage::class, 404);
+
         $validated = $request->validate([
             'status' => ['required', 'string', 'in:pending,reviewed,dismissed'],
         ]);
@@ -162,8 +165,10 @@ class ChatSettingsController extends Controller
         return back()->with('success', 'Report status updated.');
     }
 
-    public function deleteReport(ChatReport $report)
+    public function deleteReport(Report $report)
     {
+        abort_unless($report->reportable_type === ChatMessage::class, 404);
+
         $report->delete();
 
         return back()->with('success', 'Report deleted successfully.');
@@ -174,10 +179,10 @@ class ChatSettingsController extends Controller
         $status = $request->input('status');
 
         if ($status && in_array($status, ['pending', 'reviewed', 'dismissed'], true)) {
-            ChatReport::where('status', $status)->delete();
+            Report::where('reportable_type', ChatMessage::class)->where('status', $status)->delete();
             $message = "All {$status} reports have been deleted.";
         } else {
-            ChatReport::query()->delete();
+            Report::where('reportable_type', ChatMessage::class)->delete();
             $message = 'All report records have been deleted.';
         }
 
@@ -187,26 +192,28 @@ class ChatSettingsController extends Controller
     public function updateUserBan(Request $request, User $user)
     {
         if ($user->can('view admin')) {
-            return back()->with('error', 'Staff and Admin accounts cannot be banned from chat.');
+            return back()->with('error', 'Staff and Admin accounts cannot be suspended.');
         }
 
         $validated = $request->validate([
-            'chat_banned_until' => ['nullable', 'date'],
+            'banned_until' => ['nullable', 'date'],
         ]);
 
+        $bannedUntil = $validated['banned_until'] ?? null;
+
         $user->update([
-            'chat_banned_until' => $validated['chat_banned_until'],
+            'banned_until' => $bannedUntil,
         ]);
 
         $moderator = $request->user();
 
-        if ($user->isChatBanned()) {
-            $durationText = $user->chat_banned_until->diffForHumans();
-            ChatMessage::sendBotMessage("Moderator @{$moderator->username} banned @{$user->username} from chat until {$user->chat_banned_until->toDayDateTimeString()} ({$durationText}).");
-            $message = "User @{$user->username} has been banned from chat until {$user->chat_banned_until->toDateTimeString()}.";
+        if ($user->isBanned()) {
+            $durationText = $user->banned_until->diffForHumans();
+            ChatMessage::sendBotMessage("Moderator @{$moderator->username} suspended @{$user->username} from community participation until {$user->banned_until->toDayDateTimeString()} ({$durationText}).");
+            $message = "User @{$user->username} has been suspended until {$user->banned_until->toDateTimeString()}.";
         } else {
-            ChatMessage::sendBotMessage("Moderator @{$moderator->username} unbanned @{$user->username} from chat.");
-            $message = "User @{$user->username} has been unbanned from chat.";
+            ChatMessage::sendBotMessage("Moderator @{$moderator->username} removed suspension for @{$user->username}.");
+            $message = "Suspension for @{$user->username} has been removed.";
         }
 
         return back()->with('success', $message);

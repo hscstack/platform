@@ -43,7 +43,7 @@ class User extends Authenticatable
         'receive_emails',
         'google_id',
         'email_verified_at',
-        'chat_banned_until',
+        'banned_until',
         'image_path',
         'about',
         'title',
@@ -66,6 +66,7 @@ class User extends Authenticatable
     protected $appends = [
         'image_url',
         'is_verified',
+        'is_banned',
     ];
 
     public function getIsVerifiedAttribute(): bool
@@ -75,9 +76,14 @@ class User extends Authenticatable
             : $this->roles()->exists();
     }
 
-    public function isChatBanned(): bool
+    public function isBanned(): bool
     {
-        return $this->chat_banned_until !== null && $this->chat_banned_until->isFuture();
+        return $this->banned_until !== null && $this->banned_until->isFuture();
+    }
+
+    public function getIsBannedAttribute(): bool
+    {
+        return $this->isBanned();
     }
 
     public static function getSystemBot(): ?self
@@ -100,7 +106,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'chat_banned_until' => 'datetime',
+            'banned_until' => 'datetime',
             'password' => 'hashed',
             'receive_emails' => 'boolean',
         ];

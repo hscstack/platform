@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     Activity,
     ArrowBigUp,
+    ArrowBigDown,
     ArrowRight,
     ArrowUpRight,
     Calendar,
@@ -278,6 +279,53 @@ const handleAppreciate = () => {
         },
     );
 };
+
+function timeAgo(dateString?: string): string {
+    if (!dateString) {
+        return '';
+    }
+
+    const date = new Date(dateString);
+
+    if (isNaN(date.getTime())) {
+        return dateString;
+    }
+
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) {
+        return 'just now';
+    }
+
+    const minutes = Math.floor(seconds / 60);
+
+    if (minutes < 60) {
+        return `${minutes}m ago`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+
+    if (hours < 24) {
+        return `${hours}h ago`;
+    }
+
+    const days = Math.floor(hours / 24);
+
+    if (days < 30) {
+        return `${days}d ago`;
+    }
+
+    const months = Math.floor(days / 30);
+
+    if (months < 12) {
+        return `${months}mo ago`;
+    }
+
+    const years = Math.floor(days / 365);
+
+    return `${years}y ago`;
+}
 </script>
 
 <template>
@@ -844,17 +892,42 @@ const handleAppreciate = () => {
                                 <div
                                     class="mt-2 flex items-center gap-3 text-[10px] font-medium text-slate-400 dark:text-gray-500"
                                 >
-                                    <span class="flex items-center gap-1">
-                                        <ArrowBigUp
-                                            class="h-3 w-3 fill-slate-400 dark:fill-gray-500"
+                                    <span
+                                        class="flex items-center gap-0.5"
+                                        :class="{
+                                            'text-rose-500 dark:text-rose-400':
+                                                post.vote_score < 0,
+                                            'text-indigo-600 dark:text-indigo-400':
+                                                post.vote_score > 0,
+                                        }"
+                                    >
+                                        <ArrowBigDown
+                                            v-if="post.vote_score < 0"
+                                            class="h-3.5 w-3.5 fill-current"
                                         />
-                                        {{ post.vote_score }} votes
+                                        <ArrowBigUp
+                                            v-else
+                                            class="h-3.5 w-3.5"
+                                            :class="
+                                                post.vote_score > 0
+                                                    ? 'fill-current'
+                                                    : 'fill-slate-400 dark:fill-gray-500'
+                                            "
+                                        />
+                                        <span>{{
+                                            Math.abs(post.vote_score)
+                                        }}</span>
                                     </span>
                                     <span class="flex items-center gap-1">
                                         <MessageSquare class="h-3 w-3" />
-                                        {{ post.answers_count || 0 }} answers
+                                        {{ post.answers_count || 0 }}
+                                        {{
+                                            post.answers_count === 1
+                                                ? 'answer'
+                                                : 'answers'
+                                        }}
                                     </span>
-                                    <span>{{ post.created_at }}</span>
+                                    <span>{{ timeAgo(post.created_at) }}</span>
                                 </div>
                             </Link>
 
@@ -948,21 +1021,9 @@ const handleAppreciate = () => {
                                 </div>
 
                                 <div
-                                    class="mt-2 flex items-center gap-3 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                    class="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400 dark:text-gray-500"
                                 >
-                                    <span class="flex items-center gap-1">
-                                        <ArrowBigUp
-                                            class="h-3 w-3 fill-slate-400 dark:fill-gray-500"
-                                        />
-                                        {{ ans.vote_score }} votes
-                                    </span>
-                                    <span
-                                        v-if="ans.post?.is_answered"
-                                        class="text-emerald-600 dark:text-emerald-400"
-                                    >
-                                        • Post Solved
-                                    </span>
-                                    <span>{{ ans.created_at }}</span>
+                                    <span>{{ timeAgo(ans.created_at) }}</span>
                                 </div>
                             </Link>
 

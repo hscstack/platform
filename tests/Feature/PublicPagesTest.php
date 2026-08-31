@@ -60,6 +60,6 @@ test('the projects page loads successfully', function () {
 test('non-existent public resources render the 404 error page', function () {
     $response = $this->get('/resources/999999');
 
-    $response->assertStatus(200);
+    $response->assertStatus(404);
     $response->assertSee('errors\/404');
 });

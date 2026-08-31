@@ -5,17 +5,19 @@ import {
     CheckCircle,
     XCircle,
     Trash2,
-    Clock,
-    CheckCheck,
-    MessageCircle,
+    Settings,
     Ban,
+    ExternalLink,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { usePermissions } from '@/lib/usePermissions';
 
 defineOptions({ layout: AdminLayout });
+
+const { can } = usePermissions();
 
 interface ReportItem {
     id: number;
@@ -35,8 +37,11 @@ interface ReportItem {
         banned_until: string | null;
         is_banned: boolean;
     } | null;
-    message_content: string;
-    message_sent_at: string | null;
+    reportable_type: string;
+    reportable_id: number | null;
+    post_slug?: string | null;
+    post_title?: string | null;
+    content_snapshot: string;
     reason: string | null;
     status: 'pending' | 'reviewed' | 'dismissed';
     created_at: string;
@@ -63,7 +68,7 @@ const filteredReports = computed(() => {
 
 const updateReportStatus = (reportId: number, status: string) => {
     router.patch(
-        `/admin/chat/reports/${reportId}/status`,
+        `/admin/forums/reports/${reportId}/status`,
         { status },
         { preserveScroll: true },
     );
@@ -75,7 +80,7 @@ const deleteReport = (reportId: number) => {
             'Are you sure you want to permanently delete this report record?',
         )
     ) {
-        router.delete(`/admin/chat/reports/${reportId}`, {
+        router.delete(`/admin/forums/reports/${reportId}`, {
             preserveScroll: true,
         });
     }
@@ -84,11 +89,11 @@ const deleteReport = (reportId: number) => {
 const handleClearReports = (statusFilter?: string) => {
     const isFiltered = statusFilter && statusFilter !== 'all';
     const confirmMessage = isFiltered
-        ? `Are you sure you want to permanently delete all ${statusFilter} report records? This action cannot be undone.`
-        : 'Are you sure you want to permanently delete ALL report records? This action cannot be undone.';
+        ? `Are you sure you want to permanently delete all ${statusFilter} forum report records?`
+        : 'Are you sure you want to permanently delete ALL forum report records?';
 
     if (confirm(confirmMessage)) {
-        router.delete('/admin/chat/reports/clear', {
+        router.delete('/admin/forums/reports/clear', {
             data: isFiltered ? { status: statusFilter } : {},
             preserveScroll: true,
         });
@@ -139,199 +144,89 @@ const formatDate = (isoString?: string | null) => {
 </script>
 
 <template>
-    <Head title="Reported Chat Messages - Staff Panel" />
+    <Head title="Reported Content - Forum Admin" />
 
-    <div class="space-y-6">
-        <!-- Header -->
+    <div class="space-y-5">
+        <!-- Minimal Top Header -->
         <div
-            class="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
+            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
         >
-            <div class="flex items-center gap-3">
-                <div
-                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"
+            <div>
+                <h1
+                    class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
                 >
-                    <Flag class="h-5 w-5" />
-                </div>
-                <div>
-                    <h1
-                        class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
-                    >
-                        Reported Chat Messages
-                    </h1>
-                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Review community reports, snapshot of reported messages,
-                        and moderate disruptive accounts.
-                    </p>
-                </div>
+                    Reported Forum Content
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-gray-400">
+                    Review and act on community reports against forum questions
+                    and answers.
+                </p>
             </div>
 
-            <!-- Header Actions -->
-            <div v-if="reports.length > 0" class="flex items-center gap-2">
+            <!-- Header Quick Tabs & Clear Action -->
+            <div class="flex max-w-full flex-wrap items-center gap-2">
+                <div
+                    class="flex max-w-full items-center gap-1.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <Link
+                        href="/admin/forums"
+                        class="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        Discussions
+                    </Link>
+
+                    <Link
+                        href="/admin/forums/reports"
+                        class="flex shrink-0 items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"
+                    >
+                        <Flag class="h-3.5 w-3.5" />
+                        <span>Reports</span>
+                        <span
+                            v-if="pendingCount > 0"
+                            class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
+                        >
+                            {{ pendingCount }}
+                        </span>
+                    </Link>
+
+                    <Link
+                        href="/admin/forums/settings"
+                        class="flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        <Settings class="h-3.5 w-3.5" />
+                        <span>Settings</span>
+                    </Link>
+                </div>
+
                 <button
+                    v-if="reports.length > 0"
                     type="button"
                     @click="
                         handleClearReports(
                             currentFilter === 'all' ? undefined : currentFilter,
                         )
                     "
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/70 px-3.5 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100 active:scale-95 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-950/80"
-                    :title="
-                        currentFilter === 'all'
-                            ? 'Delete all reports'
-                            : `Delete all ${currentFilter} reports`
-                    "
+                    class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400"
                 >
                     <Trash2 class="h-3.5 w-3.5" />
-                    <span>
-                        {{
-                            currentFilter === 'all'
-                                ? 'Clear All Reports'
-                                : `Clear ${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)} Reports`
-                        }}
-                    </span>
+                    <span>Clear</span>
                 </button>
             </div>
         </div>
 
-        <!-- Global Chat Management Route Tabs -->
+        <!-- Filter Status Pills -->
         <div
-            class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800"
-        >
-            <Link
-                href="/admin/chat"
-                class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-                <MessageCircle class="h-4 w-4" />
-                <span>Chat Configuration</span>
-            </Link>
-
-            <Link
-                href="/admin/chat/reports"
-                class="flex items-center gap-2 border-b-2 border-rose-600 px-4 py-2.5 text-xs font-bold text-rose-600 transition-all dark:border-rose-400 dark:text-rose-400"
-            >
-                <Flag class="h-4 w-4 text-rose-500" />
-                <span>Reported Messages</span>
-                <span
-                    v-if="pendingCount > 0"
-                    class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
-                >
-                    {{ pendingCount }}
-                </span>
-            </Link>
-        </div>
-
-        <!-- Metric Statistics Cards -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div
-                @click="currentFilter = 'pending'"
-                class="cursor-pointer rounded-2xl border p-4 transition-all"
-                :class="
-                    currentFilter === 'pending'
-                        ? 'border-rose-300 bg-rose-50/50 ring-2 ring-rose-500/20 dark:border-rose-800 dark:bg-rose-950/30'
-                        : 'border-slate-100 bg-white hover:border-slate-200 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700'
-                "
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                    >
-                        Pending Review
-                    </span>
-                    <Clock class="h-4 w-4 text-rose-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    {{ pendingCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Requires moderation action</span
-                >
-            </div>
-
-            <div
-                @click="currentFilter = 'reviewed'"
-                class="cursor-pointer rounded-2xl border p-4 transition-all"
-                :class="
-                    currentFilter === 'reviewed'
-                        ? 'border-emerald-300 bg-emerald-50/50 ring-2 ring-emerald-500/20 dark:border-emerald-800 dark:bg-emerald-950/30'
-                        : 'border-slate-100 bg-white hover:border-slate-200 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700'
-                "
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                    >
-                        Resolved
-                    </span>
-                    <CheckCheck class="h-4 w-4 text-emerald-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    {{ reviewedCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Reviewed & resolved reports</span
-                >
-            </div>
-
-            <div
-                @click="currentFilter = 'dismissed'"
-                class="cursor-pointer rounded-2xl border p-4 transition-all"
-                :class="
-                    currentFilter === 'dismissed'
-                        ? 'border-slate-400 bg-slate-100/70 ring-2 ring-slate-400/20 dark:border-gray-600 dark:bg-gray-800'
-                        : 'border-slate-100 bg-white hover:border-slate-200 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700'
-                "
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                    >
-                        Dismissed
-                    </span>
-                    <XCircle
-                        class="h-4 w-4 text-slate-400 dark:text-gray-400"
-                    />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    {{ dismissedCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Ignored or invalid reports</span
-                >
-            </div>
-        </div>
-
-        <!-- Filter Sub-Tabs -->
-        <div
-            class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-gray-800"
+            class="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
             <button
                 type="button"
-                @click="currentFilter = 'all'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
-                    currentFilter === 'all'
-                        ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
-            >
-                All ({{ reports.length }})
-            </button>
-
-            <button
-                type="button"
                 @click="currentFilter = 'pending'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
                     currentFilter === 'pending'
-                        ? 'bg-rose-600 text-white dark:bg-rose-500'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
+                        ? 'bg-rose-600 text-white'
+                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300',
+                ]"
             >
                 Pending ({{ pendingCount }})
             </button>
@@ -339,12 +234,12 @@ const formatDate = (isoString?: string | null) => {
             <button
                 type="button"
                 @click="currentFilter = 'reviewed'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
                     currentFilter === 'reviewed'
-                        ? 'bg-emerald-600 text-white dark:bg-emerald-500'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300',
+                ]"
             >
                 Resolved ({{ reviewedCount }})
             </button>
@@ -352,18 +247,31 @@ const formatDate = (isoString?: string | null) => {
             <button
                 type="button"
                 @click="currentFilter = 'dismissed'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
                     currentFilter === 'dismissed'
-                        ? 'bg-slate-700 text-white dark:bg-gray-700'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
+                        ? 'bg-slate-800 text-white dark:bg-gray-700'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300',
+                ]"
             >
                 Dismissed ({{ dismissedCount }})
             </button>
+
+            <button
+                type="button"
+                @click="currentFilter = 'all'"
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
+                    currentFilter === 'all'
+                        ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300',
+                ]"
+            >
+                All ({{ reports.length }})
+            </button>
         </div>
 
-        <!-- Reports List Feed -->
+        <!-- Reports List -->
         <div class="space-y-4">
             <div
                 v-if="filteredReports.length === 0"
@@ -377,12 +285,12 @@ const formatDate = (isoString?: string | null) => {
                 <h3
                     class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
                 >
-                    No
-                    {{ currentFilter !== 'all' ? currentFilter : '' }} reports
-                    found
+                    No {{ currentFilter !== 'all' ? currentFilter : '' }} forum
+                    reports found
                 </h3>
                 <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                    Everything looks clean for this filter criteria.
+                    The forum is clear of flagged discussions or answers under
+                    this filter.
                 </p>
             </div>
 
@@ -400,7 +308,7 @@ const formatDate = (isoString?: string | null) => {
                     <div
                         class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
                     >
-                        <!-- Left: Reporter & Reported User info -->
+                        <!-- Left Info -->
                         <div class="space-y-1.5">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span
@@ -414,6 +322,16 @@ const formatDate = (isoString?: string | null) => {
                                     "
                                 >
                                     {{ report.status }}
+                                </span>
+
+                                <span
+                                    class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300"
+                                >
+                                    {{
+                                        report.reportable_type === 'ForumPost'
+                                            ? 'Forum Question'
+                                            : 'Forum Answer'
+                                    }}
                                 </span>
 
                                 <span
@@ -435,8 +353,8 @@ const formatDate = (isoString?: string | null) => {
                                         v-if="report.reporter.username"
                                         class="text-slate-400"
                                     >
-                                        (@{{ report.reporter.username }})</span
-                                    >
+                                        (@{{ report.reporter.username }})
+                                    </span>
                                 </span>
                             </div>
 
@@ -448,58 +366,60 @@ const formatDate = (isoString?: string | null) => {
                                 <span
                                     class="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
                                 >
-                                    {{ report.reason || 'Not specified' }}
+                                    {{
+                                        report.reason ||
+                                        'Flagged for moderation'
+                                    }}
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Right: Action buttons & Moderation shortcut -->
+                        <!-- Right Actions -->
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- Quick Ban / Unban Modal trigger -->
+                            <!-- Ban Modal trigger (requires chat or forum management permission) -->
                             <button
-                                v-if="report.reported_user_id"
+                                v-if="
+                                    report.reported_user_id &&
+                                    (can('manage chat') || can('manage forums'))
+                                "
                                 type="button"
                                 @click="openBanModal(report)"
                                 class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition"
                                 :class="
                                     report.reported_user?.is_banned
-                                        ? 'bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:hover:bg-amber-900/60'
-                                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/60'
-                                "
-                                :title="
-                                    report.reported_user?.is_banned
-                                        ? 'Edit suspension timer or unban user'
-                                        : 'Suspend user'
+                                        ? 'bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300'
+                                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300'
                                 "
                             >
                                 <Ban class="h-3 w-3" />
                                 <span>{{
                                     report.reported_user?.is_banned
-                                        ? 'Edit Ban / Unban'
+                                        ? 'Edit Suspension'
                                         : 'Suspend Author'
                                 }}</span>
                             </button>
 
-                            <!-- Mark Status Buttons -->
+                            <!-- Resolve -->
                             <button
                                 v-if="report.status !== 'reviewed'"
                                 type="button"
                                 @click="
                                     updateReportStatus(report.id, 'reviewed')
                                 "
-                                class="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
+                                class="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
                             >
                                 <CheckCircle class="h-3 w-3" />
                                 <span>Resolve</span>
                             </button>
 
+                            <!-- Dismiss -->
                             <button
                                 v-if="report.status !== 'dismissed'"
                                 type="button"
                                 @click="
                                     updateReportStatus(report.id, 'dismissed')
                                 "
-                                class="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                                class="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300"
                             >
                                 <XCircle class="h-3 w-3" />
                                 <span>Dismiss</span>
@@ -517,18 +437,18 @@ const formatDate = (isoString?: string | null) => {
                         </div>
                     </div>
 
-                    <!-- Message Snapshot Content Box -->
+                    <!-- Snapshot Box -->
                     <div
                         class="mt-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-gray-800 dark:bg-gray-800/60"
                     >
                         <div
-                            class="flex items-center justify-between border-b border-slate-200/60 pb-2 text-[11px] text-slate-500 dark:border-gray-700/60 dark:text-gray-400"
+                            class="flex flex-col gap-1.5 border-b border-slate-200/60 pb-2 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700/60 dark:text-gray-400"
                         >
                             <div>
                                 <span
                                     class="font-bold text-slate-800 dark:text-gray-200"
                                 >
-                                    Message Author:
+                                    Author:
                                     {{
                                         report.reported_user_name ||
                                         report.reported_user?.name ||
@@ -551,26 +471,32 @@ const formatDate = (isoString?: string | null) => {
                                     v-if="report.reported_user?.is_banned"
                                     class="ml-2 rounded-sm bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-700 dark:bg-rose-900/60 dark:text-rose-300"
                                 >
-                                    Currently Banned
+                                    Suspended
                                 </span>
                             </div>
 
-                            <span v-if="report.message_sent_at">
-                                Sent {{ formatDate(report.message_sent_at) }}
-                            </span>
+                            <a
+                                v-if="report.post_slug"
+                                :href="`/forum/questions/${report.post_slug}`"
+                                target="_blank"
+                                class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                            >
+                                <span>View Discussion</span>
+                                <ExternalLink class="h-3 w-3" />
+                            </a>
                         </div>
 
                         <p
-                            class="mt-2 text-xs leading-relaxed font-medium break-words text-slate-900 dark:text-gray-100"
+                            class="mt-2 text-xs leading-relaxed font-medium break-words whitespace-pre-wrap text-slate-900 dark:text-gray-100"
                         >
-                            "{{ report.message_content }}"
+                            {{ report.content_snapshot }}
                         </p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Reusable Quick Chat Ban Modal -->
+        <!-- Suspension Modal -->
         <ChatBanModal
             :is-open="isBanModalOpen"
             :user="selectedUser"

@@ -7,8 +7,8 @@ export interface ChatBanUser {
     id: number;
     name: string;
     username?: string | null;
-    chat_banned_until?: string | null;
-    is_chat_banned?: boolean;
+    banned_until?: string | null;
+    is_banned?: boolean;
 }
 
 const props = defineProps<{
@@ -85,9 +85,8 @@ watch(
     () => props.isOpen,
     (open) => {
         if (open && props.user) {
-            banUntilInput.value = formatForDatetimeLocal(
-                props.user.chat_banned_until,
-            );
+            const currentBan = props.user.banned_until;
+            banUntilInput.value = formatForDatetimeLocal(currentBan);
         } else {
             banUntilInput.value = '';
         }
@@ -105,12 +104,14 @@ const submitBan = () => {
     }
 
     isSubmittingBan.value = true;
+    const isoDate = banUntilInput.value
+        ? new Date(banUntilInput.value).toISOString()
+        : null;
+
     router.post(
         `/admin/chat/users/${props.user.id}/ban`,
         {
-            chat_banned_until: banUntilInput.value
-                ? new Date(banUntilInput.value).toISOString()
-                : null,
+            banned_until: isoDate,
         },
         {
             preserveScroll: true,
@@ -164,12 +165,12 @@ const submitBan = () => {
                             <h3
                                 class="text-base font-bold text-slate-900 dark:text-gray-100"
                             >
-                                Chat Moderation
+                                Community Moderation
                             </h3>
                             <p
                                 class="text-xs text-slate-500 dark:text-gray-400"
                             >
-                                Manage chat ban timer for
+                                Manage suspension timer for
                                 <strong
                                     class="text-slate-700 dark:text-gray-300"
                                     >{{ user.name }}</strong
@@ -183,7 +184,7 @@ const submitBan = () => {
 
                     <!-- Current status banner (when ban status is available) -->
                     <div
-                        v-if="user.chat_banned_until || user.is_chat_banned"
+                        v-if="user.banned_until || user.is_banned"
                         class="mt-4 rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-xs text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300"
                     >
                         <div class="flex items-center gap-2">
@@ -192,7 +193,7 @@ const submitBan = () => {
                                 <span class="font-bold">Current status: </span>
                                 <span>
                                     Banned until
-                                    {{ formatDate(user.chat_banned_until) }}
+                                    {{ formatDate(user.banned_until) }}
                                 </span>
                             </div>
                         </div>
@@ -229,13 +230,13 @@ const submitBan = () => {
                         <!-- Custom Date & Time Picker -->
                         <div class="space-y-1.5">
                             <label
-                                for="reusable_modal_chat_banned_until"
+                                for="reusable_modal_banned_until"
                                 class="block text-xs font-semibold text-slate-700 dark:text-gray-300"
                             >
                                 Ban Until (Date & Time)
                             </label>
                             <input
-                                id="reusable_modal_chat_banned_until"
+                                id="reusable_modal_banned_until"
                                 type="datetime-local"
                                 v-model="banUntilInput"
                                 class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 shadow-2xs focus:border-rose-500 focus:ring-1 focus:ring-rose-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"

@@ -12,6 +12,13 @@ class ForumVoteController extends Controller
 {
     public function votePost(Request $request, ForumPost $post): RedirectResponse
     {
+        $user = auth()->user();
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
         $validated = $request->validate([
             'value' => ['required', 'in:1,-1'],
         ]);
@@ -55,6 +62,13 @@ class ForumVoteController extends Controller
 
     public function voteAnswer(Request $request, ForumAnswer $answer): RedirectResponse
     {
+        $user = auth()->user();
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
         $validated = $request->validate([
             'value' => ['required', 'in:1,-1'],
         ]);
