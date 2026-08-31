@@ -44,7 +44,7 @@ defineProps({
     },
 });
 
-const { theme, toggle } = useDarkMode();
+const { theme, toggle, setTheme } = useDarkMode();
 const { deferredPrompt, isInstalled, promptInstall } = usePwa();
 
 const canInstallApp = computed(
@@ -895,7 +895,7 @@ onBeforeUnmount(() => {
                                 >
                                     <button
                                         type="button"
-                                        @click="theme = 'light'"
+                                        @click="setTheme('light')"
                                         class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all"
                                         :class="
                                             theme === 'light'
@@ -908,7 +908,7 @@ onBeforeUnmount(() => {
                                     </button>
                                     <button
                                         type="button"
-                                        @click="theme = 'dark'"
+                                        @click="setTheme('dark')"
                                         class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all"
                                         :class="
                                             theme === 'dark'
@@ -921,7 +921,7 @@ onBeforeUnmount(() => {
                                     </button>
                                     <button
                                         type="button"
-                                        @click="theme = 'system'"
+                                        @click="setTheme('system')"
                                         class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all"
                                         :class="
                                             theme === 'system'
