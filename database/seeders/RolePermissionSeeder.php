@@ -90,6 +90,11 @@ class RolePermissionSeeder extends Seeder
          */
         Permission::findOrCreate('manage tickets');
 
+        /*
+         * Forum management
+         */
+        Permission::findOrCreate('manage forums');
+
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
 

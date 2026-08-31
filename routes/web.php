@@ -42,8 +42,10 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/forum', [ForumController::class, 'store'])->name('forum.store');
     Route::delete('/forum/posts/{post:id}', [ForumController::class, 'destroy'])->name('forum.destroy');
     Route::post('/forum/posts/{post:id}/toggle-answered', [ForumController::class, 'toggleAnswered'])->name('forum.toggle-answered');
+    Route::post('/forum/posts/{post:id}/report', [ForumController::class, 'report'])->name('forum.posts.report');
     Route::post('/forum/posts/{post:id}/answers', [ForumAnswerController::class, 'store'])->name('forum.answers.store');
     Route::delete('/forum/answers/{answer}', [ForumAnswerController::class, 'destroy'])->name('forum.answers.destroy');
+    Route::post('/forum/answers/{answer}/report', [ForumAnswerController::class, 'report'])->name('forum.answers.report');
     Route::post('/forum/posts/{post:id}/vote', [ForumVoteController::class, 'votePost'])->name('forum.posts.vote');
     Route::post('/forum/answers/{answer}/vote', [ForumVoteController::class, 'voteAnswer'])->name('forum.answers.vote');
 

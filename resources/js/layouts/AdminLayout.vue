@@ -7,6 +7,7 @@ import {
     Book,
     Mail,
     MessageCircle,
+    MessageSquareText,
     LifeBuoy,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -25,6 +26,12 @@ const allNavigation = [
     { name: 'Dashboard', to: '/admin', icon: LayoutDashboard },
     { name: 'Manage Contents', to: '/admin/subjects', icon: BookOpen },
     { name: 'Manage Blogs', to: '/admin/blogs', icon: Book },
+    {
+        name: 'Manage Forum',
+        to: '/admin/forums',
+        icon: MessageSquareText,
+        permission: 'manage forums',
+    },
     {
         name: 'Support Tickets',
         to: '/admin/tickets',
