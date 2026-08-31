@@ -9,7 +9,6 @@ import {
     Search,
     ExternalLink,
     HelpCircle,
-    Filter,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -75,16 +74,7 @@ const props = defineProps<{
 }>();
 
 const searchInput = ref(props.filters.search || '');
-const selectedCurriculum = ref(props.filters.curriculum || '');
-const selectedSubject = ref(props.filters.subject_id || '');
 const selectedStatus = ref(props.filters.status || 'all');
-const showAdvancedFilters = ref(
-    Boolean(
-        props.filters.curriculum ||
-        props.filters.subject_id ||
-        props.filters.sort,
-    ),
-);
 
 const setStatusFilter = (status: string) => {
     selectedStatus.value = status;
@@ -100,9 +90,6 @@ const applyFilters = () => {
                 selectedStatus.value === 'all'
                     ? undefined
                     : selectedStatus.value,
-            curriculum: selectedCurriculum.value || undefined,
-            subject_id: selectedSubject.value || undefined,
-            sort: props.filters.sort || undefined,
         },
         { preserveState: true, replace: true },
     );
@@ -132,23 +119,6 @@ const deletePost = (post: ForumPostItem) => {
         router.delete(`/admin/forums/${post.id}`, {
             preserveScroll: true,
         });
-    }
-};
-
-const formatDate = (isoString?: string | null) => {
-    if (!isoString) {
-        return '';
-    }
-
-    try {
-        const d = new Date(isoString);
-
-        return d.toLocaleDateString([], {
-            month: 'short',
-            day: 'numeric',
-        });
-    } catch {
-        return '';
     }
 };
 </script>
@@ -278,19 +248,6 @@ const formatDate = (isoString?: string | null) => {
                 >
                     Live ({{ stats.approvedCount }})
                 </button>
-
-                <button
-                    type="button"
-                    @click="showAdvancedFilters = !showAdvancedFilters"
-                    class="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-                    :class="{
-                        'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400':
-                            showAdvancedFilters,
-                    }"
-                >
-                    <Filter class="h-3 w-3" />
-                    <span>Filters</span>
-                </button>
             </div>
 
             <!-- Search Field -->
@@ -308,45 +265,7 @@ const formatDate = (isoString?: string | null) => {
             </div>
         </div>
 
-        <!-- Optional Collapsible Filter Bar (Curriculum & Subject) -->
-        <div
-            v-if="showAdvancedFilters"
-            class="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-xs dark:border-gray-800 dark:bg-gray-900/60"
-        >
-            <div class="flex items-center gap-2">
-                <span class="font-semibold text-slate-500">Curriculum:</span>
-                <select
-                    v-model="selectedCurriculum"
-                    @change="applyFilters"
-                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    <option value="">All</option>
-                    <option value="hsc">HSC</option>
-                    <option value="ssc">SSC</option>
-                </select>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <span class="font-semibold text-slate-500">Subject:</span>
-                <select
-                    v-model="selectedSubject"
-                    @change="applyFilters"
-                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    <option value="">All Subjects</option>
-                    <option
-                        v-for="sub in subjects"
-                        :key="sub.id"
-                        :value="sub.id"
-                    >
-                        {{ sub.name }} ({{ sub.course.toUpperCase() }})
-                    </option>
-                    <option value="other">Unassigned</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Uncluttered Table -->
+        <!-- Clean Moderation Table -->
         <div
             class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
@@ -369,7 +288,6 @@ const formatDate = (isoString?: string | null) => {
                         <tr>
                             <th class="px-4 py-3">Discussion</th>
                             <th class="px-4 py-3">Author</th>
-                            <th class="px-3 py-3 text-center">Engagement</th>
                             <th class="px-4 py-3">Moderation Status</th>
                             <th class="px-4 py-3 text-right">Actions</th>
                         </tr>
@@ -382,8 +300,8 @@ const formatDate = (isoString?: string | null) => {
                             :key="post.id"
                             class="transition hover:bg-slate-50/60 dark:hover:bg-gray-800/40"
                         >
-                            <!-- Title, Snippet & Meta -->
-                            <td class="max-w-lg px-4 py-3.5">
+                            <!-- Title & Snippet -->
+                            <td class="max-w-xl px-4 py-3.5">
                                 <div class="space-y-1">
                                     <div class="flex items-center gap-1.5">
                                         <Lock
@@ -410,24 +328,6 @@ const formatDate = (isoString?: string | null) => {
                                     >
                                         {{ post.body }}
                                     </p>
-
-                                    <!-- Metadata Tagline -->
-                                    <div
-                                        class="flex items-center gap-2 pt-0.5 text-[11px] text-slate-400"
-                                    >
-                                        <span
-                                            class="py-0.2 rounded bg-slate-100 px-1.5 font-semibold text-slate-600 uppercase dark:bg-gray-800 dark:text-gray-400"
-                                        >
-                                            {{ post.curriculum }}
-                                        </span>
-                                        <span>{{
-                                            post.subject?.name || 'General'
-                                        }}</span>
-                                        <span>•</span>
-                                        <span>{{
-                                            formatDate(post.created_at)
-                                        }}</span>
-                                    </div>
                                 </div>
                             </td>
 
@@ -446,46 +346,6 @@ const formatDate = (isoString?: string | null) => {
                                 <span v-else class="text-slate-400"
                                     >Anonymous</span
                                 >
-                            </td>
-
-                            <!-- Engagement (Replies + Reports) -->
-                            <td
-                                class="px-3 py-3.5 text-center whitespace-nowrap"
-                            >
-                                <div
-                                    class="flex flex-col items-center justify-center gap-1"
-                                >
-                                    <span
-                                        class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
-                                    >
-                                        {{ post.answers_count }}
-                                        {{
-                                            post.answers_count === 1
-                                                ? 'reply'
-                                                : 'replies'
-                                        }}
-                                    </span>
-
-                                    <!-- Pending reports alert -->
-                                    <Link
-                                        v-if="
-                                            post.pending_reports_count &&
-                                            post.pending_reports_count > 0
-                                        "
-                                        href="/admin/forums/reports"
-                                        class="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300"
-                                    >
-                                        <Flag class="h-2.5 w-2.5" />
-                                        <span
-                                            >{{ post.pending_reports_count }}
-                                            {{
-                                                post.pending_reports_count === 1
-                                                    ? 'report'
-                                                    : 'reports'
-                                            }}</span
-                                        >
-                                    </Link>
-                                </div>
                             </td>
 
                             <!-- Inline Moderation Status Dropdown -->
@@ -576,25 +436,6 @@ const formatDate = (isoString?: string | null) => {
             >
                 <div class="text-slate-400">
                     Page {{ posts.current_page }} of {{ posts.last_page }}
-                </div>
-
-                <div class="flex items-center gap-1">
-                    <component
-                        :is="link.url ? Link : 'span'"
-                        v-for="(link, index) in posts.links"
-                        :key="index"
-                        :href="link.url"
-                        class="rounded-lg px-2 py-1 font-medium transition"
-                        :class="{
-                            'bg-indigo-600 text-white': link.active,
-                            'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800':
-                                !link.active && link.url,
-                            'cursor-not-allowed text-slate-300 dark:text-gray-600':
-                                !link.url,
-                        }"
-                    >
-                        <span v-html="link.label"></span>
-                    </component>
                 </div>
             </div>
         </div>
