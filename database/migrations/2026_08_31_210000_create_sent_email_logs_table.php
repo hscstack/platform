@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('sent_email_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('recipient_email');
-            $table->string('recipient_name')->nullable();
-            $table->string('subject');
+            $table->text('recipient_email');
+            $table->text('recipient_name')->nullable();
+            $table->text('subject');
             $table->string('status')->default('sent');
             $table->text('error_message')->nullable();
             $table->timestamp('sent_at')->nullable();

@@ -6,27 +6,32 @@ use App\Models\SentEmailLog;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Mail\SendQueuedMailable;
 use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Mime\Address;
 
 class LogSentEmailListener
 {
     public function handle(MessageSent $event): void
     {
-        $message = $event->message;
+        try {
+            $message = $event->message;
 
-        $toAddresses = array_map(fn (Address $addr) => $addr->getAddress(), $message->getTo());
-        $recipientEmail = implode(', ', $toAddresses);
+            $toAddresses = array_map(fn (Address $addr) => $addr->getAddress(), $message->getTo() ?? []);
+            $recipientEmail = implode(', ', $toAddresses);
 
-        $toNames = array_filter(array_map(fn (Address $addr) => $addr->getName(), $message->getTo()));
-        $recipientName = ! empty($toNames) ? implode(', ', $toNames) : null;
+            $toNames = array_filter(array_map(fn (Address $addr) => $addr->getName(), $message->getTo() ?? []));
+            $recipientName = ! empty($toNames) ? implode(', ', $toNames) : null;
 
-        SentEmailLog::create([
-            'recipient_email' => $recipientEmail ?: 'unknown@example.com',
-            'recipient_name' => $recipientName,
-            'subject' => $message->getSubject() ?? '(No Subject)',
-            'status' => 'sent',
-            'sent_at' => now(),
-        ]);
+            SentEmailLog::create([
+                'recipient_email' => $recipientEmail ?: 'unknown@example.com',
+                'recipient_name' => $recipientName,
+                'subject' => $message->getSubject() ?? '(No Subject)',
+                'status' => 'sent',
+                'sent_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to record sent email log: '.$e->getMessage());
+        }
     }
 
     public function handleJobFailed(JobFailed $event): void
@@ -53,7 +58,7 @@ class LogSentEmailListener
                 ]);
             }
         } catch (\Throwable $e) {
-            // ignore
+            Log::error('Failed to record failed email log: '.$e->getMessage());
         }
     }
 }
