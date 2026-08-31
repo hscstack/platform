@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\ChatSettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailController as AdminEmailController;
+use App\Http\Controllers\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
@@ -123,4 +124,20 @@ Route::middleware('permission:manage tickets')->group(function () {
     Route::get('/tickets', [AdminSupportTicketController::class, 'index'])->name('tickets.index');
     Route::patch('/tickets/{ticket}', [AdminSupportTicketController::class, 'update'])->name('tickets.update');
     Route::delete('/tickets/{ticket}', [AdminSupportTicketController::class, 'destroy'])->name('tickets.destroy');
+});
+
+// Forum Management & Settings
+Route::middleware('permission:manage forums')->group(function () {
+    Route::get('/forums', [AdminForumController::class, 'index'])->name('forums.index');
+    Route::patch('/forums/{post}/lock', [AdminForumController::class, 'toggleLock'])->name('forums.lock');
+    Route::patch('/forums/{post}/publish', [AdminForumController::class, 'togglePublish'])->name('forums.publish');
+    Route::delete('/forums/{post}', [AdminForumController::class, 'destroy'])->name('forums.destroy');
+
+    Route::get('/forums/reports', [AdminForumController::class, 'reports'])->name('forums.reports.index');
+    Route::patch('/forums/reports/{report}/status', [AdminForumController::class, 'updateReportStatus'])->name('forums.reports.update-status');
+    Route::delete('/forums/reports/clear', [AdminForumController::class, 'clearReports'])->name('forums.reports.clear');
+    Route::delete('/forums/reports/{report}', [AdminForumController::class, 'deleteReport'])->name('forums.reports.destroy');
+
+    Route::get('/forums/settings', [AdminForumController::class, 'settings'])->name('forums.settings.edit');
+    Route::post('/forums/settings', [AdminForumController::class, 'updateSettings'])->name('forums.settings.update');
 });
