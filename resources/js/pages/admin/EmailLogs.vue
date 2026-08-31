@@ -6,7 +6,6 @@ import {
     X,
     CheckCircle2,
     AlertCircle,
-    ArrowLeft,
     Send,
     Inbox,
 } from 'lucide-vue-next';
@@ -74,8 +73,8 @@ const applyFilters = () => {
 
 watch(searchQuery, () => {
     if (searchDebounceTimeout) {
-clearTimeout(searchDebounceTimeout);
-}
+        clearTimeout(searchDebounceTimeout);
+    }
 
     searchDebounceTimeout = setTimeout(() => {
         applyFilters();
@@ -97,39 +96,51 @@ const clearSearch = () => {
     <AdminLayout>
         <Head title="Email Logs — Admin" />
 
-        <div class="mx-auto max-w-6xl space-y-6">
-            <!-- Header -->
-            <div
-                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-            >
+        <div class="mx-auto space-y-6">
+            <!-- Emails Admin Header & Tab System -->
+            <div class="space-y-4">
                 <div>
-                    <div class="mb-2">
-                        <Link
-                            href="/admin/emails/send"
-                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                        >
-                            <ArrowLeft class="h-3.5 w-3.5" />
-                            <span>Back to Composer</span>
-                        </Link>
-                    </div>
                     <h1
                         class="text-2xl font-black text-slate-900 dark:text-gray-100"
                     >
-                        Email Delivery Logs
+                        Emails
                     </h1>
                     <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        Full audit history of all automated system emails and
-                        broadcast attempts.
+                        Compose broadcast announcements and view email delivery
+                        logs.
                     </p>
                 </div>
 
-                <Link
-                    href="/admin/emails/send"
-                    class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                <!-- Tab Navigation Bar -->
+                <div
+                    class="flex items-center gap-2 border-b border-slate-200 pb-3 dark:border-gray-800"
                 >
-                    <Send class="h-4 w-4" />
-                    <span>Send New Broadcast</span>
-                </Link>
+                    <Link
+                        href="/admin/emails/send"
+                        class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition"
+                        :class="
+                            $page.url.startsWith('/admin/emails/send')
+                                ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                        "
+                    >
+                        <Send class="h-3.5 w-3.5" />
+                        <span>Send Broadcast</span>
+                    </Link>
+
+                    <Link
+                        href="/admin/emails/logs"
+                        class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition"
+                        :class="
+                            $page.url.startsWith('/admin/emails/logs')
+                                ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                        "
+                    >
+                        <Mail class="h-3.5 w-3.5" />
+                        <span>Delivery Logs</span>
+                    </Link>
+                </div>
             </div>
 
             <!-- Stats Bar -->
