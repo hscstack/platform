@@ -34,15 +34,10 @@ class EmailController extends Controller
             ->has('roles')
             ->count();
 
-        $recentLogs = SentEmailLog::latest('id')
-            ->limit(20)
-            ->get();
-
         return Inertia::render('admin/EmailSend', [
             'recipientCount' => $allSubscribersCount,
             'studentsCount' => $studentsCount,
             'staffCount' => $staffCount,
-            'recentLogs' => $recentLogs,
         ]);
     }
 
