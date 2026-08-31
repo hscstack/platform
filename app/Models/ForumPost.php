@@ -26,6 +26,8 @@ class ForumPost extends Model
         'body',
         'image_path',
         'is_answered',
+        'is_locked',
+        'is_published',
         'vote_score',
         'upvotes_count',
         'downvotes_count',
@@ -40,6 +42,8 @@ class ForumPost extends Model
     {
         return [
             'is_answered' => 'boolean',
+            'is_locked' => 'boolean',
+            'is_published' => 'boolean',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',
@@ -109,6 +113,16 @@ class ForumPost extends Model
     public function votes(): MorphMany
     {
         return $this->morphMany(ForumVote::class, 'voteable');
+    }
+
+    public function reports(): MorphMany
+    {
+        return $this->morphMany(Report::class, 'reportable');
+    }
+
+    public function scopePublished(Builder $query): void
+    {
+        $query->where('is_published', true);
     }
 
     public function scopeFilter(Builder $query, array $filters): void

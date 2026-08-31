@@ -72,4 +72,9 @@ class ForumAnswer extends Model
     {
         return $this->morphMany(ForumVote::class, 'voteable');
     }
+
+    public function reports(): MorphMany
+    {
+        return $this->morphMany(Report::class, 'reportable');
+    }
 }
