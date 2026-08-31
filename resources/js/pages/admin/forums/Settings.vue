@@ -8,6 +8,7 @@ import {
     ShieldAlert,
     Save,
     Loader2,
+    CheckCircle2,
 } from 'lucide-vue-next';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
@@ -15,6 +16,7 @@ defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
     settings: {
+        approval_mode: string;
         posting_enabled: boolean;
         comments_enabled: boolean;
         disabled_reason: string;
@@ -26,6 +28,7 @@ const props = defineProps<{
 }>();
 
 const form = useForm({
+    approval_mode: props.settings.approval_mode || 'auto',
     posting_enabled: props.settings.posting_enabled,
     comments_enabled: props.settings.comments_enabled,
     disabled_reason: props.settings.disabled_reason,
@@ -105,7 +108,99 @@ const submitSettings = () => {
         </div>
 
         <form @submit.prevent="submitSettings" class="max-w-4xl space-y-6">
-            <!-- 1. Global Availability Section -->
+            <!-- 1. Post Approval Architecture Section -->
+            <div
+                class="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div
+                    class="mb-4 flex items-center gap-2.5 border-b border-slate-100 pb-3 dark:border-gray-800"
+                >
+                    <CheckCircle2
+                        class="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                    />
+                    <div>
+                        <h2
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Post Approval Architecture
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">
+                            Configure whether new questions are approved
+                            automatically or held for moderator review.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <!-- Auto Approval Option -->
+                    <label
+                        class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                        :class="[
+                            form.approval_mode === 'auto'
+                                ? 'border-indigo-500 bg-indigo-50/50 dark:border-indigo-500/70 dark:bg-indigo-950/30'
+                                : 'border-slate-200 bg-slate-50/40 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/30 dark:hover:bg-gray-800/60',
+                        ]"
+                    >
+                        <input
+                            v-model="form.approval_mode"
+                            type="radio"
+                            value="auto"
+                            class="mt-0.5 h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700"
+                        />
+                        <div class="space-y-0.5">
+                            <div
+                                class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                Automatic Approval (Auto)
+                            </div>
+                            <p
+                                class="text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                All newly submitted questions are published
+                                immediately and visible to all users. Community
+                                report threshold rules still apply.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Manual Approval Option -->
+                    <label
+                        class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                        :class="[
+                            form.approval_mode === 'manual'
+                                ? 'border-indigo-500 bg-indigo-50/50 dark:border-indigo-500/70 dark:bg-indigo-950/30'
+                                : 'border-slate-200 bg-slate-50/40 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/30 dark:hover:bg-gray-800/60',
+                        ]"
+                    >
+                        <input
+                            v-model="form.approval_mode"
+                            type="radio"
+                            value="manual"
+                            class="mt-0.5 h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700"
+                        />
+                        <div class="space-y-0.5">
+                            <div
+                                class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                Manual Moderator Approval (Manual)
+                            </div>
+                            <p
+                                class="text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                Newly submitted questions are marked as
+                                <span
+                                    class="font-semibold text-amber-600 dark:text-amber-400"
+                                    >Pending Review</span
+                                >
+                                and stay hidden from public view until an admin
+                                approves them.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 2. Global Availability Section -->
             <div
                 class="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs sm:p-6 dark:border-gray-800 dark:bg-gray-900"
             >
@@ -232,14 +327,15 @@ const submitSettings = () => {
                                 class="text-xs text-slate-500 dark:text-gray-400"
                             >
                                 Automatically hide a post from public view when
-                                it receives this many pending reports.
+                                it receives this many pending reports (set to 0
+                                to disable).
                             </p>
                         </div>
                         <div class="flex items-center gap-2">
                             <input
                                 v-model.number="form.auto_unpublish_threshold"
                                 type="number"
-                                min="1"
+                                min="0"
                                 max="50"
                                 required
                                 class="w-20 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-center text-xs font-bold text-slate-900 shadow-2xs outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"

@@ -40,8 +40,10 @@ class ForumController extends Controller
             })
             ->when($filters['status'] ?? null, function ($q, $status) {
                 match ($status) {
-                    'published' => $q->where('is_published', true),
-                    'unpublished' => $q->where('is_published', false),
+                    'approved', 'published' => $q->where('moderation_status', 'approved'),
+                    'pending' => $q->where('moderation_status', 'pending'),
+                    'flagged' => $q->where('moderation_status', 'flagged'),
+                    'rejected', 'unpublished' => $q->where('moderation_status', 'rejected'),
                     'locked' => $q->where('is_locked', true),
                     'unlocked' => $q->where('is_locked', false),
                     'answered' => $q->where('is_answered', true),
@@ -82,7 +84,10 @@ class ForumController extends Controller
             'filters' => $filters,
             'stats' => [
                 'totalPosts' => ForumPost::count(),
-                'unpublishedCount' => ForumPost::where('is_published', false)->count(),
+                'pendingCount' => ForumPost::where('moderation_status', 'pending')->count(),
+                'flaggedCount' => ForumPost::where('moderation_status', 'flagged')->count(),
+                'rejectedCount' => ForumPost::where('moderation_status', 'rejected')->count(),
+                'approvedCount' => ForumPost::where('moderation_status', 'approved')->count(),
                 'lockedCount' => ForumPost::where('is_locked', true)->count(),
                 'pendingReportsCount' => $pendingReportsCount,
             ],
@@ -102,13 +107,25 @@ class ForumController extends Controller
 
     public function togglePublish(ForumPost $post)
     {
+        $newStatus = $post->moderation_status === 'approved' ? 'rejected' : 'approved';
         $post->update([
-            'is_published' => ! $post->is_published,
+            'moderation_status' => $newStatus,
         ]);
 
-        $status = $post->is_published ? 'published' : 'unpublished';
+        $action = $newStatus === 'approved' ? 'approved and published' : 'unpublished';
 
-        return back()->with('success', "Discussion has been {$status}.");
+        return back()->with('success', "Discussion has been {$action}.");
+    }
+
+    public function updateModerationStatus(Request $request, ForumPost $post)
+    {
+        $validated = $request->validate([
+            'moderation_status' => ['required', 'string', 'in:approved,pending,flagged,rejected'],
+        ]);
+
+        $post->update(['moderation_status' => $validated['moderation_status']]);
+
+        return back()->with('success', "Discussion status updated to {$validated['moderation_status']}.");
     }
 
     public function destroy(ForumPost $post)
@@ -198,6 +215,8 @@ class ForumController extends Controller
 
     public function updateReportStatus(Request $request, Report $report)
     {
+        abort_unless(in_array($report->reportable_type, [ForumPost::class, ForumAnswer::class], true), 404);
+
         $validated = $request->validate([
             'status' => ['required', 'string', 'in:pending,reviewed,dismissed'],
         ]);
@@ -209,6 +228,8 @@ class ForumController extends Controller
 
     public function deleteReport(Report $report)
     {
+        abort_unless(in_array($report->reportable_type, [ForumPost::class, ForumAnswer::class], true), 404);
+
         $report->delete();
 
         return back()->with('success', 'Report deleted successfully.');
@@ -236,6 +257,7 @@ class ForumController extends Controller
 
         return Inertia::render('admin/forums/Settings', [
             'settings' => [
+                'approval_mode' => (string) AppSetting::get('forum_approval_mode', 'auto'),
                 'posting_enabled' => (bool) AppSetting::get('forum_posting_enabled', true),
                 'comments_enabled' => (bool) AppSetting::get('forum_comments_enabled', true),
                 'disabled_reason' => (string) AppSetting::get('forum_disabled_reason', ''),
@@ -250,14 +272,16 @@ class ForumController extends Controller
     public function updateSettings(Request $request)
     {
         $validated = $request->validate([
+            'approval_mode' => ['required', 'string', 'in:auto,manual'],
             'posting_enabled' => ['required', 'boolean'],
             'comments_enabled' => ['required', 'boolean'],
             'disabled_reason' => ['nullable', 'string', 'max:255'],
-            'auto_unpublish_threshold' => ['required', 'integer', 'min:1', 'max:50'],
+            'auto_unpublish_threshold' => ['required', 'integer', 'min:0', 'max:50'],
             'profanity_filter_enabled' => ['required', 'boolean'],
             'banned_words' => ['nullable', 'string'],
         ]);
 
+        AppSetting::set('forum_approval_mode', $validated['approval_mode'], 'string');
         AppSetting::set('forum_posting_enabled', $validated['posting_enabled'], 'boolean');
         AppSetting::set('forum_comments_enabled', $validated['comments_enabled'], 'boolean');
         AppSetting::set('forum_disabled_reason', $validated['disabled_reason'] ?? '', 'string');

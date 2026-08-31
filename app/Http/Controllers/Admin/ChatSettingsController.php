@@ -154,6 +154,8 @@ class ChatSettingsController extends Controller
 
     public function updateReportStatus(Request $request, Report $report)
     {
+        abort_unless($report->reportable_type === ChatMessage::class, 404);
+
         $validated = $request->validate([
             'status' => ['required', 'string', 'in:pending,reviewed,dismissed'],
         ]);
@@ -165,6 +167,8 @@ class ChatSettingsController extends Controller
 
     public function deleteReport(Report $report)
     {
+        abort_unless($report->reportable_type === ChatMessage::class, 404);
+
         $report->delete();
 
         return back()->with('success', 'Report deleted successfully.');

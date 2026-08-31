@@ -131,6 +131,7 @@ Route::middleware('permission:manage forums')->group(function () {
     Route::get('/forums', [AdminForumController::class, 'index'])->name('forums.index');
     Route::patch('/forums/{post:id}/lock', [AdminForumController::class, 'toggleLock'])->name('forums.lock');
     Route::patch('/forums/{post:id}/publish', [AdminForumController::class, 'togglePublish'])->name('forums.publish');
+    Route::patch('/forums/{post:id}/status', [AdminForumController::class, 'updateModerationStatus'])->name('forums.update-status');
     Route::delete('/forums/{post:id}', [AdminForumController::class, 'destroy'])->name('forums.destroy');
 
     Route::get('/forums/reports', [AdminForumController::class, 'reports'])->name('forums.reports.index');

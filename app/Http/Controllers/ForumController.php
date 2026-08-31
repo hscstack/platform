@@ -33,7 +33,7 @@ class ForumController extends Controller
         ];
 
         $postsQuery = ForumPost::query()
-            ->published()
+            ->when(! ($request->filled('my_posts') && auth()->check()), fn ($q) => $q->approved())
             ->with([
                 'user:id,name,username,image_path,institution',
                 'subject:id,name,course,slug',
@@ -61,7 +61,8 @@ class ForumController extends Controller
             return Subject::select('id', 'name', 'course', 'slug')
                 ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
                 ->orderBy('sort_order')
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         return Inertia::render('Forum/Index', [
@@ -77,7 +78,10 @@ class ForumController extends Controller
     public function show(Request $request, ForumPost $post): Response
     {
         $user = auth()->user();
-        if (! $post->is_published && (! $user || ! $user->can('view admin'))) {
+        $isAuthor = $user && $user->id === $post->user_id;
+        $isAdmin = $user && $user->can('view admin');
+
+        if (! $post->isApproved() && ! $isAuthor && ! $isAdmin) {
             abort(404);
         }
 
@@ -167,7 +171,8 @@ class ForumController extends Controller
             return Subject::select('id', 'name', 'course', 'slug')
                 ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
                 ->orderBy('sort_order')
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         return Inertia::render('Forum/Create', [
@@ -217,6 +222,9 @@ class ForumController extends Controller
             $nodeId = null;
         }
 
+        $approvalMode = AppSetting::get('forum_approval_mode', 'auto');
+        $moderationStatus = ($approvalMode === 'auto' || ($user && $user->can('view admin'))) ? 'approved' : 'pending';
+
         $post = ForumPost::create([
             'user_id' => auth()->id(),
             'subject_id' => $subjectId,
@@ -226,10 +234,14 @@ class ForumController extends Controller
             'body' => $validated['body'],
             'image_path' => $imagePath,
             'is_locked' => false,
-            'is_published' => true,
+            'moderation_status' => $moderationStatus,
         ]);
 
-        return redirect()->route('forum.show', $post->slug)->with('success', 'Question posted successfully!');
+        $message = $moderationStatus === 'pending'
+            ? 'Question submitted successfully and is pending moderator review.'
+            : 'Question posted successfully!';
+
+        return redirect()->route('forum.show', $post->slug)->with('success', $message);
     }
 
     public function destroy(ForumPost $post): RedirectResponse
@@ -290,17 +302,23 @@ class ForumController extends Controller
 
         $author = $post->user;
 
-        $report = Report::create([
-            'reporter_id' => $user->id,
-            'reported_user_id' => $author?->id,
-            'reported_user_name' => $author?->name,
-            'reported_user_username' => $author?->username,
-            'reportable_type' => ForumPost::class,
-            'reportable_id' => $post->id,
-            'content_snapshot' => $post->title."\n\n".$post->body,
-            'reason' => $validated['reason'],
-            'status' => 'pending',
-        ]);
+        try {
+            $report = Report::create([
+                'reporter_id' => $user->id,
+                'reported_user_id' => $author?->id,
+                'reported_user_name' => $author?->name,
+                'reported_user_username' => $author?->username,
+                'reportable_type' => ForumPost::class,
+                'reportable_id' => $post->id,
+                'content_snapshot' => $post->title."\n\n".$post->body,
+                'reason' => $validated['reason'],
+                'status' => 'pending',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'You have already reported this question.',
+            ], 422);
+        }
 
         // Auto-unpublish threshold check
         $threshold = (int) AppSetting::get('forum_auto_unpublish_threshold', 3);
@@ -311,7 +329,7 @@ class ForumController extends Controller
                 ->count();
 
             if ($pendingReportsCount >= $threshold) {
-                $post->update(['is_published' => false]);
+                $post->update(['moderation_status' => 'flagged']);
             }
         }
 

@@ -29,7 +29,7 @@ class ForumPostFactory extends Factory
             'body' => fake()->paragraphs(2, true),
             'is_answered' => false,
             'is_locked' => false,
-            'is_published' => true,
+            'moderation_status' => 'approved',
             'vote_score' => 0,
             'answers_count' => 0,
         ];

@@ -134,16 +134,32 @@ const openFilterModal = () => {
     showFilterModal.value = true;
 };
 
-const modalFilteredSubjects = computed(() => {
-    if (!draftCurriculum.value) {
+const safeSubjects = computed<Subject[]>(() => {
+    if (Array.isArray(props.subjects)) {
         return props.subjects;
     }
 
-    return props.subjects.filter((s) => s.course === draftCurriculum.value);
+    if (props.subjects && typeof props.subjects === 'object') {
+        return Object.values(props.subjects) as Subject[];
+    }
+
+    return [];
+});
+
+const modalFilteredSubjects = computed(() => {
+    if (!draftCurriculum.value) {
+        return safeSubjects.value;
+    }
+
+    return safeSubjects.value.filter(
+        (s) => s && s.course === draftCurriculum.value,
+    );
 });
 
 const modalSelectedSubject = computed(() => {
-    return props.subjects.find((s) => s.id === Number(draftSubjectId.value));
+    return safeSubjects.value.find(
+        (s) => s && s.id === Number(draftSubjectId.value),
+    );
 });
 
 const modalSubjectNodes = computed(() => {
@@ -154,7 +170,7 @@ watch(draftCurriculum, () => {
     // If subject does not match new curriculum, reset subject and node
     if (draftSubjectId.value) {
         const found = modalFilteredSubjects.value.some(
-            (s) => s.id === Number(draftSubjectId.value),
+            (s) => s && s.id === Number(draftSubjectId.value),
         );
 
         if (!found) {
@@ -179,8 +195,9 @@ const selectedSubjectName = computed(() => {
     }
 
     return (
-        props.subjects.find((s) => s.id === Number(currentSubjectId.value))
-            ?.name || null
+        safeSubjects.value.find(
+            (s) => s && s.id === Number(currentSubjectId.value),
+        )?.name || null
     );
 });
 
@@ -189,9 +206,9 @@ const selectedNodeName = computed(() => {
         return null;
     }
 
-    for (const subj of props.subjects) {
-        const node = subj.nodes?.find(
-            (n) => n.id === Number(currentNodeId.value),
+    for (const subj of safeSubjects.value) {
+        const node = subj?.nodes?.find(
+            (n) => n && n.id === Number(currentNodeId.value),
         );
 
         if (node) {

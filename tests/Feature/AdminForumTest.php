@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\AppSetting;
+use App\Models\ChatMessage;
 use App\Models\ForumPost;
 use App\Models\Report;
 use App\Models\User;
@@ -72,25 +73,54 @@ test('admin can toggle publish status on forum post', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $post = ForumPost::factory()->create(['is_published' => true]);
+    $post = ForumPost::factory()->create(['moderation_status' => 'approved']);
 
     $response = $this->actingAs($admin)
         ->patch(route('admin.forums.publish', $post));
 
     $response->assertRedirect();
-    expect($post->fresh()->is_published)->toBeFalse();
+    expect($post->fresh()->moderation_status)->toBe('rejected');
+
+    // Toggle back
+    $this->actingAs($admin)
+        ->patch(route('admin.forums.publish', $post));
+    expect($post->fresh()->moderation_status)->toBe('approved');
+});
+
+test('admin can update moderation status directly', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $post = ForumPost::factory()->create(['moderation_status' => 'pending']);
+
+    $this->actingAs($admin)
+        ->patch(route('admin.forums.update-status', $post), [
+            'moderation_status' => 'approved',
+        ])
+        ->assertRedirect();
+
+    expect($post->fresh()->moderation_status)->toBe('approved');
+
+    $this->actingAs($admin)
+        ->patch(route('admin.forums.update-status', $post), [
+            'moderation_status' => 'flagged',
+        ])
+        ->assertRedirect();
+
+    expect($post->fresh()->moderation_status)->toBe('flagged');
 });
 
 test('unpublished post is not visible on public forum index and returns 404 for regular users', function () {
     $user = User::factory()->create();
-    $publishedPost = ForumPost::factory()->create(['title' => 'Visible Post', 'is_published' => true]);
-    $hiddenPost = ForumPost::factory()->create(['title' => 'Hidden Post', 'is_published' => false]);
+    $author = User::factory()->create();
+    $publishedPost = ForumPost::factory()->create(['title' => 'Visible Post', 'moderation_status' => 'approved']);
+    $hiddenPost = ForumPost::factory()->create(['user_id' => $author->id, 'title' => 'Hidden Post', 'moderation_status' => 'rejected']);
 
     // Index only returns published
     $response = $this->actingAs($user)->get(route('forum.index'));
     $response->assertStatus(200);
 
-    // Show endpoint returns 404 for hidden post
+    // Show endpoint returns 404 for regular non-author user on rejected post
     $hiddenResponse = $this->actingAs($user)->get(route('forum.show', $hiddenPost));
     $hiddenResponse->assertSee('errors\/404');
     $this->actingAs($user)->get(route('forum.show', $publishedPost))->assertStatus(200);
@@ -102,6 +132,7 @@ test('admin can update forum settings', function () {
 
     $response = $this->actingAs($admin)
         ->post(route('admin.forums.settings.update'), [
+            'approval_mode' => 'manual',
             'posting_enabled' => false,
             'comments_enabled' => false,
             'disabled_reason' => 'Paused for exam period',
@@ -113,6 +144,7 @@ test('admin can update forum settings', function () {
     $response->assertRedirect();
     $response->assertSessionHas('success');
 
+    expect(AppSetting::get('forum_approval_mode'))->toBe('manual');
     expect(AppSetting::get('forum_posting_enabled'))->toBeFalse();
     expect(AppSetting::get('forum_comments_enabled'))->toBeFalse();
     expect(AppSetting::get('forum_disabled_reason'))->toBe('Paused for exam period');
@@ -142,7 +174,7 @@ test('reporting post multiple times triggers auto-unpublish when threshold is re
     $author = User::factory()->create();
     $post = ForumPost::factory()->create([
         'user_id' => $author->id,
-        'is_published' => true,
+        'moderation_status' => 'approved',
     ]);
 
     $reporter1 = User::factory()->create();
@@ -153,19 +185,19 @@ test('reporting post multiple times triggers auto-unpublish when threshold is re
     $this->actingAs($reporter1)
         ->postJson(route('forum.posts.report', $post), ['reason' => 'Spam'])
         ->assertStatus(201);
-    expect($post->fresh()->is_published)->toBeTrue();
+    expect($post->fresh()->moderation_status)->toBe('approved');
 
     // Report 2
     $this->actingAs($reporter2)
         ->postJson(route('forum.posts.report', $post), ['reason' => 'Spam'])
         ->assertStatus(201);
-    expect($post->fresh()->is_published)->toBeTrue();
+    expect($post->fresh()->moderation_status)->toBe('approved');
 
     // Report 3 (Hits threshold of 3)
     $this->actingAs($reporter3)
         ->postJson(route('forum.posts.report', $post), ['reason' => 'Spam'])
         ->assertStatus(201);
-    expect($post->fresh()->is_published)->toBeFalse();
+    expect($post->fresh()->moderation_status)->toBe('flagged');
 });
 
 test('admin can manage forum reports status and delete reports', function () {
@@ -234,4 +266,46 @@ test('admin can toggle lock and delete using post id route binding', function ()
         ->assertRedirect();
     expect(ForumPost::find($post->id))->toBeNull();
     expect(Report::find($report->id))->toBeNull();
+});
+
+test('admin cannot mutate non-forum reports through forum admin endpoints', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $reporter = User::factory()->create();
+    $chatReport = Report::create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => ChatMessage::class,
+        'reportable_id' => 999,
+        'content_snapshot' => 'Chat message',
+        'reason' => 'Spam',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($admin)
+        ->patch(route('admin.forums.reports.update-status', $chatReport), ['status' => 'reviewed'])
+        ->assertNotFound();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.forums.reports.destroy', $chatReport))
+        ->assertNotFound();
+});
+
+test('admin can update auto unpublish threshold to zero to disable it', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($admin)
+        ->post(route('admin.forums.settings.update'), [
+            'approval_mode' => 'auto',
+            'posting_enabled' => true,
+            'comments_enabled' => true,
+            'disabled_reason' => '',
+            'auto_unpublish_threshold' => 0,
+            'profanity_filter_enabled' => true,
+            'banned_words' => '',
+        ])
+        ->assertRedirect();
+
+    expect(AppSetting::get('forum_auto_unpublish_threshold'))->toBe(0);
 });

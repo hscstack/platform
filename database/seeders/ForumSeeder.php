@@ -28,7 +28,7 @@ class ForumSeeder extends Seeder
                 'body' => "I am having trouble understanding the standard method to solve second-order differential equations representing simple harmonic motion (SHM).\n\nCould someone please explain the step-by-step approach and how boundary conditions apply?",
                 'is_answered' => true,
                 'is_locked' => false,
-                'is_published' => true,
+                'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
@@ -36,7 +36,7 @@ class ForumSeeder extends Seeder
                 'body' => "Can anyone summarize the main differences between SN1 and SN2 nucleophilic substitution reactions?\n\nSpecifically regarding solvent polarity, carbocation stability, and stereochemistry inversion.",
                 'is_answered' => true,
                 'is_locked' => false,
-                'is_published' => true,
+                'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
@@ -44,7 +44,7 @@ class ForumSeeder extends Seeder
                 'body' => 'Which substitution techniques and trigonometric identities appear most frequently in board exam questions for indefinite integrals?',
                 'is_answered' => false,
                 'is_locked' => false,
-                'is_published' => true,
+                'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'ssc',
@@ -52,7 +52,7 @@ class ForumSeeder extends Seeder
                 'body' => 'Is there an intuitive trick for balancing redox equations with oxidation numbers without memorizing every single equation in the textbook?',
                 'is_answered' => true,
                 'is_locked' => false,
-                'is_published' => true,
+                'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'ssc',
@@ -60,7 +60,7 @@ class ForumSeeder extends Seeder
                 'body' => 'When resistors are in parallel, why does the equivalent resistance decrease below the smallest resistor? Looking for a physical intuition explanation.',
                 'is_answered' => false,
                 'is_locked' => false,
-                'is_published' => true,
+                'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
@@ -68,7 +68,7 @@ class ForumSeeder extends Seeder
                 'body' => 'This discussion contains the verified laboratory notebook guidelines and submission deadlines for physics and chemistry practical exams.',
                 'is_answered' => true,
                 'is_locked' => true,
-                'is_published' => true,
+                'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
@@ -76,7 +76,7 @@ class ForumSeeder extends Seeder
                 'body' => 'Check out this random link http://suspicious-site.example.com to buy leaked question papers!',
                 'is_answered' => false,
                 'is_locked' => true,
-                'is_published' => false,
+                'moderation_status' => 'flagged',
             ],
         ];
 
@@ -99,7 +99,7 @@ class ForumSeeder extends Seeder
                 'body' => $qData['body'],
                 'is_answered' => $qData['is_answered'],
                 'is_locked' => $qData['is_locked'],
-                'is_published' => $qData['is_published'],
+                'moderation_status' => $qData['moderation_status'],
                 'vote_score' => 0,
                 'answers_count' => 0,
             ]);

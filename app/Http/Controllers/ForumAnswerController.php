@@ -20,6 +20,17 @@ class ForumAnswerController extends Controller
     {
         $user = auth()->user();
 
+        // Check if discussion is approved
+        if (! $post->isApproved() && (! $user || ! $user->can('manage forums'))) {
+            $reason = match ($post->moderation_status) {
+                'pending' => 'This discussion is currently pending moderator approval.',
+                'flagged' => 'This discussion has been temporarily hidden following community reports.',
+                default => 'This discussion has been hidden by moderation.',
+            };
+
+            return back()->with('error', $reason);
+        }
+
         // Check if discussion is locked
         if ($post->is_locked && (! $user || ! $user->can('manage forums'))) {
             return back()->with('error', 'This discussion has been locked by a moderator. New replies are disabled.');
@@ -122,17 +133,23 @@ class ForumAnswerController extends Controller
 
         $author = $answer->user;
 
-        $report = Report::create([
-            'reporter_id' => $user->id,
-            'reported_user_id' => $author?->id,
-            'reported_user_name' => $author?->name,
-            'reported_user_username' => $author?->username,
-            'reportable_type' => ForumAnswer::class,
-            'reportable_id' => $answer->id,
-            'content_snapshot' => $answer->body,
-            'reason' => $validated['reason'],
-            'status' => 'pending',
-        ]);
+        try {
+            $report = Report::create([
+                'reporter_id' => $user->id,
+                'reported_user_id' => $author?->id,
+                'reported_user_name' => $author?->name,
+                'reported_user_username' => $author?->username,
+                'reportable_type' => ForumAnswer::class,
+                'reportable_id' => $answer->id,
+                'content_snapshot' => $answer->body,
+                'reason' => $validated['reason'],
+                'status' => 'pending',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'You have already reported this answer.',
+            ], 422);
+        }
 
         return response()->json([
             'message' => 'Answer reported successfully. Our moderation team will review it.',

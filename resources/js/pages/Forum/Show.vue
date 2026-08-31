@@ -16,6 +16,12 @@ import {
     Unlock,
     Eye,
     EyeOff,
+    Flag,
+    Loader2,
+    Check,
+    Clock,
+    AlertTriangle,
+    ShieldAlert,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -79,7 +85,7 @@ interface ForumPost {
     image_url?: string | null;
     is_answered: boolean;
     is_locked?: boolean;
-    is_published?: boolean;
+    moderation_status?: 'approved' | 'pending' | 'flagged' | 'rejected';
     vote_score: number;
     upvotes_count: number;
     downvotes_count: number;
@@ -225,6 +231,118 @@ const deleteAnswer = (answerId: number) => {
         router.delete(`/forum/answers/${answerId}`, {
             preserveScroll: true,
         });
+    }
+};
+
+// Report Content State & Methods
+interface ReportTarget {
+    type: 'post' | 'answer';
+    id: number;
+    title?: string;
+    authorName?: string;
+    contentPreview: string;
+}
+
+const reportingTarget = ref<ReportTarget | null>(null);
+const reportReason = ref('Inappropriate content or conduct');
+const isSubmittingReport = ref(false);
+const reportSuccessMessage = ref<string | null>(null);
+const reportErrorMessage = ref<string | null>(null);
+
+const reportReasons = [
+    'Inappropriate content or conduct',
+    'Spam or advertisement',
+    'Harassment or hate speech',
+    'False or misleading academic information',
+    'Off-topic or irrelevant',
+    'Other',
+];
+
+const openReportModal = (
+    type: 'post' | 'answer',
+    id: number,
+    title: string | undefined,
+    authorName: string | undefined,
+    contentPreview: string,
+) => {
+    if (!user.value) {
+        authModalMessage.value = 'Please sign in to report this content.';
+        showAuthModal.value = true;
+
+        return;
+    }
+
+    reportingTarget.value = {
+        type,
+        id,
+        title,
+        authorName: authorName || 'Anonymous',
+        contentPreview:
+            contentPreview.length > 200
+                ? contentPreview.slice(0, 200) + '...'
+                : contentPreview,
+    };
+    reportReason.value = 'Inappropriate content or conduct';
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+};
+
+const closeReportModal = () => {
+    reportingTarget.value = null;
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+    isSubmittingReport.value = false;
+};
+
+const submitReport = async () => {
+    if (!reportingTarget.value || isSubmittingReport.value) {
+        return;
+    }
+
+    isSubmittingReport.value = true;
+    reportSuccessMessage.value = null;
+    reportErrorMessage.value = null;
+
+    try {
+        const token = (
+            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
+        )?.content;
+
+        const endpoint =
+            reportingTarget.value.type === 'post'
+                ? `/forum/posts/${reportingTarget.value.id}/report`
+                : `/forum/answers/${reportingTarget.value.id}/report`;
+
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': token || '',
+            },
+            body: JSON.stringify({
+                reason: reportReason.value,
+            }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            reportSuccessMessage.value =
+                data.message ||
+                'Report submitted successfully. Our moderation team will review it.';
+            setTimeout(() => {
+                closeReportModal();
+            }, 1800);
+        } else {
+            reportErrorMessage.value =
+                data.message || 'Failed to submit report.';
+        }
+    } catch {
+        reportErrorMessage.value = 'Network error. Please try again.';
+    } finally {
+        isSubmittingReport.value = false;
     }
 };
 
@@ -505,6 +623,62 @@ function parseMentions(
         <article
             class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:mb-8 sm:p-7 dark:border-gray-800 dark:bg-gray-900"
         >
+            <!-- Moderation Notice Banner (When post is not approved) -->
+            <div
+                v-if="
+                    post.moderation_status &&
+                    post.moderation_status !== 'approved'
+                "
+                class="mb-4 flex items-start gap-3 rounded-xl border p-4 text-xs"
+                :class="[
+                    post.moderation_status === 'pending'
+                        ? 'border-amber-200 bg-amber-50/90 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300'
+                        : post.moderation_status === 'flagged'
+                          ? 'border-rose-200 bg-rose-50/90 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
+                          : 'border-red-200 bg-red-50/90 text-red-900 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300',
+                ]"
+            >
+                <Clock
+                    v-if="post.moderation_status === 'pending'"
+                    class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+                />
+                <AlertTriangle
+                    v-else-if="post.moderation_status === 'flagged'"
+                    class="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"
+                />
+                <ShieldAlert
+                    v-else
+                    class="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400"
+                />
+
+                <div>
+                    <div class="font-bold">
+                        <span v-if="post.moderation_status === 'pending'"
+                            >⏳ Pending Review</span
+                        >
+                        <span v-else-if="post.moderation_status === 'flagged'"
+                            >⚠️ Temporarily Hidden (Under Review)</span
+                        >
+                        <span v-else>🛑 Question Unpublished</span>
+                    </div>
+                    <p class="mt-0.5 leading-relaxed opacity-90">
+                        <span v-if="post.moderation_status === 'pending'">
+                            This question is currently pending moderator review
+                            and is only visible to you and platform moderators.
+                        </span>
+                        <span v-else-if="post.moderation_status === 'flagged'">
+                            This question was temporarily hidden following
+                            community reports and is awaiting review by our
+                            moderation team.
+                        </span>
+                        <span v-else>
+                            This question has been hidden or unpublished by
+                            moderators for violating forum guidelines.
+                        </span>
+                    </p>
+                </div>
+            </div>
+
             <!-- Badges Row -->
             <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
                 <!-- Curriculum Badge -->
@@ -517,6 +691,30 @@ function parseMentions(
                     ]"
                 >
                     {{ post.curriculum }}
+                </span>
+
+                <!-- Moderation Status Badge (if not approved) -->
+                <span
+                    v-if="
+                        post.moderation_status &&
+                        post.moderation_status !== 'approved'
+                    "
+                    class="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase"
+                    :class="[
+                        post.moderation_status === 'pending'
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                            : post.moderation_status === 'flagged'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                              : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
+                    ]"
+                >
+                    {{
+                        post.moderation_status === 'pending'
+                            ? 'Pending Review'
+                            : post.moderation_status === 'flagged'
+                              ? 'Flagged'
+                              : 'Unpublished'
+                    }}
                 </span>
 
                 <!-- Subject Badge -->
@@ -756,26 +954,48 @@ function parseMentions(
                             @click="togglePublish"
                             class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-2xs transition"
                             :class="[
-                                post.is_published === false
+                                post.moderation_status !== 'approved'
                                     ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
                                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800',
                             ]"
                             :title="
-                                post.is_published === false
-                                    ? 'Publish discussion'
+                                post.moderation_status !== 'approved'
+                                    ? 'Approve and publish discussion'
                                     : 'Unpublish / Hide discussion'
                             "
                         >
                             <Eye
-                                v-if="post.is_published === false"
+                                v-if="post.moderation_status !== 'approved'"
                                 class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
                             />
                             <EyeOff v-else class="h-3.5 w-3.5 text-slate-500" />
                             <span>{{
-                                post.is_published === false ? 'Restore' : 'Hide'
+                                post.moderation_status !== 'approved'
+                                    ? 'Restore'
+                                    : 'Hide'
                             }}</span>
                         </button>
                     </template>
+
+                    <!-- Report Question Action -->
+                    <button
+                        v-if="!user || user.id !== post.user_id"
+                        type="button"
+                        @click="
+                            openReportModal(
+                                'post',
+                                post.id,
+                                post.title,
+                                post.user?.name,
+                                post.body,
+                            )
+                        "
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-2xs transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-amber-900/60 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
+                        title="Report question to moderators"
+                    >
+                        <Flag class="h-3.5 w-3.5 text-amber-500" />
+                        <span>Report</span>
+                    </button>
 
                     <!-- Owner or Admin Delete Action -->
                     <button
@@ -912,15 +1132,43 @@ function parseMentions(
                         size="sm"
                     />
 
-                    <button
-                        v-if="!post.is_locked || can('manage forums')"
-                        type="button"
-                        @click="openReplyForm(answer.id, answer.user?.username)"
-                        class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                    >
-                        <Reply class="h-3.5 w-3.5" />
-                        <span>Reply</span>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button
+                            v-if="!user || user.id !== answer.user_id"
+                            type="button"
+                            @click="
+                                openReportModal(
+                                    'answer',
+                                    answer.id,
+                                    post.title,
+                                    answer.user?.name,
+                                    answer.body,
+                                )
+                            "
+                            class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-500 transition hover:bg-amber-50 hover:text-amber-700 dark:text-gray-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
+                            title="Report answer"
+                        >
+                            <Flag class="h-3.5 w-3.5 text-amber-500" />
+                            <span>Report</span>
+                        </button>
+
+                        <button
+                            v-if="
+                                (!post.is_locked &&
+                                    commentsEnabled !== false) ||
+                                can('manage forums') ||
+                                can('view admin')
+                            "
+                            type="button"
+                            @click="
+                                openReplyForm(answer.id, answer.user?.username)
+                            "
+                            class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                        >
+                            <Reply class="h-3.5 w-3.5" />
+                            <span>Reply</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Replies List (1-Level Indented) -->
@@ -1034,20 +1282,46 @@ function parseMentions(
                                 size="sm"
                             />
 
-                            <button
-                                v-if="!post.is_locked || can('manage forums')"
-                                type="button"
-                                @click="
-                                    openReplyForm(
-                                        answer.id,
-                                        reply.user?.username,
-                                    )
-                                "
-                                class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                            >
-                                <CornerDownRight class="h-3 w-3" />
-                                <span>Reply</span>
-                            </button>
+                            <div class="flex items-center gap-1">
+                                <button
+                                    v-if="!user || user.id !== reply.user_id"
+                                    type="button"
+                                    @click="
+                                        openReportModal(
+                                            'answer',
+                                            reply.id,
+                                            post.title,
+                                            reply.user?.name,
+                                            reply.body,
+                                        )
+                                    "
+                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400 hover:text-amber-600 dark:text-gray-500 dark:hover:text-amber-400"
+                                    title="Report reply"
+                                >
+                                    <Flag class="h-3 w-3 text-amber-500" />
+                                    <span>Report</span>
+                                </button>
+
+                                <button
+                                    v-if="
+                                        (!post.is_locked &&
+                                            commentsEnabled !== false) ||
+                                        can('manage forums') ||
+                                        can('view admin')
+                                    "
+                                    type="button"
+                                    @click="
+                                        openReplyForm(
+                                            answer.id,
+                                            reply.user?.username,
+                                        )
+                                    "
+                                    class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                >
+                                    <CornerDownRight class="h-3 w-3" />
+                                    <span>Reply</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1182,7 +1456,7 @@ function parseMentions(
 
             <!-- Locked Discussion Notice -->
             <div
-                v-if="post.is_locked"
+                v-if="post.is_locked && !can('manage forums')"
                 class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300"
             >
                 <Lock
@@ -1395,6 +1669,162 @@ function parseMentions(
                                 theme="indigo"
                             />
                         </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Report Modal -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition duration-100 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+            >
+                <div
+                    v-if="reportingTarget"
+                    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs dark:bg-black/60"
+                    @click.self="closeReportModal"
+                >
+                    <div
+                        class="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div
+                            class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-gray-800"
+                        >
+                            <div class="flex items-center gap-2.5">
+                                <div
+                                    class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                                >
+                                    <Flag class="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <h3
+                                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                                    >
+                                        Report
+                                        {{
+                                            reportingTarget.type === 'post'
+                                                ? 'Question'
+                                                : 'Answer'
+                                        }}
+                                    </h3>
+                                    <p
+                                        class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                                    >
+                                        Help keep the community helpful and
+                                        constructive
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="closeReportModal"
+                                class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                            >
+                                <X class="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <!-- Success State -->
+                        <div
+                            v-if="reportSuccessMessage"
+                            class="my-6 flex flex-col items-center justify-center py-4 text-center"
+                        >
+                            <div
+                                class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                            >
+                                <Check class="h-6 w-6" />
+                            </div>
+                            <p
+                                class="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+                            >
+                                {{ reportSuccessMessage }}
+                            </p>
+                        </div>
+
+                        <!-- Form Content -->
+                        <form
+                            v-else
+                            @submit.prevent="submitReport"
+                            class="mt-4 space-y-4"
+                        >
+                            <div
+                                v-if="reportErrorMessage"
+                                class="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300"
+                            >
+                                {{ reportErrorMessage }}
+                            </div>
+
+                            <div
+                                class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-gray-800 dark:bg-gray-800/60"
+                            >
+                                <div
+                                    class="flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    <span
+                                        class="font-semibold text-slate-700 dark:text-gray-300"
+                                    >
+                                        {{ reportingTarget.authorName }}
+                                    </span>
+                                    <span class="capitalize">{{
+                                        reportingTarget.type
+                                    }}</span>
+                                </div>
+                                <p
+                                    class="mt-1.5 line-clamp-3 text-xs text-slate-700 dark:text-gray-300"
+                                >
+                                    "{{ reportingTarget.contentPreview }}"
+                                </p>
+                            </div>
+
+                            <div>
+                                <label
+                                    class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                                >
+                                    Why are you reporting this content?
+                                </label>
+                                <select
+                                    v-model="reportReason"
+                                    class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-medium text-slate-800 transition outline-none focus:border-indigo-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                                >
+                                    <option
+                                        v-for="reason in reportReasons"
+                                        :key="reason"
+                                        :value="reason"
+                                        class="bg-white text-slate-800 dark:bg-gray-800 dark:text-gray-200"
+                                    >
+                                        {{ reason }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div
+                                class="flex items-center justify-end gap-2 pt-2"
+                            >
+                                <button
+                                    type="button"
+                                    @click="closeReportModal"
+                                    class="cursor-pointer rounded-xl border border-slate-200 bg-transparent px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="isSubmittingReport"
+                                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-rose-700 active:scale-95 disabled:opacity-50 dark:bg-rose-500 dark:hover:bg-rose-600"
+                                >
+                                    <Loader2
+                                        v-if="isSubmittingReport"
+                                        class="h-3.5 w-3.5 animate-spin"
+                                    />
+                                    <span>Submit Report</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </Transition>

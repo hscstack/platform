@@ -6,7 +6,6 @@ import {
     Settings,
     Lock,
     Unlock,
-    Eye,
     EyeOff,
     Trash2,
     Search,
@@ -26,7 +25,7 @@ interface ForumPostItem {
     curriculum: 'hsc' | 'ssc';
     is_answered: boolean;
     is_locked: boolean;
-    is_published: boolean;
+    moderation_status: 'approved' | 'pending' | 'flagged' | 'rejected';
     vote_score: number;
     answers_count: number;
     created_at: string;
@@ -70,7 +69,10 @@ const props = defineProps<{
     };
     stats: {
         totalPosts: number;
-        unpublishedCount: number;
+        pendingCount: number;
+        flaggedCount: number;
+        rejectedCount: number;
+        approvedCount: number;
         lockedCount: number;
         pendingReportsCount: number;
     };
@@ -107,10 +109,13 @@ const toggleLock = (post: ForumPostItem) => {
     router.patch(`/admin/forums/${post.id}/lock`, {}, { preserveScroll: true });
 };
 
-const togglePublish = (post: ForumPostItem) => {
+const updateStatus = (
+    post: ForumPostItem,
+    status: 'approved' | 'pending' | 'flagged' | 'rejected',
+) => {
     router.patch(
-        `/admin/forums/${post.id}/publish`,
-        {},
+        `/admin/forums/${post.id}/status`,
+        { moderation_status: status },
         { preserveScroll: true },
     );
 };
@@ -227,7 +232,7 @@ const formatDate = (isoString?: string | null) => {
                     {{ stats.totalPosts }}
                 </p>
                 <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Across all curriculums</span
+                    >{{ stats.approvedCount }} approved / live</span
                 >
             </div>
 
@@ -237,17 +242,17 @@ const formatDate = (isoString?: string | null) => {
                 <div class="flex items-center justify-between">
                     <span
                         class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Unpublished / Hidden</span
+                        >Pending Review</span
                     >
                     <EyeOff class="h-4 w-4 text-amber-500" />
                 </div>
                 <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    class="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400"
                 >
-                    {{ stats.unpublishedCount }}
+                    {{ stats.pendingCount }}
                 </p>
                 <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Hidden from public view</span
+                    >Awaiting moderator approval</span
                 >
             </div>
 
@@ -257,17 +262,18 @@ const formatDate = (isoString?: string | null) => {
                 <div class="flex items-center justify-between">
                     <span
                         class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Locked Threads</span
+                        >Flagged / Hidden</span
                     >
-                    <Lock class="h-4 w-4 text-slate-500" />
+                    <Flag class="h-4 w-4 text-rose-500" />
                 </div>
                 <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
+                    class="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400"
                 >
-                    {{ stats.lockedCount }}
+                    {{ stats.flaggedCount + stats.rejectedCount }}
                 </p>
                 <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >New replies disabled</span
+                    >{{ stats.flaggedCount }} flagged,
+                    {{ stats.rejectedCount }} rejected</span
                 >
             </div>
 
@@ -287,7 +293,7 @@ const formatDate = (isoString?: string | null) => {
                     {{ stats.pendingReportsCount }}
                 </p>
                 <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Awaiting review</span
+                    >Reports to review</span
                 >
             </div>
         </div>
@@ -346,8 +352,10 @@ const formatDate = (isoString?: string | null) => {
                     class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                 >
                     <option value="">All Statuses</option>
-                    <option value="published">Published Only</option>
-                    <option value="unpublished">Unpublished / Hidden</option>
+                    <option value="approved">Approved (Live)</option>
+                    <option value="pending">Pending Review</option>
+                    <option value="flagged">Flagged (Reports)</option>
+                    <option value="rejected">Rejected / Hidden</option>
                     <option value="locked">Locked Only</option>
                     <option value="unlocked">Unlocked Only</option>
                     <option value="answered">Answered</option>
@@ -401,7 +409,7 @@ const formatDate = (isoString?: string | null) => {
                             <th class="px-4 py-3">Category</th>
                             <th class="px-4 py-3">Author</th>
                             <th class="px-4 py-3 text-center">Answers</th>
-                            <th class="px-4 py-3 text-center">Status</th>
+                            <th class="px-4 py-3 text-center">Moderation</th>
                             <th class="px-4 py-3 text-right sm:px-6">
                                 Actions
                             </th>
@@ -497,26 +505,40 @@ const formatDate = (isoString?: string | null) => {
                                 </span>
                             </td>
 
-                            <!-- Status Badges -->
+                            <!-- Moderation Badges -->
                             <td
                                 class="px-4 py-3.5 text-center whitespace-nowrap"
                             >
                                 <div
                                     class="flex flex-wrap items-center justify-center gap-1.5"
                                 >
-                                    <!-- Published badge -->
+                                    <!-- Moderation Status Badge -->
                                     <span
                                         class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase"
-                                        :class="
-                                            post.is_published
+                                        :class="[
+                                            post.moderation_status ===
+                                            'approved'
                                                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                                : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
-                                        "
+                                                : post.moderation_status ===
+                                                    'pending'
+                                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                                  : post.moderation_status ===
+                                                      'flagged'
+                                                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
+                                        ]"
                                     >
                                         {{
-                                            post.is_published
-                                                ? 'Published'
-                                                : 'Hidden'
+                                            post.moderation_status ===
+                                            'approved'
+                                                ? 'Approved'
+                                                : post.moderation_status ===
+                                                    'pending'
+                                                  ? 'Pending Review'
+                                                  : post.moderation_status ===
+                                                      'flagged'
+                                                    ? 'Flagged'
+                                                    : 'Rejected'
                                         }}
                                     </span>
 
@@ -548,6 +570,33 @@ const formatDate = (isoString?: string | null) => {
                                 <div
                                     class="flex items-center justify-end gap-1.5"
                                 >
+                                    <!-- Quick Approve / Reject Actions -->
+                                    <button
+                                        v-if="
+                                            post.moderation_status !==
+                                            'approved'
+                                        "
+                                        type="button"
+                                        @click="updateStatus(post, 'approved')"
+                                        class="inline-flex cursor-pointer items-center rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/70"
+                                        title="Approve post"
+                                    >
+                                        <CheckCircle2
+                                            class="mr-1 h-3.5 w-3.5"
+                                        />
+                                        <span>Approve</span>
+                                    </button>
+
+                                    <button
+                                        v-else
+                                        type="button"
+                                        @click="updateStatus(post, 'rejected')"
+                                        class="inline-flex cursor-pointer items-center rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-rose-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-rose-400"
+                                        title="Unpublish / Hide discussion"
+                                    >
+                                        <EyeOff class="h-4 w-4" />
+                                    </button>
+
                                     <!-- Toggle Lock -->
                                     <button
                                         type="button"
@@ -566,27 +615,6 @@ const formatDate = (isoString?: string | null) => {
                                         <Lock
                                             v-else
                                             class="h-4 w-4 text-slate-400"
-                                        />
-                                    </button>
-
-                                    <!-- Toggle Publish -->
-                                    <button
-                                        type="button"
-                                        @click="togglePublish(post)"
-                                        class="inline-flex cursor-pointer items-center rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                                        :title="
-                                            post.is_published
-                                                ? 'Unpublish / Hide discussion'
-                                                : 'Publish / Restore discussion'
-                                        "
-                                    >
-                                        <EyeOff
-                                            v-if="post.is_published"
-                                            class="h-4 w-4 text-slate-400"
-                                        />
-                                        <Eye
-                                            v-else
-                                            class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
                                         />
                                     </button>
 

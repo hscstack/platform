@@ -46,13 +46,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->with('error', 'You do not have permission to perform this action.');
         });
 
-        $exceptions->render(function (NotFoundHttpException $e) {
-            return Inertia::render('errors/404');
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            return Inertia::render('errors/404')->toResponse($request)->setStatusCode(404);
         });
 
-        $exceptions->render(function (HttpException $e) {
+        $exceptions->render(function (HttpException $e, Request $request) {
             if ($e->getStatusCode() === 503) {
-                return Inertia::render('errors/503');
+                return Inertia::render('errors/503')->toResponse($request)->setStatusCode(503);
             }
         });
 

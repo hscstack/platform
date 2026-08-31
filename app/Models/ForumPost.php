@@ -27,7 +27,7 @@ class ForumPost extends Model
         'image_path',
         'is_answered',
         'is_locked',
-        'is_published',
+        'moderation_status',
         'vote_score',
         'upvotes_count',
         'downvotes_count',
@@ -43,7 +43,6 @@ class ForumPost extends Model
         return [
             'is_answered' => 'boolean',
             'is_locked' => 'boolean',
-            'is_published' => 'boolean',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',
@@ -120,9 +119,34 @@ class ForumPost extends Model
         return $this->morphMany(Report::class, 'reportable');
     }
 
+    public function scopeApproved(Builder $query): void
+    {
+        $query->where('moderation_status', 'approved');
+    }
+
     public function scopePublished(Builder $query): void
     {
-        $query->where('is_published', true);
+        $query->where('moderation_status', 'approved');
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->moderation_status === 'approved';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->moderation_status === 'pending';
+    }
+
+    public function isFlagged(): bool
+    {
+        return $this->moderation_status === 'flagged';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->moderation_status === 'rejected';
     }
 
     public function scopeFilter(Builder $query, array $filters): void
@@ -130,6 +154,8 @@ class ForumPost extends Model
         $query->when($filters['my_posts'] ?? null, function ($q) {
             if ($userId = auth()->id()) {
                 $q->where('user_id', $userId);
+            } else {
+                $q->whereRaw('1 = 0');
             }
         });
 
