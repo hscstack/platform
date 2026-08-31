@@ -285,6 +285,7 @@ class ChatController extends Controller
         abort_unless($user, 401, 'Unauthenticated');
 
         $validated = $request->validate([
+            'message_id' => ['nullable', 'integer', 'exists:chat_messages,id'],
             'reported_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'reported_user_name' => ['nullable', 'string', 'max:255'],
             'reported_user_username' => ['nullable', 'string', 'max:255'],
@@ -296,8 +297,13 @@ class ChatController extends Controller
         // Prevent duplicate reporting of the exact same message content by the same user
         $alreadyReported = Report::where('reporter_id', $user->id)
             ->where('reportable_type', ChatMessage::class)
-            ->where('content_snapshot', $validated['message_content'])
-            ->where('reported_user_id', $validated['reported_user_id'] ?? null)
+            ->where(function ($q) use ($validated) {
+                if (! empty($validated['message_id'])) {
+                    $q->where('reportable_id', $validated['message_id']);
+                } else {
+                    $q->where('content_snapshot', $validated['message_content']);
+                }
+            })
             ->exists();
 
         if ($alreadyReported) {
@@ -312,6 +318,7 @@ class ChatController extends Controller
             'reported_user_name' => $validated['reported_user_name'] ?? null,
             'reported_user_username' => $validated['reported_user_username'] ?? null,
             'reportable_type' => ChatMessage::class,
+            'reportable_id' => $validated['message_id'] ?? null,
             'content_snapshot' => $validated['message_content'],
             'message_sent_at' => $validated['message_sent_at'] ?? null,
             'reason' => $validated['reason'] ?? 'Inappropriate message',

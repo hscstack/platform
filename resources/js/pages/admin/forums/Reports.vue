@@ -10,13 +10,17 @@ import {
     MessageSquareText,
     Settings,
     Ban,
+    ExternalLink,
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { usePermissions } from '@/lib/usePermissions';
 
 defineOptions({ layout: AdminLayout });
+
+const { can } = usePermissions();
 
 interface ReportItem {
     id: number;
@@ -38,6 +42,8 @@ interface ReportItem {
     } | null;
     reportable_type: string;
     reportable_id: number | null;
+    post_slug?: string | null;
+    post_title?: string | null;
     content_snapshot: string;
     message_sent_at: string | null;
     reason: string | null;
@@ -205,7 +211,7 @@ const formatDate = (isoString?: string | null) => {
 
             <Link
                 href="/admin/forums/reports"
-                class="flex items-center gap-2 border-b-2 border-rose-600 px-4 py-2.5 text-xs font-bold text-rose-600 transition-all dark:border-rose-400 dark:text-rose-400"
+                class="flex items-center gap-2 border-b-2 border-indigo-600 px-4 py-2.5 text-xs font-bold text-indigo-600 transition-all dark:border-indigo-400 dark:text-indigo-400"
             >
                 <Flag class="h-4 w-4 text-rose-500" />
                 <span>Reported Content</span>
@@ -471,9 +477,12 @@ const formatDate = (isoString?: string | null) => {
 
                         <!-- Right Actions -->
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- Ban Modal trigger -->
+                            <!-- Ban Modal trigger (requires chat management permission) -->
                             <button
-                                v-if="report.reported_user_id"
+                                v-if="
+                                    report.reported_user_id &&
+                                    can('manage chat')
+                                "
                                 type="button"
                                 @click="openBanModal(report)"
                                 class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition"
@@ -566,6 +575,16 @@ const formatDate = (isoString?: string | null) => {
                                     Suspended
                                 </span>
                             </div>
+
+                            <a
+                                v-if="report.post_slug"
+                                :href="`/forum/questions/${report.post_slug}`"
+                                target="_blank"
+                                class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                            >
+                                <span>View Discussion</span>
+                                <ExternalLink class="h-3 w-3" />
+                            </a>
                         </div>
 
                         <p

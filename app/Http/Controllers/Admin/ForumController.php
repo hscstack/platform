@@ -122,6 +122,13 @@ class ForumController extends Controller
             Storage::delete($answerImages);
         }
 
+        // Clean up reports associated with post and its answers
+        Report::where('reportable_type', ForumPost::class)->where('reportable_id', $post->id)->delete();
+        $answerIds = $post->answers()->pluck('id');
+        if ($answerIds->isNotEmpty()) {
+            Report::where('reportable_type', ForumAnswer::class)->whereIn('reportable_id', $answerIds)->delete();
+        }
+
         $post->delete();
 
         return back()->with('success', 'Discussion post deleted successfully.');
@@ -132,37 +139,54 @@ class ForumController extends Controller
         $reports = Report::with([
             'reporter:id,name,username',
             'reportedUser:id,name,username,chat_banned_until',
+            'reportable',
         ])
             ->whereIn('reportable_type', [ForumPost::class, ForumAnswer::class])
             ->latest('id')
             ->take(100)
             ->get()
-            ->map(fn ($report) => [
-                'id' => $report->id,
-                'reporter_id' => $report->reporter_id,
-                'reporter' => $report->reporter ? [
-                    'id' => $report->reporter->id,
-                    'name' => $report->reporter->name,
-                    'username' => $report->reporter->username,
-                ] : null,
-                'reported_user_id' => $report->reported_user_id,
-                'reported_user_name' => $report->reported_user_name,
-                'reported_user_username' => $report->reported_user_username,
-                'reported_user' => $report->reportedUser ? [
-                    'id' => $report->reportedUser->id,
-                    'name' => $report->reportedUser->name,
-                    'username' => $report->reportedUser->username,
-                    'chat_banned_until' => $report->reportedUser->chat_banned_until?->toIso8601String(),
-                    'is_chat_banned' => $report->reportedUser->isChatBanned(),
-                ] : null,
-                'reportable_type' => class_basename($report->reportable_type),
-                'reportable_id' => $report->reportable_id,
-                'content_snapshot' => $report->content_snapshot,
-                'message_sent_at' => $report->message_sent_at?->toIso8601String(),
-                'reason' => $report->reason,
-                'status' => $report->status,
-                'created_at' => $report->created_at->toIso8601String(),
-            ]);
+            ->map(function ($report) {
+                $postSlug = null;
+                $postTitle = null;
+
+                if ($report->reportable instanceof ForumPost) {
+                    $postSlug = $report->reportable->slug;
+                    $postTitle = $report->reportable->title;
+                } elseif ($report->reportable instanceof ForumAnswer) {
+                    $report->reportable->loadMissing('post:id,title,slug');
+                    $postSlug = $report->reportable->post?->slug;
+                    $postTitle = $report->reportable->post?->title;
+                }
+
+                return [
+                    'id' => $report->id,
+                    'reporter_id' => $report->reporter_id,
+                    'reporter' => $report->reporter ? [
+                        'id' => $report->reporter->id,
+                        'name' => $report->reporter->name,
+                        'username' => $report->reporter->username,
+                    ] : null,
+                    'reported_user_id' => $report->reported_user_id,
+                    'reported_user_name' => $report->reported_user_name,
+                    'reported_user_username' => $report->reported_user_username,
+                    'reported_user' => $report->reportedUser ? [
+                        'id' => $report->reportedUser->id,
+                        'name' => $report->reportedUser->name,
+                        'username' => $report->reportedUser->username,
+                        'chat_banned_until' => $report->reportedUser->chat_banned_until?->toIso8601String(),
+                        'is_chat_banned' => $report->reportedUser->isChatBanned(),
+                    ] : null,
+                    'reportable_type' => class_basename($report->reportable_type),
+                    'reportable_id' => $report->reportable_id,
+                    'post_slug' => $postSlug,
+                    'post_title' => $postTitle,
+                    'content_snapshot' => $report->content_snapshot,
+                    'message_sent_at' => $report->message_sent_at?->toIso8601String(),
+                    'reason' => $report->reason,
+                    'status' => $report->status,
+                    'created_at' => $report->created_at->toIso8601String(),
+                ];
+            });
 
         return Inertia::render('admin/forums/Reports', [
             'reports' => $reports,

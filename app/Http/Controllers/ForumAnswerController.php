@@ -88,6 +88,9 @@ class ForumAnswerController extends Controller
             }
         }
 
+        $answerIds = collect([$answer->id])->concat($replies->pluck('id'));
+        Report::where('reportable_type', ForumAnswer::class)->whereIn('reportable_id', $answerIds)->delete();
+
         $answer->delete();
 
         if ($post) {

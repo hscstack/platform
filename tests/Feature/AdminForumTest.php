@@ -201,3 +201,37 @@ test('admin can manage forum reports status and delete reports', function () {
         ->assertRedirect();
     expect(Report::find($report->id))->toBeNull();
 });
+
+test('admin can toggle lock and delete using post id route binding', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $post = ForumPost::factory()->create([
+        'title' => 'Sample Post Title',
+        'slug' => 'sample-post-slug',
+        'is_locked' => false,
+    ]);
+
+    $reporter = User::factory()->create();
+    $report = Report::create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => ForumPost::class,
+        'reportable_id' => $post->id,
+        'content_snapshot' => $post->title,
+        'reason' => 'Spam',
+        'status' => 'pending',
+    ]);
+
+    // Send direct URL with numeric ID
+    $this->actingAs($admin)
+        ->patch("/admin/forums/{$post->id}/lock")
+        ->assertRedirect();
+    expect($post->fresh()->is_locked)->toBeTrue();
+
+    // Delete with numeric ID cleans up post and reports
+    $this->actingAs($admin)
+        ->delete("/admin/forums/{$post->id}")
+        ->assertRedirect();
+    expect(ForumPost::find($post->id))->toBeNull();
+    expect(Report::find($report->id))->toBeNull();
+});

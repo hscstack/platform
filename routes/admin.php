@@ -129,9 +129,9 @@ Route::middleware('permission:manage tickets')->group(function () {
 // Forum Management & Settings
 Route::middleware('permission:manage forums')->group(function () {
     Route::get('/forums', [AdminForumController::class, 'index'])->name('forums.index');
-    Route::patch('/forums/{post}/lock', [AdminForumController::class, 'toggleLock'])->name('forums.lock');
-    Route::patch('/forums/{post}/publish', [AdminForumController::class, 'togglePublish'])->name('forums.publish');
-    Route::delete('/forums/{post}', [AdminForumController::class, 'destroy'])->name('forums.destroy');
+    Route::patch('/forums/{post:id}/lock', [AdminForumController::class, 'toggleLock'])->name('forums.lock');
+    Route::patch('/forums/{post:id}/publish', [AdminForumController::class, 'togglePublish'])->name('forums.publish');
+    Route::delete('/forums/{post:id}', [AdminForumController::class, 'destroy'])->name('forums.destroy');
 
     Route::get('/forums/reports', [AdminForumController::class, 'reports'])->name('forums.reports.index');
     Route::patch('/forums/reports/{report}/status', [AdminForumController::class, 'updateReportStatus'])->name('forums.reports.update-status');

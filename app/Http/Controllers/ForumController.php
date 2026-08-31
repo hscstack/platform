@@ -240,6 +240,13 @@ class ForumController extends Controller
             Storage::delete($answerImages);
         }
 
+        // Clean up reports associated with post and its answers
+        Report::where('reportable_type', ForumPost::class)->where('reportable_id', $post->id)->delete();
+        $answerIds = $post->answers()->pluck('id');
+        if ($answerIds->isNotEmpty()) {
+            Report::where('reportable_type', ForumAnswer::class)->whereIn('reportable_id', $answerIds)->delete();
+        }
+
         $post->delete();
 
         return redirect()->route('forum.index')->with('success', 'Question deleted successfully.');
