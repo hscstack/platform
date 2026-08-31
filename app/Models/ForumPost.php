@@ -28,10 +28,6 @@ class ForumPost extends Model
         'is_answered',
         'is_locked',
         'moderation_status',
-        'vote_score',
-        'upvotes_count',
-        'downvotes_count',
-        'answers_count',
     ];
 
     protected $appends = [
