@@ -289,6 +289,10 @@ const replyImagePreview = ref<string | null>(null);
 const replyFileInputRef = ref<HTMLInputElement | null>(null);
 
 const openReplyForm = (rootAnswerId: number, targetUsername?: string) => {
+    if (props.post.is_locked && !can('manage forums')) {
+        return;
+    }
+
     if (!user.value) {
         authModalMessage.value = 'Please sign in to reply.';
         showAuthModal.value = true;
@@ -909,6 +913,7 @@ function parseMentions(
                     />
 
                     <button
+                        v-if="!post.is_locked || can('manage forums')"
                         type="button"
                         @click="openReplyForm(answer.id, answer.user?.username)"
                         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
@@ -1030,6 +1035,7 @@ function parseMentions(
                             />
 
                             <button
+                                v-if="!post.is_locked || can('manage forums')"
                                 type="button"
                                 @click="
                                     openReplyForm(
