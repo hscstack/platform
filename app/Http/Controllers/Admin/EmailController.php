@@ -47,6 +47,45 @@ class EmailController extends Controller
     }
 
     /**
+     * Show paginated email logs with search and status filtering.
+     */
+    public function logs(Request $request): Response
+    {
+        $search = $request->input('search');
+        $status = $request->input('status', 'all');
+
+        $logs = SentEmailLog::query()
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('recipient_email', 'like', "%{$search}%")
+                        ->orWhere('recipient_name', 'like', "%{$search}%")
+                        ->orWhere('subject', 'like', "%{$search}%");
+                });
+            })
+            ->when($status !== 'all', function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->latest('id')
+            ->paginate(25)
+            ->withQueryString();
+
+        $stats = [
+            'total' => SentEmailLog::count(),
+            'sent' => SentEmailLog::where('status', 'sent')->count(),
+            'failed' => SentEmailLog::where('status', 'failed')->count(),
+        ];
+
+        return Inertia::render('admin/EmailLogs', [
+            'logs' => $logs,
+            'filters' => [
+                'search' => $search,
+                'status' => $status,
+            ],
+            'stats' => $stats,
+        ]);
+    }
+
+    /**
      * Dispatch emails to either a single user or all/student subscribed users in bulk.
      */
     public function store(Request $request): RedirectResponse

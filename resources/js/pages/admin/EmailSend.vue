@@ -602,11 +602,19 @@ const submitForm = () => {
                         Email Delivery Logs
                     </h3>
                 </div>
-                <span
-                    class="text-xs font-semibold text-slate-400 dark:text-gray-500"
-                >
-                    Latest {{ recentLogs.length }} email attempts
-                </span>
+                <div class="flex items-center gap-3">
+                    <span
+                        class="text-xs font-semibold text-slate-400 dark:text-gray-500"
+                    >
+                        Latest {{ recentLogs.length }} email attempts
+                    </span>
+                    <Link
+                        href="/admin/emails/logs"
+                        class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                    >
+                        <span>View All Logs &rarr;</span>
+                    </Link>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
