@@ -294,14 +294,36 @@ class ChatController extends Controller
             'reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        // Prevent duplicate reporting of the exact same message content by the same user
+        // Resolve the target ChatMessage server-side when an ID is provided so that
+        $targetMessageId = $validated['message_id'] ?? null;
+        $contentSnapshot = $validated['message_content'];
+        $messageSentAt = $validated['message_sent_at'] ?? null;
+        $reportedUserId = $validated['reported_user_id'] ?? null;
+        $reportedUserName = $validated['reported_user_name'] ?? null;
+        $reportedUserUsername = $validated['reported_user_username'] ?? null;
+
+        if ($targetMessageId) {
+            $chatMessage = ChatMessage::find($targetMessageId);
+            if ($chatMessage) {
+                $contentSnapshot = $chatMessage->content;
+                $messageSentAt = $chatMessage->created_at;
+                if ($chatMessage->user_id) {
+                    $msgUser = $chatMessage->user;
+                    $reportedUserId = $chatMessage->user_id;
+                    $reportedUserName = $msgUser?->name;
+                    $reportedUserUsername = $msgUser?->username;
+                }
+            }
+        }
+
+        // Prevent duplicate reporting of the same message by the same user
         $alreadyReported = Report::where('reporter_id', $user->id)
             ->where('reportable_type', ChatMessage::class)
-            ->where(function ($q) use ($validated) {
-                if (! empty($validated['message_id'])) {
-                    $q->where('reportable_id', $validated['message_id']);
+            ->where(function ($q) use ($targetMessageId, $contentSnapshot) {
+                if ($targetMessageId) {
+                    $q->where('reportable_id', $targetMessageId);
                 } else {
-                    $q->where('content_snapshot', $validated['message_content']);
+                    $q->where('content_snapshot', $contentSnapshot);
                 }
             })
             ->exists();
@@ -314,13 +336,13 @@ class ChatController extends Controller
 
         $report = Report::create([
             'reporter_id' => $user->id,
-            'reported_user_id' => $validated['reported_user_id'] ?? null,
-            'reported_user_name' => $validated['reported_user_name'] ?? null,
-            'reported_user_username' => $validated['reported_user_username'] ?? null,
+            'reported_user_id' => $reportedUserId,
+            'reported_user_name' => $reportedUserName,
+            'reported_user_username' => $reportedUserUsername,
             'reportable_type' => ChatMessage::class,
-            'reportable_id' => $validated['message_id'] ?? null,
-            'content_snapshot' => $validated['message_content'],
-            'message_sent_at' => $validated['message_sent_at'] ?? null,
+            'reportable_id' => $targetMessageId,
+            'content_snapshot' => $contentSnapshot,
+            'message_sent_at' => $messageSentAt,
             'reason' => $validated['reason'] ?? 'Inappropriate message',
             'status' => 'pending',
         ]);
@@ -333,12 +355,19 @@ class ChatController extends Controller
             $durationMinutes = (int) AppSetting::get('global_chat_auto_ban_duration_hours', 24) * 60;
         }
 
-        if ($autoBanEnabled && ! empty($validated['reported_user_id']) && $threshold > 0) {
-            $reportedUser = User::find($validated['reported_user_id']);
+        if ($autoBanEnabled && ! empty($reportedUserId) && $threshold > 0) {
+            $reportedUser = User::find($reportedUserId);
             if ($reportedUser && ! $reportedUser->can('view admin')) {
+                // Count reports keyed to the specific resolved message (or content snapshot)
                 $totalReportsForMessage = Report::where('reported_user_id', $reportedUser->id)
                     ->where('reportable_type', ChatMessage::class)
-                    ->where('content_snapshot', $validated['message_content'])
+                    ->where(function ($q) use ($targetMessageId, $contentSnapshot) {
+                        if ($targetMessageId) {
+                            $q->where('reportable_id', $targetMessageId);
+                        } else {
+                            $q->where('content_snapshot', $contentSnapshot);
+                        }
+                    })
                     ->count();
 
                 if ($totalReportsForMessage >= $threshold) {
@@ -355,7 +384,7 @@ class ChatController extends Controller
                                 ? ($durationMinutes / 60).' hour'.($durationMinutes / 60 > 1 ? 's' : '')
                                 : "{$durationMinutes} minutes");
 
-                        ChatMessage::sendBotMessage("System automatically suspended @{$reportedUser->username} from chat for {$durationText} following {$totalReportsForMessage} community reports.");
+                        ChatMessage::sendBotMessage("System automatically suspended @{$reportedUser->username} from community participation for {$durationText} following {$totalReportsForMessage} community reports.");
                     }
                 }
             }
