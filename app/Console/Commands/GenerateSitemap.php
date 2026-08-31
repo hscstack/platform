@@ -127,7 +127,7 @@ class GenerateSitemap extends Command
             });
 
         // 6. Published Forum Questions
-        ForumPost::where('is_published', true)
+        ForumPost::approved()
             ->orderByDesc('updated_at')
             ->get(['slug', 'updated_at'])
             ->each(function ($post) use ($sitemap) {
