@@ -915,7 +915,7 @@ function timeAgo(dateString?: string): string {
                                             "
                                         />
                                         <span
-                                            >{{ post.vote_score }}
+                                            >{{ Math.abs(post.vote_score) }}
                                             {{
                                                 Math.abs(post.vote_score) === 1
                                                     ? 'vote'
