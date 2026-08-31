@@ -59,13 +59,8 @@ const avatarBgClass = computed(() => {
             :class="avatarBgClass"
         >
             <img
-                v-if="user.image_url || user.image_path"
-                :src="
-                    user.image_url ||
-                    (user.image_path?.startsWith('http')
-                        ? user.image_path
-                        : '/storage/' + user.image_path)
-                "
+                v-if="user.image_url"
+                :src="user.image_url"
                 :alt="user.name"
                 class="h-full w-full object-cover"
             />

@@ -233,13 +233,10 @@ test('profile update rejects inappropriate words in name, username, about, or in
     $response->assertSessionHasErrors(['institution']);
 });
 
-test('user image_url accessor handles storage paths and full URLs dynamically', function () {
+test('user image_url accessor generates storage url for image_path', function () {
     $user1 = User::factory()->create(['image_path' => 'avatars/sample.jpg']);
     expect($user1->image_url)->toBe(Storage::url('avatars/sample.jpg'));
 
-    $user2 = User::factory()->create(['image_path' => 'https://lh3.googleusercontent.com/a/sample-avatar']);
-    expect($user2->image_url)->toBe('https://lh3.googleusercontent.com/a/sample-avatar');
-
-    $user3 = User::factory()->create(['image_path' => null]);
-    expect($user3->image_url)->toBeNull();
+    $user2 = User::factory()->create(['image_path' => null]);
+    expect($user2->image_url)->toBeNull();
 });

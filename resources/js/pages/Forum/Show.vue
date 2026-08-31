@@ -473,12 +473,8 @@ function timeAgo(dateString?: string): string {
                             class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-bold text-slate-700 dark:bg-gray-700 dark:text-gray-300"
                         >
                             <img
-                                v-if="
-                                    post.user.image_url || post.user.image_path
-                                "
-                                :src="
-                                    post.user.image_url || post.user.image_path
-                                "
+                                v-if="post.user.image_url"
+                                :src="post.user.image_url"
                                 :alt="post.user.name"
                                 class="h-full w-full object-cover"
                             />
@@ -575,12 +571,8 @@ function timeAgo(dateString?: string): string {
                                 class="inline-block h-5 w-5 overflow-hidden rounded-full ring-2 ring-white dark:ring-gray-900"
                             >
                                 <img
-                                    v-if="
-                                        upvoter.image_url || upvoter.image_path
-                                    "
-                                    :src="
-                                        upvoter.image_url || upvoter.image_path
-                                    "
+                                    v-if="upvoter.image_url"
+                                    :src="upvoter.image_url"
                                     :alt="upvoter.name"
                                     class="h-full w-full object-cover"
                                 />
@@ -673,14 +665,8 @@ function timeAgo(dateString?: string): string {
                                 class="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-bold text-slate-700 dark:bg-gray-700 dark:text-gray-300"
                             >
                                 <img
-                                    v-if="
-                                        answer.user.image_url ||
-                                        answer.user.image_path
-                                    "
-                                    :src="
-                                        answer.user.image_url ||
-                                        answer.user.image_path
-                                    "
+                                    v-if="answer.user.image_url"
+                                    :src="answer.user.image_url"
                                     :alt="answer.user.name"
                                     class="h-full w-full object-cover"
                                 />
@@ -788,14 +774,8 @@ function timeAgo(dateString?: string): string {
                                         class="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-[10px] font-bold text-slate-700 dark:bg-gray-700 dark:text-gray-300"
                                     >
                                         <img
-                                            v-if="
-                                                reply.user.image_url ||
-                                                reply.user.image_path
-                                            "
-                                            :src="
-                                                reply.user.image_url ||
-                                                reply.user.image_path
-                                            "
+                                            v-if="reply.user.image_url"
+                                            :src="reply.user.image_url"
                                             :alt="reply.user.name"
                                             class="h-full w-full object-cover"
                                         />
