@@ -6,6 +6,7 @@ use App\Events\ChatMessageSent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class ChatMessage extends Model
 {
@@ -34,6 +35,11 @@ class ChatMessage extends Model
     public function isDeleted(): bool
     {
         return $this->deleted_at !== null;
+    }
+
+    public function reports(): MorphMany
+    {
+        return $this->morphMany(Report::class, 'reportable');
     }
 
     /**

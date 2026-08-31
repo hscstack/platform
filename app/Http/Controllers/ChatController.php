@@ -7,7 +7,7 @@ use App\Events\ChatMessageReacted;
 use App\Events\ChatMessageSent;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
-use App\Models\ChatReport;
+use App\Models\Report;
 use App\Models\User;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
@@ -294,8 +294,9 @@ class ChatController extends Controller
         ]);
 
         // Prevent duplicate reporting of the exact same message content by the same user
-        $alreadyReported = ChatReport::where('reporter_id', $user->id)
-            ->where('message_content', $validated['message_content'])
+        $alreadyReported = Report::where('reporter_id', $user->id)
+            ->where('reportable_type', ChatMessage::class)
+            ->where('content_snapshot', $validated['message_content'])
             ->where('reported_user_id', $validated['reported_user_id'] ?? null)
             ->exists();
 
@@ -305,12 +306,13 @@ class ChatController extends Controller
             ], 422);
         }
 
-        $report = ChatReport::create([
+        $report = Report::create([
             'reporter_id' => $user->id,
             'reported_user_id' => $validated['reported_user_id'] ?? null,
             'reported_user_name' => $validated['reported_user_name'] ?? null,
             'reported_user_username' => $validated['reported_user_username'] ?? null,
-            'message_content' => $validated['message_content'],
+            'reportable_type' => ChatMessage::class,
+            'content_snapshot' => $validated['message_content'],
             'message_sent_at' => $validated['message_sent_at'] ?? null,
             'reason' => $validated['reason'] ?? 'Inappropriate message',
             'status' => 'pending',
@@ -327,8 +329,9 @@ class ChatController extends Controller
         if ($autoBanEnabled && ! empty($validated['reported_user_id']) && $threshold > 0) {
             $reportedUser = User::find($validated['reported_user_id']);
             if ($reportedUser && ! $reportedUser->can('view admin')) {
-                $totalReportsForMessage = ChatReport::where('reported_user_id', $reportedUser->id)
-                    ->where('message_content', $validated['message_content'])
+                $totalReportsForMessage = Report::where('reported_user_id', $reportedUser->id)
+                    ->where('reportable_type', ChatMessage::class)
+                    ->where('content_snapshot', $validated['message_content'])
                     ->count();
 
                 if ($totalReportsForMessage >= $threshold) {

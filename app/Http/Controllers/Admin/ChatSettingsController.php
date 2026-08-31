@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use App\Models\ChatMessageReaction;
-use App\Models\ChatReport;
+use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,13 +44,14 @@ class ChatSettingsController extends Controller
             ],
             'totalMessages' => ChatMessage::count(),
             'recentMessagesCount' => ChatMessage::where('created_at', '>=', now()->subHours(24))->count(),
-            'pendingReportsCount' => ChatReport::where('status', 'pending')->count(),
+            'pendingReportsCount' => Report::where('status', 'pending')->where('reportable_type', ChatMessage::class)->count(),
         ]);
     }
 
     public function reports()
     {
-        $reports = ChatReport::with(['reporter:id,name,username', 'reportedUser:id,name,username,chat_banned_until'])
+        $reports = Report::with(['reporter:id,name,username', 'reportedUser:id,name,username,chat_banned_until'])
+            ->where('reportable_type', ChatMessage::class)
             ->latest('id')
             ->take(100)
             ->get()
@@ -72,7 +73,7 @@ class ChatSettingsController extends Controller
                     'chat_banned_until' => $report->reportedUser->chat_banned_until?->toIso8601String(),
                     'is_chat_banned' => $report->reportedUser->isChatBanned(),
                 ] : null,
-                'message_content' => $report->message_content,
+                'message_content' => $report->content_snapshot,
                 'message_sent_at' => $report->message_sent_at?->toIso8601String(),
                 'reason' => $report->reason,
                 'status' => $report->status,
@@ -81,9 +82,9 @@ class ChatSettingsController extends Controller
 
         return Inertia::render('admin/chat/Reports', [
             'reports' => $reports,
-            'pendingCount' => ChatReport::where('status', 'pending')->count(),
-            'reviewedCount' => ChatReport::where('status', 'reviewed')->count(),
-            'dismissedCount' => ChatReport::where('status', 'dismissed')->count(),
+            'pendingCount' => Report::where('status', 'pending')->where('reportable_type', ChatMessage::class)->count(),
+            'reviewedCount' => Report::where('status', 'reviewed')->where('reportable_type', ChatMessage::class)->count(),
+            'dismissedCount' => Report::where('status', 'dismissed')->where('reportable_type', ChatMessage::class)->count(),
         ]);
     }
 
@@ -151,7 +152,7 @@ class ChatSettingsController extends Controller
         return back()->with('success', 'All chat messages have been cleared.');
     }
 
-    public function updateReportStatus(Request $request, ChatReport $report)
+    public function updateReportStatus(Request $request, Report $report)
     {
         $validated = $request->validate([
             'status' => ['required', 'string', 'in:pending,reviewed,dismissed'],
@@ -162,7 +163,7 @@ class ChatSettingsController extends Controller
         return back()->with('success', 'Report status updated.');
     }
 
-    public function deleteReport(ChatReport $report)
+    public function deleteReport(Report $report)
     {
         $report->delete();
 
@@ -174,10 +175,10 @@ class ChatSettingsController extends Controller
         $status = $request->input('status');
 
         if ($status && in_array($status, ['pending', 'reviewed', 'dismissed'], true)) {
-            ChatReport::where('status', $status)->delete();
+            Report::where('reportable_type', ChatMessage::class)->where('status', $status)->delete();
             $message = "All {$status} reports have been deleted.";
         } else {
-            ChatReport::query()->delete();
+            Report::where('reportable_type', ChatMessage::class)->delete();
             $message = 'All report records have been deleted.';
         }
 
