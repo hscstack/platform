@@ -571,7 +571,7 @@ test('author and admin can view pending or flagged questions but other users get
     $author = User::factory()->create();
     $otherUser = User::factory()->create();
     $admin = User::factory()->create();
-    $admin->givePermissionTo('view admin');
+    $admin->givePermissionTo('manage forums');
 
     $pendingPost = ForumPost::factory()->create([
         'user_id' => $author->id,
