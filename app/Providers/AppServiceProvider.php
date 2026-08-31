@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\LogSentEmailListener;
 use App\Models\Blog;
 use App\Models\Node;
 use App\Models\NodeVote;
@@ -17,8 +18,11 @@ use App\Observers\ResourceObserver;
 use App\Observers\SubjectObserver;
 use App\Observers\UserObserver;
 use Carbon\CarbonImmutable;
+use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -46,6 +50,9 @@ class AppServiceProvider extends ServiceProvider
         Resource::observe(ResourceObserver::class);
         Subject::observe(SubjectObserver::class);
         User::observe(UserObserver::class);
+
+        Event::listen(MessageSent::class, LogSentEmailListener::class);
+        Event::listen(JobFailed::class, [LogSentEmailListener::class, 'handleJobFailed']);
     }
 
     /**

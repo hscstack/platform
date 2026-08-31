@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import {
     Loader2,
     Mail,
@@ -31,6 +31,18 @@ const props = defineProps({
     staffCount: {
         type: Number,
         default: 0,
+    },
+    recentLogs: {
+        type: Array as () => Array<{
+            id: number;
+            recipient_email: string;
+            recipient_name?: string | null;
+            subject: string;
+            status: string;
+            sent_at?: string | null;
+            created_at: string;
+        }>,
+        default: () => [],
     },
 });
 
@@ -109,63 +121,43 @@ const submitForm = () => {
 </script>
 
 <template>
-    <Head title="Send Email" />
+    <Head title="Send Email - Admin" />
 
-    <div class="flex w-full flex-1 flex-col">
-        <!-- Header -->
+    <div class="space-y-5">
+        <!-- Minimal Top Header -->
         <div
-            class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
+            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
         >
             <div>
-                <div class="flex items-center gap-3">
-                    <div
-                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                    >
-                        <Mail class="h-5 w-5" />
-                    </div>
-                    <h1
-                        class="text-2xl font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        Send Email
-                    </h1>
-                </div>
-                <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
-                    Compose and dispatch email announcements to subscribed users
-                    or individual accounts.
+                <h1
+                    class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
+                >
+                    Email Management
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-gray-400">
+                    Compose broadcast announcements and view real-time email
+                    delivery logs.
                 </p>
             </div>
 
-            <div class="flex items-center gap-3">
-                <!-- Preview Trigger Button -->
-                <button
-                    type="button"
-                    @click="showPreviewModal = true"
-                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-slate-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            <!-- Header Quick Tabs -->
+            <div
+                class="flex max-w-full items-center gap-1.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            >
+                <Link
+                    href="/admin/emails/send"
+                    class="shrink-0 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                 >
-                    <Eye class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>Preview</span>
-                </button>
+                    Send Email
+                </Link>
 
-                <!-- Recipient Count Badge -->
-                <div
-                    class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-gray-800 dark:bg-gray-950"
+                <Link
+                    href="/admin/emails/logs"
+                    class="flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                 >
-                    <Users
-                        class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                    />
-                    <div class="text-xs">
-                        <span
-                            class="font-semibold text-slate-500 dark:text-gray-400"
-                        >
-                            Subscribers:
-                        </span>
-                        <span
-                            class="ml-1 font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            {{ recipientCount }} users
-                        </span>
-                    </div>
-                </div>
+                    <Mail class="h-3.5 w-3.5" />
+                    <span>Delivery Logs</span>
+                </Link>
             </div>
         </div>
 

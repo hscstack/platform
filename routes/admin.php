@@ -105,6 +105,7 @@ Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->mid
 Route::middleware('permission:send email')->group(function () {
     Route::get('/emails/send', [AdminEmailController::class, 'create'])->name('emails.create');
     Route::post('/emails/send', [AdminEmailController::class, 'store'])->name('emails.store');
+    Route::get('/emails/logs', [AdminEmailController::class, 'logs'])->name('emails.logs');
 });
 
 // Chat Management & Settings
