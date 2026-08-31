@@ -7,7 +7,13 @@ import AuthModal from './AuthModal.vue';
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 
-const shareablePages = ['Node', 'Resource', 'Blog/Show', 'User/Show'];
+const shareablePages = [
+    'Node',
+    'Resource',
+    'Blog/Show',
+    'User/Show',
+    'Forum/Show',
+];
 
 const shouldShow = computed(() => shareablePages.includes(page.component));
 
@@ -154,7 +160,7 @@ onBeforeUnmount(() => {
             >
                 <div
                     v-if="isMenuOpen"
-                    class="absolute right-0 bottom-full mb-2.5 min-w-[220px] rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
+                    class="absolute right-0 bottom-full mb-2.5 w-max rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
                 >
                     <button
                         @click="handleCopyShortLink"
@@ -185,7 +191,7 @@ onBeforeUnmount(() => {
                                     ? 'Shortening link...'
                                     : isCopied
                                       ? 'Link copied!'
-                                      : 'Copy current page short link'
+                                      : 'Copy short link'
                             }}
                         </span>
                     </button>
