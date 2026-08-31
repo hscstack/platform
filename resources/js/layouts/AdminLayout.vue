@@ -57,7 +57,7 @@ const allNavigation = [
         permission: 'view users',
     },
     {
-        name: 'Emails',
+        name: 'Send Emails',
         to: '/admin/emails/send',
         icon: Mail,
         permission: 'send email',
