@@ -14,6 +14,6 @@ class SubjectObserver
 
     public function deleted(Subject $subject): void
     {
-        CacheHelper::clearHomePage($subject->course);
+        CacheHelper::clearHomePage();
     }
 }

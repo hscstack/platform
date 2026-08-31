@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Blog;
+use App\Models\ForumPost;
 use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
@@ -14,7 +15,7 @@ class GenerateSitemap extends Command
 {
     protected $signature = 'seo:sitemap';
 
-    protected $description = 'Generate sitemap.xml with static pages, subjects, curriculum nodes, blogs, and active user profiles.';
+    protected $description = 'Generate sitemap.xml with static pages, subjects, curriculum nodes, blogs, forum discussions, and active user profiles.';
 
     public function handle(): int
     {
@@ -25,6 +26,7 @@ class GenerateSitemap extends Command
             '/' => ['priority' => 1.0, 'freq' => 'daily'],
             '/ssc' => ['priority' => 0.9, 'freq' => 'daily'],
             '/blogs' => ['priority' => 0.8, 'freq' => 'daily'],
+            '/forum' => ['priority' => 0.8, 'freq' => 'daily'],
             '/about-us' => ['priority' => 0.7, 'freq' => 'monthly'],
             '/projects' => ['priority' => 0.7, 'freq' => 'monthly'],
             '/guide' => ['priority' => 0.7, 'freq' => 'monthly'],
@@ -121,6 +123,19 @@ class GenerateSitemap extends Command
                         ->setLastModificationDate($user->updated_at)
                         ->setChangeFrequency('weekly')
                         ->setPriority(0.5)
+                );
+            });
+
+        // 6. Published Forum Questions
+        ForumPost::where('is_published', true)
+            ->orderByDesc('updated_at')
+            ->get(['slug', 'updated_at'])
+            ->each(function ($post) use ($sitemap) {
+                $sitemap->add(
+                    Url::create(url("/forum/questions/{$post->slug}"))
+                        ->setLastModificationDate($post->updated_at)
+                        ->setChangeFrequency('daily')
+                        ->setPriority(0.7)
                 );
             });
 

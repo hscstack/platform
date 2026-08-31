@@ -16,6 +16,7 @@ import {
     X,
     Sparkles,
     Check,
+    MessageSquareText,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -104,6 +105,23 @@ const roles: Role[] = [
             'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
         iconStyle:
             'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
+    },
+    {
+        id: 'forum-moderator',
+        title: 'Community Forum Moderator',
+        bengaliTitle: 'ফোরাম ও ডিসকাশন মডারেটর',
+        description:
+            'কমিউনিটি ফোরামে শিক্ষার্থীদের অ্যাকাডেমিক প্রশ্নের সমাধান তদারকি, স্প্যাম রোধ ও গঠনমূলক আলোচনা বজায় রাখা।',
+        responsibilities: [
+            'ফোরামের প্রশ্ন ও উত্তর পর্যালোচনা করে সঠিক ও মানসম্মত একাডেমিক আলোচনা নিশ্চিত করা',
+            'অপ্রাসঙ্গিক, ক্ষতিকর বা স্প্যাম পোস্ট ও কমেন্ট দ্রুত মডারেট এবং রিপোর্ট রিভিউ করা',
+            'কঠিন প্রশ্নের সমাধানে শিক্ষার্থীদের সহায়তা ও সক্রিয় অংশগ্রহণ উৎসাহিত করা',
+        ],
+        icon: MessageSquareText,
+        badgeStyle:
+            'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400',
+        iconStyle:
+            'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400',
     },
     {
         id: 'social-moderator',
