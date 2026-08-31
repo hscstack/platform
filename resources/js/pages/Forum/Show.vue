@@ -14,8 +14,6 @@ import {
     CornerDownRight,
     Lock,
     Unlock,
-    Eye,
-    EyeOff,
     Flag,
     Loader2,
     Check,
@@ -217,10 +215,12 @@ const toggleLock = () => {
     );
 };
 
-const togglePublish = () => {
+const updateModerationStatus = (
+    status: 'approved' | 'pending' | 'flagged' | 'rejected',
+) => {
     router.patch(
-        `/admin/forums/${props.post.id}/publish`,
-        {},
+        `/admin/forums/${props.post.id}/status`,
+        { moderation_status: status },
         { preserveScroll: true },
     );
 };
@@ -948,33 +948,33 @@ function parseMentions(
                             }}</span>
                         </button>
 
-                        <!-- Toggle Publish Button -->
-                        <button
-                            type="button"
-                            @click="togglePublish"
-                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-2xs transition"
-                            :class="[
-                                post.moderation_status !== 'approved'
-                                    ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800',
-                            ]"
-                            :title="
-                                post.moderation_status !== 'approved'
-                                    ? 'Approve and publish discussion'
-                                    : 'Unpublish / Hide discussion'
+                        <!-- Moderation Status Dropdown -->
+                        <select
+                            :value="post.moderation_status || 'approved'"
+                            @change="
+                                (e) =>
+                                    updateModerationStatus(
+                                        (e.target as HTMLSelectElement)
+                                            .value as any,
+                                    )
                             "
+                            class="cursor-pointer rounded-xl border px-2.5 py-1.5 text-xs font-bold transition outline-none"
+                            :class="[
+                                post.moderation_status === 'approved' ||
+                                !post.moderation_status
+                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                    : post.moderation_status === 'pending'
+                                      ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300'
+                                      : post.moderation_status === 'flagged'
+                                        ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
+                                        : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300',
+                            ]"
                         >
-                            <Eye
-                                v-if="post.moderation_status !== 'approved'"
-                                class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
-                            />
-                            <EyeOff v-else class="h-3.5 w-3.5 text-slate-500" />
-                            <span>{{
-                                post.moderation_status !== 'approved'
-                                    ? 'Restore'
-                                    : 'Hide'
-                            }}</span>
-                        </button>
+                            <option value="approved">Approved (Live)</option>
+                            <option value="pending">Pending Review</option>
+                            <option value="flagged">Flagged (Reports)</option>
+                            <option value="rejected">Rejected (Hidden)</option>
+                        </select>
                     </template>
 
                     <!-- Report Question Action -->
