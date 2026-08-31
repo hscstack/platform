@@ -136,8 +136,8 @@ const deletePost = (post: ForumPostItem) => {
 
 const formatDate = (isoString?: string | null) => {
     if (!isoString) {
-return '';
-}
+        return '';
+    }
 
     try {
         const d = new Date(isoString);
@@ -250,6 +250,19 @@ return '';
                     ]"
                 >
                     Flagged ({{ stats.flaggedCount }})
+                </button>
+
+                <button
+                    type="button"
+                    @click="setStatusFilter('rejected')"
+                    class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                    :class="[
+                        selectedStatus === 'rejected'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300',
+                    ]"
+                >
+                    Rejected ({{ stats.rejectedCount }})
                 </button>
 
                 <button
