@@ -199,7 +199,7 @@ const isFullFooter = computed(() => {
                 <p
                     class="text-center text-xs font-medium text-slate-400 sm:text-left dark:text-gray-500"
                 >
-                    &copy; 2026 HSCStack. Built for the future of learning.
+                    &copy; 2026 HSCStack.
                 </p>
 
                 <div
