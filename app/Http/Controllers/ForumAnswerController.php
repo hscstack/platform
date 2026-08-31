@@ -10,6 +10,7 @@ use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -89,21 +90,23 @@ class ForumAnswerController extends Controller
         $replies = $answer->replies;
         $repliesCount = $replies->count();
 
-        if ($answer->image_path) {
-            Storage::delete($answer->image_path);
-        }
-
-        foreach ($replies as $reply) {
-            if ($reply->image_path) {
-                Storage::delete($reply->image_path);
+        DB::transaction(function () use ($answer, $replies, $post, $repliesCount) {
+            if ($answer->image_path) {
+                Storage::delete($answer->image_path);
             }
-        }
 
-        $answer->delete();
+            foreach ($replies as $reply) {
+                if ($reply->image_path) {
+                    Storage::delete($reply->image_path);
+                }
+            }
 
-        if ($post) {
-            $post->decrement('answers_count', 1 + $repliesCount);
-        }
+            $answer->delete();
+
+            if ($post) {
+                $post->decrement('answers_count', 1 + $repliesCount);
+            }
+        });
 
         return back()->with('success', 'Deleted.');
     }
