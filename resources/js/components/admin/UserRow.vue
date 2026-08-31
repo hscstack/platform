@@ -75,8 +75,8 @@ const deleteUser = (id: number) => {
                 class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-black/5 bg-slate-100 text-xs font-bold text-slate-700 uppercase sm:h-10 sm:w-10 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300"
             >
                 <img
-                    v-if="user.image_url || user.image_path"
-                    :src="user.image_url || '/storage/' + user.image_path"
+                    v-if="user.image_url"
+                    :src="user.image_url"
                     :alt="user.name"
                     class="h-full w-full object-cover"
                 />

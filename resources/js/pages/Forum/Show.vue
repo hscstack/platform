@@ -380,6 +380,75 @@ function timeAgo(dateString?: string): string {
 
     return `${years}y ago`;
 }
+
+function parseMentions(
+    content: string,
+): Array<{ type: 'text' | 'mention'; text: string; username?: string }> {
+    if (!content) {
+        return [];
+    }
+
+    const mentionRegex = /(?<=^|\s)@([a-zA-Z0-9_.-]+)/g;
+    const segments: Array<{
+        type: 'text' | 'mention';
+        text: string;
+        username?: string;
+    }> = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+        if (match.index > lastIndex) {
+            segments.push({
+                type: 'text',
+                text: content.substring(lastIndex, match.index),
+            });
+        }
+
+        let username = match[1];
+        let mentionText = match[0];
+        let trailingPunctuation = '';
+
+        const trailingMatch = username.match(/[.,!?;:]+$/);
+
+        if (trailingMatch) {
+            trailingPunctuation = trailingMatch[0];
+            username = username.slice(0, -trailingPunctuation.length);
+            mentionText = mentionText.slice(0, -trailingPunctuation.length);
+        }
+
+        if (username) {
+            segments.push({
+                type: 'mention',
+                text: mentionText,
+                username,
+            });
+        } else {
+            segments.push({
+                type: 'text',
+                text: match[0],
+            });
+        }
+
+        if (trailingPunctuation) {
+            segments.push({
+                type: 'text',
+                text: trailingPunctuation,
+            });
+        }
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+        segments.push({
+            type: 'text',
+            text: content.substring(lastIndex),
+        });
+    }
+
+    return segments;
+}
 </script>
 
 <template>
@@ -473,8 +542,8 @@ function timeAgo(dateString?: string): string {
                             class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-bold text-slate-700 dark:bg-gray-700 dark:text-gray-300"
                         >
                             <img
-                                v-if="post.user.image_path"
-                                :src="post.user.image_path"
+                                v-if="post.user.image_url"
+                                :src="post.user.image_url"
                                 :alt="post.user.name"
                                 class="h-full w-full object-cover"
                             />
@@ -571,13 +640,8 @@ function timeAgo(dateString?: string): string {
                                 class="inline-block h-5 w-5 overflow-hidden rounded-full ring-2 ring-white dark:ring-gray-900"
                             >
                                 <img
-                                    v-if="
-                                        upvoter.image_url || upvoter.image_path
-                                    "
-                                    :src="
-                                        upvoter.image_url ||
-                                        '/storage/' + upvoter.image_path
-                                    "
+                                    v-if="upvoter.image_url"
+                                    :src="upvoter.image_url"
                                     :alt="upvoter.name"
                                     class="h-full w-full object-cover"
                                 />
@@ -670,8 +734,8 @@ function timeAgo(dateString?: string): string {
                                 class="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-bold text-slate-700 dark:bg-gray-700 dark:text-gray-300"
                             >
                                 <img
-                                    v-if="answer.user.image_path"
-                                    :src="answer.user.image_path"
+                                    v-if="answer.user.image_url"
+                                    :src="answer.user.image_url"
                                     :alt="answer.user.name"
                                     class="h-full w-full object-cover"
                                 />
@@ -715,7 +779,19 @@ function timeAgo(dateString?: string): string {
                 <div
                     class="prose dark:prose-invert mt-3 text-xs leading-relaxed whitespace-pre-wrap text-slate-800 sm:text-sm dark:text-gray-200"
                 >
-                    {{ answer.body }}
+                    <template
+                        v-for="(seg, sIdx) in parseMentions(answer.body)"
+                        :key="sIdx"
+                    >
+                        <Link
+                            v-if="seg.type === 'mention' && seg.username"
+                            :href="`/u/${seg.username}`"
+                            class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >
+                            {{ seg.text }}
+                        </Link>
+                        <span v-else>{{ seg.text }}</span>
+                    </template>
                 </div>
 
                 <!-- Answer Image (if any) -->
@@ -779,8 +855,8 @@ function timeAgo(dateString?: string): string {
                                         class="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-[10px] font-bold text-slate-700 dark:bg-gray-700 dark:text-gray-300"
                                     >
                                         <img
-                                            v-if="reply.user.image_path"
-                                            :src="reply.user.image_path"
+                                            v-if="reply.user.image_url"
+                                            :src="reply.user.image_url"
                                             :alt="reply.user.name"
                                             class="h-full w-full object-cover"
                                         />
@@ -822,7 +898,21 @@ function timeAgo(dateString?: string): string {
                         <div
                             class="prose dark:prose-invert mt-1.5 text-xs leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-gray-300"
                         >
-                            {{ reply.body }}
+                            <template
+                                v-for="(seg, sIdx) in parseMentions(reply.body)"
+                                :key="sIdx"
+                            >
+                                <Link
+                                    v-if="
+                                        seg.type === 'mention' && seg.username
+                                    "
+                                    :href="`/u/${seg.username}`"
+                                    class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                                >
+                                    {{ seg.text }}
+                                </Link>
+                                <span v-else>{{ seg.text }}</span>
+                            </template>
                         </div>
 
                         <!-- Reply Image (if any) -->

@@ -1,11 +1,13 @@
 <?php
 
+use App\Mail\ForumNotificationMail;
 use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 test('unauthenticated users can view forum index and show', function () {
@@ -393,4 +395,82 @@ test('deleting a post cleans up all child answer images from storage', function 
 
     expect(Storage::exists('forum/posts/test_post.png'))->toBeFalse()
         ->and(Storage::exists('forum/answers/test_answer.png'))->toBeFalse();
+});
+
+test('email is queued to author when another user answers their forum question', function () {
+    Mail::fake();
+
+    $author = User::factory()->create([
+        'email' => 'author@example.com',
+        'receive_emails' => true,
+    ]);
+    $responder = User::factory()->create([
+        'name' => 'Helpful Student',
+    ]);
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'curriculum' => 'hsc',
+        'title' => 'Need help with Organic Chemistry isomerism',
+        'body' => 'Can someone explain geometric isomerism?',
+    ]);
+
+    $this->actingAs($responder)
+        ->post("/forum/posts/{$post->id}/answers", [
+            'body' => 'Geometric isomerism requires restricted rotation around double bond.',
+        ])
+        ->assertSessionHas('success');
+
+    Mail::assertQueued(ForumNotificationMail::class, function ($mail) use ($author) {
+        return $mail->hasTo($author->email);
+    });
+});
+
+test('email is not queued if author comments on their own forum question', function () {
+    Mail::fake();
+
+    $author = User::factory()->create([
+        'email' => 'author@example.com',
+        'receive_emails' => true,
+    ]);
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'curriculum' => 'hsc',
+        'title' => 'My own question',
+        'body' => 'Looking for additional insights.',
+    ]);
+
+    $this->actingAs($author)
+        ->post("/forum/posts/{$post->id}/answers", [
+            'body' => 'Adding my own self-reply.',
+        ])
+        ->assertSessionHas('success');
+
+    Mail::assertNothingQueued();
+});
+
+test('email is not queued if author opted out of emails', function () {
+    Mail::fake();
+
+    $author = User::factory()->create([
+        'email' => 'author@example.com',
+        'receive_emails' => false,
+    ]);
+    $responder = User::factory()->create();
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'curriculum' => 'hsc',
+        'title' => 'Opted out author question',
+        'body' => 'Question body.',
+    ]);
+
+    $this->actingAs($responder)
+        ->post("/forum/posts/{$post->id}/answers", [
+            'body' => 'Here is a helpful answer.',
+        ])
+        ->assertSessionHas('success');
+
+    Mail::assertNothingQueued();
 });
