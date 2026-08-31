@@ -914,14 +914,9 @@ function timeAgo(dateString?: string): string {
                                                     : 'fill-slate-400 dark:fill-gray-500'
                                             "
                                         />
-                                        <span
-                                            >{{ Math.abs(post.vote_score) }}
-                                            {{
-                                                Math.abs(post.vote_score) === 1
-                                                    ? 'vote'
-                                                    : 'votes'
-                                            }}</span
-                                        >
+                                        <span>{{
+                                            Math.abs(post.vote_score)
+                                        }}</span>
                                     </span>
                                     <span class="flex items-center gap-1">
                                         <MessageSquare class="h-3 w-3" />
