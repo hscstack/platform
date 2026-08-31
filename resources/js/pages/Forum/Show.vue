@@ -407,7 +407,7 @@ const replyImagePreview = ref<string | null>(null);
 const replyFileInputRef = ref<HTMLInputElement | null>(null);
 
 const openReplyForm = (rootAnswerId: number, targetUsername?: string) => {
-    if (props.post.is_locked && !can('manage forums')) {
+    if (props.post.is_locked || props.commentsEnabled === false) {
         return;
     }
 
@@ -1153,17 +1153,12 @@ function parseMentions(
                         </button>
 
                         <button
-                            v-if="
-                                (!post.is_locked &&
-                                    commentsEnabled !== false) ||
-                                can('manage forums') ||
-                                can('view admin')
-                            "
+                            v-if="!post.is_locked && commentsEnabled !== false"
                             type="button"
                             @click="
                                 openReplyForm(answer.id, answer.user?.username)
                             "
-                            class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
                         >
                             <Reply class="h-3.5 w-3.5" />
                             <span>Reply</span>
@@ -1171,10 +1166,10 @@ function parseMentions(
                     </div>
                 </div>
 
-                <!-- Replies List (1-Level Indented) -->
+                <!-- Nested Replies List (Depth 1) -->
                 <div
                     v-if="answer.replies && answer.replies.length > 0"
-                    class="mt-3 space-y-2.5 border-l-2 border-slate-100 pl-3 sm:ml-4 sm:pl-4 dark:border-gray-800"
+                    class="space-y-3 pt-3 pl-4 sm:pl-8"
                 >
                     <div
                         v-for="reply in answer.replies"
@@ -1456,15 +1451,15 @@ function parseMentions(
 
             <!-- Locked Discussion Notice -->
             <div
-                v-if="post.is_locked && !can('manage forums')"
+                v-if="post.is_locked"
                 class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300"
             >
                 <Lock
                     class="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
                 />
                 <span
-                    >This discussion has been locked by a moderator. New answers
-                    and replies are disabled.</span
+                    >This discussion is locked. New answers and replies are
+                    disabled.</span
                 >
             </div>
 

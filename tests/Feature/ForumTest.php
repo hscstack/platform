@@ -498,7 +498,7 @@ test('unauthenticated users filtering by my_posts receive zero questions', funct
         );
 });
 
-test('regular users cannot reply to unpublished discussions but moderators can', function () {
+test('users cannot reply to unapproved discussions', function () {
     $author = User::factory()->create();
     $regularUser = User::factory()->create();
     $moderator = User::factory()->create();
@@ -521,14 +521,14 @@ test('regular users cannot reply to unpublished discussions but moderators can',
 
     expect(ForumAnswer::where('forum_post_id', $post->id)->count())->toBe(0);
 
-    // Moderator can reply
+    // Moderator also cannot reply while unapproved
     $this->actingAs($moderator)
         ->post("/forum/posts/{$post->id}/answers", [
             'body' => 'Moderator administrative reply.',
         ])
-        ->assertSessionHas('success');
+        ->assertSessionHas('error');
 
-    expect(ForumAnswer::where('forum_post_id', $post->id)->count())->toBe(1);
+    expect(ForumAnswer::where('forum_post_id', $post->id)->count())->toBe(0);
 });
 
 test('submitting question with auto approval mode sets moderation_status to approved', function () {

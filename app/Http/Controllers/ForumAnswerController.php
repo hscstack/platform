@@ -21,19 +21,13 @@ class ForumAnswerController extends Controller
         $user = auth()->user();
 
         // Check if discussion is approved
-        if (! $post->isApproved() && (! $user || ! $user->can('manage forums'))) {
-            $reason = match ($post->moderation_status) {
-                'pending' => 'This discussion is currently pending moderator approval.',
-                'flagged' => 'This discussion has been temporarily hidden following community reports.',
-                default => 'This discussion has been hidden by moderation.',
-            };
-
-            return back()->with('error', $reason);
+        if (! $post->isApproved()) {
+            return back()->with('error', 'This discussion is currently not open for new replies.');
         }
 
         // Check if discussion is locked
-        if ($post->is_locked && (! $user || ! $user->can('manage forums'))) {
-            return back()->with('error', 'This discussion has been locked by a moderator. New replies are disabled.');
+        if ($post->is_locked) {
+            return back()->with('error', 'This discussion has been locked. New replies are disabled.');
         }
 
         // Check if global forum commenting is enabled
