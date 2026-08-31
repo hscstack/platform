@@ -19,7 +19,7 @@ class SupportTicketSeeder extends Seeder
             $users = User::factory()->count(5)->create();
         }
 
-        $admin = User::role('admin')->first() ?? $users->first();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->first();
 
         $tickets = [
             [

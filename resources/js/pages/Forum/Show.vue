@@ -133,8 +133,8 @@ const selectedBanUser = ref<ChatBanUser | null>(null);
 
 const openBanModalForUser = (targetUser?: User | null) => {
     if (!targetUser) {
-return;
-}
+        return;
+    }
 
     selectedBanUser.value = {
         id: targetUser.id,
@@ -1367,10 +1367,8 @@ function parseMentions(
 
                                 <button
                                     v-if="
-                                        (!post.is_locked &&
-                                            commentsEnabled !== false) ||
-                                        can('manage forums') ||
-                                        can('view admin')
+                                        !post.is_locked &&
+                                        commentsEnabled !== false
                                     "
                                     type="button"
                                     @click="
