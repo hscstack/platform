@@ -127,6 +127,12 @@ class ForumPost extends Model
 
     public function scopeFilter(Builder $query, array $filters): void
     {
+        $query->when($filters['my_posts'] ?? null, function ($q) {
+            if ($userId = auth()->id()) {
+                $q->where('user_id', $userId);
+            }
+        });
+
         $query->when($filters['curriculum'] ?? null, function ($q, $curriculum) {
             $q->where('curriculum', $curriculum);
         });

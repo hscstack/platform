@@ -28,6 +28,7 @@ class ForumController extends Controller
             'status' => $request->input('status'),
             'search' => $request->input('search'),
             'sort' => $request->input('sort', 'recent'),
+            'my_posts' => $request->input('my_posts'),
         ];
 
         $postsQuery = ForumPost::query()
