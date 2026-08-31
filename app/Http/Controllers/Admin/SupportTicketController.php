@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\SupportTicketMail;
 use App\Models\SupportTicket;
+use App\Notifications\AppNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class SupportTicketController extends Controller
@@ -91,6 +93,19 @@ class SupportTicketController extends Controller
         $ticket->update($updates);
 
         $ticket->load('user');
+
+        // Send in-app notification to ticket owner
+        if ($ticket->user && $ticket->user_id !== $request->user()->id) {
+            $ticket->user->notify(new AppNotification(
+                type: 'support_ticket',
+                title: "Ticket #{$ticket->ticket_number} updated",
+                message: ! empty($updates['admin_reply'])
+                    ? Str::limit(strip_tags($ticket->admin_reply), 80)
+                    : 'Your ticket status is now '.ucfirst(str_replace('_', ' ', $ticket->status)).'.',
+                url: route('support.my-tickets')
+            ));
+        }
+
         if ($ticket->user?->email) {
             Mail::to($ticket->user->email)->queue(SupportTicketMail::forStatusUpdated($ticket));
         }

@@ -6,6 +6,8 @@ use App\Mail\ForumNotificationMail;
 use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
+use App\Models\User;
+use App\Notifications\AppNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ForumAnswerController extends Controller
 {
@@ -49,6 +52,7 @@ class ForumAnswerController extends Controller
             'body' => ['required', 'string', 'min:2', 'max:10000', new CleanText],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'parent_id' => ['nullable', 'exists:forum_answers,id'],
+            'reply_to_user_id' => ['nullable', 'exists:users,id'],
         ]);
 
         $parentId = $validated['parent_id'] ?? null;
@@ -72,9 +76,24 @@ class ForumAnswerController extends Controller
 
         $post->increment('answers_count');
 
+        $currentUser = auth()->user();
+
+        // Notify target user (post author for root answers, or specific author for replies)
+        $targetUser = $parentId
+            ? (! empty($validated['reply_to_user_id']) ? User::find($validated['reply_to_user_id']) : ($parent->user ?? null))
+            : $post->user;
+
+        if ($targetUser && $currentUser && $targetUser->id !== $currentUser->id) {
+            $targetUser->notify(new AppNotification(
+                type: $parentId ? 'user_mention' : 'forum_comment',
+                title: $parentId ? "{$currentUser->name} replied to you" : "{$currentUser->name} answered your question",
+                message: '"'.Str::limit(strip_tags($validated['body']), 80).'"',
+                url: route('forum.show', $post->slug)
+            ));
+        }
+
         // Send mail notification to post author only (if commenter is not the author)
         $author = $post->user;
-        $currentUser = auth()->user();
         if ($author && $currentUser && $author->id !== $currentUser->id && $author->email && $author->receive_emails !== false) {
             Mail::to($author->email)->queue(ForumNotificationMail::forAnswer($post, $answer, $author, $currentUser));
         }
