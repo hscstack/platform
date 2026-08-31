@@ -30,6 +30,9 @@ class ForumController extends Controller
                 'subject:id,name,course,slug',
                 'node:id,name,slug',
             ])
+            ->withCount([
+                'reports as pending_reports_count' => fn ($q) => $q->where('status', 'pending'),
+            ])
             ->when($filters['curriculum'] ?? null, fn ($q, $c) => $q->where('curriculum', $c))
             ->when($filters['subject_id'] ?? null, function ($q, $s) {
                 if ($s === 'other') {

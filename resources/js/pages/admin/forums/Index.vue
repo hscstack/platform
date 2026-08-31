@@ -5,7 +5,6 @@ import {
     Settings,
     Lock,
     Unlock,
-    EyeOff,
     Trash2,
     Search,
     ExternalLink,
@@ -21,12 +20,14 @@ interface ForumPostItem {
     id: number;
     title: string;
     slug: string;
+    body?: string;
     curriculum: 'hsc' | 'ssc';
     is_answered: boolean;
     is_locked: boolean;
     moderation_status: 'approved' | 'pending' | 'flagged' | 'rejected';
     vote_score: number;
     answers_count: number;
+    pending_reports_count?: number;
     created_at: string;
     user?: {
         id: number;
@@ -368,8 +369,8 @@ const formatDate = (isoString?: string | null) => {
                         <tr>
                             <th class="px-4 py-3">Discussion</th>
                             <th class="px-4 py-3">Author</th>
-                            <th class="px-3 py-3 text-center">Replies</th>
-                            <th class="px-3 py-3 text-center">Status</th>
+                            <th class="px-3 py-3 text-center">Engagement</th>
+                            <th class="px-4 py-3">Moderation Status</th>
                             <th class="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -381,13 +382,13 @@ const formatDate = (isoString?: string | null) => {
                             :key="post.id"
                             class="transition hover:bg-slate-50/60 dark:hover:bg-gray-800/40"
                         >
-                            <!-- Title & Info -->
-                            <td class="max-w-md px-4 py-3">
+                            <!-- Title, Snippet & Meta -->
+                            <td class="max-w-lg px-4 py-3.5">
                                 <div class="space-y-1">
                                     <div class="flex items-center gap-1.5">
                                         <Lock
                                             v-if="post.is_locked"
-                                            class="h-3.5 w-3.5 shrink-0 text-slate-400"
+                                            class="h-3.5 w-3.5 shrink-0 text-amber-500"
                                             title="Discussion locked"
                                         />
                                         <a
@@ -401,8 +402,18 @@ const formatDate = (isoString?: string | null) => {
                                             class="h-3 w-3 shrink-0 text-slate-400"
                                         />
                                     </div>
+
+                                    <!-- Content snippet -->
+                                    <p
+                                        v-if="post.body"
+                                        class="line-clamp-1 text-[11px] text-slate-500 dark:text-gray-400"
+                                    >
+                                        {{ post.body }}
+                                    </p>
+
+                                    <!-- Metadata Tagline -->
                                     <div
-                                        class="flex items-center gap-2 text-[11px] text-slate-400"
+                                        class="flex items-center gap-2 pt-0.5 text-[11px] text-slate-400"
                                     >
                                         <span
                                             class="py-0.2 rounded bg-slate-100 px-1.5 font-semibold text-slate-600 uppercase dark:bg-gray-800 dark:text-gray-400"
@@ -421,10 +432,10 @@ const formatDate = (isoString?: string | null) => {
                             </td>
 
                             <!-- Author -->
-                            <td class="px-4 py-3 whitespace-nowrap">
+                            <td class="px-4 py-3.5 whitespace-nowrap">
                                 <div v-if="post.user" class="text-xs">
                                     <span
-                                        class="font-medium text-slate-800 dark:text-gray-200"
+                                        class="font-semibold text-slate-800 dark:text-gray-200"
                                         >{{ post.user.name }}</span
                                     >
                                     <span
@@ -437,87 +448,107 @@ const formatDate = (isoString?: string | null) => {
                                 >
                             </td>
 
-                            <!-- Replies -->
-                            <td class="px-3 py-3 text-center whitespace-nowrap">
-                                <span
-                                    class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
+                            <!-- Engagement (Replies + Reports) -->
+                            <td
+                                class="px-3 py-3.5 text-center whitespace-nowrap"
+                            >
+                                <div
+                                    class="flex flex-col items-center justify-center gap-1"
                                 >
-                                    {{ post.answers_count }}
-                                </span>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
+                                    >
+                                        {{ post.answers_count }}
+                                        {{
+                                            post.answers_count === 1
+                                                ? 'reply'
+                                                : 'replies'
+                                        }}
+                                    </span>
+
+                                    <!-- Pending reports alert -->
+                                    <Link
+                                        v-if="
+                                            post.pending_reports_count &&
+                                            post.pending_reports_count > 0
+                                        "
+                                        href="/admin/forums/reports"
+                                        class="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300"
+                                    >
+                                        <Flag class="h-2.5 w-2.5" />
+                                        <span
+                                            >{{ post.pending_reports_count }}
+                                            {{
+                                                post.pending_reports_count === 1
+                                                    ? 'report'
+                                                    : 'reports'
+                                            }}</span
+                                        >
+                                    </Link>
+                                </div>
                             </td>
 
-                            <!-- Moderation Status -->
-                            <td class="px-3 py-3 text-center whitespace-nowrap">
-                                <span
-                                    class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold"
+                            <!-- Inline Moderation Status Dropdown -->
+                            <td class="px-4 py-3.5 whitespace-nowrap">
+                                <select
+                                    :value="post.moderation_status"
+                                    @change="
+                                        (e) =>
+                                            updateStatus(
+                                                post,
+                                                (e.target as HTMLSelectElement)
+                                                    .value as any,
+                                            )
+                                    "
+                                    class="cursor-pointer rounded-xl border px-2.5 py-1 text-xs font-bold transition outline-none"
                                     :class="[
                                         post.moderation_status === 'approved'
-                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300'
                                             : post.moderation_status ===
                                                 'pending'
-                                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                                              ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300'
                                               : post.moderation_status ===
                                                   'flagged'
-                                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
-                                                : 'bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+                                                ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
+                                                : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300',
                                     ]"
                                 >
-                                    {{
-                                        post.moderation_status === 'approved'
-                                            ? 'Live'
-                                            : post.moderation_status ===
-                                                'pending'
-                                              ? 'Pending'
-                                              : post.moderation_status ===
-                                                  'flagged'
-                                                ? 'Flagged'
-                                                : 'Rejected'
-                                    }}
-                                </span>
+                                    <option value="approved">
+                                        Approved (Live)
+                                    </option>
+                                    <option value="pending">
+                                        Pending Review
+                                    </option>
+                                    <option value="flagged">
+                                        Flagged (Reports)
+                                    </option>
+                                    <option value="rejected">
+                                        Rejected (Hidden)
+                                    </option>
+                                </select>
                             </td>
 
-                            <!-- Quick Action Buttons -->
-                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <!-- Actions -->
+                            <td
+                                class="px-4 py-3.5 text-right whitespace-nowrap"
+                            >
                                 <div
-                                    class="flex items-center justify-end gap-1"
+                                    class="flex items-center justify-end gap-1.5"
                                 >
-                                    <!-- Approve button -->
-                                    <button
-                                        v-if="
-                                            post.moderation_status !==
-                                            'approved'
-                                        "
-                                        type="button"
-                                        @click="updateStatus(post, 'approved')"
-                                        class="cursor-pointer rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300"
-                                        title="Approve & Publish"
-                                    >
-                                        Approve
-                                    </button>
-
-                                    <!-- Hide / Reject button -->
-                                    <button
-                                        v-else
-                                        type="button"
-                                        @click="updateStatus(post, 'rejected')"
-                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-gray-800"
-                                        title="Hide from public"
-                                    >
-                                        <EyeOff class="h-3.5 w-3.5" />
-                                    </button>
-
                                     <!-- Lock button -->
                                     <button
                                         type="button"
                                         @click="toggleLock(post)"
-                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-gray-800"
+                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-gray-800"
                                         :title="
-                                            post.is_locked ? 'Unlock' : 'Lock'
+                                            post.is_locked
+                                                ? 'Unlock discussion replies'
+                                                : 'Lock discussion replies'
                                         "
                                     >
                                         <Unlock
                                             v-if="post.is_locked"
-                                            class="h-3.5 w-3.5 text-emerald-600"
+                                            class="h-3.5 w-3.5 text-amber-500"
                                         />
                                         <Lock v-else class="h-3.5 w-3.5" />
                                     </button>
@@ -526,8 +557,8 @@ const formatDate = (isoString?: string | null) => {
                                     <button
                                         type="button"
                                         @click="deletePost(post)"
-                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
-                                        title="Delete"
+                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                                        title="Delete discussion"
                                     >
                                         <Trash2 class="h-3.5 w-3.5" />
                                     </button>
