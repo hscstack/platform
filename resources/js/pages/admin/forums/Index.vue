@@ -129,8 +129,8 @@ const deletePost = (post: ForumPostItem) => {
 
 const formatDate = (isoString?: string | null) => {
     if (!isoString) {
-return '';
-}
+        return '';
+    }
 
     try {
         const d = new Date(isoString);

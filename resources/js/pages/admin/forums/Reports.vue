@@ -103,8 +103,8 @@ const selectedUser = ref<ChatBanUser | null>(null);
 
 const openBanModal = (report: ReportItem) => {
     if (!report.reported_user_id) {
-return;
-}
+        return;
+    }
 
     selectedUser.value = {
         id: report.reported_user_id,
@@ -122,8 +122,8 @@ return;
 
 const formatDate = (isoString?: string | null) => {
     if (!isoString) {
-return '';
-}
+        return '';
+    }
 
     try {
         const d = new Date(isoString);
