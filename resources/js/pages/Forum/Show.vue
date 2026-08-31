@@ -380,6 +380,75 @@ function timeAgo(dateString?: string): string {
 
     return `${years}y ago`;
 }
+
+function parseMentions(
+    content: string,
+): Array<{ type: 'text' | 'mention'; text: string; username?: string }> {
+    if (!content) {
+        return [];
+    }
+
+    const mentionRegex = /(?<=^|\s)@([a-zA-Z0-9_.-]+)/g;
+    const segments: Array<{
+        type: 'text' | 'mention';
+        text: string;
+        username?: string;
+    }> = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+        if (match.index > lastIndex) {
+            segments.push({
+                type: 'text',
+                text: content.substring(lastIndex, match.index),
+            });
+        }
+
+        let username = match[1];
+        let mentionText = match[0];
+        let trailingPunctuation = '';
+
+        const trailingMatch = username.match(/[.,!?;:]+$/);
+
+        if (trailingMatch) {
+            trailingPunctuation = trailingMatch[0];
+            username = username.slice(0, -trailingPunctuation.length);
+            mentionText = mentionText.slice(0, -trailingPunctuation.length);
+        }
+
+        if (username) {
+            segments.push({
+                type: 'mention',
+                text: mentionText,
+                username,
+            });
+        } else {
+            segments.push({
+                type: 'text',
+                text: match[0],
+            });
+        }
+
+        if (trailingPunctuation) {
+            segments.push({
+                type: 'text',
+                text: trailingPunctuation,
+            });
+        }
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+        segments.push({
+            type: 'text',
+            text: content.substring(lastIndex),
+        });
+    }
+
+    return segments;
+}
 </script>
 
 <template>
@@ -710,7 +779,19 @@ function timeAgo(dateString?: string): string {
                 <div
                     class="prose dark:prose-invert mt-3 text-xs leading-relaxed whitespace-pre-wrap text-slate-800 sm:text-sm dark:text-gray-200"
                 >
-                    {{ answer.body }}
+                    <template
+                        v-for="(seg, sIdx) in parseMentions(answer.body)"
+                        :key="sIdx"
+                    >
+                        <Link
+                            v-if="seg.type === 'mention' && seg.username"
+                            :href="`/u/${seg.username}`"
+                            class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >
+                            {{ seg.text }}
+                        </Link>
+                        <span v-else>{{ seg.text }}</span>
+                    </template>
                 </div>
 
                 <!-- Answer Image (if any) -->
@@ -817,7 +898,21 @@ function timeAgo(dateString?: string): string {
                         <div
                             class="prose dark:prose-invert mt-1.5 text-xs leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-gray-300"
                         >
-                            {{ reply.body }}
+                            <template
+                                v-for="(seg, sIdx) in parseMentions(reply.body)"
+                                :key="sIdx"
+                            >
+                                <Link
+                                    v-if="
+                                        seg.type === 'mention' && seg.username
+                                    "
+                                    :href="`/u/${seg.username}`"
+                                    class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                                >
+                                    {{ seg.text }}
+                                </Link>
+                                <span v-else>{{ seg.text }}</span>
+                            </template>
                         </div>
 
                         <!-- Reply Image (if any) -->
