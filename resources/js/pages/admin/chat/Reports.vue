@@ -32,8 +32,8 @@ interface ReportItem {
         id: number;
         name: string;
         username: string;
-        chat_banned_until: string | null;
-        is_chat_banned: boolean;
+        banned_until: string | null;
+        is_banned: boolean;
     } | null;
     message_content: string;
     message_sent_at: string | null;
@@ -110,8 +110,8 @@ const openBanModal = (report: ReportItem) => {
             report.reported_user?.username ||
             report.reported_user_username ||
             null,
-        chat_banned_until: report.reported_user?.chat_banned_until || null,
-        is_chat_banned: report.reported_user?.is_chat_banned ?? false,
+        banned_until: report.reported_user?.banned_until || null,
+        is_banned: report.reported_user?.is_banned ?? false,
     };
 
     isBanModalOpen.value = true;
@@ -462,21 +462,21 @@ const formatDate = (isoString?: string | null) => {
                                 @click="openBanModal(report)"
                                 class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition"
                                 :class="
-                                    report.reported_user?.is_chat_banned
+                                    report.reported_user?.is_banned
                                         ? 'bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:hover:bg-amber-900/60'
                                         : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/60'
                                 "
                                 :title="
-                                    report.reported_user?.is_chat_banned
-                                        ? 'Edit chat ban timer or unban user'
-                                        : 'Ban user from chat'
+                                    report.reported_user?.is_banned
+                                        ? 'Edit suspension timer or unban user'
+                                        : 'Suspend user'
                                 "
                             >
                                 <Ban class="h-3 w-3" />
                                 <span>{{
-                                    report.reported_user?.is_chat_banned
+                                    report.reported_user?.is_banned
                                         ? 'Edit Ban / Unban'
-                                        : 'Ban Author'
+                                        : 'Suspend Author'
                                 }}</span>
                             </button>
 
@@ -548,7 +548,7 @@ const formatDate = (isoString?: string | null) => {
                                     }})
                                 </span>
                                 <span
-                                    v-if="report.reported_user?.is_chat_banned"
+                                    v-if="report.reported_user?.is_banned"
                                     class="ml-2 rounded-sm bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-700 dark:bg-rose-900/60 dark:text-rose-300"
                                 >
                                     Currently Banned

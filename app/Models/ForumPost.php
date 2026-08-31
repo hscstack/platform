@@ -26,6 +26,8 @@ class ForumPost extends Model
         'body',
         'image_path',
         'is_answered',
+        'is_locked',
+        'moderation_status',
         'vote_score',
         'upvotes_count',
         'downvotes_count',
@@ -40,6 +42,7 @@ class ForumPost extends Model
     {
         return [
             'is_answered' => 'boolean',
+            'is_locked' => 'boolean',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',
@@ -111,8 +114,42 @@ class ForumPost extends Model
         return $this->morphMany(ForumVote::class, 'voteable');
     }
 
+    public function reports(): MorphMany
+    {
+        return $this->morphMany(Report::class, 'reportable');
+    }
+
+    public function scopeApproved(Builder $query): void
+    {
+        $query->where('moderation_status', 'approved');
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->moderation_status === 'approved';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->moderation_status === 'pending';
+    }
+
+    public function isFlagged(): bool
+    {
+        return $this->moderation_status === 'flagged';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->moderation_status === 'rejected';
+    }
+
     public function scopeFilter(Builder $query, array $filters): void
     {
+        $query->when($filters['my_posts'] ?? null, function ($q) {
+            $q->where('user_id', auth()->id());
+        });
+
         $query->when($filters['curriculum'] ?? null, function ($q, $curriculum) {
             $q->where('curriculum', $curriculum);
         });
