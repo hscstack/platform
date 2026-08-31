@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\SupportTicketMail;
 use App\Models\SupportTicket;
+use App\Notifications\SupportTicketNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -91,6 +92,13 @@ class SupportTicketController extends Controller
         $ticket->update($updates);
 
         $ticket->load('user');
+
+        // Send in-app notification to ticket owner
+        if ($ticket->user && $ticket->user_id !== $request->user()->id) {
+            $hasReply = ! empty($updates['admin_reply']);
+            $ticket->user->notify(new SupportTicketNotification($ticket, $hasReply));
+        }
+
         if ($ticket->user?->email) {
             Mail::to($ticket->user->email)->queue(SupportTicketMail::forStatusUpdated($ticket));
         }

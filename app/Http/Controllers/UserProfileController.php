@@ -11,6 +11,7 @@ use App\Models\Node;
 use App\Models\Resource;
 use App\Models\User;
 use App\Models\UserAppreciation;
+use App\Notifications\UserAppreciationNotification;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
@@ -264,6 +265,10 @@ class UserProfileController extends Controller
             ]);
 
             $appreciationsCount = $user->appreciationsReceived()->count();
+
+            // Send in-app notification
+            $user->notify(new UserAppreciationNotification($currentAuthUser, $appreciationsCount));
+
             $milestones = [1, 10, 25, 50, 100, 250, 500, 1000];
             $isMilestone = in_array($appreciationsCount, $milestones, true) || ($appreciationsCount > 1000 && $appreciationsCount % 500 === 0);
 

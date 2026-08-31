@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\EmailController as AdminEmailController;
 use App\Http\Controllers\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
+use App\Http\Controllers\Admin\NotificationBroadcastController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -105,6 +106,12 @@ Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->mid
 Route::middleware('permission:send email')->group(function () {
     Route::get('/emails/send', [AdminEmailController::class, 'create'])->name('emails.create');
     Route::post('/emails/send', [AdminEmailController::class, 'store'])->name('emails.store');
+});
+
+// In-App Notification Broadcast
+Route::middleware('permission:send email|edit notice')->group(function () {
+    Route::get('/notifications/send', [NotificationBroadcastController::class, 'create'])->name('notifications.create');
+    Route::post('/notifications/send', [NotificationBroadcastController::class, 'store'])->name('notifications.store');
 });
 
 // Chat Management & Settings

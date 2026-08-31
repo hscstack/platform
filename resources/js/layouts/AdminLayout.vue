@@ -4,6 +4,7 @@ import {
     Users,
     BookOpen,
     Bell,
+    BellRing,
     Book,
     Mail,
     MessageCircle,
@@ -60,6 +61,12 @@ const allNavigation = [
         name: 'Send Emails',
         to: '/admin/emails/send',
         icon: Mail,
+        permission: 'send email',
+    },
+    {
+        name: 'Broadcast Alert',
+        to: '/admin/notifications/send',
+        icon: BellRing,
         permission: 'send email',
     },
 ];

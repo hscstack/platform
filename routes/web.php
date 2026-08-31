@@ -8,6 +8,7 @@ use App\Http\Controllers\ForumAnswerController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumVoteController;
 use App\Http\Controllers\NodeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
@@ -52,6 +53,12 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::get('/me', function (Request $request) {
         return redirect()->route('user.profile', ['username' => $request->user()->username]);
     })->name('me');
+
+    // In-App Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
 
     // Global Chat Actions
     Route::post('/api/chat/messages', [ChatController::class, 'store'])->name('chat.messages.store');
