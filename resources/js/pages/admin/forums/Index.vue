@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
-    MessageSquareText,
     Flag,
     Settings,
     Lock,
@@ -10,8 +9,8 @@ import {
     Trash2,
     Search,
     ExternalLink,
-    CheckCircle2,
     HelpCircle,
+    Filter,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -38,10 +37,6 @@ interface ForumPostItem {
         id: number;
         name: string;
         course: string;
-    } | null;
-    node?: {
-        id: number;
-        name: string;
     } | null;
 }
 
@@ -81,21 +76,32 @@ const props = defineProps<{
 const searchInput = ref(props.filters.search || '');
 const selectedCurriculum = ref(props.filters.curriculum || '');
 const selectedSubject = ref(props.filters.subject_id || '');
-const selectedStatus = ref(props.filters.status || '');
-const selectedSort = ref(props.filters.sort || 'recent');
+const selectedStatus = ref(props.filters.status || 'all');
+const showAdvancedFilters = ref(
+    Boolean(
+        props.filters.curriculum ||
+        props.filters.subject_id ||
+        props.filters.sort,
+    ),
+);
+
+const setStatusFilter = (status: string) => {
+    selectedStatus.value = status;
+    applyFilters();
+};
 
 const applyFilters = () => {
     router.get(
         '/admin/forums',
         {
             search: searchInput.value || undefined,
+            status:
+                selectedStatus.value === 'all'
+                    ? undefined
+                    : selectedStatus.value,
             curriculum: selectedCurriculum.value || undefined,
             subject_id: selectedSubject.value || undefined,
-            status: selectedStatus.value || undefined,
-            sort:
-                selectedSort.value !== 'recent'
-                    ? selectedSort.value
-                    : undefined,
+            sort: props.filters.sort || undefined,
         },
         { preserveState: true, replace: true },
     );
@@ -121,11 +127,7 @@ const updateStatus = (
 };
 
 const deletePost = (post: ForumPostItem) => {
-    if (
-        confirm(
-            `Are you sure you want to delete discussion: "${post.title}"? This cannot be undone.`,
-        )
-    ) {
+    if (confirm(`Delete "${post.title}" permanently? This cannot be undone.`)) {
         router.delete(`/admin/forums/${post.id}`, {
             preserveScroll: true,
         });
@@ -134,8 +136,8 @@ const deletePost = (post: ForumPostItem) => {
 
 const formatDate = (isoString?: string | null) => {
     if (!isoString) {
-        return '';
-    }
+return '';
+}
 
     try {
         const d = new Date(isoString);
@@ -143,7 +145,6 @@ const formatDate = (isoString?: string | null) => {
         return d.toLocaleDateString([], {
             month: 'short',
             day: 'numeric',
-            year: 'numeric',
         });
     } catch {
         return '';
@@ -152,187 +153,171 @@ const formatDate = (isoString?: string | null) => {
 </script>
 
 <template>
-    <Head title="Forum Discussions - Admin Panel" />
+    <Head title="Forum Management - Admin" />
 
-    <div class="space-y-6">
-        <!-- Header -->
+    <div class="space-y-5">
+        <!-- Minimal Top Header -->
         <div
-            class="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
+            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
         >
-            <div class="flex items-center gap-3">
-                <div
-                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+            <div>
+                <h1
+                    class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
                 >
-                    <MessageSquareText class="h-5 w-5" />
-                </div>
-                <div>
-                    <h1
-                        class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
+                    Forum Management
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-gray-400">
+                    Review community questions, moderate discussions, and manage
+                    reports.
+                </p>
+            </div>
+
+            <!-- Header Quick Tabs -->
+            <div
+                class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            >
+                <Link
+                    href="/admin/forums"
+                    class="rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                >
+                    Discussions
+                </Link>
+
+                <Link
+                    href="/admin/forums/reports"
+                    class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                >
+                    <Flag class="h-3.5 w-3.5 text-rose-500" />
+                    <span>Reports</span>
+                    <span
+                        v-if="stats.pendingReportsCount > 0"
+                        class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
                     >
-                        Forum Discussions Management
-                    </h1>
-                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Moderate community discussions, lock replies, and manage
-                        visibility.
-                    </p>
-                </div>
+                        {{ stats.pendingReportsCount }}
+                    </span>
+                </Link>
+
+                <Link
+                    href="/admin/forums/settings"
+                    class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                >
+                    <Settings class="h-3.5 w-3.5" />
+                    <span>Settings</span>
+                </Link>
             </div>
         </div>
 
-        <!-- Navigation Sub-Tabs -->
+        <!-- Integrated Status Pills & Search Bar -->
         <div
-            class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800"
+            class="flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between dark:border-gray-800 dark:bg-gray-900"
         >
-            <Link
-                href="/admin/forums"
-                class="flex items-center gap-2 border-b-2 border-indigo-600 px-4 py-2.5 text-xs font-bold text-indigo-600 transition-all dark:border-indigo-400 dark:text-indigo-400"
-            >
-                <MessageSquareText class="h-4 w-4" />
-                <span>All Discussions</span>
-            </Link>
-
-            <Link
-                href="/admin/forums/reports"
-                class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-                <Flag class="h-4 w-4 text-rose-500" />
-                <span>Reported Content</span>
-                <span
-                    v-if="stats.pendingReportsCount > 0"
-                    class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
+            <!-- Status Tabs -->
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button
+                    type="button"
+                    @click="setStatusFilter('all')"
+                    class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                    :class="[
+                        selectedStatus === 'all' || !selectedStatus
+                            ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700',
+                    ]"
                 >
-                    {{ stats.pendingReportsCount }}
-                </span>
-            </Link>
+                    All ({{ stats.totalPosts }})
+                </button>
 
-            <Link
-                href="/admin/forums/settings"
-                class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-                <Settings class="h-4 w-4" />
-                <span>Forum Settings</span>
-            </Link>
-        </div>
+                <button
+                    type="button"
+                    @click="setStatusFilter('pending')"
+                    class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                    :class="[
+                        selectedStatus === 'pending'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300',
+                    ]"
+                >
+                    Pending ({{ stats.pendingCount }})
+                </button>
 
-        <!-- Metrics Stats -->
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div
-                class="rounded-2xl border border-slate-100 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Total Discussions</span
-                    >
-                    <MessageSquareText class="h-4 w-4 text-indigo-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
+                <button
+                    type="button"
+                    @click="setStatusFilter('flagged')"
+                    class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                    :class="[
+                        selectedStatus === 'flagged'
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300',
+                    ]"
                 >
-                    {{ stats.totalPosts }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >{{ stats.approvedCount }} approved / live</span
+                    Flagged ({{ stats.flaggedCount }})
+                </button>
+
+                <button
+                    type="button"
+                    @click="setStatusFilter('approved')"
+                    class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                    :class="[
+                        selectedStatus === 'approved'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300',
+                    ]"
                 >
+                    Live ({{ stats.approvedCount }})
+                </button>
+
+                <button
+                    type="button"
+                    @click="showAdvancedFilters = !showAdvancedFilters"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                    :class="{
+                        'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400':
+                            showAdvancedFilters,
+                    }"
+                >
+                    <Filter class="h-3 w-3" />
+                    <span>Filters</span>
+                </button>
             </div>
 
-            <div
-                class="rounded-2xl border border-slate-100 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Pending Review</span
-                    >
-                    <EyeOff class="h-4 w-4 text-amber-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400"
-                >
-                    {{ stats.pendingCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Awaiting moderator approval</span
-                >
-            </div>
-
-            <div
-                class="rounded-2xl border border-slate-100 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Flagged / Hidden</span
-                    >
-                    <Flag class="h-4 w-4 text-rose-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400"
-                >
-                    {{ stats.flaggedCount + stats.rejectedCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >{{ stats.flaggedCount }} flagged,
-                    {{ stats.rejectedCount }} rejected</span
-                >
-            </div>
-
-            <div
-                class="rounded-2xl border border-slate-100 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Pending Reports</span
-                    >
-                    <Flag class="h-4 w-4 text-rose-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    {{ stats.pendingReportsCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Reports to review</span
-                >
+            <!-- Search Field -->
+            <div class="relative w-full sm:w-64">
+                <Search
+                    class="pointer-events-none absolute top-2 left-2.5 h-3.5 w-3.5 text-slate-400"
+                />
+                <input
+                    v-model="searchInput"
+                    type="text"
+                    placeholder="Search questions..."
+                    @keyup.enter="handleSearch"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-1.5 pr-3 pl-8 text-xs text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                />
             </div>
         </div>
 
-        <!-- Filter & Search Bar -->
+        <!-- Optional Collapsible Filter Bar (Curriculum & Subject) -->
         <div
-            class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800 dark:bg-gray-900/60"
+            v-if="showAdvancedFilters"
+            class="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-xs dark:border-gray-800 dark:bg-gray-900/60"
         >
-            <div class="flex flex-1 flex-wrap items-center gap-2.5">
-                <!-- Search Input -->
-                <div class="relative min-w-[200px] flex-1 sm:max-w-xs">
-                    <Search
-                        class="pointer-events-none absolute top-2.5 left-3 h-4 w-4 text-slate-400 dark:text-gray-500"
-                    />
-                    <input
-                        v-model="searchInput"
-                        type="text"
-                        placeholder="Search title, content, author..."
-                        @keyup.enter="handleSearch"
-                        class="w-full rounded-xl border border-slate-200 bg-white py-1.5 pr-3 pl-9 text-xs text-slate-900 shadow-2xs transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
-                    />
-                </div>
-
-                <!-- Curriculum Select -->
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-slate-500">Curriculum:</span>
                 <select
                     v-model="selectedCurriculum"
                     @change="applyFilters"
-                    class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                 >
-                    <option value="">All Curriculums</option>
+                    <option value="">All</option>
                     <option value="hsc">HSC</option>
                     <option value="ssc">SSC</option>
                 </select>
+            </div>
 
-                <!-- Subject Select -->
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-slate-500">Subject:</span>
                 <select
                     v-model="selectedSubject"
                     @change="applyFilters"
-                    class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                 >
                     <option value="">All Subjects</option>
                     <option
@@ -342,56 +327,21 @@ const formatDate = (isoString?: string | null) => {
                     >
                         {{ sub.name }} ({{ sub.course.toUpperCase() }})
                     </option>
-                    <option value="other">Unassigned / Other</option>
-                </select>
-
-                <!-- Status Filter -->
-                <select
-                    v-model="selectedStatus"
-                    @change="applyFilters"
-                    class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    <option value="">All Statuses</option>
-                    <option value="approved">Approved (Live)</option>
-                    <option value="pending">Pending Review</option>
-                    <option value="flagged">Flagged (Reports)</option>
-                    <option value="rejected">Rejected / Hidden</option>
-                    <option value="locked">Locked Only</option>
-                    <option value="unlocked">Unlocked Only</option>
-                    <option value="answered">Answered</option>
-                    <option value="unanswered">Unanswered</option>
-                </select>
-            </div>
-
-            <!-- Sort Select -->
-            <div class="flex items-center gap-2">
-                <select
-                    v-model="selectedSort"
-                    @change="applyFilters"
-                    class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    <option value="recent">Sort: Newest First</option>
-                    <option value="answers">Sort: Most Answers</option>
-                    <option value="votes">Sort: Top Voted</option>
+                    <option value="other">Unassigned</option>
                 </select>
             </div>
         </div>
 
-        <!-- Discussions Data Table -->
+        <!-- Uncluttered Table -->
         <div
-            class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
-            <div v-if="posts.data.length === 0" class="py-16 text-center">
-                <HelpCircle
-                    class="mx-auto h-8 w-8 text-slate-400 dark:text-gray-500"
-                />
-                <h3
-                    class="mt-2 text-sm font-bold text-slate-800 dark:text-gray-200"
+            <div v-if="posts.data.length === 0" class="py-14 text-center">
+                <HelpCircle class="mx-auto h-7 w-7 text-slate-400" />
+                <p
+                    class="mt-2 text-xs font-bold text-slate-700 dark:text-gray-300"
                 >
-                    No discussions found
-                </h3>
-                <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                    Try adjusting your search criteria or filter options.
+                    No discussions match your filter
                 </p>
             </div>
 
@@ -400,19 +350,14 @@ const formatDate = (isoString?: string | null) => {
                     class="w-full text-left text-xs text-slate-700 dark:text-gray-300"
                 >
                     <thead
-                        class="border-b border-slate-200 bg-slate-50/70 text-[11px] font-bold tracking-wider text-slate-500 uppercase dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400"
+                        class="border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400"
                     >
                         <tr>
-                            <th class="px-4 py-3 sm:px-6">
-                                Discussion / Title
-                            </th>
-                            <th class="px-4 py-3">Category</th>
+                            <th class="px-4 py-3">Discussion</th>
                             <th class="px-4 py-3">Author</th>
-                            <th class="px-4 py-3 text-center">Answers</th>
-                            <th class="px-4 py-3 text-center">Moderation</th>
-                            <th class="px-4 py-3 text-right sm:px-6">
-                                Actions
-                            </th>
+                            <th class="px-3 py-3 text-center">Replies</th>
+                            <th class="px-3 py-3 text-center">Status</th>
+                            <th class="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody
@@ -421,156 +366,109 @@ const formatDate = (isoString?: string | null) => {
                         <tr
                             v-for="post in posts.data"
                             :key="post.id"
-                            class="transition-colors hover:bg-slate-50/80 dark:hover:bg-gray-800/40"
+                            class="transition hover:bg-slate-50/60 dark:hover:bg-gray-800/40"
                         >
-                            <!-- Title & Slug -->
-                            <td class="px-4 py-3.5 sm:px-6">
+                            <!-- Title & Info -->
+                            <td class="max-w-md px-4 py-3">
                                 <div class="space-y-1">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <Lock
+                                            v-if="post.is_locked"
+                                            class="h-3.5 w-3.5 shrink-0 text-slate-400"
+                                            title="Discussion locked"
+                                        />
                                         <a
                                             :href="`/forum/questions/${post.slug}`"
                                             target="_blank"
-                                            class="font-bold text-slate-900 hover:text-indigo-600 hover:underline dark:text-gray-100 dark:hover:text-indigo-400"
+                                            class="font-semibold text-slate-900 hover:text-indigo-600 hover:underline dark:text-gray-100 dark:hover:text-indigo-400"
                                         >
                                             {{ post.title }}
                                         </a>
                                         <ExternalLink
-                                            class="h-3 w-3 text-slate-400"
+                                            class="h-3 w-3 shrink-0 text-slate-400"
                                         />
                                     </div>
                                     <div
-                                        class="flex items-center gap-2 text-[10px] text-slate-400 dark:text-gray-500"
+                                        class="flex items-center gap-2 text-[11px] text-slate-400"
                                     >
                                         <span
-                                            >Posted
-                                            {{
-                                                formatDate(post.created_at)
-                                            }}</span
+                                            class="py-0.2 rounded bg-slate-100 px-1.5 font-semibold text-slate-600 uppercase dark:bg-gray-800 dark:text-gray-400"
                                         >
+                                            {{ post.curriculum }}
+                                        </span>
+                                        <span>{{
+                                            post.subject?.name || 'General'
+                                        }}</span>
                                         <span>•</span>
-                                        <span>{{ post.vote_score }} votes</span>
+                                        <span>{{
+                                            formatDate(post.created_at)
+                                        }}</span>
                                     </div>
-                                </div>
-                            </td>
-
-                            <!-- Subject / Curriculum -->
-                            <td class="px-4 py-3.5 whitespace-nowrap">
-                                <div class="flex flex-col gap-0.5">
-                                    <span
-                                        class="inline-flex w-fit items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 uppercase dark:bg-indigo-950/60 dark:text-indigo-300"
-                                    >
-                                        {{ post.curriculum }}
-                                    </span>
-                                    <span
-                                        class="text-xs font-medium text-slate-600 dark:text-gray-400"
-                                    >
-                                        {{
-                                            post.subject?.name ||
-                                            'General / Other'
-                                        }}
-                                    </span>
                                 </div>
                             </td>
 
                             <!-- Author -->
-                            <td class="px-4 py-3.5 whitespace-nowrap">
-                                <div v-if="post.user" class="flex flex-col">
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div v-if="post.user" class="text-xs">
                                     <span
-                                        class="font-semibold text-slate-900 dark:text-gray-100"
+                                        class="font-medium text-slate-800 dark:text-gray-200"
+                                        >{{ post.user.name }}</span
                                     >
-                                        {{ post.user.name }}
-                                    </span>
-                                    <span class="text-[10px] text-slate-400">
-                                        @{{ post.user.username }}
-                                    </span>
+                                    <span
+                                        class="block text-[10px] text-slate-400"
+                                        >@{{ post.user.username }}</span
+                                    >
                                 </div>
                                 <span v-else class="text-slate-400"
                                     >Anonymous</span
                                 >
                             </td>
 
-                            <!-- Answers -->
-                            <td
-                                class="px-4 py-3.5 text-center whitespace-nowrap"
-                            >
+                            <!-- Replies -->
+                            <td class="px-3 py-3 text-center whitespace-nowrap">
                                 <span
-                                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
-                                    :class="
-                                        post.answers_count > 0
-                                            ? 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300'
-                                            : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
-                                    "
+                                    class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
                                 >
                                     {{ post.answers_count }}
                                 </span>
                             </td>
 
-                            <!-- Moderation Badges -->
-                            <td
-                                class="px-4 py-3.5 text-center whitespace-nowrap"
-                            >
-                                <div
-                                    class="flex flex-wrap items-center justify-center gap-1.5"
+                            <!-- Moderation Status -->
+                            <td class="px-3 py-3 text-center whitespace-nowrap">
+                                <span
+                                    class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold"
+                                    :class="[
+                                        post.moderation_status === 'approved'
+                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                            : post.moderation_status ===
+                                                'pending'
+                                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                                              : post.moderation_status ===
+                                                  'flagged'
+                                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                                                : 'bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+                                    ]"
                                 >
-                                    <!-- Moderation Status Badge -->
-                                    <span
-                                        class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase"
-                                        :class="[
-                                            post.moderation_status ===
-                                            'approved'
-                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                                : post.moderation_status ===
-                                                    'pending'
-                                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                                                  : post.moderation_status ===
-                                                      'flagged'
-                                                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                                                    : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
-                                        ]"
-                                    >
-                                        {{
-                                            post.moderation_status ===
-                                            'approved'
-                                                ? 'Approved'
-                                                : post.moderation_status ===
-                                                    'pending'
-                                                  ? 'Pending Review'
-                                                  : post.moderation_status ===
-                                                      'flagged'
-                                                    ? 'Flagged'
-                                                    : 'Rejected'
-                                        }}
-                                    </span>
-
-                                    <!-- Locked badge -->
-                                    <span
-                                        v-if="post.is_locked"
-                                        class="inline-flex items-center rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
-                                    >
-                                        <Lock class="mr-1 h-2.5 w-2.5" /> Locked
-                                    </span>
-
-                                    <!-- Answered badge -->
-                                    <span
-                                        v-if="post.is_answered"
-                                        class="inline-flex items-center rounded-md bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-700 dark:bg-teal-950/60 dark:text-teal-300"
-                                    >
-                                        <CheckCircle2
-                                            class="mr-1 h-2.5 w-2.5"
-                                        />
-                                        Solved
-                                    </span>
-                                </div>
+                                    {{
+                                        post.moderation_status === 'approved'
+                                            ? 'Live'
+                                            : post.moderation_status ===
+                                                'pending'
+                                              ? 'Pending'
+                                              : post.moderation_status ===
+                                                  'flagged'
+                                                ? 'Flagged'
+                                                : 'Rejected'
+                                    }}
+                                </span>
                             </td>
 
-                            <!-- Actions -->
-                            <td
-                                class="px-4 py-3.5 text-right whitespace-nowrap sm:px-6"
-                            >
+                            <!-- Quick Action Buttons -->
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
                                 <div
-                                    class="flex items-center justify-end gap-1.5"
+                                    class="flex items-center justify-end gap-1"
                                 >
-                                    <!-- Quick Approve / Reject Actions -->
+                                    <!-- Approve button -->
                                     <button
                                         v-if="
                                             post.moderation_status !==
@@ -578,54 +476,47 @@ const formatDate = (isoString?: string | null) => {
                                         "
                                         type="button"
                                         @click="updateStatus(post, 'approved')"
-                                        class="inline-flex cursor-pointer items-center rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/70"
-                                        title="Approve post"
+                                        class="cursor-pointer rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300"
+                                        title="Approve & Publish"
                                     >
-                                        <CheckCircle2
-                                            class="mr-1 h-3.5 w-3.5"
-                                        />
-                                        <span>Approve</span>
+                                        Approve
                                     </button>
 
+                                    <!-- Hide / Reject button -->
                                     <button
                                         v-else
                                         type="button"
                                         @click="updateStatus(post, 'rejected')"
-                                        class="inline-flex cursor-pointer items-center rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-rose-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-rose-400"
-                                        title="Unpublish / Hide discussion"
+                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-gray-800"
+                                        title="Hide from public"
                                     >
-                                        <EyeOff class="h-4 w-4" />
+                                        <EyeOff class="h-3.5 w-3.5" />
                                     </button>
 
-                                    <!-- Toggle Lock -->
+                                    <!-- Lock button -->
                                     <button
                                         type="button"
                                         @click="toggleLock(post)"
-                                        class="inline-flex cursor-pointer items-center rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-gray-800"
                                         :title="
-                                            post.is_locked
-                                                ? 'Unlock discussion replies'
-                                                : 'Lock discussion replies'
+                                            post.is_locked ? 'Unlock' : 'Lock'
                                         "
                                     >
                                         <Unlock
                                             v-if="post.is_locked"
-                                            class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                                            class="h-3.5 w-3.5 text-emerald-600"
                                         />
-                                        <Lock
-                                            v-else
-                                            class="h-4 w-4 text-slate-400"
-                                        />
+                                        <Lock v-else class="h-3.5 w-3.5" />
                                     </button>
 
-                                    <!-- Delete -->
+                                    <!-- Delete button -->
                                     <button
                                         type="button"
                                         @click="deletePost(post)"
-                                        class="inline-flex cursor-pointer items-center rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                        title="Delete discussion"
+                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                                        title="Delete"
                                     >
-                                        <Trash2 class="h-4 w-4" />
+                                        <Trash2 class="h-3.5 w-3.5" />
                                     </button>
                                 </div>
                             </td>
@@ -637,11 +528,10 @@ const formatDate = (isoString?: string | null) => {
             <!-- Pagination -->
             <div
                 v-if="posts.links && posts.links.length > 3"
-                class="flex items-center justify-between border-t border-slate-200 bg-slate-50/50 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900"
+                class="flex items-center justify-between border-t border-slate-100 bg-slate-50/40 px-4 py-2.5 text-xs dark:border-gray-800 dark:bg-gray-900"
             >
-                <div class="text-xs text-slate-500 dark:text-gray-400">
-                    Showing page {{ posts.current_page }} of
-                    {{ posts.last_page }} ({{ posts.total }} total)
+                <div class="text-slate-400">
+                    Page {{ posts.current_page }} of {{ posts.last_page }}
                 </div>
 
                 <div class="flex items-center gap-1">
@@ -650,10 +540,10 @@ const formatDate = (isoString?: string | null) => {
                         v-for="(link, index) in posts.links"
                         :key="index"
                         :href="link.url"
-                        class="rounded-lg px-2.5 py-1 text-xs font-medium transition"
+                        class="rounded-lg px-2 py-1 font-medium transition"
                         :class="{
                             'bg-indigo-600 text-white': link.active,
-                            'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300':
+                            'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800':
                                 !link.active && link.url,
                             'cursor-not-allowed text-slate-300 dark:text-gray-600':
                                 !link.url,

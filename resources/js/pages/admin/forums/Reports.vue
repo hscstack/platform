@@ -5,9 +5,6 @@ import {
     CheckCircle,
     XCircle,
     Trash2,
-    Clock,
-    CheckCheck,
-    MessageSquareText,
     Settings,
     Ban,
     ExternalLink,
@@ -148,199 +145,89 @@ const formatDate = (isoString?: string | null) => {
 </script>
 
 <template>
-    <Head title="Reported Forum Content - Admin Panel" />
+    <Head title="Reported Content - Forum Admin" />
 
-    <div class="space-y-6">
-        <!-- Header -->
+    <div class="space-y-5">
+        <!-- Minimal Top Header -->
         <div
-            class="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
+            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
         >
-            <div class="flex items-center gap-3">
-                <div
-                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"
+            <div>
+                <h1
+                    class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
                 >
-                    <Flag class="h-5 w-5" />
-                </div>
-                <div>
-                    <h1
-                        class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
-                    >
-                        Reported Forum Content
-                    </h1>
-                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Review community reports against questions and answers,
-                        and moderate abusive accounts.
-                    </p>
-                </div>
+                    Reported Forum Content
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-gray-400">
+                    Review and act on community reports against forum questions
+                    and answers.
+                </p>
             </div>
 
-            <!-- Header Actions -->
-            <div v-if="reports.length > 0" class="flex items-center gap-2">
+            <!-- Header Quick Tabs & Clear Action -->
+            <div class="flex flex-wrap items-center gap-2">
+                <div
+                    class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <Link
+                        href="/admin/forums"
+                        class="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        Discussions
+                    </Link>
+
+                    <Link
+                        href="/admin/forums/reports"
+                        class="flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"
+                    >
+                        <Flag class="h-3.5 w-3.5" />
+                        <span>Reports</span>
+                        <span
+                            v-if="pendingCount > 0"
+                            class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
+                        >
+                            {{ pendingCount }}
+                        </span>
+                    </Link>
+
+                    <Link
+                        href="/admin/forums/settings"
+                        class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    >
+                        <Settings class="h-3.5 w-3.5" />
+                        <span>Settings</span>
+                    </Link>
+                </div>
+
                 <button
+                    v-if="reports.length > 0"
                     type="button"
                     @click="
                         handleClearReports(
                             currentFilter === 'all' ? undefined : currentFilter,
                         )
                     "
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/70 px-3.5 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100 active:scale-95 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-950/80"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400"
                 >
                     <Trash2 class="h-3.5 w-3.5" />
-                    <span>
-                        {{
-                            currentFilter === 'all'
-                                ? 'Clear All Forum Reports'
-                                : `Clear ${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)} Reports`
-                        }}
-                    </span>
+                    <span>Clear</span>
                 </button>
             </div>
         </div>
 
-        <!-- Sub Tabs -->
+        <!-- Filter Status Pills -->
         <div
-            class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800"
-        >
-            <Link
-                href="/admin/forums"
-                class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-                <MessageSquareText class="h-4 w-4" />
-                <span>All Discussions</span>
-            </Link>
-
-            <Link
-                href="/admin/forums/reports"
-                class="flex items-center gap-2 border-b-2 border-indigo-600 px-4 py-2.5 text-xs font-bold text-indigo-600 transition-all dark:border-indigo-400 dark:text-indigo-400"
-            >
-                <Flag class="h-4 w-4 text-rose-500" />
-                <span>Reported Content</span>
-                <span
-                    v-if="pendingCount > 0"
-                    class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
-                >
-                    {{ pendingCount }}
-                </span>
-            </Link>
-
-            <Link
-                href="/admin/forums/settings"
-                class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-                <Settings class="h-4 w-4" />
-                <span>Forum Settings</span>
-            </Link>
-        </div>
-
-        <!-- Metric Cards -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div
-                @click="currentFilter = 'pending'"
-                class="cursor-pointer rounded-2xl border p-4 transition-all"
-                :class="
-                    currentFilter === 'pending'
-                        ? 'border-rose-300 bg-rose-50/50 ring-2 ring-rose-500/20 dark:border-rose-800 dark:bg-rose-950/30'
-                        : 'border-slate-100 bg-white hover:border-slate-200 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700'
-                "
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Pending Review</span
-                    >
-                    <Clock class="h-4 w-4 text-rose-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    {{ pendingCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Requires moderation action</span
-                >
-            </div>
-
-            <div
-                @click="currentFilter = 'reviewed'"
-                class="cursor-pointer rounded-2xl border p-4 transition-all"
-                :class="
-                    currentFilter === 'reviewed'
-                        ? 'border-emerald-300 bg-emerald-50/50 ring-2 ring-emerald-500/20 dark:border-emerald-800 dark:bg-emerald-950/30'
-                        : 'border-slate-100 bg-white hover:border-slate-200 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700'
-                "
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Resolved</span
-                    >
-                    <CheckCheck class="h-4 w-4 text-emerald-500" />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    {{ reviewedCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Reviewed & resolved reports</span
-                >
-            </div>
-
-            <div
-                @click="currentFilter = 'dismissed'"
-                class="cursor-pointer rounded-2xl border p-4 transition-all"
-                :class="
-                    currentFilter === 'dismissed'
-                        ? 'border-slate-400 bg-slate-100/70 ring-2 ring-slate-400/20 dark:border-gray-600 dark:bg-gray-800'
-                        : 'border-slate-100 bg-white hover:border-slate-200 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700'
-                "
-            >
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-semibold text-slate-500 dark:text-gray-400"
-                        >Dismissed</span
-                    >
-                    <XCircle
-                        class="h-4 w-4 text-slate-400 dark:text-gray-400"
-                    />
-                </div>
-                <p
-                    class="mt-2 text-2xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    {{ dismissedCount }}
-                </p>
-                <span class="text-[11px] text-slate-400 dark:text-gray-500"
-                    >Ignored or false alarms</span
-                >
-            </div>
-        </div>
-
-        <!-- Filter Sub-Tabs -->
-        <div
-            class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-gray-800"
+            class="flex items-center gap-1.5 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
             <button
                 type="button"
-                @click="currentFilter = 'all'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
-                    currentFilter === 'all'
-                        ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
-            >
-                All ({{ reports.length }})
-            </button>
-
-            <button
-                type="button"
                 @click="currentFilter = 'pending'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
                     currentFilter === 'pending'
-                        ? 'bg-rose-600 text-white dark:bg-rose-500'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
+                        ? 'bg-rose-600 text-white'
+                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300',
+                ]"
             >
                 Pending ({{ pendingCount }})
             </button>
@@ -348,12 +235,12 @@ const formatDate = (isoString?: string | null) => {
             <button
                 type="button"
                 @click="currentFilter = 'reviewed'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
                     currentFilter === 'reviewed'
-                        ? 'bg-emerald-600 text-white dark:bg-emerald-500'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300',
+                ]"
             >
                 Resolved ({{ reviewedCount }})
             </button>
@@ -361,14 +248,27 @@ const formatDate = (isoString?: string | null) => {
             <button
                 type="button"
                 @click="currentFilter = 'dismissed'"
-                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
-                :class="
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
                     currentFilter === 'dismissed'
-                        ? 'bg-slate-700 text-white dark:bg-gray-700'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                "
+                        ? 'bg-slate-800 text-white dark:bg-gray-700'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300',
+                ]"
             >
                 Dismissed ({{ dismissedCount }})
+            </button>
+
+            <button
+                type="button"
+                @click="currentFilter = 'all'"
+                class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition"
+                :class="[
+                    currentFilter === 'all'
+                        ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300',
+                ]"
+            >
+                All ({{ reports.length }})
             </button>
         </div>
 
