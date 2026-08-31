@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
             'app_version' => config('app.version'),
             'auth' => [
                 'user' => $request->user(),
+                'unread_notifications_count' => $request->user()?->unreadNotifications()->count() ?? 0,
                 'can_access_admin' => $request->user()?->can('view admin') ?? false,
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->toArray() ?? [],
             ],

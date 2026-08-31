@@ -423,13 +423,18 @@ const submitAnswer = () => {
 const activeReplyParentId = ref<number | null>(null);
 const replyForm = useForm({
     parent_id: null as number | null,
+    reply_to_user_id: null as number | null,
     body: '',
     image: null as File | null,
 });
 const replyImagePreview = ref<string | null>(null);
 const replyFileInputRef = ref<HTMLInputElement | null>(null);
 
-const openReplyForm = (rootAnswerId: number, targetUsername?: string) => {
+const openReplyForm = (
+    rootAnswerId: number,
+    targetUsername?: string,
+    targetUserId?: number,
+) => {
     if (props.post.is_locked || props.commentsEnabled === false) {
         return;
     }
@@ -443,6 +448,7 @@ const openReplyForm = (rootAnswerId: number, targetUsername?: string) => {
 
     activeReplyParentId.value = rootAnswerId;
     replyForm.parent_id = rootAnswerId;
+    replyForm.reply_to_user_id = targetUserId || null;
     replyForm.body = targetUsername ? `@${targetUsername} ` : '';
     replyForm.image = null;
 
@@ -1208,7 +1214,11 @@ function parseMentions(
                             v-if="!post.is_locked && commentsEnabled !== false"
                             type="button"
                             @click="
-                                openReplyForm(answer.id, answer.user?.username)
+                                openReplyForm(
+                                    answer.id,
+                                    answer.user?.username,
+                                    answer.user_id,
+                                )
                             "
                             class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
                         >
@@ -1375,6 +1385,7 @@ function parseMentions(
                                         openReplyForm(
                                             answer.id,
                                             reply.user?.username,
+                                            reply.user_id,
                                         )
                                     "
                                     class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"

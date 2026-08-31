@@ -36,6 +36,7 @@ import { useDarkMode } from '@/lib/useDarkMode';
 import { usePwa } from '@/lib/usePwa';
 import AppLogo from './AppLogo.vue';
 import AuthModal from './AuthModal.vue';
+import NotificationDropdown from './NotificationDropdown.vue';
 
 defineProps({
     isAdmin: {
@@ -378,6 +379,9 @@ onBeforeUnmount(() => {
                         <Moon v-else class="h-4 w-4" />
                     </button>
 
+                    <!-- Notifications Dropdown (Authenticated) -->
+                    <NotificationDropdown v-if="user" />
+
                     <div class="h-5 w-px bg-slate-200 dark:bg-gray-800"></div>
 
                     <!-- Guest: Login CTA -->
@@ -523,6 +527,9 @@ onBeforeUnmount(() => {
                     >
                         <Search class="h-4.5 w-4.5" />
                     </button>
+
+                    <!-- Mobile Notifications Dropdown (Authenticated) -->
+                    <NotificationDropdown v-if="user" />
 
                     <!-- Compact Mobile Login Button (if guest) -->
                     <Link
