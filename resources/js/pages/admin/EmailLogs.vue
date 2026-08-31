@@ -90,6 +90,24 @@ const clearSearch = () => {
     searchQuery.value = '';
     applyFilters();
 };
+
+const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) {
+return '';
+}
+
+    try {
+        return new Date(dateStr).toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    } catch {
+        return dateStr;
+    }
+};
 </script>
 
 <template>
@@ -339,7 +357,11 @@ const clearSearch = () => {
                                 <td
                                     class="py-3.5 pr-6 whitespace-nowrap text-slate-400 dark:text-gray-500"
                                 >
-                                    {{ log.sent_at || log.created_at }}
+                                    {{
+                                        formatDate(
+                                            log.sent_at || log.created_at,
+                                        )
+                                    }}
                                 </td>
                             </tr>
 
