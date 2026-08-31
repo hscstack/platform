@@ -1026,45 +1026,8 @@ function timeAgo(dateString?: string): string {
                                 </div>
 
                                 <div
-                                    class="mt-2 flex items-center gap-3 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                    class="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400 dark:text-gray-500"
                                 >
-                                    <span
-                                        class="flex items-center gap-0.5"
-                                        :class="{
-                                            'text-rose-500 dark:text-rose-400':
-                                                ans.vote_score < 0,
-                                            'text-indigo-600 dark:text-indigo-400':
-                                                ans.vote_score > 0,
-                                        }"
-                                    >
-                                        <ArrowBigDown
-                                            v-if="ans.vote_score < 0"
-                                            class="h-3.5 w-3.5 fill-current"
-                                        />
-                                        <ArrowBigUp
-                                            v-else
-                                            class="h-3.5 w-3.5"
-                                            :class="
-                                                ans.vote_score > 0
-                                                    ? 'fill-current'
-                                                    : 'fill-slate-400 dark:fill-gray-500'
-                                            "
-                                        />
-                                        <span
-                                            >{{ ans.vote_score }}
-                                            {{
-                                                Math.abs(ans.vote_score) === 1
-                                                    ? 'vote'
-                                                    : 'votes'
-                                            }}</span
-                                        >
-                                    </span>
-                                    <span
-                                        v-if="ans.post?.is_answered"
-                                        class="text-emerald-600 dark:text-emerald-400"
-                                    >
-                                        • Post Solved
-                                    </span>
                                     <span>{{ timeAgo(ans.created_at) }}</span>
                                 </div>
                             </Link>
