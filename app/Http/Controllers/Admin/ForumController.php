@@ -7,6 +7,7 @@ use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Report;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -22,7 +23,7 @@ class ForumController extends Controller
 
         $postsQuery = ForumPost::query()
             ->with([
-                'user:id,name,username',
+                'user:id,name,username,banned_until',
             ])
             ->when(in_array($filters['status'] ?? null, ['approved', 'pending', 'flagged', 'rejected'], true), function ($q) use ($filters) {
                 $q->where('moderation_status', $filters['status']);
@@ -97,7 +98,11 @@ class ForumController extends Controller
         $reports = Report::with([
             'reporter:id,name,username',
             'reportedUser:id,name,username,banned_until',
-            'reportable',
+            'reportable' => function (MorphTo $morphTo) {
+                $morphTo->morphWith([
+                    ForumAnswer::class => ['post:id,title,slug'],
+                ]);
+            },
         ])
             ->whereIn('reportable_type', [ForumPost::class, ForumAnswer::class])
             ->latest('id')
@@ -111,7 +116,6 @@ class ForumController extends Controller
                     $postSlug = $report->reportable->slug;
                     $postTitle = $report->reportable->title;
                 } elseif ($report->reportable instanceof ForumAnswer) {
-                    $report->reportable->loadMissing('post:id,title,slug');
                     $postSlug = $report->reportable->post?->slug;
                     $postTitle = $report->reportable->post?->title;
                 }
@@ -178,9 +182,13 @@ class ForumController extends Controller
 
     public function clearReports(Request $request)
     {
-        $status = $request->input('status');
+        $validated = $request->validate([
+            'status' => ['nullable', 'string', 'in:pending,reviewed,dismissed'],
+        ]);
 
-        if ($status && in_array($status, ['pending', 'reviewed', 'dismissed'], true)) {
+        $status = $validated['status'] ?? null;
+
+        if ($status) {
             Report::whereIn('reportable_type', [ForumPost::class, ForumAnswer::class])->where('status', $status)->delete();
             $message = "All {$status} forum reports have been deleted.";
         } else {
