@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\ForumVote;
 use App\Models\Node;
+use App\Models\Report;
 use App\Models\Subject;
 use App\Rules\CleanText;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -28,6 +31,7 @@ class ForumController extends Controller
         ];
 
         $postsQuery = ForumPost::query()
+            ->published()
             ->with([
                 'user:id,name,username,image_path,institution',
                 'subject:id,name,course,slug',
@@ -60,11 +64,21 @@ class ForumController extends Controller
             'posts' => $posts,
             'subjects' => $subjects,
             'filters' => $filters,
+            'postingEnabled' => (bool) AppSetting::get('forum_posting_enabled', true),
+            'commentsEnabled' => (bool) AppSetting::get('forum_comments_enabled', true),
+            'disabledReason' => (string) AppSetting::get('forum_disabled_reason', ''),
         ]);
     }
 
-    public function show(Request $request, ForumPost $post): Response
+    public function show(Request $request, string $slug): Response
     {
+        $post = ForumPost::where('slug', $slug)->firstOrFail();
+
+        $user = auth()->user();
+        if (! $post->is_published && (! $user || ! $user->can('view admin'))) {
+            abort(404);
+        }
+
         $post->load([
             'user:id,name,username,image_path,institution',
             'subject:id,name,course,slug',
@@ -133,11 +147,20 @@ class ForumController extends Controller
             'post' => $post,
             'answers' => $answers,
             'upvoters' => $upvoters,
+            'commentsEnabled' => (bool) AppSetting::get('forum_comments_enabled', true),
+            'disabledReason' => (string) AppSetting::get('forum_disabled_reason', ''),
         ]);
     }
 
     public function create(): Response
     {
+        $user = auth()->user();
+        $isPostingEnabled = (bool) AppSetting::get('forum_posting_enabled', true);
+        if (! $isPostingEnabled && (! $user || ! $user->can('view admin'))) {
+            $reason = AppSetting::get('forum_disabled_reason', 'Creating new questions is temporarily paused.');
+            abort(403, $reason ?: 'Creating new questions is temporarily paused.');
+        }
+
         $subjects = Subject::select('id', 'name', 'course', 'slug')
             ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
             ->orderBy('sort_order')
@@ -150,6 +173,14 @@ class ForumController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        $isPostingEnabled = (bool) AppSetting::get('forum_posting_enabled', true);
+        if (! $isPostingEnabled && (! $user || ! $user->can('view admin'))) {
+            $reason = AppSetting::get('forum_disabled_reason', 'Creating new questions is temporarily paused.');
+
+            return back()->with('error', $reason ?: 'Creating new questions is temporarily paused.');
+        }
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'min:5', 'max:255', new CleanText],
             'body' => ['required', 'string', 'min:10', 'max:30000', new CleanText],
@@ -190,6 +221,8 @@ class ForumController extends Controller
             'title' => $validated['title'],
             'body' => $validated['body'],
             'image_path' => $imagePath,
+            'is_locked' => false,
+            'is_published' => true,
         ]);
 
         return redirect()->route('forum.show', $post->slug)->with('success', 'Question posted successfully!');
@@ -197,7 +230,7 @@ class ForumController extends Controller
 
     public function destroy(ForumPost $post): RedirectResponse
     {
-        abort_unless(auth()->id() === $post->user_id, 403);
+        abort_unless(auth()->id() === $post->user_id || auth()->user()?->can('manage forums'), 403);
 
         if ($post->image_path) {
             Storage::delete($post->image_path);
@@ -215,12 +248,65 @@ class ForumController extends Controller
 
     public function toggleAnswered(Request $request, ForumPost $post): RedirectResponse
     {
-        abort_unless(auth()->id() === $post->user_id, 403);
+        abort_unless(auth()->id() === $post->user_id || auth()->user()?->can('manage forums'), 403);
 
         $post->update([
             'is_answered' => ! $post->is_answered,
         ]);
 
         return back();
+    }
+
+    public function report(Request $request, ForumPost $post): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user, 401, 'Unauthenticated');
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $alreadyReported = Report::where('reporter_id', $user->id)
+            ->where('reportable_type', ForumPost::class)
+            ->where('reportable_id', $post->id)
+            ->exists();
+
+        if ($alreadyReported) {
+            return response()->json([
+                'message' => 'You have already reported this question.',
+            ], 422);
+        }
+
+        $author = $post->user;
+
+        $report = Report::create([
+            'reporter_id' => $user->id,
+            'reported_user_id' => $author?->id,
+            'reported_user_name' => $author?->name,
+            'reported_user_username' => $author?->username,
+            'reportable_type' => ForumPost::class,
+            'reportable_id' => $post->id,
+            'content_snapshot' => $post->title."\n\n".$post->body,
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
+
+        // Auto-unpublish threshold check
+        $threshold = (int) AppSetting::get('forum_auto_unpublish_threshold', 3);
+        if ($threshold > 0) {
+            $pendingReportsCount = Report::where('reportable_type', ForumPost::class)
+                ->where('reportable_id', $post->id)
+                ->where('status', 'pending')
+                ->count();
+
+            if ($pendingReportsCount >= $threshold) {
+                $post->update(['is_published' => false]);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Question reported successfully. Our moderation team will review it.',
+            'report_id' => $report->id,
+        ], 201);
     }
 }

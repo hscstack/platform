@@ -12,12 +12,17 @@ import {
     Send,
     HelpCircle,
     CornerDownRight,
+    Lock,
+    Unlock,
+    Eye,
+    EyeOff,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ForumImageModal from '@/components/forum/ForumImageModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import UserListItem from '@/components/UserListItem.vue';
+import { usePermissions } from '@/lib/usePermissions';
 
 interface User {
     id: number;
@@ -73,6 +78,8 @@ interface ForumPost {
     image_path?: string | null;
     image_url?: string | null;
     is_answered: boolean;
+    is_locked?: boolean;
+    is_published?: boolean;
     vote_score: number;
     upvotes_count: number;
     downvotes_count: number;
@@ -102,6 +109,8 @@ const props = defineProps<{
     post: ForumPost;
     answers: PaginatedAnswers;
     upvoters?: User[];
+    commentsEnabled?: boolean;
+    disabledReason?: string;
 }>();
 
 const page = usePage();
@@ -189,6 +198,25 @@ const deletePost = () => {
     ) {
         router.delete(`/forum/posts/${props.post.id}`);
     }
+};
+
+const { can } = usePermissions();
+
+// Moderator Actions
+const toggleLock = () => {
+    router.patch(
+        `/admin/forums/${props.post.id}/lock`,
+        {},
+        { preserveScroll: true },
+    );
+};
+
+const togglePublish = () => {
+    router.patch(
+        `/admin/forums/${props.post.id}/publish`,
+        {},
+        { preserveScroll: true },
+    );
 };
 
 // Delete Answer
@@ -688,15 +716,72 @@ function parseMentions(
                     </button>
                 </div>
 
-                <!-- Right: Delete Action -->
-                <div
-                    v-if="user && user.id === post.user_id"
-                    class="flex items-center gap-2"
-                >
+                <!-- Right: Moderator and Owner Actions -->
+                <div class="flex items-center gap-2">
+                    <!-- Inline Moderator Tools -->
+                    <template v-if="can('manage forums')">
+                        <!-- Toggle Lock Button -->
+                        <button
+                            type="button"
+                            @click="toggleLock"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-2xs transition"
+                            :class="[
+                                post.is_locked
+                                    ? 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            :title="
+                                post.is_locked
+                                    ? 'Unlock discussion replies'
+                                    : 'Lock discussion replies'
+                            "
+                        >
+                            <Unlock
+                                v-if="post.is_locked"
+                                class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
+                            />
+                            <Lock v-else class="h-3.5 w-3.5 text-slate-500" />
+                            <span>{{
+                                post.is_locked ? 'Unlock' : 'Lock'
+                            }}</span>
+                        </button>
+
+                        <!-- Toggle Publish Button -->
+                        <button
+                            type="button"
+                            @click="togglePublish"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-2xs transition"
+                            :class="[
+                                post.is_published === false
+                                    ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            :title="
+                                post.is_published === false
+                                    ? 'Publish discussion'
+                                    : 'Unpublish / Hide discussion'
+                            "
+                        >
+                            <Eye
+                                v-if="post.is_published === false"
+                                class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
+                            />
+                            <EyeOff v-else class="h-3.5 w-3.5 text-slate-500" />
+                            <span>{{
+                                post.is_published === false ? 'Restore' : 'Hide'
+                            }}</span>
+                        </button>
+                    </template>
+
+                    <!-- Owner or Admin Delete Action -->
                     <button
+                        v-if="
+                            user &&
+                            (user.id === post.user_id || can('manage forums'))
+                        "
                         type="button"
                         @click="deletePost"
-                        class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200/80 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-950 dark:bg-gray-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200/80 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-950 dark:bg-gray-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
                     >
                         <Trash2 class="h-3.5 w-3.5" />
                         <span>Delete</span>
@@ -1089,8 +1174,38 @@ function parseMentions(
                 Your Answer
             </h3>
 
+            <!-- Locked Discussion Notice -->
+            <div
+                v-if="post.is_locked"
+                class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300"
+            >
+                <Lock
+                    class="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+                />
+                <span
+                    >This discussion has been locked by a moderator. New answers
+                    and replies are disabled.</span
+                >
+            </div>
+
+            <!-- Comments Disabled Notice -->
+            <div
+                v-else-if="commentsEnabled === false"
+                class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300"
+            >
+                <Lock class="h-4 w-4 shrink-0 text-slate-400" />
+                <span>{{
+                    disabledReason ||
+                    'Submitting new answers is temporarily paused for maintenance.'
+                }}</span>
+            </div>
+
             <!-- Authenticated Answer Form -->
-            <form v-if="user" @submit.prevent="submitAnswer" class="space-y-4">
+            <form
+                v-else-if="user"
+                @submit.prevent="submitAnswer"
+                class="space-y-4"
+            >
                 <div>
                     <textarea
                         v-model="answerForm.body"
