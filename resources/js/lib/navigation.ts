@@ -1,21 +1,9 @@
-import {
-    BookOpen,
-    HeartHandshake,
-    Home,
-    Info,
-    LifeBuoy,
-    MessageCircle,
-    MessageSquare,
-    Sparkles,
-    Users,
-} from 'lucide-vue-next';
-import type { Component } from 'vue';
-
 export type NavItem = {
     label: string;
     labelBn?: string;
     href: string;
-    icon: Component;
+    /** Material Symbols Rounded name — rendered via MaterialIcon (filled, wght 300) */
+    icon: string;
     match: (url: string) => boolean;
     showInBottom?: boolean;
 };
@@ -24,7 +12,7 @@ export const primaryNavItems: NavItem[] = [
     {
         label: 'Home',
         href: '/',
-        icon: Home,
+        icon: 'home',
         match: (url) =>
             url === '/' ||
             url.startsWith('/?') ||
@@ -35,7 +23,7 @@ export const primaryNavItems: NavItem[] = [
     {
         label: 'Forum',
         href: '/forum',
-        icon: MessageSquare,
+        icon: 'forum',
         match: (url) => url.startsWith('/forum'),
         showInBottom: true,
     },
@@ -43,7 +31,7 @@ export const primaryNavItems: NavItem[] = [
         label: 'Chat',
         labelBn: 'Global Chat',
         href: '/chat',
-        icon: MessageCircle,
+        icon: 'chat',
         match: (url) => url.startsWith('/chat'),
         showInBottom: true,
     },
@@ -51,7 +39,7 @@ export const primaryNavItems: NavItem[] = [
         label: 'AI',
         labelBn: 'HSCStack AI',
         href: '/ai',
-        icon: Sparkles,
+        icon: 'smart_toy',
         match: (url) => url.startsWith('/ai'),
         showInBottom: true,
     },
@@ -61,32 +49,32 @@ export const overflowNavItems: NavItem[] = [
     {
         label: 'Blogs',
         href: '/blogs',
-        icon: BookOpen,
+        icon: 'menu_book',
         match: (url) => url.startsWith('/blogs'),
     },
     {
         label: 'Support',
         href: '/support',
-        icon: LifeBuoy,
+        icon: 'help',
         match: (url) => url.startsWith('/support'),
     },
     {
         label: 'About',
         href: '/about-us',
-        icon: Info,
+        icon: 'info',
         match: (url) => url.startsWith('/about-us'),
     },
     {
         label: 'Join',
         labelBn: 'Join Team',
         href: '/join',
-        icon: Users,
+        icon: 'group_add',
         match: (url) => url.startsWith('/join'),
     },
     {
         label: 'Donate',
         href: '/donate',
-        icon: HeartHandshake,
+        icon: 'volunteer_activism',
         match: (url) => url.startsWith('/donate'),
     },
 ];

@@ -2,10 +2,13 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-import { primaryNavItems } from '@/lib/navigation';
+import MaterialIcon from '@/components/ui/MaterialIcon.vue';
+import { useBottomNavCustomization } from '@/lib/useBottomNavCustomization';
 
 const page = usePage();
 const currentUrl = computed(() => String(page.url));
+
+const { bottomNavItems } = useBottomNavCustomization();
 
 const homeHref = computed(() => {
     if (typeof window !== 'undefined') {
@@ -28,29 +31,56 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
 
     return currentUrl.value.startsWith(href);
 };
+
+const resolvedHref = (item: { href: string }) => {
+    if (item.href === '/') {
+        return homeHref.value;
+    }
+
+    return item.href;
+};
 </script>
 
 <template>
+    <!-- YT / YT Music style: full-width bottom bar, icon above label, active filled -->
     <nav
-        class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl landscape:hidden dark:border-gray-800 dark:bg-gray-950/95"
+        class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-gray-800 dark:bg-gray-900"
         aria-label="Bottom navigation"
     >
         <div
-            class="mx-auto flex max-w-7xl items-center justify-around px-2 py-1"
+            class="mx-auto flex max-w-lg items-center justify-around px-1 py-1"
         >
             <Link
-                v-for="item in primaryNavItems"
+                v-for="item in bottomNavItems"
                 :key="item.href"
-                :href="item.href === '/' ? homeHref : item.href"
+                :href="resolvedHref(item)"
                 :class="[
-                    'flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors',
+                    'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 transition-colors',
                     isActive(item.href, item.match)
-                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
-                        : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100',
+                        ? 'text-slate-900 dark:text-white'
+                        : 'text-slate-500 dark:text-gray-400',
                 ]"
             >
-                <component :is="item.icon" class="h-5 w-5" />
-                <span class="leading-none">{{ item.label }}</span>
+                <MaterialIcon
+                    :name="item.icon"
+                    :size="24"
+                    :filled="isActive(item.href, item.match)"
+                    :weight="300"
+                    :class="[
+                        isActive(item.href, item.match)
+                            ? 'text-slate-900 dark:text-white'
+                            : 'text-slate-500 dark:text-gray-400',
+                    ]"
+                />
+                <span
+                    :class="[
+                        'text-[10px] leading-none tracking-wide',
+                        isActive(item.href, item.match)
+                            ? 'font-bold'
+                            : 'font-medium',
+                    ]"
+                    >{{ item.label }}</span
+                >
             </Link>
         </div>
     </nav>

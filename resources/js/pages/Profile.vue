@@ -15,6 +15,8 @@ import {
 import { computed, ref } from 'vue';
 import { compressImage } from '@/lib/imageCompression';
 
+import BottomNavCustomizer from '@/components/navigation/BottomNavCustomizer.vue';
+
 const props = defineProps({
     user: Object,
 });
@@ -639,6 +641,9 @@ const submitForm = () => {
                     </div>
                 </transition>
             </div>
+
+            <!-- Bottom Navigation Customization (Mobile) -->
+            <BottomNavCustomizer />
 
             <!-- Support Center Link -->
             <div

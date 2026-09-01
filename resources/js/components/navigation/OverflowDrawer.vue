@@ -1,24 +1,12 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import {
-    Download,
-    LayoutDashboard,
-    LogIn,
-    LogOut,
-    Menu,
-    Monitor,
-    Moon,
-    Search,
-    Sun,
-    X,
-    Home,
-} from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
-import { overflowNavItems } from '@/lib/navigation';
+import MaterialIcon from '@/components/ui/MaterialIcon.vue';
+import { useBottomNavCustomization } from '@/lib/useBottomNavCustomization';
 import { useDarkMode } from '@/lib/useDarkMode';
 import { usePwa } from '@/lib/usePwa';
 
@@ -43,6 +31,7 @@ const { deferredPrompt, isInstalled, promptInstall } = usePwa();
 const canInstallApp = computed(
     () => !isInstalled.value && Boolean(deferredPrompt.value),
 );
+const { availableItems } = useBottomNavCustomization();
 
 const showAuthModal = ref(false);
 const authModalMessage = ref('');
@@ -79,9 +68,9 @@ watch(
 
 <template>
     <div>
-        <!-- Top bar hamburger (portrait only) -->
+        <!-- Top bar hamburger (mobile) -->
         <div
-            class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur-xl landscape:hidden dark:border-gray-800 dark:bg-gray-950/80"
+            class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/80"
         >
             <button
                 type="button"
@@ -89,7 +78,7 @@ watch(
                 class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
                 aria-label="Open navigation menu"
             >
-                <Menu class="h-5 w-5" />
+                <MaterialIcon name="menu" :size="20" />
             </button>
             <AppLogo />
             <div class="ml-auto flex items-center gap-2">
@@ -110,7 +99,7 @@ watch(
                     class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-800"
                     aria-label="Search"
                 >
-                    <Search class="h-5 w-5" />
+                    <MaterialIcon name="search" :size="20" />
                 </button>
                 <NotificationDropdown v-if="user" />
             </div>
@@ -124,7 +113,7 @@ watch(
 
         <!-- Drawer -->
         <Teleport to="body">
-            <div v-if="open" class="fixed inset-0 z-50 flex landscape:hidden">
+            <div v-if="open" class="fixed inset-0 z-50 flex">
                 <div
                     class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm dark:bg-black/60"
                     @click="close"
@@ -150,7 +139,7 @@ watch(
                                 class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-800"
                                 aria-label="Close menu"
                             >
-                                <X class="h-4 w-4" />
+                                <MaterialIcon name="close" :size="20" />
                             </button>
                         </div>
 
@@ -190,18 +179,18 @@ watch(
                                 @click="close"
                                 class="mb-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white"
                             >
-                                <LogIn class="h-4 w-4" /> Sign in
+                                <MaterialIcon name="login" :size="18" /> Sign in
                             </Link>
 
-                            <!-- Overflow items -->
+                            <!-- Overflow items (rest not in bottom nav) -->
                             <p
-                                class="mb-2 px-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase"
+                                class="mb-2 px-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-gray-500"
                             >
                                 More
                             </p>
                             <nav class="space-y-1">
                                 <Link
-                                    v-for="item in overflowNavItems"
+                                    v-for="item in availableItems"
                                     :key="item.href"
                                     :href="item.href"
                                     @click="close"
@@ -212,12 +201,19 @@ watch(
                                             : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-900',
                                     ]"
                                 >
-                                    <component
-                                        :is="item.icon"
-                                        class="h-5 w-5"
+                                    <MaterialIcon
+                                        :name="item.icon"
+                                        :size="20"
                                     />
                                     <span>{{ item.label }}</span>
                                 </Link>
+                                <p
+                                    v-if="availableItems.length === 0"
+                                    class="px-3 py-2 text-xs text-slate-500 dark:text-gray-400"
+                                >
+                                    All items are in your bottom bar. Customize
+                                    in Profile → Bottom navigation.
+                                </p>
                             </nav>
 
                             <!-- Install -->
@@ -227,7 +223,8 @@ watch(
                                 @click="handleInstallApp"
                                 class="mt-4 flex w-full items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
                             >
-                                <Download class="h-5 w-5" /> Install App
+                                <MaterialIcon name="download" :size="20" />
+                                Install App
                             </button>
 
                             <!-- Admin / Profile -->
@@ -244,7 +241,8 @@ watch(
                                     @click="close"
                                     class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-900"
                                 >
-                                    <Home class="h-4 w-4" /> Profile
+                                    <MaterialIcon name="person" :size="18" />
+                                    Profile
                                 </Link>
                                 <Link
                                     v-if="canAccessAdmin"
@@ -252,7 +250,7 @@ watch(
                                     @click="close"
                                     class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-900"
                                 >
-                                    <LayoutDashboard class="h-4 w-4" />
+                                    <MaterialIcon name="dashboard" :size="18" />
                                     {{ isAdminRoute ? 'Home' : 'Staff Panel' }}
                                 </Link>
                                 <Link
@@ -261,14 +259,15 @@ watch(
                                     as="button"
                                     class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                                 >
-                                    <LogOut class="h-4 w-4" /> Sign out
+                                    <MaterialIcon name="logout" :size="18" />
+                                    Sign out
                                 </Link>
                             </div>
 
                             <!-- Theme -->
                             <div class="mt-6">
                                 <p
-                                    class="mb-2 px-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase"
+                                    class="mb-2 px-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-gray-500"
                                 >
                                     Appearance
                                 </p>
@@ -287,7 +286,10 @@ watch(
                                     >
                                         <span
                                             class="flex items-center justify-center gap-1"
-                                            ><Sun class="h-3.5 w-3.5" />
+                                            ><MaterialIcon
+                                                name="light_mode"
+                                                :size="16"
+                                            />
                                             Light</span
                                         >
                                     </button>
@@ -303,7 +305,10 @@ watch(
                                     >
                                         <span
                                             class="flex items-center justify-center gap-1"
-                                            ><Moon class="h-3.5 w-3.5" />
+                                            ><MaterialIcon
+                                                name="dark_mode"
+                                                :size="16"
+                                            />
                                             Dark</span
                                         >
                                     </button>
@@ -319,7 +324,10 @@ watch(
                                     >
                                         <span
                                             class="flex items-center justify-center gap-1"
-                                            ><Monitor class="h-3.5 w-3.5" />
+                                            ><MaterialIcon
+                                                name="computer"
+                                                :size="16"
+                                            />
                                             System</span
                                         >
                                     </button>

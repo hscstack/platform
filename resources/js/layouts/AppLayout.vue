@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import FloatingShareBar from '@/components/FloatingShareBar.vue';
 import Footer from '@/components/Footer.vue';
@@ -8,9 +8,21 @@ import BottomNav from '@/components/navigation/BottomNav.vue';
 import OverflowDrawer from '@/components/navigation/OverflowDrawer.vue';
 import SideRail from '@/components/navigation/SideRail.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
+import { useBreakpoint } from '@/lib/useBreakpoint';
 import { useOrientation } from '@/lib/useOrientation';
 
-const { isLandscape, isHydrated } = useOrientation();
+const { isLandscape, isHydrated: orientationHydrated } = useOrientation();
+const { isMobile, isHydrated: breakpointHydrated } = useBreakpoint(1024);
+const isHydrated = computed(
+    () => orientationHydrated.value && breakpointHydrated.value,
+);
+// Mobile OR portrait → bottom nav; Desktop + landscape → side rail (keeps spec: "mobile or portrait")
+const showSideRail = computed(() =>
+    isHydrated.value ? !isMobile.value && isLandscape.value : true,
+);
+const showBottomNav = computed(() =>
+    isHydrated.value ? isMobile.value || !isLandscape.value : false,
+);
 
 const railCollapsed = ref(false);
 
@@ -54,21 +66,20 @@ const drawerOpen = ref(false);
             ></div>
         </div>
 
-        <!-- Orientation-aware shell: landscape = side rail, portrait = bottom nav + top hamburger -->
+        <!-- Responsive shell: desktop + landscape = side rail; mobile OR portrait = bottom nav + top hamburger -->
         <div class="relative z-10 flex min-h-screen">
-            <!-- Landscape side rail (desktop) -->
+            <!-- Desktop side rail -->
             <SideRail
-                v-if="isHydrated ? isLandscape : true"
+                v-if="showSideRail"
                 :collapsed="railCollapsed"
-                class="hidden landscape:flex"
                 @toggle="toggleRail"
             />
 
             <div class="flex min-h-screen flex-1 flex-col">
-                <!-- Portrait top bar + hamburger (mobile) -->
+                <!-- Mobile top bar + hamburger -->
                 <OverflowDrawer
+                    v-if="showBottomNav"
                     :open="drawerOpen"
-                    class="landscape:hidden"
                     @update:open="drawerOpen = $event"
                     @close="drawerOpen = false"
                 />
@@ -76,26 +87,20 @@ const drawerOpen = ref(false);
                 <main
                     :class="[
                         'flex-1',
-                        isHydrated && !isLandscape
-                            ? 'pb-16'
-                            : 'min-h-[calc(100vh-4rem)]',
+                        showBottomNav ? 'pb-16' : 'min-h-[calc(100vh-4rem)]',
                     ]"
                 >
                     <slot />
                 </main>
 
-                <!-- Footer: hidden on portrait to free space (bottom nav occupies footer area) -->
+                <!-- Footer: hidden on mobile (frees space, bottom nav occupies) -->
                 <Footer
-                    v-if="
-                        $page.component !== 'Chat/Index' &&
-                        (isHydrated ? isLandscape : true)
-                    "
-                    class="hidden landscape:block"
+                    v-if="$page.component !== 'Chat/Index' && !showBottomNav"
                 />
             </div>
         </div>
 
-        <BottomNav v-if="isHydrated ? !isLandscape : false" />
+        <BottomNav v-if="showBottomNav" />
         <FloatingShareBar />
         <ToastNotification />
     </div>

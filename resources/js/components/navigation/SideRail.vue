@@ -1,21 +1,11 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import {
-    ChevronLeft,
-    ChevronRight,
-    Download,
-    LayoutDashboard,
-    LogIn,
-    Monitor,
-    Moon,
-    Search,
-    Sun,
-} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
+import MaterialIcon from '@/components/ui/MaterialIcon.vue';
 import { allNavItems } from '@/lib/navigation';
 import { useDarkMode } from '@/lib/useDarkMode';
 import { usePwa } from '@/lib/usePwa';
@@ -81,8 +71,6 @@ const triggerSearch = () => {
         return;
     }
 
-    // Focus is handled by globalSearchQuery watchers in pages; just set flag via store
-    // For rail, we dispatch a custom event that Home pages listen to
     window.dispatchEvent(new CustomEvent('hscstack:trigger-search'));
 };
 
@@ -92,37 +80,46 @@ const triggerSearch = () => {
 <template>
     <aside
         :class="[
-            'hidden flex-col border-r bg-white/80 backdrop-blur-xl transition-all duration-300 dark:border-gray-800 dark:bg-gray-950/80',
-            'portrait:hidden landscape:flex',
-            collapsed ? 'w-[72px]' : 'w-[256px]',
+            'flex shrink-0 flex-col bg-white shadow-[4px_0_24px_rgba(0,0,0,0.04)] transition-all duration-300 dark:bg-gray-900',
+            'sticky top-0 h-screen border-r border-slate-200/70 dark:border-gray-800',
+            collapsed ? 'w-[72px]' : 'w-[280px]',
         ]"
         aria-label="Side navigation"
     >
         <!-- Header: Logo + Collapse toggle -->
         <div
-            class="flex h-16 shrink-0 items-center border-b border-slate-100 px-3 dark:border-gray-800"
-            :class="collapsed ? 'justify-center' : 'justify-between'"
+            class="flex h-16 shrink-0 items-center border-b border-slate-100 bg-white px-3 dark:border-gray-800 dark:bg-gray-900"
+            :class="collapsed ? 'justify-center gap-0' : 'justify-between'"
         >
             <AppLogo v-if="!collapsed" />
             <div
                 v-else
-                class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white"
+                class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-sm"
             >
                 <span class="text-xs font-black">H</span>
             </div>
             <button
                 type="button"
                 @click="emit('toggle')"
-                class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:text-slate-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
             >
-                <ChevronRight v-if="collapsed" class="h-4 w-4" />
-                <ChevronLeft v-else class="h-4 w-4" />
+                <MaterialIcon
+                    :name="collapsed ? 'chevron_right' : 'chevron_left'"
+                    :size="20"
+                />
             </button>
         </div>
 
         <!-- Scrollable nav -->
-        <div class="flex flex-1 flex-col overflow-y-auto py-3">
+        <div class="flex flex-1 flex-col overflow-y-auto py-4">
+            <div v-if="!collapsed" class="px-4 pb-2">
+                <p
+                    class="text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-gray-500"
+                >
+                    Navigation
+                </p>
+            </div>
             <!-- Primary + Overflow combined for desktop rail -->
             <nav class="space-y-1 px-2">
                 <Link
@@ -130,15 +127,28 @@ const triggerSearch = () => {
                     :key="item.href"
                     :href="item.href === '/' ? homeHref : item.href"
                     :class="[
-                        'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                        'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all',
                         isActive(item.href, item.match)
-                            ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-100',
-                        collapsed ? 'justify-center' : '',
+                            ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
+                        collapsed
+                            ? 'justify-center'
+                            : isActive(item.href, item.match)
+                              ? 'shadow-sm'
+                              : '',
                     ]"
                     :title="collapsed ? item.label : undefined"
                 >
-                    <component :is="item.icon" class="h-5 w-5 shrink-0" />
+                    <MaterialIcon
+                        :name="item.icon"
+                        :size="20"
+                        :class="[
+                            'shrink-0 transition-colors',
+                            isActive(item.href, item.match)
+                                ? 'text-white dark:text-slate-900'
+                                : 'text-slate-500 group-hover:text-slate-900 dark:text-gray-500',
+                        ]"
+                    />
                     <span v-if="!collapsed" class="truncate">{{
                         item.label
                     }}</span>
@@ -146,16 +156,18 @@ const triggerSearch = () => {
             </nav>
 
             <!-- PWA Install -->
-            <div v-if="canInstallApp" class="mt-4 px-2">
+            <div v-if="canInstallApp" class="mt-6 px-2">
                 <button
                     type="button"
                     @click="handleInstallApp"
                     :class="[
-                        'flex w-full items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300',
-                        collapsed ? 'justify-center' : '',
+                        'flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-bold shadow-sm transition-colors',
+                        collapsed
+                            ? 'justify-center border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+                            : 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100',
                     ]"
                 >
-                    <Download class="h-5 w-5 shrink-0" />
+                    <MaterialIcon name="download" :size="18" />
                     <span v-if="!collapsed">Install App</span>
                 </button>
             </div>
@@ -169,11 +181,11 @@ const triggerSearch = () => {
                     type="button"
                     @click="triggerSearch"
                     :class="[
-                        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-900',
+                        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800',
                         collapsed ? 'justify-center' : '',
                     ]"
                 >
-                    <Search class="h-5 w-5 shrink-0" />
+                    <MaterialIcon name="search" :size="20" />
                     <span v-if="!collapsed">Search</span>
                 </button>
 
@@ -182,19 +194,20 @@ const triggerSearch = () => {
                     type="button"
                     @click="toggle"
                     :class="[
-                        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-900',
+                        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800',
                         collapsed ? 'justify-center' : '',
                     ]"
                 >
-                    <Monitor
-                        v-if="theme === 'system'"
-                        class="h-5 w-5 shrink-0"
+                    <MaterialIcon
+                        :name="
+                            theme === 'system'
+                                ? 'computer'
+                                : theme === 'light'
+                                  ? 'light_mode'
+                                  : 'dark_mode'
+                        "
+                        :size="20"
                     />
-                    <Sun
-                        v-else-if="theme === 'light'"
-                        class="h-5 w-5 shrink-0"
-                    />
-                    <Moon v-else class="h-5 w-5 shrink-0" />
                     <span v-if="!collapsed" class="capitalize">{{
                         theme
                     }}</span>
@@ -221,13 +234,13 @@ const triggerSearch = () => {
                             collapsed ? 'px-2' : '',
                         ]"
                     >
-                        <LogIn class="h-4 w-4 shrink-0" />
+                        <MaterialIcon name="login" :size="18" />
                         <span v-if="!collapsed">Login</span>
                     </Link>
                     <div
                         v-else
                         :class="[
-                            'flex items-center gap-3 rounded-xl border bg-slate-50 px-3 py-2.5 dark:border-gray-800 dark:bg-gray-900',
+                            'flex items-center gap-3 rounded-xl border bg-slate-50 px-3 py-2.5 dark:border-gray-800 dark:bg-gray-800',
                             collapsed ? 'justify-center' : 'justify-between',
                         ]"
                     >
@@ -257,10 +270,10 @@ const triggerSearch = () => {
                         <Link
                             v-if="!collapsed && canAccessAdmin"
                             :href="isAdminRoute ? '/' : '/admin'"
-                            class="shrink-0 rounded-lg p-1.5 text-slate-500 hover:bg-white dark:hover:bg-gray-800"
+                            class="shrink-0 rounded-lg p-1.5 text-slate-500 hover:bg-white dark:hover:bg-gray-700"
                             :title="isAdminRoute ? 'Home' : 'Staff Panel'"
                         >
-                            <LayoutDashboard class="h-4 w-4" />
+                            <MaterialIcon name="dashboard" :size="18" />
                         </Link>
                     </div>
                 </div>
