@@ -15,6 +15,7 @@ import {
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import BaseModal from '@/components/BaseModal.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import Pagination from '@/components/Pagination.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -846,30 +847,19 @@ function timeAgo(dateString?: string): string {
         </div>
 
         <!-- Empty State -->
-        <div
+        <EmptyState
             v-else
-            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            :icon="Search"
+            variant="card"
+            title="No questions found"
+            description="We couldn't find any questions matching your current filters. Try changing your search keywords or resetting filters."
         >
-            <div
-                class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500"
-            >
-                <Search class="h-6 w-6" />
-            </div>
-            <h3
-                class="mt-4 text-base font-bold text-slate-900 dark:text-gray-100"
-            >
-                No questions found
-            </h3>
-            <p class="mt-1 max-w-sm text-xs text-slate-500 dark:text-gray-400">
-                We couldn't find any questions matching your current filters.
-                Try changing your search keywords or resetting filters.
-            </p>
-            <div class="mt-6 flex items-center gap-3">
+            <div class="flex items-center gap-3">
                 <button
                     v-if="searchQuery || activeFilterCount > 0"
                     type="button"
                     @click="resetAllFilters"
-                    class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                     Reset Filters
                 </button>
@@ -877,7 +867,7 @@ function timeAgo(dateString?: string): string {
                     type="button"
                     @click="handleAskQuestion"
                     :disabled="props.postingEnabled === false || isUserBanned"
-                    class="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold shadow-xs transition"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold shadow-xs transition"
                     :class="[
                         props.postingEnabled === false || isUserBanned
                             ? 'cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-gray-800 dark:text-gray-500'
@@ -898,7 +888,7 @@ function timeAgo(dateString?: string): string {
                     }}</span>
                 </button>
             </div>
-        </div>
+        </EmptyState>
 
         <!-- Pagination -->
         <Pagination

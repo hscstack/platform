@@ -3,6 +3,7 @@ import { router, Head } from '@inertiajs/vue3';
 import { Search, X, ArrowRight, AlertTriangle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
 
 defineProps({
@@ -103,29 +104,21 @@ const clearSearch = () => {
             <BlogCard v-for="blog in blogs.data" :key="blog.id" :blog="blog" />
         </div>
 
-        <div
+        <EmptyState
             v-else
-            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-16 text-center dark:border-gray-700 dark:bg-gray-950"
+            :icon="AlertTriangle"
+            variant="dashed"
+            title="আপনার অনুসন্ধানের সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি।"
+            :description="`&quot;${searchQuery}&quot;-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।`"
         >
-            <div
-                class="mb-4 rounded-xl bg-white p-3 text-slate-400 shadow-sm dark:bg-gray-900 dark:text-gray-500"
-            >
-                <AlertTriangle class="h-8 w-8" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 dark:text-gray-100">
-                আপনার অনুসন্ধানের সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি।
-            </h3>
-            <p class="mt-1 max-w-sm text-sm text-slate-500 dark:text-gray-400">
-                "{{ searchQuery }}"-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া
-                যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।
-            </p>
             <button
+                type="button"
                 @click="clearSearch"
-                class="mt-5 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98]"
+                class="cursor-pointer rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
             >
                 সব আর্টিকেল দেখুন
             </button>
-        </div>
+        </EmptyState>
 
         <div
             v-if="blogs.links && blogs.links.length > 3"

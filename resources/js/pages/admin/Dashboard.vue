@@ -13,6 +13,7 @@ import {
     BarChart3,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import EmptyState from '@/components/EmptyState.vue';
 
 const props = defineProps<{
     totalAccounts?: number;
@@ -184,35 +185,22 @@ const fetchAnalytics = async (refresh = false) => {
         </div>
 
         <!-- Initial Unloaded State Placeholder -->
-        <div
+        <EmptyState
             v-if="!hasFetched && !isLoading"
-            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-12 text-center dark:border-gray-800 dark:bg-gray-900/40"
+            :icon="BarChart3"
+            variant="dashed"
+            title="Analytics ডাটা লোড করার জন্য প্রস্তুত"
+            description="পেজ লোড দ্রুত রাখতে অ্যানালিটিক্স ডাটা ডিমান্ড অনুযায়ী লোড হয়। লাইভ মেট্রিক্স দেখতে নিচে ক্লিক করুন।"
         >
-            <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-xs dark:bg-gray-800"
-            >
-                <BarChart3
-                    class="h-6 w-6 text-indigo-600 dark:text-indigo-400"
-                />
-            </div>
-            <h3
-                class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
-            >
-                Analytics ডাটা লোড করার জন্য প্রস্তুত
-            </h3>
-            <p class="mt-1 max-w-sm text-xs text-slate-500 dark:text-gray-400">
-                পেজ লোড দ্রুত রাখতে অ্যানালিটিক্স ডাটা ডিমান্ড অনুযায়ী লোড হয়।
-                লাইভ মেট্রিক্স দেখতে নিচে ক্লিক করুন।
-            </p>
             <button
                 type="button"
                 @click="fetchAnalytics(false)"
-                class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-700 active:scale-95"
+                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-700 active:scale-95"
             >
                 <RefreshCw class="h-3.5 w-3.5" />
                 <span>Fetch Live Analytics</span>
             </button>
-        </div>
+        </EmptyState>
 
         <!-- Loading State Spinner -->
         <div

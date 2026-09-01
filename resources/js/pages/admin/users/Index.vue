@@ -219,70 +219,44 @@ const clearSearch = () => {
             </div>
 
             <!-- Search Empty State -->
-            <div
+            <EmptyState
                 v-else-if="searchQuery"
-                class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-12 text-center dark:border-gray-800 dark:bg-gray-900/40"
+                :icon="Search"
+                variant="dashed"
+                title="No users found"
+                :description="`&quot;${searchQuery}&quot; দিয়ে কোনো ইউজার পাওয়া যায়নি। অন্য কিছু লিখে সার্চ করুন।`"
             >
-                <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-2xs dark:bg-gray-800"
-                >
-                    <Search class="h-5 w-5 text-slate-400" />
-                </div>
-                <h3
-                    class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
-                >
-                    No users found
-                </h3>
-                <p
-                    class="mt-1 max-w-xs text-xs text-slate-500 dark:text-gray-400"
-                >
-                    "{{ searchQuery }}" দিয়ে কোনো ইউজার পাওয়া যায়নি। অন্য কিছু
-                    লিখে সার্চ করুন।
-                </p>
                 <button
-                    @click="clearSearch"
                     type="button"
-                    class="mt-3.5 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
+                    @click="clearSearch"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
                 >
                     <span>Clear Search</span>
                 </button>
-            </div>
+            </EmptyState>
 
             <!-- Staff Filter Empty State -->
-            <div
+            <EmptyState
                 v-else-if="selectedRole === 'staff'"
-                class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-12 text-center dark:border-gray-800 dark:bg-gray-900/40"
+                :icon="ShieldCheck"
+                variant="dashed"
+                title="No staff members found"
+                description="Currently there are no users assigned to staff roles."
             >
-                <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-2xs dark:bg-gray-800"
-                >
-                    <ShieldCheck class="h-5 w-5 text-indigo-500" />
-                </div>
-                <h3
-                    class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
-                >
-                    No staff members found
-                </h3>
-                <p
-                    class="mt-1 max-w-xs text-xs text-slate-500 dark:text-gray-400"
-                >
-                    Currently there are no users assigned to staff roles.
-                </p>
                 <button
-                    @click="applyFilters('all')"
                     type="button"
-                    class="mt-3.5 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
+                    @click="applyFilters('all')"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
                 >
                     <span>Show All Users</span>
                 </button>
-            </div>
+            </EmptyState>
 
             <!-- Global Empty State -->
             <EmptyState
                 v-else
                 title="No users found"
                 description="No registered users found in the system."
-                :show-cta="false"
             />
 
             <!-- Pagination Bar -->

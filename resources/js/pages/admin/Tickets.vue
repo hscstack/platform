@@ -15,6 +15,7 @@ import {
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
 
 interface UserInfo {
@@ -383,22 +384,12 @@ const formatDate = (dateString: string) => {
         <div
             class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
-            <div
+            <EmptyState
                 v-if="tickets.data.length === 0"
-                class="p-12 text-center text-sm text-slate-500 dark:text-gray-400"
-            >
-                <div
-                    class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500"
-                >
-                    <LifeBuoy class="h-6 w-6" />
-                </div>
-                <p class="font-bold text-slate-800 dark:text-gray-200">
-                    No tickets found
-                </p>
-                <p class="mt-1 text-xs text-slate-400">
-                    Try changing your search keywords or filter options.
-                </p>
-            </div>
+                :icon="LifeBuoy"
+                title="No tickets found"
+                description="Try changing your search keywords or filter options."
+            />
 
             <div v-else class="divide-y divide-slate-100 dark:divide-gray-800">
                 <div

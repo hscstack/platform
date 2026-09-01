@@ -12,6 +12,7 @@ import {
     HelpCircle,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import EmptyState from '@/components/EmptyState.vue';
 
 interface UserInfo {
     id: number;
@@ -162,31 +163,21 @@ const formatDate = (dateString: string) => {
 
             <!-- Tickets List -->
             <div class="space-y-4">
-                <div
+                <EmptyState
                     v-if="tickets.length === 0"
-                    class="rounded-2xl border border-slate-200 bg-white p-12 text-center dark:border-gray-800 dark:bg-gray-900"
+                    :icon="FileText"
+                    variant="card"
+                    title="কোনো টিকেট পাওয়া যায়নি"
+                    description="আপনার কোনো খোলা বা অতীত টিকেট নেই।"
                 >
-                    <div
-                        class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500"
-                    >
-                        <FileText class="h-6 w-6" />
-                    </div>
-                    <h3
-                        class="text-base font-bold text-slate-800 dark:text-gray-200"
-                    >
-                        কোনো টিকেট পাওয়া যায়নি
-                    </h3>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        আপনার কোনো খোলা বা অতীত টিকেট নেই।
-                    </p>
                     <Link
                         href="/support"
-                        class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700"
+                        class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-indigo-700"
                     >
                         <Send class="h-3.5 w-3.5" />
                         <span>প্রথম টিকেট তৈরি করুন</span>
                     </Link>
-                </div>
+                </EmptyState>
 
                 <div
                     v-for="ticket in tickets"

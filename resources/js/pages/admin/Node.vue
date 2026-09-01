@@ -309,13 +309,11 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                 </div>
             </template>
 
-            <div v-else class="flex flex-1 items-center justify-center py-12">
-                <EmptyState
-                    title="No items in this folder"
-                    description="Create a new folder or resource above to get started."
-                    :show-cta="false"
-                />
-            </div>
+            <EmptyState
+                v-else
+                title="No items in this folder"
+                description="Create a new folder or resource above to get started."
+            />
         </div>
     </div>
 </template>
