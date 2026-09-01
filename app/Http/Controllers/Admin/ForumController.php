@@ -77,11 +77,12 @@ class ForumController extends Controller
             'moderation_status' => ['required', 'string', 'in:approved,pending,flagged,rejected'],
         ]);
 
+        $oldStatus = $post->moderation_status;
         $newStatus = $validated['moderation_status'];
 
         $post->update(['moderation_status' => $newStatus]);
 
-        if ($post->user_id && $post->user_id !== auth()->id()) {
+        if ($oldStatus !== $newStatus && $post->user_id && $post->user_id !== auth()->id()) {
             $post->user->notify(new ForumStatusNotification($post, $newStatus));
         }
 

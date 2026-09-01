@@ -120,6 +120,39 @@ test('admin updating moderation status sends ForumStatusNotification to author',
     });
 });
 
+test('admin updating moderation status to same status does not trigger duplicate notification', function () {
+    Notification::fake();
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $author = User::factory()->create();
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-blue-500',
+        'slug' => 'physics-hsc-same-status',
+        'icon' => 'atom',
+        'sort_order' => 1,
+    ]);
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'subject_id' => $subject->id,
+        'curriculum' => 'hsc',
+        'title' => 'Already approved question',
+        'body' => 'Question body content',
+        'moderation_status' => 'approved',
+        'is_locked' => false,
+    ]);
+
+    $this->actingAs($admin)->patch(route('admin.forums.update-status', $post->id), [
+        'moderation_status' => 'approved',
+    ]);
+
+    Notification::assertNothingSent();
+});
+
 test('auto unpublishing a question on report threshold sends ForumStatusNotification to author', function () {
     Notification::fake();
 
