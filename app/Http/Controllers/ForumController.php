@@ -212,7 +212,7 @@ class ForumController extends Controller
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'min:5', 'max:255', new CleanText],
-            'body' => ['required', 'string', 'min:10', 'max:30000', new CleanText],
+            'body' => ['nullable', 'string', 'max:30000', new CleanText],
             'curriculum' => ['required', 'in:hsc,ssc'],
             'subject_id' => ['nullable', 'exists:subjects,id'],
             'node_id' => ['nullable', 'exists:nodes,id'],
@@ -251,7 +251,7 @@ class ForumController extends Controller
             'node_id' => $nodeId,
             'curriculum' => $validated['curriculum'],
             'title' => $validated['title'],
-            'body' => $validated['body'],
+            'body' => $validated['body'] ?? null,
             'image_path' => $imagePath,
             'is_locked' => false,
             'moderation_status' => $moderationStatus,

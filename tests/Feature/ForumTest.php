@@ -112,6 +112,28 @@ test('authenticated user can create a general question with null subject and cha
     $response->assertRedirect("/forum/questions/{$post->slug}");
 });
 
+test('authenticated user can create a question without details', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->post('/forum', [
+        'title' => 'Self-contained title question without any details?',
+        'curriculum' => 'hsc',
+    ]);
+
+    $post = ForumPost::where('title', 'Self-contained title question without any details?')->first();
+    expect($post)->not->toBeNull()
+        ->and($post->body)->toBeNull();
+
+    $response->assertRedirect("/forum/questions/{$post->slug}");
+
+    $showResponse = $this->get("/forum/questions/{$post->slug}");
+    $showResponse->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Forum/Show')
+            ->where('post.body', null)
+        );
+});
+
 test('user can post answer and reply with 1-level nesting enforced', function () {
     $author = User::factory()->create();
     $replier = User::factory()->create();
