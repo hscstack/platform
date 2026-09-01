@@ -10,6 +10,7 @@ use App\Models\Resource;
 use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class DeleteUnusedImages extends Command
@@ -32,10 +33,13 @@ class DeleteUnusedImages extends Command
             Blog::whereNotNull('featured_image_path')->pluck('featured_image_path')->toArray()
         );
 
-        // Notice images (skip external URLs)
+        // Notice images — use DB::table to bypass the getImageAttribute accessor,
+        // which converts stored paths to full URLs and would cause every notice
+        // image to be falsely flagged as unused.
         $this->cleanDirectory(
             'notices',
-            Notice::whereNotNull('image')
+            DB::table('notices')
+                ->whereNotNull('image')
                 ->where('image', 'not like', 'http%')
                 ->pluck('image')
                 ->toArray()
