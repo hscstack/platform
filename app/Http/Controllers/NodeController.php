@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Node;
 use App\Models\Subject;
+use App\Notifications\NodeVoteNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -85,6 +86,7 @@ class NodeController extends Controller
 
         $user = auth()->user();
         $existing = $node->votes()->where('user_id', $user->id)->first();
+        $isFirstTimeUpvote = false;
 
         if ($existing) {
             if ($existing->type === $validated['type']) {
@@ -97,6 +99,14 @@ class NodeController extends Controller
                 'user_id' => $user->id,
                 'type' => $validated['type'],
             ]);
+
+            if ($validated['type'] === 'up') {
+                $isFirstTimeUpvote = true;
+            }
+        }
+
+        if ($isFirstTimeUpvote && $node->user_id && $node->user_id !== $user->id) {
+            $node->user->notify(new NodeVoteNotification($node, $user));
         }
 
         return back();

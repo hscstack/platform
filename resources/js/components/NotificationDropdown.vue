@@ -432,7 +432,10 @@ onBeforeUnmount(() => {
                                     class="h-4 w-4 text-rose-500"
                                 />
                                 <ThumbsUp
-                                    v-else-if="item.data?.type === 'forum_vote'"
+                                    v-else-if="
+                                        item.data?.type === 'forum_vote' ||
+                                        item.data?.type === 'node_vote'
+                                    "
                                     class="h-4 w-4 text-emerald-500"
                                 />
                                 <AtSign
