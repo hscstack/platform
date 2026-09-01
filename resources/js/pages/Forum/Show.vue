@@ -28,6 +28,7 @@ import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
+import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -1936,5 +1937,8 @@ function parseMentions(
             :user="selectedBanUser"
             @close="isBanModalOpen = false"
         />
+
+        <!-- PWA Install Prompt Modal -->
+        <PwaInstallPrompt variant="modal" />
     </main>
 </template>
