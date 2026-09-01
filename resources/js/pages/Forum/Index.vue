@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Search,
     X,
@@ -19,6 +19,7 @@ import EmptyState from '@/components/EmptyState.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import Pagination from '@/components/Pagination.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
+import { useAuth } from '@/lib/useAuth';
 import { formatTimeAgo } from '@/lib/useDate';
 
 interface User {
@@ -99,10 +100,8 @@ const props = defineProps<{
     disabledReason?: string;
 }>();
 
-const page = usePage();
-const user = computed(() => (page.props.auth as any)?.user);
+const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
 
-const showAuthModal = ref(false);
 const showFilterModal = ref(false);
 const searchQuery = ref(props.filters.search || '');
 
@@ -355,9 +354,7 @@ const handleAskQuestion = () => {
         return;
     }
 
-    if (!user.value) {
-        showAuthModal.value = true;
-    } else {
+    if (requireAuth('Please sign in to ask a question in the forum.')) {
         router.visit('/forum/ask');
     }
 };
@@ -1067,11 +1064,7 @@ const timeAgo = formatTimeAgo;
         </BaseModal>
 
         <!-- Auth Modal -->
-        <AuthModal
-            v-model="showAuthModal"
-            title="Sign in required"
-            message="Please sign in to ask a question in the forum."
-        />
+        <AuthModal v-model="showAuthModal" :message="authModalMessage" />
 
         <!-- PWA Install Prompt Modal -->
         <PwaInstallPrompt variant="modal" />

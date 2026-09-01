@@ -2,11 +2,12 @@
 import { usePage } from '@inertiajs/vue3';
 import { Share2, Check, Loader2, Link as LinkIcon } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { useAuth } from '@/lib/useAuth';
 import { getCsrfToken } from '@/lib/useCsrf';
 import AuthModal from './AuthModal.vue';
 
 const page = usePage();
-const user = computed(() => page.props.auth?.user);
+const { requireAuth, showAuthModal, authModalMessage } = useAuth();
 
 const shareablePages = [
     'Node',
@@ -21,7 +22,6 @@ const shouldShow = computed(() => shareablePages.includes(page.component));
 const isMenuOpen = ref(false);
 const isLoading = ref(false);
 const isCopied = ref(false);
-const showAuthModal = ref(false);
 
 const toolbarRef = ref<HTMLElement | null>(null);
 
@@ -59,9 +59,10 @@ const handleCopyLink = async () => {
         return;
     }
 
-    if (!user.value) {
+    if (
+        !requireAuth('Please sign in to generate and copy short share links.')
+    ) {
         closeMenu();
-        showAuthModal.value = true;
 
         return;
     }
@@ -207,9 +208,5 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Auth Modal using reusable component -->
-    <AuthModal
-        v-model="showAuthModal"
-        title="Sign in required"
-        message="Please sign in to generate and copy short share links."
-    />
+    <AuthModal v-model="showAuthModal" :message="authModalMessage" />
 </template>

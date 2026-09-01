@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Download,
     AlertCircle,
@@ -8,15 +8,15 @@ import {
     Maximize2,
     User,
     Image as ImageIcon,
-    LogIn,
-    X,
     ExternalLink,
     CheckCircle2,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
+import AuthModal from '@/components/AuthModal.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import UserListItem from '@/components/UserListItem.vue';
-import YouTubePlayer from '../components/YouTubePlayer.vue';
+import YouTubePlayer from '@/components/YouTubePlayer.vue';
+import { useAuth } from '@/lib/useAuth';
 
 const props = defineProps({
     resource: {
@@ -45,11 +45,8 @@ const props = defineProps({
     },
 });
 
-const page = usePage();
-const user = computed(() => page.props.auth?.user);
-const showAuthModal = ref(false);
+const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
 const showCompletersModal = ref(false);
-const authModalMessage = ref('Please sign in to continue.');
 
 // Optimistic Completion state
 const localIsCompleted = ref(props.isCompleted);
@@ -79,11 +76,11 @@ watch(
 );
 
 const handleToggleComplete = () => {
-    if (!user.value) {
-        authModalMessage.value =
-            'Please sign in to mark study materials as completed and track your syllabus progress.';
-        showAuthModal.value = true;
-
+    if (
+        !requireAuth(
+            'Please sign in to mark study materials as completed and track your syllabus progress.',
+        )
+    ) {
         return;
     }
 
@@ -145,11 +142,11 @@ watch(
 );
 
 const handleDownload = () => {
-    if (!user.value) {
-        authModalMessage.value =
-            'Please sign in to download full-resolution study materials.';
-        showAuthModal.value = true;
-
+    if (
+        !requireAuth(
+            'Please sign in to download full-resolution study materials.',
+        )
+    ) {
         return;
     }
 
@@ -555,58 +552,7 @@ const toggleFullscreen = () => {
     />
 
     <!-- Minimal Sign-in Dialog for Guests (Download & Completion Auth Guard) -->
-    <Teleport to="body">
-        <Transition
-            enter-active-class="transition duration-150 ease-out"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-        >
-            <div
-                v-if="showAuthModal"
-                class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs dark:bg-black/50"
-            >
-                <div
-                    class="relative w-full max-w-xs rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <button
-                        @click="showAuthModal = false"
-                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
-                    >
-                        <X class="h-3.5 w-3.5" />
-                    </button>
-
-                    <h3
-                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        Sign in required
-                    </h3>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        {{ authModalMessage }}
-                    </p>
-
-                    <div class="mt-4 flex items-center gap-2">
-                        <Link
-                            :href="`/login?redirect=${encodeURIComponent($page.url)}`"
-                            @click="showAuthModal = false"
-                            class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
-                        >
-                            <LogIn class="h-3.5 w-3.5" />
-                            <span>Sign in</span>
-                        </Link>
-                        <button
-                            @click="showAuthModal = false"
-                            class="cursor-pointer rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Transition>
-    </Teleport>
+    <AuthModal v-model="showAuthModal" :message="authModalMessage" />
 
     <!-- Students who Completed Modal -->
     <Teleport to="body">

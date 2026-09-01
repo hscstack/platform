@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     ArrowBigUp,
@@ -30,9 +30,9 @@ import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import Pagination from '@/components/Pagination.vue';
 import UserListItem from '@/components/UserListItem.vue';
+import { useAuth } from '@/lib/useAuth';
 import { getCsrfToken } from '@/lib/useCsrf';
 import { formatTimeAgo } from '@/lib/useDate';
-import { usePermissions } from '@/lib/usePermissions';
 
 interface User {
     id: number;
@@ -123,12 +123,8 @@ const props = defineProps<{
     disabledReason?: string;
 }>();
 
-const page = usePage();
-const user = computed(() => (page.props.auth as any)?.user);
+const { user, can, requireAuth, showAuthModal, authModalMessage } = useAuth();
 const isUserBanned = computed(() => Boolean(user.value?.is_banned));
-
-const showAuthModal = ref(false);
-const authModalMessage = ref('Please sign in to continue.');
 
 // Moderator Suspension Modal State
 const isBanModalOpen = ref(false);
@@ -230,8 +226,6 @@ const deletePost = () => {
     }
 };
 
-const { can } = usePermissions();
-
 // Moderator Actions
 const toggleLock = () => {
     router.patch(
@@ -291,10 +285,7 @@ const openReportModal = (
     authorName: string | undefined,
     contentPreview: string,
 ) => {
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to report this content.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to report this content.')) {
         return;
     }
 
@@ -403,10 +394,7 @@ const removeAnswerImage = () => {
 };
 
 const submitAnswer = () => {
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to answer this question.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to answer this question.')) {
         return;
     }
 
@@ -440,10 +428,7 @@ const openReplyForm = (
         return;
     }
 
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to reply.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to reply.')) {
         return;
     }
 
@@ -503,10 +488,7 @@ const removeReplyImage = () => {
 };
 
 const submitReply = () => {
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to reply.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to reply.')) {
         return;
     }
 

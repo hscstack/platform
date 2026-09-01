@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, usePage, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Send,
     Trash2,
@@ -23,15 +23,16 @@ import {
     Users,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import AuthModal from '@/components/AuthModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
+import { useAuth } from '@/lib/useAuth';
 import { getCsrfToken } from '@/lib/useCsrf';
 import { formatDateDivider, formatTime } from '@/lib/useDate';
-import { usePermissions } from '@/lib/usePermissions';
 
 interface ChatUser {
     id: number;
@@ -98,9 +99,13 @@ const props = defineProps<{
     };
 }>();
 
-const page = usePage();
-const { can } = usePermissions();
-const currentUser = computed(() => page.props.auth?.user);
+const {
+    user: currentUser,
+    can,
+    requireAuth,
+    showAuthModal,
+    authModalMessage,
+} = useAuth();
 
 const chatChannelName = computed(
     () => props.chatState.channel_name || 'global-chat',
@@ -951,9 +956,7 @@ const toggleReactionPicker = (messageId: number) => {
 };
 
 const reactToMessage = async (message: ChatMessageItem, emoji: string) => {
-    if (!currentUser.value) {
-        alert('Please sign in to react to messages.');
-
+    if (!requireAuth('Please sign in to react to messages.')) {
         return;
     }
 
@@ -1121,9 +1124,7 @@ const reportReasons = [
 const openReportModal = (message: ChatMessageItem) => {
     closeMobileActions();
 
-    if (!currentUser.value) {
-        alert('Please sign in to report a message.');
-
+    if (!requireAuth('Please sign in to report a message.')) {
         return;
     }
 
@@ -2763,5 +2764,7 @@ onUnmounted(() => {
                 </div>
             </div>
         </div>
+
+        <AuthModal v-model="showAuthModal" :message="authModalMessage" />
     </main>
 </template>

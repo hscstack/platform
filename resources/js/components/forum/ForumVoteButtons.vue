@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { ArrowBigUp, ArrowBigDown } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
+import { useAuth } from '@/lib/useAuth';
 
 const props = withDefaults(
     defineProps<{
@@ -34,10 +35,8 @@ const emit = defineEmits<{
     ): void;
 }>();
 
-const page = usePage();
-const user = computed(() => (page.props.auth as any)?.user);
+const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
 const isUserBanned = computed(() => Boolean(user.value?.is_banned));
-const showAuthModal = ref(false);
 
 const upvotes = ref(props.initialUpvotes || 0);
 const downvotes = ref(props.initialDownvotes || 0);
@@ -67,9 +66,7 @@ watch(
 const isVoting = ref(false);
 
 const vote = (value: 1 | -1) => {
-    if (!user.value) {
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to vote on forum posts and answers.')) {
         return;
     }
 
@@ -241,10 +238,6 @@ const vote = (value: 1 | -1) => {
             </span>
         </button>
 
-        <AuthModal
-            v-model="showAuthModal"
-            title="Sign in required"
-            message="Please sign in to vote on forum posts and answers."
-        />
+        <AuthModal v-model="showAuthModal" :message="authModalMessage" />
     </div>
 </template>
