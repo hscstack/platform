@@ -460,6 +460,9 @@ onBeforeUnmount(() => {
                                     v-else-if="
                                         item.data?.type === 'chat_report' ||
                                         item.data?.type === 'forum_report' ||
+                                        (item.data?.type ===
+                                            'user_suspension' &&
+                                            item.data?.is_banned) ||
                                         (item.data?.type === 'forum_status' &&
                                             (item.data?.status === 'flagged' ||
                                                 item.data?.status ===
@@ -470,8 +473,11 @@ onBeforeUnmount(() => {
                                 />
                                 <CheckCircle2
                                     v-else-if="
-                                        item.data?.type === 'forum_status' &&
-                                        item.data?.status === 'approved'
+                                        (item.data?.type === 'forum_status' &&
+                                            item.data?.status === 'approved') ||
+                                        (item.data?.type ===
+                                            'user_suspension' &&
+                                            !item.data?.is_banned)
                                     "
                                     class="h-4 w-4 text-emerald-500"
                                 />
