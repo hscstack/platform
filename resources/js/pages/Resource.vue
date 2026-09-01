@@ -6,8 +6,6 @@ import {
     ArrowLeft,
     ArrowRight,
     Maximize2,
-    Minimize2,
-    RotateCcw,
     User,
     Image as ImageIcon,
     LogIn,
@@ -16,6 +14,7 @@ import {
     CheckCircle2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import YouTubePlayer from '../components/YouTubePlayer.vue';
 
@@ -171,16 +170,6 @@ const handleDownload = () => {
 
 const isFullscreen = ref(false);
 
-const scale = ref(1);
-const translateX = ref(0);
-const translateY = ref(0);
-const isDragging = ref(false);
-
-let startX = 0;
-let startY = 0;
-let initialScale = 1;
-let startTouchDistance = 0;
-
 const handleBack = () => {
     if (typeof window !== 'undefined') {
         window.history.back();
@@ -189,90 +178,7 @@ const handleBack = () => {
 
 const toggleFullscreen = () => {
     isFullscreen.value = !isFullscreen.value;
-
-    if (!isFullscreen.value) {
-        resetZoom();
-    }
 };
-
-const resetZoom = () => {
-    scale.value = 1;
-    translateX.value = 0;
-    translateY.value = 0;
-};
-
-const getTouchDistance = (e: TouchEvent) => {
-    return Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY,
-    );
-};
-
-const handlePointerDown = (e: MouseEvent | TouchEvent) => {
-    if ('touches' in e && e.touches.length === 2) {
-        isDragging.value = false;
-        initialScale = scale.value;
-        startTouchDistance = getTouchDistance(e);
-
-        return;
-    }
-
-    isDragging.value = true;
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-    startX = clientX - translateX.value;
-    startY = clientY - translateY.value;
-};
-
-const handlePointerMove = (e: MouseEvent | TouchEvent) => {
-    if ('touches' in e && e.touches.length === 2) {
-        e.preventDefault();
-        const currentDistance = getTouchDistance(e);
-        const newScale = initialScale * (currentDistance / startTouchDistance);
-        scale.value = Math.min(Math.max(newScale, 1), 5);
-
-        return;
-    }
-
-    if (!isDragging.value || scale.value === 1) {
-        return;
-    }
-
-    e.preventDefault();
-
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-    translateX.value = clientX - startX;
-    translateY.value = clientY - startY;
-};
-
-const handlePointerUp = () => {
-    isDragging.value = false;
-
-    if (scale.value < 1) {
-        resetZoom();
-    }
-};
-
-const handleWheel = (e: WheelEvent) => {
-    e.preventDefault();
-    const zoomIntensity = 0.1;
-    const delta = e.deltaY < 0 ? 1 : -1;
-    const newScale = scale.value + delta * zoomIntensity;
-    scale.value = Math.min(Math.max(newScale, 1), 5);
-
-    if (scale.value === 1) {
-        resetZoom();
-    }
-};
-
-watch(isFullscreen, (val) => {
-    if (typeof document !== 'undefined') {
-        document.body.style.overflow = val ? 'hidden' : '';
-    }
-});
 </script>
 
 <template>
@@ -459,6 +365,7 @@ watch(isFullscreen, (val) => {
                 :src="resource.file_url"
                 :alt="resource.title"
                 @load="isImageLoaded = true"
+                @click="isFullscreen = true"
                 class="max-h-[85vh] w-auto max-w-full rounded-2xl border border-slate-200/90 bg-white object-contain shadow-sm transition-opacity duration-300 select-none dark:border-gray-800 dark:bg-gray-900"
                 :class="{
                     'opacity-0': !isImageLoaded,
@@ -636,64 +543,15 @@ watch(isFullscreen, (val) => {
         </div>
     </div>
 
-    <Teleport to="body">
-        <div
-            v-if="isFullscreen"
-            class="fixed inset-0 z-50 flex touch-none items-center justify-center bg-slate-950/95 backdrop-blur-sm select-none"
-            @wheel="handleWheel"
-            @mousedown="handlePointerDown"
-            @mousemove="handlePointerMove"
-            @mouseup="handlePointerUp"
-            @mouseleave="handlePointerUp"
-            @touchstart="handlePointerDown"
-            @touchmove="handlePointerMove"
-            @touchend="handlePointerUp"
-        >
-            <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
-                <div
-                    class="hidden items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium text-slate-300 backdrop-blur-md sm:flex dark:bg-gray-900/10"
-                >
-                    <span>Pinch / Scroll to Zoom</span>
-                    <span class="text-slate-500">•</span>
-                    <span>Drag to Pan</span>
-                </div>
-
-                <button
-                    @click="handleDownload"
-                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                    title="Download Image"
-                >
-                    <Download class="h-5 w-5" />
-                </button>
-
-                <button
-                    v-if="scale > 1"
-                    @click="resetZoom"
-                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                    title="Reset Zoom"
-                >
-                    <RotateCcw class="h-5 w-5" />
-                </button>
-
-                <button
-                    @click="toggleFullscreen"
-                    class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                    title="Exit Fullscreen"
-                >
-                    <Minimize2 class="h-5 w-5" />
-                </button>
-            </div>
-
-            <img
-                :src="resource.file_url"
-                :alt="resource.title"
-                class="pointer-events-none max-h-[90vh] max-w-[90vw] rounded object-contain shadow-2xl transition-transform duration-75 ease-out"
-                :style="{
-                    transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
-                }"
-            />
-        </div>
-    </Teleport>
+    <!-- Reusable Fullscreen Image Viewer Modal -->
+    <ImageViewerModal
+        v-if="resource.resource_type === 'image'"
+        v-model="isFullscreen"
+        :src="resource.file_url"
+        :title="resource.title"
+        :alt="resource.title"
+        @download="handleDownload"
+    />
 
     <!-- Minimal Sign-in Dialog for Guests (Download & Completion Auth Guard) -->
     <Teleport to="body">
