@@ -49,6 +49,42 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        'smtp_1' => [
+            'transport' => 'smtp',
+            'scheme' => env('MAIL_1_SCHEME'),
+            'url' => env('MAIL_1_URL'),
+            'host' => env('MAIL_1_HOST', env('MAIL_HOST', 'smtp.gmail.com')),
+            'port' => (int) env('MAIL_1_PORT', env('MAIL_PORT', 587)),
+            'username' => env('MAIL_1_USERNAME', env('MAIL_USERNAME')),
+            'password' => env('MAIL_1_PASSWORD', env('MAIL_PASSWORD')),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
+        'smtp_2' => [
+            'transport' => 'smtp',
+            'scheme' => env('MAIL_2_SCHEME'),
+            'url' => env('MAIL_2_URL'),
+            'host' => env('MAIL_2_HOST', env('MAIL_HOST', 'smtp.gmail.com')),
+            'port' => (int) env('MAIL_2_PORT', env('MAIL_PORT', 587)),
+            'username' => env('MAIL_2_USERNAME', env('MAIL_USERNAME')),
+            'password' => env('MAIL_2_PASSWORD', env('MAIL_PASSWORD')),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
+        'smtp_3' => [
+            'transport' => 'smtp',
+            'scheme' => env('MAIL_3_SCHEME'),
+            'url' => env('MAIL_3_URL'),
+            'host' => env('MAIL_3_HOST', env('MAIL_HOST', 'smtp.gmail.com')),
+            'port' => (int) env('MAIL_3_PORT', env('MAIL_PORT', 587)),
+            'username' => env('MAIL_3_USERNAME', env('MAIL_USERNAME')),
+            'password' => env('MAIL_3_PASSWORD', env('MAIL_PASSWORD')),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
@@ -90,10 +126,7 @@ return [
 
         'roundrobin' => [
             'transport' => 'roundrobin',
-            'mailers' => [
-                'ses',
-                'postmark',
-            ],
+            'mailers' => array_values(array_filter(explode(',', (string) env('MAIL_ROUNDROBIN_MAILERS', 'smtp_1,smtp_2,smtp_3')))),
             'retry_after' => 60,
         ],
 
