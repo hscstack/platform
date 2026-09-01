@@ -229,7 +229,7 @@ const toggleFullscreen = () => {
                     <button
                         @click="handleToggleComplete"
                         type="button"
-                        class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold shadow-xs transition active:scale-95"
+                        class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold shadow-xs transition active:scale-95 sm:px-3"
                         :class="
                             localIsCompleted
                                 ? 'border-emerald-500/40 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60'
@@ -240,6 +240,7 @@ const toggleFullscreen = () => {
                                 ? 'Marked as completed (click to undo)'
                                 : 'Mark as done'
                         "
+                        :aria-label="localIsCompleted ? 'Done' : 'Mark as Done'"
                     >
                         <CheckCircle2
                             class="h-3.5 w-3.5 stroke-[2.2] transition-colors"
@@ -249,7 +250,7 @@ const toggleFullscreen = () => {
                                     : ''
                             "
                         />
-                        <span class="text-xs font-semibold">{{
+                        <span class="hidden text-xs font-semibold sm:inline">{{
                             localIsCompleted ? 'Done' : 'Mark as Done'
                         }}</span>
                     </button>
