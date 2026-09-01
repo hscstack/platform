@@ -102,13 +102,6 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
 
         <!-- Scrollable nav -->
         <div class="flex flex-1 flex-col overflow-y-auto py-3.5">
-            <div v-if="!collapsed" class="px-4 pb-2.5">
-                <p
-                    class="text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500"
-                >
-                    Navigation
-                </p>
-            </div>
             <!-- Primary + Overflow combined for desktop rail -->
             <nav class="space-y-0.5 px-2.5">
                 <Link
