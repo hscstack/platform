@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -91,6 +92,8 @@ class UserController extends Controller
             $user->syncRoles([]);
             $user->syncPermissions([]);
         }
+
+        $user->notify(new WelcomeNotification);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');

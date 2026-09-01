@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -64,7 +66,9 @@ test('onboarding page redirects to login without onboarding session', function (
     $response->assertSessionHas('error', 'Please continue with Google to create an account.');
 });
 
-test('completing onboarding creates user and logs in', function () {
+test('completing onboarding creates user, sends welcome notification, and logs in', function () {
+    Notification::fake();
+
     $response = $this->withSession([
         'onboarding_user' => [
             'google_id' => 'google-id-12345',
@@ -90,6 +94,8 @@ test('completing onboarding creates user and logs in', function () {
     $response->assertRedirect(route('user.profile', 'custom_handle'));
     $response->assertSessionHas('success');
     $response->assertSessionMissing('onboarding_user');
+
+    Notification::assertSentTo($user, WelcomeNotification::class);
 });
 
 test('completing onboarding with avatar image upload stores image', function () {

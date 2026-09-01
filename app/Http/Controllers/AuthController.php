@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use App\Rules\CleanText;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
@@ -169,6 +170,8 @@ class AuthController extends Controller
                 'image_path' => $imagePath,
                 'email_verified_at' => now(),
             ]);
+
+            $user->notify(new WelcomeNotification);
         } else {
             if ($imagePath) {
                 if ($user->image_path) {
