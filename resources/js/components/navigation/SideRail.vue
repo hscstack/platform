@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
-import AuthModal from '@/components/AuthModal.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';
 import { allNavItems } from '@/lib/navigation';
@@ -58,29 +57,13 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
     return currentUrl.value.startsWith(href);
 };
 
-// Search gate
-const showAuthModal = ref(false);
-const authModalMessage = ref('');
-
-const triggerSearch = () => {
-    if (!user.value) {
-        authModalMessage.value =
-            'অনুগ্রহ করে বিষয় ও কনটেন্ট সার্চ করতে প্রথমে লগইন করুন।';
-        showAuthModal.value = true;
-
-        return;
-    }
-
-    window.dispatchEvent(new CustomEvent('hscstack:trigger-search'));
-};
-
 // Persist collapsed is handled by parent
 </script>
 
 <template>
     <aside
         :class="[
-            'flex shrink-0 flex-col bg-white transition-all duration-300 dark:bg-slate-900',
+            'flex shrink-0 flex-col bg-white/70 backdrop-blur-xl transition-all duration-300 dark:bg-slate-900/60 dark:backdrop-blur-xl',
             'sticky top-0 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
             collapsed ? 'w-[72px]' : 'w-[280px]',
         ]"
@@ -88,16 +71,22 @@ const triggerSearch = () => {
     >
         <!-- Header: Logo + Collapse toggle -->
         <div
-            class="flex h-16 shrink-0 items-center border-b border-slate-100 bg-white px-3 dark:border-slate-800 dark:bg-slate-900"
+            class="flex h-16 shrink-0 items-center border-b border-slate-200/60 bg-white/70 px-3 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl"
             :class="collapsed ? 'justify-center gap-0' : 'justify-between'"
         >
             <AppLogo v-if="!collapsed" />
-            <div
+            <Link
                 v-else
-                class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-sm ring-1 ring-indigo-600/20"
+                :href="homeHref"
+                class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm dark:bg-gray-100"
+                aria-label="Home"
             >
-                <span class="text-xs font-black">H</span>
-            </div>
+                <img
+                    src="/favicon.svg"
+                    alt="HSCStack"
+                    class="h-6 w-6 scale-120 object-cover"
+                />
+            </Link>
             <button
                 type="button"
                 @click="emit('toggle')"
@@ -154,51 +143,20 @@ const triggerSearch = () => {
                     />
                 </Link>
             </nav>
-
-            <!-- PWA Install -->
-            <div v-if="canInstallApp" class="mt-6 px-2">
-                <button
-                    type="button"
-                    @click="handleInstallApp"
-                    :class="[
-                        'flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[13px] font-bold shadow-sm transition-all duration-150',
-                        collapsed
-                            ? 'justify-center border-slate-900 bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md dark:border-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700',
-                    ]"
-                >
-                    <MaterialIcon name="download" :size="20" />
-                    <span v-if="!collapsed">Install App</span>
-                </button>
-            </div>
         </div>
 
         <!-- Footer controls -->
         <div
-            class="border-t border-slate-100 bg-slate-50/50 p-2 dark:border-slate-800 dark:bg-slate-900/50"
+            class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm"
         >
             <div class="space-y-1">
-                <!-- Search -->
-                <button
-                    type="button"
-                    @click="triggerSearch"
-                    :class="[
-                        'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-150',
-                        'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
-                        collapsed ? 'justify-center' : '',
-                    ]"
-                >
-                    <MaterialIcon name="search" :size="20" />
-                    <span v-if="!collapsed">Search</span>
-                </button>
-
                 <!-- Theme -->
                 <button
                     type="button"
                     @click="toggle"
                     :class="[
-                        'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-150',
-                        'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                        'flex w-full items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-[13px] font-medium transition-all duration-150',
+                        'text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                         collapsed ? 'justify-center' : '',
                     ]"
                 >
@@ -228,13 +186,29 @@ const triggerSearch = () => {
                     <NotificationDropdown />
                 </div>
 
+                <!-- PWA Install — absolute bottom, above login -->
+                <button
+                    v-if="canInstallApp"
+                    type="button"
+                    @click="handleInstallApp"
+                    :class="[
+                        'flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[13px] font-bold shadow-sm transition-all duration-150',
+                        collapsed
+                            ? 'justify-center border-slate-900 bg-slate-900 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900'
+                            : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20',
+                    ]"
+                >
+                    <MaterialIcon name="download" :size="20" />
+                    <span v-if="!collapsed">Install App</span>
+                </button>
+
                 <!-- Auth -->
                 <div :class="collapsed ? 'px-0' : 'px-2 pt-1'">
                     <Link
                         v-if="!user"
                         href="/login"
                         :class="[
-                            'flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-bold shadow-sm transition-all duration-150',
+                            'flex items-center justify-center gap-2 rounded-xl border border-transparent px-3 py-2.5 text-[13px] font-bold shadow-sm transition-all duration-150',
                             'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md dark:bg-indigo-500 dark:hover:bg-indigo-400',
                             collapsed ? 'px-2' : '',
                         ]"
@@ -286,11 +260,5 @@ const triggerSearch = () => {
                 </div>
             </div>
         </div>
-
-        <AuthModal
-            v-model="showAuthModal"
-            title="Sign in required"
-            :message="authModalMessage"
-        />
     </aside>
 </template>

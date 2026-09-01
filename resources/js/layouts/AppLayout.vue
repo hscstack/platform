@@ -87,16 +87,23 @@ const drawerOpen = ref(false);
                 <main
                     :class="[
                         'flex-1',
-                        showBottomNav ? 'pb-16' : 'min-h-[calc(100vh-4rem)]',
+                        showBottomNav ? 'pb-4' : 'min-h-[calc(100vh-4rem)]',
                     ]"
                 >
                     <slot />
                 </main>
 
-                <!-- Footer: hidden on mobile (frees space, bottom nav occupies) -->
-                <Footer
-                    v-if="$page.component !== 'Chat/Index' && !showBottomNav"
-                />
+                <!-- Footer: always visible (was hidden on mobile) — on mobile it's a compact version above bottom nav -->
+                <div
+                    v-if="$page.component !== 'Chat/Index'"
+                    :class="
+                        showBottomNav
+                            ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
+                            : ''
+                    "
+                >
+                    <Footer />
+                </div>
             </div>
         </div>
 

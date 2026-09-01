@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, watch } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
-import AuthModal from '@/components/AuthModal.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';
 import { useBottomNavCustomization } from '@/lib/useBottomNavCustomization';
@@ -32,9 +31,6 @@ const canInstallApp = computed(
     () => !isInstalled.value && Boolean(deferredPrompt.value),
 );
 const { availableItems } = useBottomNavCustomization();
-
-const showAuthModal = ref(false);
-const authModalMessage = ref('');
 
 const close = () => {
     emit('update:open', false);
@@ -84,34 +80,9 @@ watch(
                 <AppLogo />
             </div>
             <div class="ml-auto flex items-center gap-1.5">
-                <button
-                    type="button"
-                    @click="
-                        () => {
-                            if (!user) {
-                                authModalMessage = 'Please login to search';
-                                showAuthModal = true;
-                                return;
-                            }
-                            window.dispatchEvent(
-                                new CustomEvent('hscstack:trigger-search'),
-                            );
-                        }
-                    "
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 active:scale-95 dark:text-slate-300 dark:hover:bg-slate-800"
-                    aria-label="Search"
-                >
-                    <MaterialIcon name="search" :size="22" />
-                </button>
                 <NotificationDropdown v-if="user" />
             </div>
         </div>
-
-        <AuthModal
-            v-model="showAuthModal"
-            title="Sign in required"
-            :message="authModalMessage"
-        />
 
         <!-- Drawer -->
         <Teleport to="body">
