@@ -2,6 +2,7 @@
 
 use App\Models\AppSetting;
 use App\Models\ChatMessage;
+use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Report;
 use App\Models\User;
@@ -323,4 +324,42 @@ test('user without manage chat or manage forums permission cannot suspend a user
         ->assertSessionHas('error');
 
     expect($targetUser->fresh()->isBanned())->toBeFalse();
+});
+
+test('admin with manage forums permission can delete any forum answer', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $author = User::factory()->create();
+    $post = ForumPost::factory()->create(['user_id' => $author->id]);
+    $answer = ForumAnswer::create([
+        'forum_post_id' => $post->id,
+        'user_id' => $author->id,
+        'body' => 'Answer to be deleted by admin',
+    ]);
+    $post->update(['answers_count' => 1]);
+
+    $this->actingAs($admin)
+        ->delete(route('forum.answers.destroy', $answer))
+        ->assertRedirect();
+
+    expect(ForumAnswer::find($answer->id))->toBeNull();
+    expect($post->fresh()->answers_count)->toBe(0);
+});
+
+test('regular user cannot delete another users forum answer', function () {
+    $regularUser = User::factory()->create();
+    $author = User::factory()->create();
+    $post = ForumPost::factory()->create(['user_id' => $author->id]);
+    $answer = ForumAnswer::create([
+        'forum_post_id' => $post->id,
+        'user_id' => $author->id,
+        'body' => 'Answer that should not be deleted by stranger',
+    ]);
+
+    $this->actingAs($regularUser)
+        ->delete(route('forum.answers.destroy', $answer))
+        ->assertForbidden();
+
+    expect(ForumAnswer::find($answer->id))->not->toBeNull();
 });

@@ -1117,7 +1117,10 @@ function parseMentions(
 
                     <!-- Delete button for direct answer -->
                     <button
-                        v-if="user && user.id === answer.user_id"
+                        v-if="
+                            user &&
+                            (user.id === answer.user_id || can('manage forums'))
+                        "
                         type="button"
                         @click="deleteAnswer(answer.id)"
                         class="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
@@ -1279,7 +1282,11 @@ function parseMentions(
 
                             <!-- Delete reply -->
                             <button
-                                v-if="user && user.id === reply.user_id"
+                                v-if="
+                                    user &&
+                                    (user.id === reply.user_id ||
+                                        can('manage forums'))
+                                "
                                 type="button"
                                 @click="deleteAnswer(reply.id)"
                                 class="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
