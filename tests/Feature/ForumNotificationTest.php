@@ -4,6 +4,7 @@ use App\Models\AppSetting;
 use App\Models\ForumPost;
 use App\Models\Subject;
 use App\Models\User;
+use App\Notifications\ForumQuestionPendingNotification;
 use App\Notifications\ForumReportNotification;
 use App\Notifications\ForumStatusNotification;
 use Database\Seeders\RolePermissionSeeder;
@@ -196,4 +197,35 @@ test('ForumStatusNotification delivers to mail for approval, flagged, rejected a
 
     $lockedNotif = new ForumStatusNotification($post, 'locked');
     expect($lockedNotif->via($author))->toBe(['database']);
+});
+
+test('submitting a question when approval mode is manual sends ForumQuestionPendingNotification to moderators', function () {
+    Notification::fake();
+
+    AppSetting::set('forum_approval_mode', 'manual', 'string');
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $author = User::factory()->create(['name' => 'Question Author']);
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-blue-500',
+        'slug' => 'physics-hsc-manual',
+        'icon' => 'atom',
+        'sort_order' => 1,
+    ]);
+
+    $this->actingAs($author)->post(route('forum.store'), [
+        'title' => 'New question requiring review',
+        'body' => 'Here is my detailed physics inquiry that requires approval.',
+        'curriculum' => 'hsc',
+        'subject_id' => $subject->id,
+    ]);
+
+    Notification::assertSentTo($admin, ForumQuestionPendingNotification::class, function ($notification) use ($author) {
+        return $notification->author->id === $author->id
+            && $notification->post->title === 'New question requiring review';
+    });
 });

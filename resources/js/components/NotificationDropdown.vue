@@ -12,6 +12,7 @@ import {
     HeartHandshake,
     Heart,
     ThumbsUp,
+    Clock,
     LifeBuoy,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -455,6 +456,12 @@ onBeforeUnmount(() => {
                                         item.data?.type === 'support_ticket'
                                     "
                                     class="h-4 w-4 text-indigo-500"
+                                />
+                                <Clock
+                                    v-else-if="
+                                        item.data?.type === 'forum_pending'
+                                    "
+                                    class="h-4 w-4 text-amber-500"
                                 />
                                 <ShieldAlert
                                     v-else-if="

@@ -9,6 +9,7 @@ use App\Models\ForumVote;
 use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
+use App\Notifications\ForumQuestionPendingNotification;
 use App\Notifications\ForumReportNotification;
 use App\Notifications\ForumStatusNotification;
 use App\Rules\CleanText;
@@ -255,6 +256,16 @@ class ForumController extends Controller
             'is_locked' => false,
             'moderation_status' => $moderationStatus,
         ]);
+
+        if ($moderationStatus === 'pending') {
+            $moderators = User::permission('manage forums')
+                ->select(['id', 'name', 'email'])
+                ->get();
+
+            if ($moderators->isNotEmpty()) {
+                Notification::send($moderators, new ForumQuestionPendingNotification($post, $user));
+            }
+        }
 
         $message = $moderationStatus === 'pending'
             ? 'Question submitted successfully and is pending moderator review.'
