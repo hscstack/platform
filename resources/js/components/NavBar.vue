@@ -73,14 +73,6 @@ const isHomeActive = computed(
         currentUrl.value.startsWith('/ssc?'),
 );
 
-const isHomeOrSsc = computed(
-    () =>
-        currentUrl.value === '/' ||
-        currentUrl.value.startsWith('/?') ||
-        currentUrl.value === '/ssc' ||
-        currentUrl.value.startsWith('/ssc?'),
-);
-
 const loginUrl = computed(() => {
     const path = currentUrl.value;
 
@@ -368,7 +360,7 @@ onBeforeUnmount(() => {
                 <div class="hidden items-center gap-3 md:flex">
                     <!-- Search Trigger Button on Desktop (Only on Home & SSC) -->
                     <button
-                        v-if="isHomeOrSsc"
+                        v-if="isHomeActive"
                         @click.stop="triggerSearch"
                         class="flex h-9 items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3 text-xs font-semibold text-slate-600 shadow-2xs transition-all hover:border-slate-300 hover:bg-slate-100 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
                         title="Search subjects"
@@ -535,7 +527,7 @@ onBeforeUnmount(() => {
                 <div class="flex items-center gap-1.5 md:hidden">
                     <!-- Mobile Search Trigger Button (Only on Home & SSC - Circular Ghost) -->
                     <button
-                        v-if="isHomeOrSsc"
+                        v-if="isHomeActive"
                         @click.stop="triggerSearch"
                         class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 active:scale-95 dark:text-gray-300 dark:hover:bg-gray-800"
                         aria-label="Search subjects"
