@@ -34,7 +34,7 @@
     html,
     body {
         font-stretch: 96%;
-        @apply transition-colors duration-300;
+        @apply bg-slate-50 dark:bg-gray-950 transition-colors duration-300;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* IE and Edge */
     }
