@@ -434,7 +434,7 @@ onBeforeUnmount(() => {
 
                 <!-- Notifications List -->
                 <div
-                    class="max-h-[calc(100vh-140px)] divide-y divide-slate-100 overflow-y-auto sm:max-h-[380px] dark:divide-gray-800/60"
+                    class="max-h-[360px] divide-y divide-slate-100 overflow-y-auto dark:divide-gray-800/60"
                 >
                     <!-- Loading Initial State -->
                     <div
