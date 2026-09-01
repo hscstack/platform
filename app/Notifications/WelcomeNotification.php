@@ -34,7 +34,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
                     'You can explore curated study notes, syllabus trees, participate in the community forum, and read blogs.',
                 ],
                 'actionText' => 'Get Started',
-                'actionUrl' => route('index'),
+                'actionUrl' => route('me'),
             ]);
     }
 
@@ -44,7 +44,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
             'type' => 'welcome',
             'title' => 'Welcome to HSCStack! 🎓',
             'message' => 'Your account is ready. Explore notes, syllabus, and discussions.',
-            'url' => route('index'),
+            'url' => route('me'),
         ];
     }
 }

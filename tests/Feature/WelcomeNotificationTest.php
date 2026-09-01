@@ -24,7 +24,7 @@ test('welcome notification delivers to both database and mail when user accepts 
     $dbData = $notification->toArray($user);
     expect($dbData['type'])->toBe('welcome')
         ->and($dbData['title'])->toBe('Welcome to HSCStack! 🎓')
-        ->and($dbData['url'])->toBe(route('index'));
+        ->and($dbData['url'])->toBe(route('me'));
 
     $mailMessage = $notification->toMail($user);
     expect($mailMessage->subject)->toBe('Welcome to HSCStack! 🎓');
