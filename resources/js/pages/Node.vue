@@ -148,7 +148,7 @@ const handleVote = (type: 'up' | 'down') => {
                         image_url: currentUser.value.image_url,
                         image_path: currentUser.value.image_path,
                         institution: currentUser.value.institution,
-                        roles: currentUser.value.roles,
+                        is_verified: currentUser.value.is_verified,
                     },
                     ...localUpvoters.value.filter(
                         (u: any) => u.id !== currentUser.value.id,
@@ -178,7 +178,7 @@ const handleVote = (type: 'up' | 'down') => {
                         image_url: currentUser.value.image_url,
                         image_path: currentUser.value.image_path,
                         institution: currentUser.value.institution,
-                        roles: currentUser.value.roles,
+                        is_verified: currentUser.value.is_verified,
                     },
                     ...localUpvoters.value.filter(
                         (u: any) => u.id !== currentUser.value.id,
