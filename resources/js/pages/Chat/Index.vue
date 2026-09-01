@@ -2230,7 +2230,7 @@ onUnmounted(() => {
 
                     <Link
                         v-if="!currentUser"
-                        href="/login"
+                        :href="`/login?redirect=${encodeURIComponent($page.url || '/chat')}`"
                         class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                         <LogIn class="h-3.5 w-3.5" />
