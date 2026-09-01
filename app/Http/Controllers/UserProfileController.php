@@ -10,6 +10,7 @@ use App\Models\Node;
 use App\Models\Resource;
 use App\Models\User;
 use App\Models\UserAppreciation;
+use App\Notifications\UserAppreciationNotification;
 use Inertia\Inertia;
 
 class UserProfileController extends Controller
@@ -260,6 +261,9 @@ class UserProfileController extends Controller
                 'user_id' => $user->id,
                 'appreciator_id' => $currentAuthUser->id,
             ]);
+
+            $totalAppreciations = $user->appreciationsReceived()->count();
+            $user->notify(new UserAppreciationNotification($currentAuthUser, $totalAppreciations));
         }
 
         return back();
