@@ -73,3 +73,48 @@ test('admin can filter staff members with search query', function () {
         ->where('filters.q', 'Dave')
     );
 });
+
+test('admin can update user is_verified status independently of roles', function () {
+    Permission::findOrCreate('edit users', 'web');
+    $admin = adminUserWithPermissions(['view admin', 'view users', 'edit users']);
+    $admin->assignRole('admin');
+
+    $student = User::factory()->create(['is_verified' => false]);
+
+    $response = $this->actingAs($admin)->patch("/admin/users/{$student->id}", [
+        'name' => $student->name,
+        'email' => $student->email,
+        'is_verified' => true,
+    ]);
+
+    $response->assertRedirect('/admin/users');
+    expect($student->fresh()->is_verified)->toBeTrue();
+
+    // Toggle back to false
+    $response = $this->actingAs($admin)->patch("/admin/users/{$student->id}", [
+        'name' => $student->name,
+        'email' => $student->email,
+        'is_verified' => false,
+    ]);
+
+    $response->assertRedirect('/admin/users');
+    expect($student->fresh()->is_verified)->toBeFalse();
+});
+
+test('admin can create user with is_verified status', function () {
+    Permission::findOrCreate('create users', 'web');
+    $admin = adminUserWithPermissions(['view admin', 'view users', 'create users']);
+    $admin->assignRole('admin');
+
+    $response = $this->actingAs($admin)->post('/admin/users', [
+        'name' => 'Verified Student',
+        'username' => 'verified_student',
+        'email' => 'verifiedstudent@example.com',
+        'is_verified' => true,
+    ]);
+
+    $response->assertRedirect('/admin/users');
+    $createdUser = User::where('email', 'verifiedstudent@example.com')->first();
+    expect($createdUser)->not->toBeNull();
+    expect($createdUser->is_verified)->toBeTrue();
+});

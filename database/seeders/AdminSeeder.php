@@ -14,6 +14,7 @@ class AdminSeeder extends Seeder
             [
                 'name' => config('app.admin_name', 'ADMIN'),
                 'email_verified_at' => now(),
+                'is_verified' => true,
             ]
         );
 

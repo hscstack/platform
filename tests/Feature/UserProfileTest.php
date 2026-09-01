@@ -8,7 +8,6 @@ use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Permission\Models\Role;
 
 test('public user profile can be rendered by username', function () {
     $user = User::factory()->create([
@@ -40,10 +39,10 @@ test('viewing non-existent username renders 404 page', function () {
 });
 
 test('public profile renders authored blogs when available', function () {
-    Role::create(['name' => 'editor']);
-
-    $user = User::factory()->create(['username' => 'contributor_john']);
-    $user->assignRole('editor');
+    $user = User::factory()->create([
+        'username' => 'contributor_john',
+        'is_verified' => true,
+    ]);
 
     Blog::create([
         'user_id' => $user->id,
@@ -58,7 +57,7 @@ test('public profile renders authored blogs when available', function () {
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
-        ->where('profileUser.is_staff', true)
+        ->where('profileUser.is_verified', true)
         ->where('stats.blogsCount', 1)
         ->has('blogs', 1)
         ->where('blogs.0.title', 'Calculus Masterclass')
@@ -112,18 +111,13 @@ test('public profile accurately displays forum questions, answers, and activitie
 });
 
 test('public profile includes both contributors and random users in suggestions', function () {
-    $role = Role::firstOrCreate(['name' => 'editor']);
-
     $mainUser = User::factory()->create(['username' => 'current_user']);
 
-    $contributor1 = User::factory()->create(['username' => 'contrib_1']);
-    $contributor1->assignRole($role);
+    $contributor1 = User::factory()->create(['username' => 'contrib_1', 'is_verified' => true]);
+    $contributor2 = User::factory()->create(['username' => 'contrib_2', 'is_verified' => true]);
 
-    $contributor2 = User::factory()->create(['username' => 'contrib_2']);
-    $contributor2->assignRole($role);
-
-    $student1 = User::factory()->create(['username' => 'student_1']);
-    $student2 = User::factory()->create(['username' => 'student_2']);
+    $student1 = User::factory()->create(['username' => 'student_1', 'is_verified' => false]);
+    $student2 = User::factory()->create(['username' => 'student_2', 'is_verified' => false]);
 
     $response = $this->get('/u/current_user');
 
@@ -161,16 +155,13 @@ test('public profile displays created folders in recent activity', function () {
     );
 });
 
-test('user model computes is_verified attribute based on role presence', function () {
-    $regularUser = User::factory()->create();
+test('user model has is_verified boolean column and is single source of truth', function () {
+    $regularUser = User::factory()->create(['is_verified' => false]);
     expect($regularUser->is_verified)->toBeFalse();
 
-    $role = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'web']);
-    $staffUser = User::factory()->create();
-    $staffUser->assignRole($role);
-
-    expect($staffUser->is_verified)->toBeTrue();
-    expect($staffUser->toArray())->toHaveKey('is_verified', true);
+    $verifiedUser = User::factory()->create(['is_verified' => true]);
+    expect($verifiedUser->is_verified)->toBeTrue();
+    expect($verifiedUser->toArray())->toHaveKey('is_verified', true);
 });
 
 test('public profile returns created folders in recent activities', function () {

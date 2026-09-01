@@ -14,7 +14,6 @@ const props = withDefaults(
             institution?: string | null;
             title?: string | null;
             is_verified?: boolean;
-            roles?: Array<{ id?: number; name: string }>;
         };
         theme?: 'indigo' | 'emerald' | 'rose';
         subtitle?: string | null;
@@ -30,10 +29,7 @@ const profileUrl = computed(() => {
 });
 
 const isVerified = computed(() => {
-    return Boolean(
-        props.user.is_verified ??
-        (props.user.roles && props.user.roles.length > 0),
-    );
+    return Boolean(props.user.is_verified);
 });
 
 const avatarBgClass = computed(() => {

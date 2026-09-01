@@ -23,8 +23,19 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'google_id' => fake()->unique()->uuid(),
             'email_verified_at' => now(),
+            'is_verified' => false,
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Indicate that the user is verified.
+     */
+    public function verified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_verified' => true,
+        ]);
     }
 
     /**

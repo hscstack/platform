@@ -51,7 +51,7 @@ class NodeController extends Controller
             : null;
 
         $upvoters = $node->upvotes()
-            ->with(['user:id,name,username,image_path,institution', 'user.roles:id,name'])
+            ->with('user:id,name,username,image_path,institution,is_verified')
             ->latest('id')
             ->limit(50)
             ->get()

@@ -55,9 +55,9 @@ class ChatController extends Controller
 
         // Fetch last X messages in chronological order
         $messages = ChatMessage::with([
-            'user:id,name,username,image_path,institution',
+            'user:id,name,username,image_path,institution,is_verified',
             'user.roles:id,name',
-            'reactions.user:id,name,username,image_path,institution',
+            'reactions.user:id,name,username,image_path,institution,is_verified',
             'reactions.user.roles:id,name',
         ])
             ->latest('id')
@@ -243,7 +243,7 @@ class ChatController extends Controller
             // Log without failing response
         }
 
-        $message->loadMissing(['user:id,name,username,image_path,institution', 'user.roles:id,name']);
+        $message->loadMissing(['user:id,name,username,image_path,institution,is_verified', 'user.roles:id,name']);
 
         return response()->json([
             'id' => $message->id,

@@ -56,13 +56,13 @@ class BlogController extends Controller
     {
         abort_unless($blog->is_published, 404);
 
-        $blog->load('user:id,name,username,image_path');
+        $blog->load('user:id,name,username,image_path,is_verified');
         $blog->increment('views');
 
         $reactionsCount = $blog->reactions()->count();
 
         $reactors = $blog->reactions()
-            ->with(['user:id,name,username,image_path,institution'])
+            ->with(['user:id,name,username,image_path,institution,is_verified'])
             ->latest('id')
             ->limit(50)
             ->get()
@@ -71,7 +71,7 @@ class BlogController extends Controller
             ->values();
 
         $comments = $blog->comments()
-            ->with(['user:id,name,username,image_path,institution'])
+            ->with(['user:id,name,username,image_path,institution,is_verified'])
             ->latest()
             ->get();
 
