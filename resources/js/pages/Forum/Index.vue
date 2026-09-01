@@ -19,6 +19,7 @@ import EmptyState from '@/components/EmptyState.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import Pagination from '@/components/Pagination.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
 import { formatTimeAgo } from '@/lib/useDate';
 
@@ -29,6 +30,7 @@ interface User {
     image_path?: string | null;
     image_url?: string | null;
     institution?: string | null;
+    is_verified?: boolean;
 }
 
 interface NodeItem {
@@ -758,6 +760,9 @@ const timeAgo = formatTimeAgo;
                                         }}</span>
                                     </div>
                                     <span>{{ post.user.name }}</span>
+                                    <VerifiedBadge
+                                        v-if="post.user.is_verified"
+                                    />
                                 </Link>
                                 <span
                                     v-else
