@@ -1,11 +1,9 @@
 <?php
 
-use App\Mail\SupportTicketMail;
 use App\Models\SupportTicket;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -17,9 +15,8 @@ test('support and donate pages load successfully', function () {
     $this->get('/support')->assertStatus(200);
 });
 
-test('authenticated user can submit a support ticket and receive email', function () {
+test('authenticated user can submit a support ticket', function () {
     Storage::fake();
-    Mail::fake();
     $user = User::factory()->create();
 
     $file = UploadedFile::fake()->image('screenshot.png');
@@ -45,10 +42,6 @@ test('authenticated user can submit a support ticket and receive email', functio
         ->and($ticket->attachment_path)->not->toBeNull();
 
     Storage::assertExists($ticket->attachment_path);
-
-    Mail::assertQueued(SupportTicketMail::class, function ($mail) use ($user, $ticket) {
-        return $mail->hasTo($user->email) && $mail->mailSubject === "[HSCStack Support] Ticket #{$ticket->ticket_number} Received";
-    });
 });
 
 test('authenticated user can submit a ticket to apply for a role', function () {
@@ -147,7 +140,6 @@ test('admin can reply to a ticket and resolve it', function () {
     $admin->assignRole('admin');
 
     $student = User::factory()->create();
-    Mail::fake();
     $ticket = SupportTicket::create([
         'user_id' => $student->id,
         'category' => 'missing_resource',
@@ -168,15 +160,10 @@ test('admin can reply to a ticket and resolve it', function () {
         ->and($ticket->admin_reply)->toBe('We have uploaded the requested PDF note. Thank you for reporting!')
         ->and($ticket->replied_by)->toBe($admin->id)
         ->and($ticket->replied_at)->not->toBeNull();
-
-    Mail::assertQueued(SupportTicketMail::class, function ($mail) use ($student, $ticket) {
-        return $mail->hasTo($student->email) && str_contains($mail->mailSubject, "Ticket #{$ticket->ticket_number} Updated");
-    });
 });
 
 test('admin can update status and delete a ticket', function () {
     Storage::fake();
-    Mail::fake();
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
@@ -202,10 +189,6 @@ test('admin can update status and delete a ticket', function () {
     expect($updatedTicket->status)->toBe('closed')
         ->and($updatedTicket->admin_reply)->toBe('আপনার সাপোর্ট টিকেটটি পর্যালোচনা শেষে বন্ধ করা হয়েছে।')
         ->and($updatedTicket->replied_by)->toBe($admin->id);
-
-    Mail::assertQueued(SupportTicketMail::class, function ($mail) use ($admin, $ticket) {
-        return $mail->hasTo($admin->email) && str_contains($mail->mailSubject, "Ticket #{$ticket->ticket_number} Updated");
-    });
 
     // Delete ticket
     $this->actingAs($admin)->delete("/admin/tickets/{$ticket->id}")

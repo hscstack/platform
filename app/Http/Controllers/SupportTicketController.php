@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\SupportTicketMail;
 use App\Models\SupportTicket;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class SupportTicketController extends Controller
@@ -73,10 +71,6 @@ class SupportTicketController extends Controller
             'attachment_path' => $attachmentPath,
             'status' => SupportTicket::STATUS_OPEN,
         ]);
-
-        if ($user->email) {
-            Mail::to($user->email)->queue(SupportTicketMail::forCreated($ticket));
-        }
 
         return redirect()->route('support.my-tickets')->with('success', "Ticket {$ticket->ticket_number} created successfully! Our team will review and reply.");
     }

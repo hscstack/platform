@@ -7,7 +7,6 @@ use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Report;
-use App\Notifications\AppNotification;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -64,16 +63,6 @@ class ForumController extends Controller
 
         $status = $post->is_locked ? 'locked' : 'unlocked';
 
-        // Notify post author if not the admin performing the action
-        if ($post->user && $post->user_id !== auth()->id()) {
-            $post->user->notify(new AppNotification(
-                type: 'forum_status',
-                title: "Your discussion was {$status}",
-                message: $status === 'locked' ? 'Replies and new answers on your question have been disabled.' : 'Replies and new answers on your question have been re-enabled.',
-                url: route('forum.show', $post->slug)
-            ));
-        }
-
         return back()->with('success', "Discussion has been {$status}.");
     }
 
@@ -83,31 +72,9 @@ class ForumController extends Controller
             'moderation_status' => ['required', 'string', 'in:approved,pending,flagged,rejected'],
         ]);
 
-        $oldStatus = $post->moderation_status;
         $newStatus = $validated['moderation_status'];
 
         $post->update(['moderation_status' => $newStatus]);
-
-        // Notify post author if status changed and not the admin performing the action
-        if ($oldStatus !== $newStatus && $post->user && $post->user_id !== auth()->id()) {
-            $statusTitles = [
-                'approved' => 'Your question was approved!',
-                'rejected' => 'Your question was rejected',
-                'flagged' => 'Your question was flagged for review',
-            ];
-            $statusMessages = [
-                'approved' => 'Your question is now published and visible to the HSC Stack community.',
-                'rejected' => 'Your question was reviewed and declined by moderators.',
-                'flagged' => 'Your question has been flagged for moderator review.',
-            ];
-
-            $post->user->notify(new AppNotification(
-                type: 'forum_status',
-                title: $statusTitles[$newStatus] ?? "Question status: {$newStatus}",
-                message: $statusMessages[$newStatus] ?? $post->title,
-                url: route('forum.show', $post->slug)
-            ));
-        }
 
         return back()->with('success', "Discussion status updated to {$newStatus}.");
     }

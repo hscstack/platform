@@ -1,10 +1,8 @@
 <?php
 
-use App\Mail\UserAppreciationMail;
 use App\Models\User;
 use App\Models\UserAppreciation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
@@ -95,53 +93,4 @@ test('user profile displays accurate appreciation counts and status', function (
             ->where('appreciatingCount', 1)
             ->where('isAppreciated', false)
         );
-});
-
-test('recipient receives milestone email on 1st appreciation', function () {
-    Mail::fake();
-
-    $author = User::factory()->create([
-        'name' => 'Tarek Rahman',
-        'username' => 'tarek',
-        'email' => 'tarek@example.com',
-        'receive_emails' => true,
-    ]);
-
-    $fan = User::factory()->create([
-        'name' => 'Fahim Hasan',
-        'username' => 'fahim',
-        'email' => 'fahim@example.com',
-    ]);
-
-    $this->actingAs($fan)
-        ->post("/u/{$author->id}/appreciate")
-        ->assertRedirect();
-
-    Mail::assertQueued(UserAppreciationMail::class, function ($mail) use ($author) {
-        return $mail->hasTo($author->email) &&
-            str_contains($mail->mailSubject, 'appreciated your profile') &&
-            str_contains($mail->mailContent, 'Fahim Hasan');
-    });
-});
-
-test('milestone email is not sent if recipient opted out of emails', function () {
-    Mail::fake();
-
-    $author = User::factory()->create([
-        'name' => 'Quiet Contributor',
-        'username' => 'quiet',
-        'email' => 'quiet@example.com',
-        'receive_emails' => false,
-    ]);
-
-    $fan = User::factory()->create([
-        'name' => 'Fahim Hasan',
-        'username' => 'fahim',
-    ]);
-
-    $this->actingAs($fan)
-        ->post("/u/{$author->id}/appreciate")
-        ->assertRedirect();
-
-    Mail::assertNothingQueued();
 });

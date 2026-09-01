@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\ForumNotificationMail;
 use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
-use App\Models\User;
-use App\Notifications\AppNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ForumAnswerController extends Controller
 {
@@ -67,7 +62,7 @@ class ForumAnswerController extends Controller
             $imagePath = $request->file('image')->store('forum/answers');
         }
 
-        $answer = $post->answers()->create([
+        $post->answers()->create([
             'user_id' => auth()->id(),
             'parent_id' => $parentId,
             'body' => $validated['body'],
@@ -75,31 +70,6 @@ class ForumAnswerController extends Controller
         ]);
 
         $post->increment('answers_count');
-
-        $currentUser = auth()->user();
-
-        // Notify target user (post author for root answers, or specific author for replies)
-        $replyUserId = $validated['reply_to_user_id'] ?? null;
-        $isParticipant = $replyUserId && ($post->user_id === $replyUserId || $post->answers()->where('user_id', $replyUserId)->exists());
-
-        $targetUser = $parentId
-            ? ($isParticipant ? User::find($replyUserId) : ($parent->user ?? null))
-            : $post->user;
-
-        if ($targetUser && $currentUser && $targetUser->id !== $currentUser->id) {
-            $targetUser->notify(new AppNotification(
-                type: $parentId ? 'user_mention' : 'forum_comment',
-                title: $parentId ? "{$currentUser->name} replied to you" : "{$currentUser->name} answered your question",
-                message: '"'.Str::limit(strip_tags($validated['body']), 80).'"',
-                url: route('forum.show', $post->slug)
-            ));
-        }
-
-        // Send mail notification to post author only (if commenter is not the author)
-        $author = $post->user;
-        if ($author && $currentUser && $author->id !== $currentUser->id && $author->email && $author->receive_emails !== false) {
-            Mail::to($author->email)->queue(ForumNotificationMail::forAnswer($post, $answer, $author, $currentUser));
-        }
 
         return back()->with('success', 'Answer posted!');
     }

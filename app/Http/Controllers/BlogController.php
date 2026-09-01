@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\BlogNotificationMail;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class BlogController extends Controller
@@ -97,18 +95,6 @@ class BlogController extends Controller
             $existing->delete();
         } else {
             $blog->reactions()->create(['user_id' => $user->id]);
-
-            $reactionsCount = $blog->reactions()->count();
-            $milestones = [1, 10, 25, 50, 100, 250, 500, 1000];
-            $isMilestone = in_array($reactionsCount, $milestones, true) || ($reactionsCount > 1000 && $reactionsCount % 500 === 0);
-
-            if ($isMilestone) {
-                $blog->loadMissing('user:id,name,email,receive_emails');
-
-                if ($blog->user && $blog->user_id !== $user->id && $blog->user->email && $blog->user->receive_emails !== false) {
-                    Mail::to($blog->user->email)->queue(BlogNotificationMail::forReactionMilestone($blog, $user, $reactionsCount));
-                }
-            }
         }
 
         return back();
@@ -126,17 +112,10 @@ class BlogController extends Controller
             'content' => ['required', 'string', 'max:1000'],
         ]);
 
-        $comment = $blog->comments()->create([
+        $blog->comments()->create([
             'user_id' => $userId,
             'content' => trim($validated['content']),
         ]);
-
-        $comment->load(['user:id,name,username,image_path,institution', 'user.roles:id,name']);
-        $blog->loadMissing('user:id,name,email,receive_emails');
-
-        if ($blog->user && $blog->user_id !== $userId && $blog->user->email && $blog->user->receive_emails !== false) {
-            Mail::to($blog->user->email)->queue(BlogNotificationMail::forComment($blog, $comment));
-        }
 
         return back()->with('success', 'Comment posted successfully.');
     }
