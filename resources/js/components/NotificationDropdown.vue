@@ -10,6 +10,7 @@ import {
     ShieldAlert,
     CheckCircle2,
     HeartHandshake,
+    Heart,
     LifeBuoy,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -417,8 +418,17 @@ onBeforeUnmount(() => {
                                 "
                             >
                                 <MessageSquare
-                                    v-if="item.data?.type === 'forum_comment'"
-                                    class="h-4 w-4"
+                                    v-if="
+                                        item.data?.type === 'forum_comment' ||
+                                        item.data?.type === 'blog_comment'
+                                    "
+                                    class="h-4 w-4 text-indigo-500"
+                                />
+                                <Heart
+                                    v-else-if="
+                                        item.data?.type === 'blog_reaction'
+                                    "
+                                    class="h-4 w-4 text-rose-500"
                                 />
                                 <AtSign
                                     v-else-if="

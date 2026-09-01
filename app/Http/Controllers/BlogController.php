@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use App\Models\BlogComment;
+use App\Notifications\BlogCommentNotification;
+use App\Notifications\BlogReactionNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -95,6 +97,10 @@ class BlogController extends Controller
             $existing->delete();
         } else {
             $blog->reactions()->create(['user_id' => $user->id]);
+
+            if ($blog->user_id !== $user->id) {
+                $blog->user->notify(new BlogReactionNotification($blog, $user, $blog->reactions()->count()));
+            }
         }
 
         return back();
@@ -112,10 +118,14 @@ class BlogController extends Controller
             'content' => ['required', 'string', 'max:1000'],
         ]);
 
-        $blog->comments()->create([
+        $comment = $blog->comments()->create([
             'user_id' => $userId,
             'content' => trim($validated['content']),
         ]);
+
+        if ($blog->user_id !== $userId) {
+            $blog->user->notify(new BlogCommentNotification($blog, $comment));
+        }
 
         return back()->with('success', 'Comment posted successfully.');
     }
