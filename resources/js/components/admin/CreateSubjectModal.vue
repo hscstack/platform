@@ -1,23 +1,16 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import {
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-    Search,
+    AlertCircle,
     Check,
     ChevronDown,
     ChevronRight,
     Loader2,
-    AlertCircle,
 } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import SubjectIcon from '@/components/SubjectIcon.vue';
+import { SUBJECT_ICON_LIST } from '@/lib/subjectIcons';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -36,18 +29,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
-
-const icons: Record<string, any> = {
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-    Search,
-};
 
 const showAdvanced = ref(false);
 const isSaving = ref(false);
@@ -108,8 +89,6 @@ watch(
         }
     },
 );
-
-const activeIconComponent = computed(() => icons[icon.value] || BookOpen);
 
 const handleClose = () => {
     if (isSaving.value) {
@@ -284,19 +263,19 @@ const submitForm = () => {
                     <div class="flex flex-wrap gap-2">
                         <button
                             type="button"
-                            v-for="(iconComponent, iconKey) in icons"
-                            :key="iconKey"
-                            @click="icon = iconKey"
-                            :title="iconKey"
+                            v-for="item in SUBJECT_ICON_LIST"
+                            :key="item.key"
+                            @click="icon = item.key"
+                            :title="item.key"
                             class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border transition"
                             :class="
-                                icon === iconKey
+                                icon === item.key
                                     ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300'
                                     : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
                             "
                         >
                             <component
-                                :is="iconComponent"
+                                :is="item.component"
                                 class="h-4.5 w-4.5 shrink-0"
                             />
                         </button>
@@ -311,7 +290,7 @@ const submitForm = () => {
                         :class="tailwindFormat"
                         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-black/5 dark:border-white/10"
                     >
-                        <component :is="activeIconComponent" class="h-5 w-5" />
+                        <SubjectIcon :name="icon" class-name="h-5 w-5" />
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">

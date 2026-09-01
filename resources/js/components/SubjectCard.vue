@@ -1,32 +1,10 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import {
-    Search,
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-} from 'lucide-vue-next';
+import SubjectIcon from '@/components/SubjectIcon.vue';
 
 const { subject } = defineProps({
     subject: Object,
 });
-
-const icons = {
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-    Search,
-};
 </script>
 
 <template>
@@ -42,10 +20,7 @@ const icons = {
                     'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-200',
                 ]"
             >
-                <component
-                    :is="icons[subject.icon]"
-                    class="h-5 w-5 stroke-[2.2]"
-                />
+                <SubjectIcon :name="subject.icon" />
             </div>
 
             <!-- Content Area -->

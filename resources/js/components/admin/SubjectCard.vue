@@ -1,19 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-
-import {
-    Search,
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-    Pencil,
-    Trash2,
-} from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
+import SubjectIcon from '@/components/SubjectIcon.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
@@ -25,18 +13,6 @@ const { subject } = defineProps({
 const emit = defineEmits<{
     (e: 'edit', subject: any): void;
 }>();
-
-const icons = {
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-    Search,
-};
 
 const handleDelete = () => {
     if (confirm('Are you sure you want to delete this Subject?')) {
@@ -59,9 +35,9 @@ const handleDelete = () => {
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 sm:h-10 sm:w-10 dark:border-white/10',
                 ]"
             >
-                <component
-                    :is="icons[subject.icon] || BookOpen"
-                    class="h-4.5 w-4.5 stroke-[2]"
+                <SubjectIcon
+                    :name="subject.icon"
+                    class-name="h-4.5 w-4.5 stroke-[2]"
                 />
             </div>
 
