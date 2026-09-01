@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\WelcomeUserMail;
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use App\Rules\CleanText;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -172,7 +171,7 @@ class AuthController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            Mail::to($user->email)->queue(new WelcomeUserMail($user));
+            $user->notify(new WelcomeNotification);
         } else {
             if ($imagePath) {
                 if ($user->image_path) {

@@ -101,8 +101,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/onboarding', [AuthController::class, 'showOnboarding'])->name('onboarding');
     Route::post('/onboarding', [AuthController::class, 'completeOnboarding'])->name('onboarding.complete');
 
-    Route::get('/blogs', [BlogController::class, 'index']);
-    Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
+    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
     Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
     Route::get('/forum/questions/{post:slug}', [ForumController::class, 'show'])->name('forum.show');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');

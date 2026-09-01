@@ -9,6 +9,7 @@ use App\Models\ChatMessage;
 use App\Models\ChatMessageReaction;
 use App\Models\Report;
 use App\Models\User;
+use App\Notifications\UserSuspensionNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -210,9 +211,11 @@ class ChatSettingsController extends Controller
         if ($user->isBanned()) {
             $durationText = $user->banned_until->diffForHumans();
             ChatMessage::sendBotMessage("Moderator @{$moderator->username} suspended @{$user->username} from community participation until {$user->banned_until->toDayDateTimeString()} ({$durationText}).");
+            $user->notify(new UserSuspensionNotification(true, $user->banned_until->toDayDateTimeString()." ({$durationText})"));
             $message = "User @{$user->username} has been suspended until {$user->banned_until->toDateTimeString()}.";
         } else {
             ChatMessage::sendBotMessage("Moderator @{$moderator->username} removed suspension for @{$user->username}.");
+            $user->notify(new UserSuspensionNotification(false));
             $message = "Suspension for @{$user->username} has been removed.";
         }
 

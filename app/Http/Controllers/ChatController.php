@@ -9,8 +9,11 @@ use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use App\Models\Report;
 use App\Models\User;
+use App\Notifications\ChatMentionNotification;
+use App\Notifications\ChatReportNotification;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -219,6 +222,20 @@ class ChatController extends Controller
         // Keep rolling buffer of latest X messages in DB
         ChatMessage::pruneOldMessages($maxMessages);
 
+        // Notify mentioned users via in-app notification
+        if (preg_match_all('/@([a-zA-Z0-9_]+)/', $content, $matches)) {
+            $mentionedUsernames = array_unique(array_filter($matches[1], fn ($u) => strcasecmp($u, $user->username) !== 0));
+            if (! empty($mentionedUsernames)) {
+                $mentionedUsers = User::whereIn('username', array_slice($mentionedUsernames, 0, 5))
+                    ->select(['id', 'name', 'username', 'email'])
+                    ->get();
+
+                if ($mentionedUsers->isNotEmpty()) {
+                    Notification::send($mentionedUsers, new ChatMentionNotification($message, $user));
+                }
+            }
+        }
+
         // Broadcast to Pusher Channels
         try {
             broadcast(new ChatMessageSent($message))->toOthers();
@@ -346,6 +363,11 @@ class ChatController extends Controller
             'reason' => $validated['reason'] ?? 'Inappropriate message',
             'status' => 'pending',
         ]);
+
+        $moderators = User::permission('manage chat')->select(['id', 'name', 'email'])->get();
+        if ($moderators->isNotEmpty()) {
+            Notification::send($moderators, new ChatReportNotification($report, $user));
+        }
 
         // Dynamic Auto-ban logic on X reports
         $autoBanEnabled = (bool) AppSetting::get('global_chat_auto_ban_enabled', true);

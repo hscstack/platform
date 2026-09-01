@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\UserAppreciationMail;
 use App\Models\BlogComment;
 use App\Models\BlogReaction;
 use App\Models\ForumAnswer;
@@ -11,8 +10,7 @@ use App\Models\Node;
 use App\Models\Resource;
 use App\Models\User;
 use App\Models\UserAppreciation;
-use App\Notifications\AppNotification;
-use Illuminate\Support\Facades\Mail;
+use App\Notifications\UserAppreciationNotification;
 use Inertia\Inertia;
 
 class UserProfileController extends Controller
@@ -264,22 +262,8 @@ class UserProfileController extends Controller
                 'appreciator_id' => $currentAuthUser->id,
             ]);
 
-            $appreciationsCount = $user->appreciationsReceived()->count();
-
-            // Send in-app notification
-            $user->notify(new AppNotification(
-                type: 'user_appreciation',
-                title: "{$currentAuthUser->name} appreciated your profile!",
-                message: "You have received {$appreciationsCount} total appreciations on your profile.",
-                url: route('user.profile', ['username' => $user->username])
-            ));
-
-            $milestones = [1, 10, 25, 50, 100, 250, 500, 1000];
-            $isMilestone = in_array($appreciationsCount, $milestones, true) || ($appreciationsCount > 1000 && $appreciationsCount % 500 === 0);
-
-            if ($isMilestone && $user->email && $user->receive_emails !== false) {
-                Mail::to($user->email)->queue(UserAppreciationMail::forMilestone($user, $currentAuthUser, $appreciationsCount));
-            }
+            $totalAppreciations = $user->appreciationsReceived()->count();
+            $user->notify(new UserAppreciationNotification($currentAuthUser, $totalAppreciations));
         }
 
         return back();

@@ -1,10 +1,10 @@
 <?php
 
-use App\Mail\WelcomeUserMail;
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -66,8 +66,8 @@ test('onboarding page redirects to login without onboarding session', function (
     $response->assertSessionHas('error', 'Please continue with Google to create an account.');
 });
 
-test('completing onboarding creates user, queues welcome mail, and logs in', function () {
-    Mail::fake();
+test('completing onboarding creates user, sends welcome notification, and logs in', function () {
+    Notification::fake();
 
     $response = $this->withSession([
         'onboarding_user' => [
@@ -95,14 +95,11 @@ test('completing onboarding creates user, queues welcome mail, and logs in', fun
     $response->assertSessionHas('success');
     $response->assertSessionMissing('onboarding_user');
 
-    Mail::assertQueued(WelcomeUserMail::class, function ($mail) {
-        return $mail->hasTo('newuser@example.com');
-    });
+    Notification::assertSentTo($user, WelcomeNotification::class);
 });
 
 test('completing onboarding with avatar image upload stores image', function () {
     Storage::fake();
-    Mail::fake();
 
     $file = UploadedFile::fake()->image('avatar.jpg');
 
@@ -131,7 +128,6 @@ test('completing onboarding with avatar image upload stores image', function () 
 
 test('completing onboarding downloads and stores google avatar when available', function () {
     Storage::fake();
-    Mail::fake();
     Http::fake([
         'https://lh3.googleusercontent.com/*' => Http::response('fake-avatar-bytes', 200, ['Content-Type' => 'image/jpeg']),
     ]);

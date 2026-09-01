@@ -10,6 +10,9 @@ import {
     ShieldAlert,
     CheckCircle2,
     HeartHandshake,
+    Heart,
+    ThumbsUp,
+    Clock,
     LifeBuoy,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -417,14 +420,30 @@ onBeforeUnmount(() => {
                                 "
                             >
                                 <MessageSquare
-                                    v-if="item.data?.type === 'forum_comment'"
-                                    class="h-4 w-4"
+                                    v-if="
+                                        item.data?.type === 'forum_comment' ||
+                                        item.data?.type === 'blog_comment'
+                                    "
+                                    class="h-4 w-4 text-indigo-500"
+                                />
+                                <Heart
+                                    v-else-if="
+                                        item.data?.type === 'blog_reaction'
+                                    "
+                                    class="h-4 w-4 text-rose-500"
+                                />
+                                <ThumbsUp
+                                    v-else-if="
+                                        item.data?.type === 'forum_vote' ||
+                                        item.data?.type === 'node_vote'
+                                    "
+                                    class="h-4 w-4 text-emerald-500"
                                 />
                                 <AtSign
                                     v-else-if="
                                         item.data?.type === 'user_mention'
                                     "
-                                    class="h-4 w-4"
+                                    class="h-4 w-4 text-indigo-500"
                                 />
                                 <HeartHandshake
                                     v-else-if="
@@ -438,19 +457,34 @@ onBeforeUnmount(() => {
                                     "
                                     class="h-4 w-4 text-indigo-500"
                                 />
+                                <Clock
+                                    v-else-if="
+                                        item.data?.type === 'forum_pending'
+                                    "
+                                    class="h-4 w-4 text-amber-500"
+                                />
                                 <ShieldAlert
                                     v-else-if="
-                                        item.data?.type === 'forum_status' &&
-                                        (item.data?.status === 'flagged' ||
-                                            item.data?.status === 'rejected' ||
-                                            item.data?.status === 'locked')
+                                        item.data?.type === 'chat_report' ||
+                                        item.data?.type === 'forum_report' ||
+                                        (item.data?.type ===
+                                            'user_suspension' &&
+                                            item.data?.is_banned) ||
+                                        (item.data?.type === 'forum_status' &&
+                                            (item.data?.status === 'flagged' ||
+                                                item.data?.status ===
+                                                    'rejected' ||
+                                                item.data?.status === 'locked'))
                                     "
                                     class="h-4 w-4 text-amber-500"
                                 />
                                 <CheckCircle2
                                     v-else-if="
-                                        item.data?.type === 'forum_status' &&
-                                        item.data?.status === 'approved'
+                                        (item.data?.type === 'forum_status' &&
+                                            item.data?.status === 'approved') ||
+                                        (item.data?.type ===
+                                            'user_suspension' &&
+                                            !item.data?.is_banned)
                                     "
                                     class="h-4 w-4 text-emerald-500"
                                 />

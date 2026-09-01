@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\ForumNotificationMail;
 use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\User;
-use App\Notifications\AppNotification;
+use App\Notifications\ForumAnswerNotification;
+use App\Notifications\ForumReportNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ForumAnswerController extends Controller
 {
@@ -68,7 +67,7 @@ class ForumAnswerController extends Controller
         }
 
         $answer = $post->answers()->create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'parent_id' => $parentId,
             'body' => $validated['body'],
             'image_path' => $imagePath,
@@ -76,29 +75,21 @@ class ForumAnswerController extends Controller
 
         $post->increment('answers_count');
 
-        $currentUser = auth()->user();
+        $targetUser = null;
+        $isReply = false;
 
-        // Notify target user (post author for root answers, or specific author for replies)
-        $replyUserId = $validated['reply_to_user_id'] ?? null;
-        $isParticipant = $replyUserId && ($post->user_id === $replyUserId || $post->answers()->where('user_id', $replyUserId)->exists());
-
-        $targetUser = $parentId
-            ? ($isParticipant ? User::find($replyUserId) : ($parent->user ?? null))
-            : $post->user;
-
-        if ($targetUser && $currentUser && $targetUser->id !== $currentUser->id) {
-            $targetUser->notify(new AppNotification(
-                type: $parentId ? 'user_mention' : 'forum_comment',
-                title: $parentId ? "{$currentUser->name} replied to you" : "{$currentUser->name} answered your question",
-                message: '"'.Str::limit(strip_tags($validated['body']), 80).'"',
-                url: route('forum.show', $post->slug)
-            ));
+        if (isset($parent)) {
+            $isReply = true;
+            if (preg_match('/@([a-zA-Z0-9_]+)/', $validated['body'], $matches)) {
+                $targetUser = User::where('username', $matches[1])->first();
+            }
+            $targetUser = $targetUser ?: $parent->user;
+        } elseif ($post->user_id) {
+            $targetUser = $post->user;
         }
 
-        // Send mail notification to post author only (if commenter is not the author)
-        $author = $post->user;
-        if ($author && $currentUser && $author->id !== $currentUser->id && $author->email && $author->receive_emails !== false) {
-            Mail::to($author->email)->queue(ForumNotificationMail::forAnswer($post, $answer, $author, $currentUser));
+        if ($targetUser && $targetUser->id !== $user->id) {
+            $targetUser->notify(new ForumAnswerNotification($post, $answer, $isReply));
         }
 
         return back()->with('success', 'Answer posted!');
@@ -158,6 +149,14 @@ class ForumAnswerController extends Controller
             'reason' => $validated['reason'],
             'status' => 'pending',
         ]);
+
+        $moderators = User::permission('manage forums')
+            ->select(['id', 'name', 'email'])
+            ->get();
+
+        if ($moderators->isNotEmpty()) {
+            Notification::send($moderators, new ForumReportNotification($report, $user));
+        }
 
         return response()->json([
             'message' => 'Answer reported successfully. Our moderation team will review it.',

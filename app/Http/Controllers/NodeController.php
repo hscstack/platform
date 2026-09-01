@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\NodeNotificationMail;
 use App\Models\Node;
 use App\Models\Subject;
+use App\Notifications\NodeVoteNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class NodeController extends Controller
@@ -87,39 +86,27 @@ class NodeController extends Controller
 
         $user = auth()->user();
         $existing = $node->votes()->where('user_id', $user->id)->first();
-        $isNewUpvote = false;
+        $isFirstTimeUpvote = false;
 
         if ($existing) {
             if ($existing->type === $validated['type']) {
                 $existing->delete();
             } else {
                 $existing->update(['type' => $validated['type']]);
-                if ($validated['type'] === 'up') {
-                    $isNewUpvote = true;
-                }
             }
         } else {
             $node->votes()->create([
                 'user_id' => $user->id,
                 'type' => $validated['type'],
             ]);
+
             if ($validated['type'] === 'up') {
-                $isNewUpvote = true;
+                $isFirstTimeUpvote = true;
             }
         }
 
-        if ($isNewUpvote) {
-            $upvotesCount = $node->upvotes()->count();
-            $milestones = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
-            $isMilestone = in_array($upvotesCount, $milestones, true) || ($upvotesCount > 1000 && $upvotesCount % 500 === 0);
-
-            if ($isMilestone) {
-                $node->loadMissing('user:id,name,email,receive_emails', 'subject:id,name,slug', 'parent:id,name,slug');
-
-                if ($node->user && $node->user_id !== $user->id && $node->user->email && $node->user->receive_emails !== false) {
-                    Mail::to($node->user->email)->queue(NodeNotificationMail::forUpvoteMilestone($node, $user, $upvotesCount));
-                }
-            }
+        if ($isFirstTimeUpvote && $node->user_id && $node->user_id !== $user->id) {
+            $node->user->notify(new NodeVoteNotification($node, $user));
         }
 
         return back();
