@@ -106,7 +106,7 @@ const triggerSearch = () => {
             >
                 <MaterialIcon
                     :name="collapsed ? 'chevron_right' : 'chevron_left'"
-                    :size="18"
+                    :size="20"
                 />
             </button>
         </div>
@@ -137,7 +137,7 @@ const triggerSearch = () => {
                 >
                     <MaterialIcon
                         :name="item.icon"
-                        :size="19"
+                        :size="22"
                         :class="[
                             'shrink-0 transition-colors duration-150',
                             isActive(item.href, item.match)
@@ -167,7 +167,7 @@ const triggerSearch = () => {
                             : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700',
                     ]"
                 >
-                    <MaterialIcon name="download" :size="18" />
+                    <MaterialIcon name="download" :size="20" />
                     <span v-if="!collapsed">Install App</span>
                 </button>
             </div>
@@ -188,7 +188,7 @@ const triggerSearch = () => {
                         collapsed ? 'justify-center' : '',
                     ]"
                 >
-                    <MaterialIcon name="search" :size="18" />
+                    <MaterialIcon name="search" :size="20" />
                     <span v-if="!collapsed">Search</span>
                 </button>
 
@@ -210,7 +210,7 @@ const triggerSearch = () => {
                                   ? 'light_mode'
                                   : 'dark_mode'
                         "
-                        :size="18"
+                        :size="20"
                     />
                     <span v-if="!collapsed" class="capitalize">{{
                         theme
@@ -239,7 +239,7 @@ const triggerSearch = () => {
                             collapsed ? 'px-2' : '',
                         ]"
                     >
-                        <MaterialIcon name="login" :size="18" />
+                        <MaterialIcon name="login" :size="20" />
                         <span v-if="!collapsed">Login</span>
                     </Link>
                     <div
@@ -280,7 +280,7 @@ const triggerSearch = () => {
                             class="shrink-0 rounded-lg bg-slate-50 p-1.5 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
                             :title="isAdminRoute ? 'Home' : 'Staff Panel'"
                         >
-                            <MaterialIcon name="dashboard" :size="18" />
+                            <MaterialIcon name="dashboard" :size="20" />
                         </Link>
                     </div>
                 </div>

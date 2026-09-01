@@ -63,9 +63,9 @@ const resolvedHref = (item: { href: string }) => {
             >
                 <MaterialIcon
                     :name="item.icon"
-                    :size="22"
+                    :size="26"
                     :filled="isActive(item.href, item.match)"
-                    :weight="300"
+                    :weight="400"
                     :class="[
                         'transition-transform duration-150',
                         isActive(item.href, item.match)

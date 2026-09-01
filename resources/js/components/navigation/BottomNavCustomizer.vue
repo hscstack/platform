@@ -130,7 +130,7 @@ const handleRemove = (href: string) => {
                     />
                     <MaterialIcon
                         :name="homeItem.icon"
-                        :size="20"
+                        :size="22"
                         class="shrink-0 text-slate-700 dark:text-gray-300"
                     />
                     <span
@@ -166,7 +166,7 @@ const handleRemove = (href: string) => {
                     />
                     <MaterialIcon
                         :name="bottomNavItems[idx + 1]?.icon ?? 'help'"
-                        :size="20"
+                        :size="22"
                         class="shrink-0 text-slate-600 dark:text-gray-300"
                     />
                     <span
@@ -195,7 +195,7 @@ const handleRemove = (href: string) => {
                     />
                     <MaterialIcon
                         :name="accountItem.icon"
-                        :size="20"
+                        :size="22"
                         class="shrink-0 text-slate-700 dark:text-gray-300"
                     />
                     <span
@@ -246,7 +246,7 @@ const handleRemove = (href: string) => {
                 >
                     <MaterialIcon
                         :name="item.icon"
-                        :size="20"
+                        :size="22"
                         class="shrink-0 text-slate-500"
                     />
                     <span class="flex-1 text-slate-700 dark:text-gray-300">{{

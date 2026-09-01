@@ -78,7 +78,7 @@ watch(
                 class="flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
                 aria-label="Open navigation menu"
             >
-                <MaterialIcon name="menu" :size="22" />
+                <MaterialIcon name="menu" :size="24" />
             </button>
             <div class="ml-1">
                 <AppLogo />
@@ -101,7 +101,7 @@ watch(
                     class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 active:scale-95 dark:text-slate-300 dark:hover:bg-slate-800"
                     aria-label="Search"
                 >
-                    <MaterialIcon name="search" :size="20" />
+                    <MaterialIcon name="search" :size="22" />
                 </button>
                 <NotificationDropdown v-if="user" />
             </div>
@@ -141,7 +141,7 @@ watch(
                                 class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-800"
                                 aria-label="Close menu"
                             >
-                                <MaterialIcon name="close" :size="20" />
+                                <MaterialIcon name="close" :size="22" />
                             </button>
                         </div>
 
@@ -181,7 +181,7 @@ watch(
                                 @click="close"
                                 class="mb-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white"
                             >
-                                <MaterialIcon name="login" :size="18" /> Sign in
+                                <MaterialIcon name="login" :size="20" /> Sign in
                             </Link>
 
                             <!-- Overflow items (rest not in bottom nav) -->
@@ -205,7 +205,7 @@ watch(
                                 >
                                     <MaterialIcon
                                         :name="item.icon"
-                                        :size="20"
+                                        :size="22"
                                     />
                                     <span>{{ item.label }}</span>
                                 </Link>
@@ -225,7 +225,7 @@ watch(
                                 @click="handleInstallApp"
                                 class="mt-4 flex w-full items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
                             >
-                                <MaterialIcon name="download" :size="20" />
+                                <MaterialIcon name="download" :size="22" />
                                 Install App
                             </button>
 
@@ -243,7 +243,7 @@ watch(
                                     @click="close"
                                     class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-900"
                                 >
-                                    <MaterialIcon name="person" :size="18" />
+                                    <MaterialIcon name="person" :size="20" />
                                     Profile
                                 </Link>
                                 <Link
@@ -252,7 +252,7 @@ watch(
                                     @click="close"
                                     class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-900"
                                 >
-                                    <MaterialIcon name="dashboard" :size="18" />
+                                    <MaterialIcon name="dashboard" :size="20" />
                                     {{ isAdminRoute ? 'Home' : 'Staff Panel' }}
                                 </Link>
                                 <Link
@@ -261,7 +261,7 @@ watch(
                                     as="button"
                                     class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                                 >
-                                    <MaterialIcon name="logout" :size="18" />
+                                    <MaterialIcon name="logout" :size="20" />
                                     Sign out
                                 </Link>
                             </div>
