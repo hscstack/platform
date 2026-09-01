@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { Pencil, Trash2, Eye, BookOpen } from 'lucide-vue-next';
+import StatusBadge from '@/components/StatusBadge.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
@@ -52,23 +53,16 @@ const deleteBlog = () => {
                         {{ blog.title }}
                     </h4>
 
-                    <span
-                        :class="[
-                            blog.is_published
-                                ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/30'
-                                : 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20',
-                            'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset',
-                        ]"
-                    >
-                        {{ blog.is_published ? 'Published' : 'Draft' }}
-                    </span>
+                    <StatusBadge
+                        :status="blog.is_published ? 'published' : 'draft'"
+                        size="xs"
+                    />
 
-                    <span
+                    <StatusBadge
                         v-if="blog.is_featured"
-                        class="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 uppercase ring-1 ring-amber-600/20 ring-inset dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30"
-                    >
-                        Featured
-                    </span>
+                        status="featured"
+                        size="xs"
+                    />
                 </div>
 
                 <div

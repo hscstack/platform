@@ -3,6 +3,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { LogIn, Pencil, Trash2, Ban } from 'lucide-vue-next';
 import { ref } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
+import StatusBadge from '@/components/StatusBadge.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
@@ -27,19 +28,6 @@ const isBanned = (user: any) => {
 
 const openBanModal = () => {
     isBanModalOpen.value = true;
-};
-
-const getRoleBadgeStyles = (role: string) => {
-    switch (role) {
-        case 'admin':
-            return 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30';
-        case 'manager':
-            return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30';
-        case 'editor':
-            return 'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-500/10 dark:text-purple-400 dark:ring-purple-500/30';
-        default:
-            return 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20';
-    }
 };
 
 const loginAsUser = (targetUser: any) => {
@@ -100,21 +88,19 @@ const deleteUser = (id: number) => {
                         You
                     </span>
 
-                    <span
-                        class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset"
-                        :class="getRoleBadgeStyles(user.roles?.[0]?.name)"
-                    >
-                        {{ user.roles?.[0]?.name ?? 'student' }}
-                    </span>
+                    <StatusBadge
+                        :status="user.roles?.[0]?.name ?? 'student'"
+                        size="xs"
+                    />
 
-                    <span
+                    <StatusBadge
                         v-if="isBanned(user)"
-                        class="inline-flex items-center gap-1 rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 uppercase ring-1 ring-rose-600/20 ring-inset dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30"
+                        variant="rose"
+                        label="Suspended"
+                        :icon="Ban"
+                        size="xs"
                         title="Suspended from community"
-                    >
-                        <Ban class="h-2.5 w-2.5" />
-                        Suspended
-                    </span>
+                    />
                 </div>
 
                 <p

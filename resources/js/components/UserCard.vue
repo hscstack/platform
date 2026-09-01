@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { GraduationCap, ArrowRight } from 'lucide-vue-next';
+import { ArrowRight, GraduationCap } from 'lucide-vue-next';
 import { computed } from 'vue';
+import StatusBadge from '@/components/StatusBadge.vue';
 
 const props = defineProps<{
     member: {
@@ -18,36 +19,6 @@ const props = defineProps<{
 
 const profileUrl = computed(() => {
     return props.member.username ? `/u/${props.member.username}` : '#';
-});
-
-const roleInfo = computed(() => {
-    const roleName = props.member.roles?.[0]?.name?.toLowerCase() || 'staff';
-
-    if (roleName === 'admin') {
-        return {
-            label: 'Admin',
-            class: 'border-rose-200/80 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-300',
-        };
-    }
-
-    if (roleName === 'editor') {
-        return {
-            label: 'Editor',
-            class: 'border-purple-200/80 bg-purple-50 text-purple-700 dark:border-purple-800/60 dark:bg-purple-950/40 dark:text-purple-300',
-        };
-    }
-
-    if (roleName === 'manager') {
-        return {
-            label: 'Staff',
-            class: 'border-amber-200/80 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300',
-        };
-    }
-
-    return {
-        label: roleName,
-        class: 'border-blue-200/80 bg-blue-50 text-blue-700 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300',
-    };
 });
 </script>
 
@@ -92,12 +63,10 @@ const roleInfo = computed(() => {
 
                 <!-- Role Pill -->
                 <div class="flex items-center justify-center pt-0.5">
-                    <span
-                        class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold"
-                        :class="roleInfo.class"
-                    >
-                        {{ roleInfo.label }}
-                    </span>
+                    <StatusBadge
+                        :status="member.roles?.[0]?.name || 'staff'"
+                        size="xs"
+                    />
                 </div>
 
                 <!-- Title / Tagline -->

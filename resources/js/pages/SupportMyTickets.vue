@@ -9,10 +9,10 @@ import {
     FileText,
     ChevronDown,
     ChevronUp,
-    HelpCircle,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
+import StatusBadge from '@/components/StatusBadge.vue';
 
 interface UserInfo {
     id: number;
@@ -50,41 +50,6 @@ const toggleExpand = (id: number) => {
 
 const getCategoryLabel = (key: string) => {
     return props.categories[key] || key;
-};
-
-const getStatusBadge = (status: string) => {
-    switch (status) {
-        case 'open':
-            return {
-                label: 'Open',
-                bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-                icon: Clock,
-            };
-        case 'in_progress':
-            return {
-                label: 'In Progress',
-                bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-                icon: HelpCircle,
-            };
-        case 'resolved':
-            return {
-                label: 'Resolved',
-                bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                icon: CheckCircle2,
-            };
-        case 'closed':
-            return {
-                label: 'Closed',
-                bg: 'bg-slate-500/10 text-slate-600 dark:text-gray-400 border-slate-500/20',
-                icon: XCircle,
-            };
-        default:
-            return {
-                label: status,
-                bg: 'bg-slate-500/10 text-slate-600 dark:text-gray-400 border-slate-500/20',
-                icon: Clock,
-            };
-    }
 };
 
 const formatDate = (dateString: string) => {
@@ -196,18 +161,7 @@ const formatDate = (dateString: string) => {
                                 >
                                     {{ ticket.ticket_number }}
                                 </span>
-                                <span
-                                    class="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-bold"
-                                    :class="getStatusBadge(ticket.status).bg"
-                                >
-                                    <component
-                                        :is="getStatusBadge(ticket.status).icon"
-                                        class="h-3 w-3"
-                                    />
-                                    <span>{{
-                                        getStatusBadge(ticket.status).label
-                                    }}</span>
-                                </span>
+                                <StatusBadge :status="ticket.status" />
                                 <span
                                     class="rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
                                 >
