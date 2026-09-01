@@ -18,9 +18,6 @@ import {
     Gavel,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-
-defineOptions({ layout: AdminLayout });
 
 interface ChatSettingsProps {
     settings: {

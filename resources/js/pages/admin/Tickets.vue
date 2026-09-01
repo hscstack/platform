@@ -15,9 +15,6 @@ import {
     X,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-
-defineOptions({ layout: AdminLayout });
 
 interface UserInfo {
     id: number;

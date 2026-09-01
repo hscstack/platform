@@ -12,10 +12,7 @@ import {
 import { ref, computed } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
 import { usePermissions } from '@/lib/usePermissions';
-
-defineOptions({ layout: AdminLayout });
 
 const { can } = usePermissions();
 
