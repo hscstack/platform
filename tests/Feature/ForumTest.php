@@ -221,6 +221,18 @@ test('author can toggle answered status', function () {
     $this->actingAs($author)->post("/forum/posts/{$post->id}/toggle-answered");
     $post->refresh();
     expect($post->is_answered)->toBeFalse();
+
+    // Moderator with manage forums permission can toggle
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo('manage forums');
+
+    $this->actingAs($moderator)->post("/forum/posts/{$post->id}/toggle-answered");
+    $post->refresh();
+    expect($post->is_answered)->toBeTrue();
+
+    $this->actingAs($moderator)->post("/forum/posts/{$post->id}/toggle-answered");
+    $post->refresh();
+    expect($post->is_answered)->toBeFalse();
 });
 
 test('profane words trigger CleanText validation on post and answer', function () {
