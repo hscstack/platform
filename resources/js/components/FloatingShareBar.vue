@@ -26,32 +26,11 @@ const showAuthModal = ref(false);
 const toolbarRef = ref<HTMLElement | null>(null);
 
 const copyToClipboard = async (text: string): Promise<boolean> => {
-    if (navigator.clipboard && window.isSecureContext) {
-        try {
-            await navigator.clipboard.writeText(text);
-
-            return true;
-        } catch {
-            // Fall back to execCommand
-        }
-    }
-
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
     try {
-        const ok = document.execCommand('copy');
-        document.body.removeChild(textArea);
+        await navigator.clipboard.writeText(text);
 
-        return ok;
+        return true;
     } catch {
-        document.body.removeChild(textArea);
-
         return false;
     }
 };
