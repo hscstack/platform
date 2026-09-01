@@ -56,7 +56,7 @@ interface ForumPost {
     curriculum: 'hsc' | 'ssc';
     title: string;
     slug: string;
-    body: string;
+    body?: string | null;
     image_path?: string | null;
     image_url?: string | null;
     is_answered: boolean;
@@ -720,6 +720,7 @@ const timeAgo = formatTimeAgo;
 
                         <!-- Preview snippet -->
                         <p
+                            v-if="post.body"
                             class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-gray-300"
                         >
                             {{ post.body }}

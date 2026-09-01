@@ -121,7 +121,7 @@ const removeImage = () => {
 
 const handleOpenModal = () => {
     // Basic frontend checks before modal
-    if (!form.title.trim() || !form.body.trim()) {
+    if (!form.title.trim()) {
         form.post('/forum'); // trigger inertia validation errors if fields are empty
 
         return;
@@ -335,14 +335,16 @@ const submit = () => {
                         for="body"
                         class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
                     >
-                        Question Details <span class="text-rose-500">*</span>
+                        Question Details
+                        <span class="text-xs font-normal text-slate-400"
+                            >(Optional)</span
+                        >
                     </label>
                     <textarea
                         id="body"
                         v-model="form.body"
-                        required
                         rows="6"
-                        placeholder="আপনার সমস্যাটি বিস্তারিতভাবে লিখুন যাতে অন্যরা সহজেই বুঝতে পারে..."
+                        placeholder="আপনার সমস্যাটি বিস্তারিতভাবে লিখুন (প্রযোজ্য ক্ষেত্রে)..."
                         class="w-full rounded-xl border border-slate-200 bg-white p-3.5 text-sm text-slate-900 shadow-2xs transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                     ></textarea>
                     <p

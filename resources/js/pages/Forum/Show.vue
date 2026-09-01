@@ -86,7 +86,7 @@ interface ForumPost {
     curriculum: 'hsc' | 'ssc';
     title: string;
     slug: string;
-    body: string;
+    body?: string | null;
     image_path?: string | null;
     image_url?: string | null;
     is_answered: boolean;
@@ -288,11 +288,13 @@ const openReportModal = (
     id: number,
     title: string | undefined,
     authorName: string | undefined,
-    contentPreview: string,
+    contentPreview?: string | null,
 ) => {
     if (!requireAuth('Please sign in to report this content.')) {
         return;
     }
+
+    const preview = contentPreview || '';
 
     reportingTarget.value = {
         type,
@@ -300,9 +302,7 @@ const openReportModal = (
         title,
         authorName: authorName || 'Anonymous',
         contentPreview:
-            contentPreview.length > 200
-                ? contentPreview.slice(0, 200) + '...'
-                : contentPreview,
+            preview.length > 200 ? preview.slice(0, 200) + '...' : preview,
     };
     reportReason.value = 'Inappropriate content or conduct';
     reportSuccessMessage.value = null;
@@ -581,7 +581,10 @@ function parseMentions(
 <template>
     <Head>
         <title>{{ post.title }} — HSCStack Forum</title>
-        <meta name="description" :content="post.body.slice(0, 160)" />
+        <meta
+            name="description"
+            :content="post.body ? post.body.slice(0, 160) : post.title"
+        />
     </Head>
 
     <main class="mx-auto max-w-4xl px-3.5 py-3.5 sm:px-6 sm:py-8">
@@ -794,6 +797,7 @@ function parseMentions(
 
             <!-- Question Body -->
             <div
+                v-if="post.body"
                 class="prose dark:prose-invert mt-4 max-w-none text-sm leading-relaxed whitespace-pre-wrap text-slate-800 sm:text-base dark:text-gray-200"
             >
                 {{ post.body }}
@@ -982,7 +986,7 @@ function parseMentions(
                                 post.id,
                                 post.title,
                                 post.user?.name,
-                                post.body,
+                                post.body || post.title,
                             )
                         "
                         class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-2xs transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-amber-900/60 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
