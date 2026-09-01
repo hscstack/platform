@@ -83,10 +83,10 @@ const filteredSubjects = computed(() => {
             class="rounded-xl border border-dashed border-slate-200 bg-white/50 py-12 text-center dark:border-gray-700 dark:bg-gray-900/50"
         >
             <p class="text-sm font-semibold text-slate-400 dark:text-gray-500">
-                No subjects found matching "{{ searchQuery }}"
+                No subjects found matching "{{ globalSearchQuery }}"
             </p>
             <button
-                @click="searchQuery = ''"
+                @click="globalSearchQuery = ''"
                 class="mt-2 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
             >
                 Show all subjects
