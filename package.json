@@ -49,7 +49,6 @@
     "laravel-echo": "^2.4.0",
     "laravel-vite-plugin": "^3.1",
     "lucide-vue-next": "^1.0.0",
-    "plyr": "^3.8.4",
     "pusher-js": "^8.6.0",
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.1",
