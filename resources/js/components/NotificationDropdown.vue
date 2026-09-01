@@ -585,24 +585,11 @@ onBeforeUnmount(() => {
                                         {{ item.data?.title || 'Notification' }}
                                     </p>
 
-                                    <!-- Individual Mark as Read Button -->
-                                    <button
+                                    <!-- Unread Dot Indicator -->
+                                    <span
                                         v-if="!item.read_at"
-                                        @click.stop="
-                                            markSingleAsRead(item, $event)
-                                        "
-                                        type="button"
-                                        class="group/btn flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-indigo-600 transition hover:bg-indigo-200/60 active:scale-90 dark:text-indigo-400 dark:hover:bg-indigo-900/60"
-                                        title="Mark as read"
-                                        aria-label="Mark as read"
-                                    >
-                                        <span
-                                            class="h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white transition group-hover/btn:hidden dark:bg-indigo-400 dark:ring-gray-900"
-                                        />
-                                        <Check
-                                            class="hidden h-3.5 w-3.5 text-indigo-600 group-hover/btn:block dark:text-indigo-400"
-                                        />
-                                    </button>
+                                        class="h-2 w-2 shrink-0 rounded-full bg-indigo-600 ring-2 ring-white dark:bg-indigo-400 dark:ring-gray-900"
+                                    />
                                 </div>
 
                                 <p
@@ -612,18 +599,37 @@ onBeforeUnmount(() => {
                                     {{ item.data.message }}
                                 </p>
 
-                                <div class="mt-1.5 flex items-center gap-2">
-                                    <span
-                                        class="text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                <div
+                                    class="mt-2 flex items-center justify-between gap-2"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <span
+                                            class="text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                        >
+                                            {{ item.created_at_human }}
+                                        </span>
+                                        <span
+                                            v-if="item.data?.url"
+                                            class="text-[10px] font-semibold text-indigo-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-indigo-400"
+                                        >
+                                            View &rarr;
+                                        </span>
+                                    </div>
+
+                                    <!-- Dedicated Mark As Read Button in Right Bottom -->
+                                    <button
+                                        v-if="!item.read_at"
+                                        @click.stop="
+                                            markSingleAsRead(item, $event)
+                                        "
+                                        type="button"
+                                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-indigo-200/60 bg-indigo-50/80 px-2 py-0.5 text-[10px] font-semibold text-indigo-600 shadow-2xs transition hover:bg-indigo-100 hover:text-indigo-700 active:scale-95 dark:border-indigo-800/60 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
+                                        title="Mark as read"
+                                        aria-label="Mark as read"
                                     >
-                                        {{ item.created_at_human }}
-                                    </span>
-                                    <span
-                                        v-if="item.data?.url"
-                                        class="text-[10px] font-semibold text-indigo-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-indigo-400"
-                                    >
-                                        View &rarr;
-                                    </span>
+                                        <Check class="h-3 w-3" />
+                                        <span>Mark read</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
