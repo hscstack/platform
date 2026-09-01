@@ -791,7 +791,7 @@ function parseMentions(
             <div
                 class="mt-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 text-xs text-slate-400 dark:border-gray-800 dark:text-gray-500"
             >
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <Link
                         v-if="post.user?.username"
                         :href="`/u/${post.user.username}`"
@@ -948,7 +948,7 @@ function parseMentions(
                 </div>
 
                 <!-- Right: Moderator and Owner Actions -->
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <!-- Inline Moderator Tools -->
                     <template v-if="can('manage forums') || can('manage chat')">
                         <!-- Suspend Author Button -->
@@ -1166,7 +1166,7 @@ function parseMentions(
 
                 <!-- Direct Answer Action Row -->
                 <div
-                    class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-gray-800/80"
+                    class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5 dark:border-gray-800/80"
                 >
                     <ForumVoteButtons
                         votableType="answer"
@@ -1178,7 +1178,7 @@ function parseMentions(
                         size="sm"
                     />
 
-                    <div class="flex items-center gap-1">
+                    <div class="flex flex-wrap items-center gap-1">
                         <!-- Moderator Suspend Author Button -->
                         <button
                             v-if="
@@ -1334,7 +1334,7 @@ function parseMentions(
 
                         <!-- Reply Actions -->
                         <div
-                            class="mt-2 flex items-center justify-between border-t border-slate-200/50 pt-1.5 dark:border-gray-700/50"
+                            class="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/50 pt-1.5 dark:border-gray-700/50"
                         >
                             <ForumVoteButtons
                                 votableType="answer"
@@ -1346,7 +1346,7 @@ function parseMentions(
                                 size="sm"
                             />
 
-                            <div class="flex items-center gap-1">
+                            <div class="flex flex-wrap items-center gap-1">
                                 <!-- Moderator Suspend Author Button -->
                                 <button
                                     v-if="
