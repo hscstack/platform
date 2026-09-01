@@ -420,13 +420,14 @@ onBeforeUnmount(() => {
                             type="button"
                             class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 transition-colors hover:text-rose-500 disabled:opacity-50 dark:text-gray-500 dark:hover:text-rose-400"
                             title="Clear all notifications"
+                            aria-label="Clear all notifications"
                         >
                             <Loader2
                                 v-if="isClearingAll"
                                 class="h-3 w-3 animate-spin"
                             />
-                            <Trash2 v-else class="h-3 w-3" />
-                            <span>Clear</span>
+                            <Trash2 v-else class="h-3.5 w-3.5" />
+                            <span class="hidden sm:inline">Clear</span>
                         </button>
                     </div>
                 </div>
