@@ -2,6 +2,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import {
     Bell,
+    Check,
     CheckCheck,
     Loader2,
     MessageSquare,
@@ -11,7 +12,7 @@ import {
     CheckCircle2,
     HeartHandshake,
     Heart,
-    ThumbsUp,
+    ArrowBigUp,
     Clock,
     LifeBuoy,
 } from 'lucide-vue-next';
@@ -143,15 +144,67 @@ const closeDropdown = () => {
     isOpen.value = false;
 };
 
-const handleClickOutside = (e: MouseEvent) => {
+const handleClickOutside = (e: MouseEvent | TouchEvent) => {
     if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
         closeDropdown();
     }
 };
 
+const handleScroll = (e: Event) => {
+    if (!isOpen.value) {
+        return;
+    }
+
+    // Ignore scroll events originating from inside the dropdown itself (e.g. scrolling the notification items)
+    if (
+        dropdownRef.value &&
+        e.target instanceof Node &&
+        dropdownRef.value.contains(e.target)
+    ) {
+        return;
+    }
+
+    closeDropdown();
+};
+
 const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && isOpen.value) {
         closeDropdown();
+    }
+};
+
+const markSingleAsRead = async (notification: NotificationItem, e?: Event) => {
+    if (e) {
+        e.stopPropagation();
+    }
+
+    if (notification.read_at) {
+        return;
+    }
+
+    // Optimistically mark as read in local state
+    notification.read_at = new Date().toISOString();
+
+    if (unreadCount.value > 0) {
+        unreadCount.value--;
+    }
+
+    if (page.props.auth) {
+        (page.props.auth as any).unread_notifications_count = unreadCount.value;
+    }
+
+    try {
+        await fetch(`/notifications/${notification.id}/read`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+        });
+    } catch (err) {
+        console.error('Failed to mark notification as read:', err);
     }
 };
 
@@ -162,6 +215,11 @@ const markAsRead = async (notification: NotificationItem) => {
 
         if (unreadCount.value > 0) {
             unreadCount.value--;
+        }
+
+        if (page.props.auth) {
+            (page.props.auth as any).unread_notifications_count =
+                unreadCount.value;
         }
 
         try {
@@ -200,6 +258,10 @@ const markAllAsRead = async () => {
     });
     unreadCount.value = 0;
 
+    if (page.props.auth) {
+        (page.props.auth as any).unread_notifications_count = 0;
+    }
+
     try {
         await fetch('/notifications/mark-all-read', {
             method: 'POST',
@@ -231,6 +293,10 @@ const clearAll = async () => {
     unreadCount.value = 0;
     hasMore.value = false;
 
+    if (page.props.auth) {
+        (page.props.auth as any).unread_notifications_count = 0;
+    }
+
     try {
         await fetch('/notifications/clear-all', {
             method: 'DELETE',
@@ -253,6 +319,11 @@ let removeNavListener: (() => void) | null = null;
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScroll, {
+        passive: true,
+        capture: true,
+    });
+    window.addEventListener('resize', closeDropdown, { passive: true });
     removeNavListener = router.on('navigate', () => {
         closeDropdown();
     });
@@ -261,6 +332,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside);
     document.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('scroll', handleScroll, {
+        capture: true,
+    } as any);
+    window.removeEventListener('resize', closeDropdown);
 
     if (removeNavListener) {
         removeNavListener();
@@ -301,7 +376,7 @@ onBeforeUnmount(() => {
         >
             <div
                 v-if="isOpen"
-                class="absolute right-0 z-50 mt-2 w-80 origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:w-96 dark:border-gray-800 dark:bg-gray-900"
+                class="fixed inset-x-3 top-[68px] z-50 mx-auto max-w-md origin-top overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:absolute sm:inset-auto sm:top-auto sm:right-0 sm:mx-0 sm:mt-2 sm:w-96 sm:max-w-none sm:origin-top-right dark:border-gray-800 dark:bg-gray-900"
             >
                 <!-- Header -->
                 <div
@@ -345,20 +420,21 @@ onBeforeUnmount(() => {
                             type="button"
                             class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 transition-colors hover:text-rose-500 disabled:opacity-50 dark:text-gray-500 dark:hover:text-rose-400"
                             title="Clear all notifications"
+                            aria-label="Clear all notifications"
                         >
                             <Loader2
                                 v-if="isClearingAll"
                                 class="h-3 w-3 animate-spin"
                             />
-                            <Trash2 v-else class="h-3 w-3" />
-                            <span>Clear</span>
+                            <Trash2 v-else class="h-3.5 w-3.5" />
+                            <span class="hidden sm:inline">Clear</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Notifications List -->
                 <div
-                    class="max-h-[380px] divide-y divide-slate-100 overflow-y-auto dark:divide-gray-800/60"
+                    class="max-h-[360px] divide-y divide-slate-100 overflow-y-auto dark:divide-gray-800/60"
                 >
                     <!-- Loading Initial State -->
                     <div
@@ -398,12 +474,15 @@ onBeforeUnmount(() => {
 
                     <!-- Items List -->
                     <template v-else>
-                        <button
+                        <div
                             v-for="item in notifications"
                             :key="item.id"
                             @click="markAsRead(item)"
-                            type="button"
-                            class="group flex w-full items-start gap-3 p-3.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-gray-800/50"
+                            role="button"
+                            tabindex="0"
+                            @keydown.enter="markAsRead(item)"
+                            @keydown.space.prevent="markAsRead(item)"
+                            class="group flex w-full cursor-pointer items-start gap-3 p-3.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-gray-800/50"
                             :class="
                                 !item.read_at
                                     ? 'bg-indigo-50/40 dark:bg-indigo-950/20'
@@ -432,12 +511,12 @@ onBeforeUnmount(() => {
                                     "
                                     class="h-4 w-4 text-rose-500"
                                 />
-                                <ThumbsUp
+                                <ArrowBigUp
                                     v-else-if="
                                         item.data?.type === 'forum_vote' ||
                                         item.data?.type === 'node_vote'
                                     "
-                                    class="h-4 w-4 text-emerald-500"
+                                    class="h-4.5 w-4.5 fill-indigo-500/30 text-indigo-600 dark:fill-indigo-400/30 dark:text-indigo-400"
                                 />
                                 <AtSign
                                     v-else-if="
@@ -494,7 +573,7 @@ onBeforeUnmount(() => {
                             <!-- Content -->
                             <div class="min-w-0 flex-1">
                                 <div
-                                    class="flex items-center justify-between gap-1"
+                                    class="flex items-center justify-between gap-1.5"
                                 >
                                     <p
                                         class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
@@ -506,6 +585,8 @@ onBeforeUnmount(() => {
                                     >
                                         {{ item.data?.title || 'Notification' }}
                                     </p>
+
+                                    <!-- Unread Dot Indicator -->
                                     <span
                                         v-if="!item.read_at"
                                         class="h-2 w-2 shrink-0 rounded-full bg-indigo-600 ring-2 ring-white dark:bg-indigo-400 dark:ring-gray-900"
@@ -519,21 +600,39 @@ onBeforeUnmount(() => {
                                     {{ item.data.message }}
                                 </p>
 
-                                <div class="mt-1.5 flex items-center gap-2">
-                                    <span
-                                        class="text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                <div
+                                    class="mt-2 flex items-center justify-between gap-2"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <span
+                                            class="text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                        >
+                                            {{ item.created_at_human }}
+                                        </span>
+                                        <span
+                                            v-if="item.data?.url"
+                                            class="text-[10px] font-semibold text-indigo-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-indigo-400"
+                                        >
+                                            View &rarr;
+                                        </span>
+                                    </div>
+
+                                    <!-- Dedicated Mark As Read Icon Button in Right Bottom -->
+                                    <button
+                                        v-if="!item.read_at"
+                                        @click.stop="
+                                            markSingleAsRead(item, $event)
+                                        "
+                                        type="button"
+                                        class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-indigo-200/60 bg-indigo-50/80 text-indigo-600 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-100 hover:text-indigo-700 active:scale-90 dark:border-indigo-800/60 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
+                                        title="Mark as read"
+                                        aria-label="Mark as read"
                                     >
-                                        {{ item.created_at_human }}
-                                    </span>
-                                    <span
-                                        v-if="item.data?.url"
-                                        class="text-[10px] font-semibold text-indigo-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-indigo-400"
-                                    >
-                                        View &rarr;
-                                    </span>
+                                        <Check class="h-3.5 w-3.5" />
+                                    </button>
                                 </div>
                             </div>
-                        </button>
+                        </div>
 
                         <!-- Load More Button -->
                         <div
