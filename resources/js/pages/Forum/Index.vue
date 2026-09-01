@@ -15,6 +15,7 @@ import {
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
+import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 
 interface User {
     id: number;
@@ -1169,5 +1170,8 @@ function timeAgo(dateString?: string): string {
             title="Sign in required"
             message="Please sign in to ask a question in the forum."
         />
+
+        <!-- PWA Install Prompt Modal -->
+        <PwaInstallPrompt variant="modal" />
     </main>
 </template>
