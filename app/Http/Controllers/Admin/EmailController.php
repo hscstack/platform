@@ -100,9 +100,14 @@ class EmailController extends Controller
                 ->with('error', 'No subscribed recipients found for the selected target.');
         }
 
-        $usersQuery->chunkById(100, function ($users) use ($subject, $body, $imageUrl) {
+        // 65 seconds between emails = ~55 emails/hour (safely below hosting limit of 60/hr)
+        $delaySeconds = 0;
+        $secondsBetweenEmails = 65;
+
+        $usersQuery->chunkById(100, function ($users) use ($subject, $body, $imageUrl, &$delaySeconds, $secondsBetweenEmails) {
             foreach ($users as $user) {
-                Mail::to($user->email)->queue(
+                Mail::to($user->email)->later(
+                    now()->addSeconds($delaySeconds),
                     new BulkAnnouncementMail(
                         mailSubject: $subject,
                         mailContent: $body,
@@ -110,6 +115,8 @@ class EmailController extends Controller
                         imageUrl: $imageUrl,
                     )
                 );
+
+                $delaySeconds += $secondsBetweenEmails;
             }
         });
 
@@ -119,8 +126,10 @@ class EmailController extends Controller
             default => 'all subscribed',
         };
 
+        $estimatedHours = round(($totalRecipients * $secondsBetweenEmails) / 3600, 1);
+
         return redirect()
             ->route('admin.emails.create')
-            ->with('success', "Email broadcast successfully queued for {$totalRecipients} {$targetLabel} recipients.");
+            ->with('success', "Email broadcast successfully queued for {$totalRecipients} {$targetLabel} recipients (throttled at ~55/hr over ~{$estimatedHours} hours to comply with server sending limits).");
     }
 }
