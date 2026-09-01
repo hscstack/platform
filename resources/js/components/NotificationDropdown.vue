@@ -616,19 +616,18 @@ onBeforeUnmount(() => {
                                         </span>
                                     </div>
 
-                                    <!-- Dedicated Mark As Read Button in Right Bottom -->
+                                    <!-- Dedicated Mark As Read Icon Button in Right Bottom -->
                                     <button
                                         v-if="!item.read_at"
                                         @click.stop="
                                             markSingleAsRead(item, $event)
                                         "
                                         type="button"
-                                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-indigo-200/60 bg-indigo-50/80 px-2 py-0.5 text-[10px] font-semibold text-indigo-600 shadow-2xs transition hover:bg-indigo-100 hover:text-indigo-700 active:scale-95 dark:border-indigo-800/60 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
+                                        class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-indigo-200/60 bg-indigo-50/80 text-indigo-600 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-100 hover:text-indigo-700 active:scale-90 dark:border-indigo-800/60 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
                                         title="Mark as read"
                                         aria-label="Mark as read"
                                     >
-                                        <Check class="h-3 w-3" />
-                                        <span>Mark read</span>
+                                        <Check class="h-3.5 w-3.5" />
                                     </button>
                                 </div>
                             </div>
