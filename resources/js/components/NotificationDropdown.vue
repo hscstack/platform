@@ -443,7 +443,7 @@ onBeforeUnmount(() => {
                                     v-else-if="
                                         item.data?.type === 'user_mention'
                                     "
-                                    class="h-4 w-4"
+                                    class="h-4 w-4 text-indigo-500"
                                 />
                                 <HeartHandshake
                                     v-else-if="
