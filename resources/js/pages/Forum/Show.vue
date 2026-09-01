@@ -1937,8 +1937,5 @@ function parseMentions(
             :user="selectedBanUser"
             @close="isBanModalOpen = false"
         />
-
-        <!-- PWA Install Prompt Modal -->
-        <PwaInstallPrompt variant="modal" />
     </main>
 </template>
