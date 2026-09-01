@@ -2,6 +2,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import {
     Bell,
+    Check,
     CheckCheck,
     Loader2,
     MessageSquare,
@@ -143,15 +144,67 @@ const closeDropdown = () => {
     isOpen.value = false;
 };
 
-const handleClickOutside = (e: MouseEvent) => {
+const handleClickOutside = (e: MouseEvent | TouchEvent) => {
     if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
         closeDropdown();
     }
 };
 
+const handleScroll = (e: Event) => {
+    if (!isOpen.value) {
+        return;
+    }
+
+    // Ignore scroll events originating from inside the dropdown itself (e.g. scrolling the notification items)
+    if (
+        dropdownRef.value &&
+        e.target instanceof Node &&
+        dropdownRef.value.contains(e.target)
+    ) {
+        return;
+    }
+
+    closeDropdown();
+};
+
 const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && isOpen.value) {
         closeDropdown();
+    }
+};
+
+const markSingleAsRead = async (notification: NotificationItem, e?: Event) => {
+    if (e) {
+        e.stopPropagation();
+    }
+
+    if (notification.read_at) {
+        return;
+    }
+
+    // Optimistically mark as read in local state
+    notification.read_at = new Date().toISOString();
+
+    if (unreadCount.value > 0) {
+        unreadCount.value--;
+    }
+
+    if (page.props.auth) {
+        (page.props.auth as any).unread_notifications_count = unreadCount.value;
+    }
+
+    try {
+        await fetch(`/notifications/${notification.id}/read`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+        });
+    } catch (err) {
+        console.error('Failed to mark notification as read:', err);
     }
 };
 
@@ -162,6 +215,11 @@ const markAsRead = async (notification: NotificationItem) => {
 
         if (unreadCount.value > 0) {
             unreadCount.value--;
+        }
+
+        if (page.props.auth) {
+            (page.props.auth as any).unread_notifications_count =
+                unreadCount.value;
         }
 
         try {
@@ -200,6 +258,10 @@ const markAllAsRead = async () => {
     });
     unreadCount.value = 0;
 
+    if (page.props.auth) {
+        (page.props.auth as any).unread_notifications_count = 0;
+    }
+
     try {
         await fetch('/notifications/mark-all-read', {
             method: 'POST',
@@ -231,6 +293,10 @@ const clearAll = async () => {
     unreadCount.value = 0;
     hasMore.value = false;
 
+    if (page.props.auth) {
+        (page.props.auth as any).unread_notifications_count = 0;
+    }
+
     try {
         await fetch('/notifications/clear-all', {
             method: 'DELETE',
@@ -253,6 +319,11 @@ let removeNavListener: (() => void) | null = null;
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScroll, {
+        passive: true,
+        capture: true,
+    });
+    window.addEventListener('resize', closeDropdown, { passive: true });
     removeNavListener = router.on('navigate', () => {
         closeDropdown();
     });
@@ -261,6 +332,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside);
     document.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('scroll', handleScroll, {
+        capture: true,
+    } as any);
+    window.removeEventListener('resize', closeDropdown);
 
     if (removeNavListener) {
         removeNavListener();
@@ -301,7 +376,7 @@ onBeforeUnmount(() => {
         >
             <div
                 v-if="isOpen"
-                class="absolute right-0 z-50 mt-2 w-80 origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:w-96 dark:border-gray-800 dark:bg-gray-900"
+                class="fixed inset-x-3 top-[68px] z-50 mx-auto max-w-md origin-top overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:absolute sm:inset-auto sm:top-auto sm:right-0 sm:mx-0 sm:mt-2 sm:w-96 sm:max-w-none sm:origin-top-right dark:border-gray-800 dark:bg-gray-900"
             >
                 <!-- Header -->
                 <div
@@ -358,7 +433,7 @@ onBeforeUnmount(() => {
 
                 <!-- Notifications List -->
                 <div
-                    class="max-h-[380px] divide-y divide-slate-100 overflow-y-auto dark:divide-gray-800/60"
+                    class="max-h-[calc(100vh-140px)] divide-y divide-slate-100 overflow-y-auto sm:max-h-[380px] dark:divide-gray-800/60"
                 >
                     <!-- Loading Initial State -->
                     <div
@@ -398,12 +473,15 @@ onBeforeUnmount(() => {
 
                     <!-- Items List -->
                     <template v-else>
-                        <button
+                        <div
                             v-for="item in notifications"
                             :key="item.id"
                             @click="markAsRead(item)"
-                            type="button"
-                            class="group flex w-full items-start gap-3 p-3.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-gray-800/50"
+                            role="button"
+                            tabindex="0"
+                            @keydown.enter="markAsRead(item)"
+                            @keydown.space.prevent="markAsRead(item)"
+                            class="group flex w-full cursor-pointer items-start gap-3 p-3.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-gray-800/50"
                             :class="
                                 !item.read_at
                                     ? 'bg-indigo-50/40 dark:bg-indigo-950/20'
@@ -494,7 +572,7 @@ onBeforeUnmount(() => {
                             <!-- Content -->
                             <div class="min-w-0 flex-1">
                                 <div
-                                    class="flex items-center justify-between gap-1"
+                                    class="flex items-center justify-between gap-1.5"
                                 >
                                     <p
                                         class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
@@ -506,10 +584,25 @@ onBeforeUnmount(() => {
                                     >
                                         {{ item.data?.title || 'Notification' }}
                                     </p>
-                                    <span
+
+                                    <!-- Individual Mark as Read Button -->
+                                    <button
                                         v-if="!item.read_at"
-                                        class="h-2 w-2 shrink-0 rounded-full bg-indigo-600 ring-2 ring-white dark:bg-indigo-400 dark:ring-gray-900"
-                                    />
+                                        @click.stop="
+                                            markSingleAsRead(item, $event)
+                                        "
+                                        type="button"
+                                        class="group/btn flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-indigo-600 transition hover:bg-indigo-200/60 active:scale-90 dark:text-indigo-400 dark:hover:bg-indigo-900/60"
+                                        title="Mark as read"
+                                        aria-label="Mark as read"
+                                    >
+                                        <span
+                                            class="h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white transition group-hover/btn:hidden dark:bg-indigo-400 dark:ring-gray-900"
+                                        />
+                                        <Check
+                                            class="hidden h-3.5 w-3.5 text-indigo-600 group-hover/btn:block dark:text-indigo-400"
+                                        />
+                                    </button>
                                 </div>
 
                                 <p
@@ -533,7 +626,7 @@ onBeforeUnmount(() => {
                                     </span>
                                 </div>
                             </div>
-                        </button>
+                        </div>
 
                         <!-- Load More Button -->
                         <div
