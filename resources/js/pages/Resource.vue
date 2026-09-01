@@ -366,7 +366,7 @@ const toggleFullscreen = () => {
                 :alt="resource.title"
                 @load="isImageLoaded = true"
                 @click="isFullscreen = true"
-                class="max-h-[85vh] w-auto max-w-full cursor-zoom-in rounded-2xl border border-slate-200/90 bg-white object-contain shadow-sm transition-opacity duration-300 select-none dark:border-gray-800 dark:bg-gray-900"
+                class="max-h-[85vh] w-auto max-w-full rounded-2xl border border-slate-200/90 bg-white object-contain shadow-sm transition-opacity duration-300 select-none dark:border-gray-800 dark:bg-gray-900"
                 :class="{
                     'opacity-0': !isImageLoaded,
                     'opacity-100': isImageLoaded,

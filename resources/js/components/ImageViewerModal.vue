@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Download, RotateCcw, X, ZoomIn, ZoomOut } from 'lucide-vue-next';
+import { Download, Minimize2, RotateCcw } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const modelValue = defineModel<boolean>({ default: false });
@@ -43,26 +43,6 @@ const close = () => {
     modelValue.value = false;
     resetZoom();
     emit('close');
-};
-
-const toggleZoom = () => {
-    if (scale.value > 1) {
-        resetZoom();
-    } else {
-        scale.value = 2.5;
-    }
-};
-
-const zoomIn = () => {
-    scale.value = Math.min(5, scale.value + 0.5);
-};
-
-const zoomOut = () => {
-    scale.value = Math.max(1, scale.value - 0.5);
-
-    if (scale.value === 1) {
-        resetZoom();
-    }
 };
 
 const getTouchDistance = (e: TouchEvent) => {
@@ -161,10 +141,6 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
     if (e.key === 'Escape') {
         close();
-    } else if (e.key === '+' || e.key === '=') {
-        zoomIn();
-    } else if (e.key === '-' || e.key === '_') {
-        zoomOut();
     } else if (e.key === 'r' || e.key === '0') {
         resetZoom();
     }
@@ -228,27 +204,16 @@ onBeforeUnmount(() => {
                         <span>Drag to Pan</span>
                     </div>
 
-                    <!-- Zoom Out -->
+                    <!-- Download Button -->
                     <button
-                        v-if="scale > 1"
-                        @click.stop="zoomOut"
+                        v-if="showDownload && src"
+                        @click.stop="handleDownload"
                         type="button"
-                        class="cursor-pointer rounded-full bg-white/10 p-2.5 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 sm:p-3 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                        title="Zoom out (-)"
-                        aria-label="Zoom out"
+                        class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                        title="Download Image"
+                        aria-label="Download Image"
                     >
-                        <ZoomOut class="h-4 w-4 sm:h-5 sm:w-5" />
-                    </button>
-
-                    <!-- Zoom In -->
-                    <button
-                        @click.stop="zoomIn"
-                        type="button"
-                        class="cursor-pointer rounded-full bg-white/10 p-2.5 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 sm:p-3 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                        title="Zoom in (+)"
-                        aria-label="Zoom in"
-                    >
-                        <ZoomIn class="h-4 w-4 sm:h-5 sm:w-5" />
+                        <Download class="h-5 w-5" />
                     </button>
 
                     <!-- Reset Zoom Button -->
@@ -256,34 +221,22 @@ onBeforeUnmount(() => {
                         v-if="scale > 1"
                         @click.stop="resetZoom"
                         type="button"
-                        class="cursor-pointer rounded-full bg-white/10 p-2.5 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 sm:p-3 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                        title="Reset zoom (R)"
-                        aria-label="Reset zoom"
+                        class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                        title="Reset Zoom"
+                        aria-label="Reset Zoom"
                     >
-                        <RotateCcw class="h-4 w-4 sm:h-5 sm:w-5" />
+                        <RotateCcw class="h-5 w-5" />
                     </button>
 
-                    <!-- Download Button -->
-                    <button
-                        v-if="showDownload && src"
-                        @click.stop="handleDownload"
-                        type="button"
-                        class="cursor-pointer rounded-full bg-white/10 p-2.5 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 sm:p-3 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                        title="Download image"
-                        aria-label="Download image"
-                    >
-                        <Download class="h-4 w-4 sm:h-5 sm:w-5" />
-                    </button>
-
-                    <!-- Close Button -->
+                    <!-- Exit Fullscreen Button -->
                     <button
                         @click.stop="close"
                         type="button"
-                        class="cursor-pointer rounded-full bg-white/10 p-2.5 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 sm:p-3 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                        title="Close (Esc)"
-                        aria-label="Close"
+                        class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
+                        title="Exit Fullscreen"
+                        aria-label="Exit Fullscreen"
                     >
-                        <X class="h-4 w-4 sm:h-5 sm:w-5" />
+                        <Minimize2 class="h-5 w-5" />
                     </button>
                 </div>
 
@@ -291,7 +244,6 @@ onBeforeUnmount(() => {
                 <img
                     :src="src"
                     :alt="alt || title"
-                    @dblclick="toggleZoom"
                     class="pointer-events-none max-h-[90vh] max-w-[90vw] rounded object-contain shadow-2xl transition-transform duration-75 ease-out"
                     :style="{
                         transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
