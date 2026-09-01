@@ -12,9 +12,9 @@ import {
     Trash2,
     Image as ImageIcon,
     User as UserIcon,
-    X,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import BaseModal from '@/components/BaseModal.vue';
 import Pagination from '@/components/Pagination.vue';
 
 interface UserInfo {
@@ -537,39 +537,30 @@ const formatDate = (dateString: string) => {
         </div>
 
         <!-- Reply / Resolution Modal -->
-        <div
-            v-if="isModalOpen && activeTicket"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
+        <BaseModal
+            :is-open="isModalOpen && !!activeTicket"
+            max-width="2xl"
+            position="center"
+            @close="closeReplyModal"
         >
-            <div
-                class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
-            >
-                <!-- Modal Header -->
-                <div
-                    class="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-gray-800"
-                >
-                    <div class="flex items-center gap-2">
-                        <span
-                            class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
-                        >
-                            {{ activeTicket.ticket_number }}
-                        </span>
-                        <h3
-                            class="text-base font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            {{ activeTicket.subject }}
-                        </h3>
-                    </div>
-                    <button
-                        @click="closeReplyModal"
-                        class="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-800"
+            <template #header>
+                <div v-if="activeTicket" class="flex items-center gap-2">
+                    <span
+                        class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
                     >
-                        <X class="h-5 w-5" />
-                    </button>
+                        {{ activeTicket.ticket_number }}
+                    </span>
+                    <h3
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        {{ activeTicket.subject }}
+                    </h3>
                 </div>
+            </template>
 
+            <div v-if="activeTicket" class="p-6 pt-4">
                 <!-- User Query Details -->
-                <div class="mt-4 space-y-4">
+                <div class="space-y-4">
                     <div
                         class="rounded-xl border border-slate-200/60 bg-slate-50 p-4 dark:border-gray-800 dark:bg-gray-950/60"
                     >
@@ -601,49 +592,46 @@ const formatDate = (dateString: string) => {
                             <a
                                 :href="activeTicket.attachment_url"
                                 target="_blank"
-                                class="inline-block overflow-hidden rounded-lg border border-slate-200 transition-opacity hover:opacity-90 dark:border-gray-700"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                             >
-                                <img
-                                    :src="activeTicket.attachment_url"
-                                    alt="Ticket screenshot"
-                                    class="max-h-48 rounded object-contain"
-                                />
+                                <ImageIcon class="h-3.5 w-3.5" />
+                                <span>View Attachment</span>
                             </a>
                         </div>
                     </div>
 
                     <!-- Reply Form -->
-                    <form @submit.prevent="submitReply" class="space-y-4 pt-2">
+                    <form @submit.prevent="submitReply" class="space-y-3">
                         <div>
                             <label
-                                class="mb-1.5 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                                class="mb-1 block text-xs font-bold text-slate-700 dark:text-gray-300"
                             >
-                                Admin Response / Resolution *
+                                Your Response / Staff Message
                             </label>
                             <textarea
                                 v-model="replyForm.admin_reply"
                                 rows="5"
-                                placeholder="Type your response to the student..."
+                                placeholder="Type your response to the user here..."
+                                class="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs leading-relaxed text-slate-800 focus:border-indigo-600 focus:outline-none dark:border-gray-800 dark:bg-gray-950 dark:text-gray-200"
                                 required
-                                class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 focus:outline-none dark:border-gray-800 dark:bg-gray-950 dark:text-gray-100"
                             ></textarea>
-                            <p
+                            <div
                                 v-if="replyForm.errors.admin_reply"
                                 class="mt-1 text-xs text-rose-500"
                             >
                                 {{ replyForm.errors.admin_reply }}
-                            </p>
+                            </div>
                         </div>
 
-                        <!-- Update Status Selector -->
                         <div
-                            class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                            class="flex flex-wrap items-center justify-between gap-3 pt-2"
                         >
                             <div class="flex items-center gap-2">
                                 <label
                                     class="text-xs font-bold text-slate-700 dark:text-gray-300"
                                 >
-                                    Set Status to:
+                                    Update Status:
                                 </label>
                                 <select
                                     v-model="replyForm.status"
@@ -663,14 +651,14 @@ const formatDate = (dateString: string) => {
                                 <button
                                     type="button"
                                     @click="closeReplyModal"
-                                    class="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                                    class="cursor-pointer rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     :disabled="replyForm.processing"
-                                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700 disabled:opacity-50"
+                                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700 disabled:opacity-50"
                                 >
                                     <Send class="h-3.5 w-3.5" />
                                     <span>{{
@@ -684,6 +672,6 @@ const formatDate = (dateString: string) => {
                     </form>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     </div>
 </template>
