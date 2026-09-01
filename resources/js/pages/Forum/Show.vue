@@ -30,6 +30,8 @@ import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import Pagination from '@/components/Pagination.vue';
 import UserListItem from '@/components/UserListItem.vue';
+import { getCsrfToken } from '@/lib/useCsrf';
+import { formatTimeAgo } from '@/lib/useDate';
 import { usePermissions } from '@/lib/usePermissions';
 
 interface User {
@@ -328,9 +330,7 @@ const submitReport = async () => {
     reportErrorMessage.value = null;
 
     try {
-        const token = (
-            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-        )?.content;
+        const token = getCsrfToken();
 
         const endpoint =
             reportingTarget.value.type === 'post'
@@ -519,47 +519,7 @@ const submitReply = () => {
     });
 };
 
-function timeAgo(dateString?: string): string {
-    if (!dateString) {
-        return '';
-    }
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) {
-        return 'just now';
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m ago`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h ago`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    if (days < 30) {
-        return `${days}d ago`;
-    }
-
-    const months = Math.floor(days / 30);
-
-    if (months < 12) {
-        return `${months}mo ago`;
-    }
-
-    const years = Math.floor(days / 365);
-
-    return `${years}y ago`;
-}
+const timeAgo = formatTimeAgo;
 
 function parseMentions(
     content: string,

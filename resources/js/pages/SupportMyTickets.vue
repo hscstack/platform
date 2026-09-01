@@ -13,6 +13,7 @@ import {
 import { ref } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
+import { formatDateTime } from '@/lib/useDate';
 
 interface UserInfo {
     id: number;
@@ -52,21 +53,7 @@ const getCategoryLabel = (key: string) => {
     return props.categories[key] || key;
 };
 
-const formatDate = (dateString: string) => {
-    if (!dateString) {
-        return '';
-    }
-
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
+const formatDate = formatDateTime;
 </script>
 
 <template>

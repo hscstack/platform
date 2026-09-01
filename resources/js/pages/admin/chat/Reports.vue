@@ -14,6 +14,7 @@ import { ref, computed } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import { formatDateTime } from '@/lib/useDate';
 
 interface ReportItem {
     id: number;
@@ -115,25 +116,7 @@ const openBanModal = (report: ReportItem) => {
     isBanModalOpen.value = true;
 };
 
-const formatDate = (isoString?: string | null) => {
-    if (!isoString) {
-        return '';
-    }
-
-    try {
-        const d = new Date(isoString);
-
-        return d.toLocaleString([], {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    } catch {
-        return '';
-    }
-};
+const formatDate = formatDateTime;
 </script>
 
 <template>

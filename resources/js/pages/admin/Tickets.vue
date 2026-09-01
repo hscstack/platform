@@ -18,6 +18,7 @@ import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
+import { formatDateTime } from '@/lib/useDate';
 
 interface UserInfo {
     id: number;
@@ -170,20 +171,7 @@ const getCategoryLabel = (key: string) => {
     return props.categories[key] || key;
 };
 
-const formatDate = (dateString: string) => {
-    if (!dateString) {
-        return '';
-    }
-
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
+const formatDate = formatDateTime;
 </script>
 
 <template>

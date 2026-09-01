@@ -3,6 +3,7 @@ import { router } from '@inertiajs/vue3';
 import { Ban, Clock, Loader2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import { formatDateTime } from '@/lib/useDate';
 
 export interface ChatBanUser {
     id: number;
@@ -53,25 +54,7 @@ const formatForDatetimeLocal = (dateString?: string | null) => {
     return localISOTime;
 };
 
-const formatDate = (isoString?: string | null) => {
-    if (!isoString) {
-        return '';
-    }
-
-    try {
-        const d = new Date(isoString);
-
-        return d.toLocaleString([], {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    } catch {
-        return '';
-    }
-};
+const formatDate = formatDateTime;
 
 const applyBanPreset = (minutes: number) => {
     const futureDate = new Date(Date.now() + minutes * 60 * 1000);

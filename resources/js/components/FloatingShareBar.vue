@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { Share2, Check, Loader2, Link as LinkIcon } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { getCsrfToken } from '@/lib/useCsrf';
 import AuthModal from './AuthModal.vue';
 
 const page = usePage();
@@ -23,12 +24,6 @@ const isCopied = ref(false);
 const showAuthModal = ref(false);
 
 const toolbarRef = ref<HTMLElement | null>(null);
-
-const getCsrfToken = (): string => {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-
-    return match ? decodeURIComponent(match[1]) : '';
-};
 
 const copyToClipboard = async (text: string): Promise<boolean> => {
     if (navigator.clipboard && window.isSecureContext) {
