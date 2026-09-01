@@ -81,6 +81,21 @@ const isHomeOrSsc = computed(
         currentUrl.value.startsWith('/ssc?'),
 );
 
+const loginUrl = computed(() => {
+    const path = currentUrl.value;
+
+    if (
+        !path ||
+        path === '/' ||
+        path.startsWith('/login') ||
+        path.startsWith('/auth/')
+    ) {
+        return '/login';
+    }
+
+    return `/login?redirect=${encodeURIComponent(path)}`;
+});
+
 const showAuthModal = ref(false);
 const authModalMessage = ref('অনুগ্রহ করে সার্চ ফিচার ব্যবহার করতে লগইন করুন।');
 const showLogoutModal = ref(false);
@@ -387,7 +402,7 @@ onBeforeUnmount(() => {
                     <!-- Guest: Login CTA -->
                     <Link
                         v-if="!user"
-                        href="/login"
+                        :href="loginUrl"
                         class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-slate-800 hover:shadow-md active:scale-95 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                     >
                         <LogIn class="h-3.5 w-3.5" />
@@ -534,7 +549,7 @@ onBeforeUnmount(() => {
                     <!-- Compact Mobile Login Button (if guest) -->
                     <Link
                         v-if="!user"
-                        href="/login"
+                        :href="loginUrl"
                         class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white shadow-xs dark:bg-gray-100 dark:text-gray-900"
                     >
                         <LogIn class="h-3.5 w-3.5" />
@@ -671,7 +686,7 @@ onBeforeUnmount(() => {
 
                             <div v-else>
                                 <Link
-                                    href="/login"
+                                    :href="loginUrl"
                                     @click="closeMobileMenu"
                                     class="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-600/20 transition-all hover:bg-indigo-500 active:scale-98"
                                 >

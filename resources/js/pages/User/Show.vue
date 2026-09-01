@@ -1646,7 +1646,7 @@ function timeAgo(dateString?: string): string {
                         Cancel
                     </button>
                     <Link
-                        href="/login"
+                        :href="`/login?redirect=${encodeURIComponent($page.url)}`"
                         class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-slate-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                     >
                         <LogIn class="h-3.5 w-3.5" />
