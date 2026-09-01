@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
             ForumSeeder::class,
             SupportTicketSeeder::class,
             ReportSeeder::class,
-            NotificationSeeder::class,
         ]);
         Blog::factory()->count(10)->create();
     }
