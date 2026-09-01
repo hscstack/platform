@@ -14,6 +14,12 @@
     "types:check": "vue-tsc --noEmit",
     "prepare": "husky"
   },
+  "lint-staged": {
+    "resources/**/*.{js,ts,vue,css}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@laravel/vite-plugin-wayfinder": "^0.1.3",
