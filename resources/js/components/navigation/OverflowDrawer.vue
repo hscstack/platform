@@ -68,20 +68,22 @@ watch(
 
 <template>
     <div>
-        <!-- Top bar hamburger (mobile) -->
+        <!-- Top bar hamburger (mobile) — YT-style: compact, hamburger left -->
         <div
-            class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/80"
+            class="sticky top-0 z-30 flex h-[56px] items-center gap-2.5 border-b border-slate-200/70 bg-white/90 px-3.5 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90"
         >
             <button
                 type="button"
                 @click="emit('update:open', true)"
-                class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                class="flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
                 aria-label="Open navigation menu"
             >
-                <MaterialIcon name="menu" :size="20" />
+                <MaterialIcon name="menu" :size="22" />
             </button>
-            <AppLogo />
-            <div class="ml-auto flex items-center gap-2">
+            <div class="ml-1">
+                <AppLogo />
+            </div>
+            <div class="ml-auto flex items-center gap-1.5">
                 <button
                     type="button"
                     @click="
@@ -96,7 +98,7 @@ watch(
                             );
                         }
                     "
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 active:scale-95 dark:text-slate-300 dark:hover:bg-slate-800"
                     aria-label="Search"
                 >
                     <MaterialIcon name="search" :size="20" />
@@ -120,15 +122,15 @@ watch(
                 />
                 <Transition
                     appear
-                    enter-active-class="transition-transform duration-300"
+                    enter-active-class="transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
                     enter-from-class="-translate-x-full"
                     enter-to-class="translate-x-0"
-                    leave-active-class="transition-transform duration-200"
+                    leave-active-class="transition-transform duration-200 ease-in"
                     leave-from-class="translate-x-0"
                     leave-to-class="-translate-x-full"
                 >
                     <aside
-                        class="relative flex h-full w-[86%] max-w-xs flex-col bg-white shadow-2xl dark:bg-gray-950"
+                        class="relative flex h-full w-[84%] max-w-[320px] flex-col bg-white shadow-[8px_0_32px_rgba(0,0,0,0.12)] dark:bg-slate-900"
                     >
                         <div
                             class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-gray-800"

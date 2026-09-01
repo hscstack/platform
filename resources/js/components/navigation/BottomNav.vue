@@ -44,37 +44,38 @@ const resolvedHref = (item: { href: string }) => {
 <template>
     <!-- YT / YT Music style: full-width bottom bar, icon above label, active filled -->
     <nav
-        class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-gray-800 dark:bg-gray-900"
+        class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95"
         aria-label="Bottom navigation"
     >
         <div
-            class="mx-auto flex max-w-lg items-center justify-around px-1 py-1"
+            class="mx-auto flex max-w-md items-center justify-around px-1 py-1"
         >
             <Link
                 v-for="item in bottomNavItems"
                 :key="item.href"
                 :href="resolvedHref(item)"
                 :class="[
-                    'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 transition-colors',
+                    'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-1.5 transition-all duration-150 ease-out',
                     isActive(item.href, item.match)
                         ? 'text-slate-900 dark:text-white'
-                        : 'text-slate-500 dark:text-gray-400',
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
                 ]"
             >
                 <MaterialIcon
                     :name="item.icon"
-                    :size="24"
+                    :size="22"
                     :filled="isActive(item.href, item.match)"
                     :weight="300"
                     :class="[
+                        'transition-transform duration-150',
                         isActive(item.href, item.match)
-                            ? 'text-slate-900 dark:text-white'
-                            : 'text-slate-500 dark:text-gray-400',
+                            ? 'scale-[1.02] text-slate-900 dark:text-white'
+                            : 'text-slate-500 dark:text-slate-400',
                     ]"
                 />
                 <span
                     :class="[
-                        'text-[10px] leading-none tracking-wide',
+                        'text-[10px] leading-none tracking-wide antialiased',
                         isActive(item.href, item.match)
                             ? 'font-bold'
                             : 'font-medium',

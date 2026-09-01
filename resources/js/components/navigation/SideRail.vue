@@ -112,32 +112,32 @@ const triggerSearch = () => {
         </div>
 
         <!-- Scrollable nav -->
-        <div class="flex flex-1 flex-col overflow-y-auto py-4">
-            <div v-if="!collapsed" class="px-4 pb-3">
+        <div class="flex flex-1 flex-col overflow-y-auto py-3.5">
+            <div v-if="!collapsed" class="px-4 pb-2.5">
                 <p
-                    class="text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-500"
+                    class="text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500"
                 >
                     Navigation
                 </p>
             </div>
             <!-- Primary + Overflow combined for desktop rail -->
-            <nav class="space-y-1 px-2">
+            <nav class="space-y-0.5 px-2.5">
                 <Link
                     v-for="item in allNavItems"
                     :key="item.href"
                     :href="item.href === '/' ? homeHref : item.href"
                     :class="[
-                        'group flex items-center gap-3 rounded-lg px-3 py-[9px] text-[13px] font-semibold transition-all duration-150 ease-out',
+                        'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
                         isActive(item.href, item.match)
-                            ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
-                        collapsed ? 'justify-center' : '',
+                            ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                            : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                        collapsed ? 'justify-center px-2' : '',
                     ]"
                     :title="collapsed ? item.label : undefined"
                 >
                     <MaterialIcon
                         :name="item.icon"
-                        :size="20"
+                        :size="19"
                         :class="[
                             'shrink-0 transition-colors duration-150',
                             isActive(item.href, item.match)
@@ -145,7 +145,7 @@ const triggerSearch = () => {
                                 : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300',
                         ]"
                     />
-                    <span v-if="!collapsed" class="truncate tracking-tight">{{
+                    <span v-if="!collapsed" class="truncate">{{
                         item.label
                     }}</span>
                     <span
