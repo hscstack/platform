@@ -69,7 +69,22 @@ const closeMenu = () => {
     isMenuOpen.value = false;
 };
 
-const handleCopyShortLink = async () => {
+const isUserProfile = computed(() => page.component === 'User/Show');
+
+const handleCopyLink = async () => {
+    if (isUserProfile.value) {
+        const ok = await copyToClipboard(window.location.href);
+
+        if (ok) {
+            isCopied.value = true;
+            setTimeout(() => {
+                isCopied.value = false;
+            }, 2000);
+        }
+
+        return;
+    }
+
     if (!user.value) {
         closeMenu();
         showAuthModal.value = true;
@@ -163,7 +178,7 @@ onBeforeUnmount(() => {
                     class="absolute right-0 bottom-full mb-2.5 w-max rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
                 >
                     <button
-                        @click="handleCopyShortLink"
+                        @click="handleCopyLink"
                         :disabled="isLoading"
                         class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap transition-colors"
                         :class="
@@ -191,7 +206,9 @@ onBeforeUnmount(() => {
                                     ? 'Shortening link...'
                                     : isCopied
                                       ? 'Link copied!'
-                                      : 'Copy short link'
+                                      : isUserProfile
+                                        ? 'Copy Link'
+                                        : 'Copy short link'
                             }}
                         </span>
                     </button>
