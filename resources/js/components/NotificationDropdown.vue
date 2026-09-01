@@ -450,10 +450,12 @@ onBeforeUnmount(() => {
                                 />
                                 <ShieldAlert
                                     v-else-if="
-                                        item.data?.type === 'forum_status' &&
-                                        (item.data?.status === 'flagged' ||
-                                            item.data?.status === 'rejected' ||
-                                            item.data?.status === 'locked')
+                                        item.data?.type === 'chat_report' ||
+                                        (item.data?.type === 'forum_status' &&
+                                            (item.data?.status === 'flagged' ||
+                                                item.data?.status ===
+                                                    'rejected' ||
+                                                item.data?.status === 'locked'))
                                     "
                                     class="h-4 w-4 text-amber-500"
                                 />

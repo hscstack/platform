@@ -9,8 +9,10 @@ use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use App\Models\Report;
 use App\Models\User;
+use App\Notifications\ChatReportNotification;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -346,6 +348,11 @@ class ChatController extends Controller
             'reason' => $validated['reason'] ?? 'Inappropriate message',
             'status' => 'pending',
         ]);
+
+        $moderators = User::permission('manage chat')->select(['id', 'name', 'email'])->get();
+        if ($moderators->isNotEmpty()) {
+            Notification::send($moderators, new ChatReportNotification($report, $user));
+        }
 
         // Dynamic Auto-ban logic on X reports
         $autoBanEnabled = (bool) AppSetting::get('global_chat_auto_ban_enabled', true);
