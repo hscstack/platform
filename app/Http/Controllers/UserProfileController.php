@@ -53,13 +53,13 @@ class UserProfileController extends Controller
             : false;
 
         $appreciators = $user->appreciators()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
             ->inRandomOrder()
             ->take(30)
             ->get();
 
         $appreciating = $user->appreciatingUsers()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution'])
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
             ->inRandomOrder()
             ->take(30)
             ->get();
@@ -180,8 +180,8 @@ class UserProfileController extends Controller
         // Suggested / Discover community members: 2 contributors + 2 general users
         $contributorUsers = User::where('id', '!=', $user->id)
             ->whereNotNull('username')
-            ->whereHas('roles')
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about'])
+            ->where('is_verified', true)
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
             ->inRandomOrder()
             ->take(2)
             ->get();
@@ -191,7 +191,7 @@ class UserProfileController extends Controller
 
         $randomUsers = User::whereNotIn('id', $excludedIds)
             ->whereNotNull('username')
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about'])
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
             ->inRandomOrder()
             ->take($remainingNeeded)
             ->get();
@@ -211,7 +211,6 @@ class UserProfileController extends Controller
                 'github' => $user->github,
                 'created_at' => $user->created_at?->format('M Y') ?? '2026',
                 'is_verified' => $user->is_verified,
-                'is_staff' => $user->is_verified,
             ],
             'stats' => [
                 'questionsCount' => $questionsCount,

@@ -21,14 +21,8 @@ const props = defineProps({
 const page = usePage();
 const user = computed(() => props.user || page.props.auth?.user);
 
-const hasNoRole = computed(() => {
-    if (typeof user.value?.is_verified === 'boolean') {
-        return !user.value.is_verified;
-    }
-
-    const roles = user.value?.roles;
-
-    return !roles || roles.length === 0;
+const isUnverified = computed(() => {
+    return !user.value?.is_verified;
 });
 
 const showAdvancedSettings = ref(false);
@@ -90,9 +84,9 @@ const submitForm = () => {
             </p>
         </div>
 
-        <!-- Be a Contributor Section (Only for users without roles) -->
+        <!-- Be a Contributor Section (Only for unverified users) -->
         <div
-            v-if="hasNoRole"
+            v-if="isUnverified"
             class="mb-8 overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 via-white to-violet-50/40 p-6 sm:p-8 dark:border-indigo-500/20 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950/20"
         >
             <div

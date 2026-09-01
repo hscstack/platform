@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { UserPlus, Loader2, Save } from 'lucide-vue-next';
+import { UserPlus, Loader2, Save, BadgeCheck } from 'lucide-vue-next';
 import { watch } from 'vue';
 
 const props = defineProps({
@@ -22,6 +22,7 @@ const form = useForm({
     name: props.user?.name || '',
     username: props.user?.username || '',
     email: props.user?.email || '',
+    is_verified: Boolean(props.user?.is_verified ?? false),
     role: props.user?.roles?.[0]?.name || '',
     permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
 
@@ -212,6 +213,59 @@ const submitForm = () => {
                         {{ form.errors.role }}
                     </p>
                 </div>
+            </div>
+
+            <!-- Verified Contributor Option -->
+            <div
+                class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition dark:border-gray-800 dark:bg-gray-800/40"
+            >
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                        >
+                            <BadgeCheck class="h-5 w-5" />
+                        </div>
+                        <div>
+                            <label
+                                for="is_verified"
+                                class="cursor-pointer text-sm font-semibold text-slate-900 select-none dark:text-gray-100"
+                            >
+                                Verified Contributor Badge
+                            </label>
+                            <p
+                                class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                Controls verified status across the platform
+                                (user badges, chat access, and contributor
+                                recognition).
+                            </p>
+                        </div>
+                    </div>
+                    <label
+                        class="relative inline-flex shrink-0 cursor-pointer items-center"
+                    >
+                        <input
+                            type="checkbox"
+                            id="is_verified"
+                            v-model="form.is_verified"
+                            :disabled="form.processing"
+                            class="peer sr-only"
+                        />
+                        <div
+                            class="peer h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500/20 peer-focus:outline-none dark:bg-gray-700 dark:peer-checked:bg-blue-600"
+                        ></div>
+                        <div
+                            class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:translate-x-full dark:bg-gray-200"
+                        ></div>
+                    </label>
+                </div>
+                <p
+                    v-if="form.errors.is_verified"
+                    class="mt-2 text-sm text-rose-600"
+                >
+                    {{ form.errors.is_verified }}
+                </p>
             </div>
 
             <!-- DYNAMIC EDITOR PERMISSIONS SECTION -->

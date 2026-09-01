@@ -18,6 +18,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
+ * @property bool $is_verified
  * @property string $password
  * @property string|null $remember_token
  * @property Carbon|null $created_at
@@ -41,6 +42,7 @@ class User extends Authenticatable
         'username',
         'email',
         'receive_emails',
+        'is_verified',
         'google_id',
         'email_verified_at',
         'banned_until',
@@ -65,16 +67,8 @@ class User extends Authenticatable
 
     protected $appends = [
         'image_url',
-        'is_verified',
         'is_banned',
     ];
-
-    public function getIsVerifiedAttribute(): bool
-    {
-        return $this->relationLoaded('roles')
-            ? $this->roles->isNotEmpty()
-            : $this->roles()->exists();
-    }
 
     public function isBanned(): bool
     {
@@ -109,6 +103,7 @@ class User extends Authenticatable
             'banned_until' => 'datetime',
             'password' => 'hashed',
             'receive_emails' => 'boolean',
+            'is_verified' => 'boolean',
         ];
     }
 

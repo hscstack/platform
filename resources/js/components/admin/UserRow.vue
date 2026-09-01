@@ -4,6 +4,7 @@ import { LogIn, Pencil, Trash2, Ban } from 'lucide-vue-next';
 import { ref } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
@@ -80,6 +81,8 @@ const deleteUser = (id: number) => {
                     >
                         {{ user.name }}
                     </span>
+
+                    <VerifiedBadge v-if="user.is_verified" />
 
                     <span
                         v-if="user.id === userId"

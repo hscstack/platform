@@ -30,6 +30,7 @@ import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import Pagination from '@/components/Pagination.vue';
 import UserListItem from '@/components/UserListItem.vue';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
 import { getCsrfToken } from '@/lib/useCsrf';
 import { formatTimeAgo } from '@/lib/useDate';
@@ -41,6 +42,7 @@ interface User {
     image_path?: string | null;
     image_url?: string | null;
     institution?: string | null;
+    is_verified?: boolean;
 }
 
 interface Subject {
@@ -755,6 +757,7 @@ function parseMentions(
                             <span v-else>{{ post.user.name.charAt(0) }}</span>
                         </div>
                         <span>{{ post.user.name }}</span>
+                        <VerifiedBadge v-if="post.user.is_verified" />
                     </Link>
                     <span
                         v-else
@@ -1047,6 +1050,7 @@ function parseMentions(
                             <span class="text-xs sm:text-sm">{{
                                 answer.user.name
                             }}</span>
+                            <VerifiedBadge v-if="answer.user.is_verified" />
                         </Link>
                         <span
                             v-else
@@ -1212,6 +1216,9 @@ function parseMentions(
                                         }}</span>
                                     </div>
                                     <span>{{ reply.user.name }}</span>
+                                    <VerifiedBadge
+                                        v-if="reply.user.is_verified"
+                                    />
                                 </Link>
                                 <span
                                     v-else

@@ -42,7 +42,7 @@ class ForumController extends Controller
         $postsQuery = ForumPost::query()
             ->when(! ($myPosts && auth()->check()), fn ($q) => $q->approved())
             ->with([
-                'user:id,name,username,image_path,institution',
+                'user:id,name,username,image_path,institution,is_verified',
                 'subject:id,name,course,slug',
                 'node:id,name,slug',
             ])
@@ -93,16 +93,16 @@ class ForumController extends Controller
         }
 
         $post->load([
-            'user:id,name,username,image_path,institution',
+            'user:id,name,username,image_path,institution,is_verified',
             'subject:id,name,course,slug',
             'node:id,name,slug',
         ]);
 
         $answers = $post->directAnswers()
             ->with([
-                'user:id,name,username,image_path,institution',
+                'user:id,name,username,image_path,institution,is_verified',
                 'replies' => fn ($q) => $q->with([
-                    'user:id,name,username,image_path,institution',
+                    'user:id,name,username,image_path,institution,is_verified',
                     'parent:id,user_id',
                     'parent.user:id,name,username',
                 ])->orderBy('created_at', 'asc'),
@@ -149,7 +149,7 @@ class ForumController extends Controller
         $upvoters = ForumVote::where('voteable_type', ForumPost::class)
             ->where('voteable_id', $post->id)
             ->where('value', 1)
-            ->with('user:id,name,username,image_path,institution')
+            ->with('user:id,name,username,image_path,institution,is_verified')
             ->latest()
             ->get()
             ->pluck('user')

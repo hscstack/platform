@@ -44,8 +44,6 @@ const props = defineProps<{
         github: string | null;
         created_at: string;
         is_verified?: boolean;
-        is_staff?: boolean;
-        roles?: string[];
     };
     stats: {
         questionsCount: number;
@@ -386,10 +384,7 @@ const timeAgo = formatTimeAgo;
                                 </h1>
 
                                 <VerifiedBadge
-                                    v-if="
-                                        profileUser.is_verified ||
-                                        profileUser.is_staff
-                                    "
+                                    v-if="profileUser.is_verified"
                                     size="h-5 w-5"
                                 />
                             </div>

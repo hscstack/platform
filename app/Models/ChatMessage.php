@@ -71,7 +71,7 @@ class ChatMessage extends Model
                             'image_url' => $r->user->image_url,
                             'image_path' => $r->user->image_path,
                             'institution' => $r->user->institution,
-                            'is_verified' => (bool) ($r->user->is_verified || ($r->user->relationLoaded('roles') && $r->user->roles->isNotEmpty())),
+                            'is_verified' => (bool) ($r->user->is_verified ?? false),
                             'roles' => $r->user->relationLoaded('roles') ? $r->user->roles->pluck('name')->toArray() : [],
                         ];
                     })->filter()->values()->toArray(),
