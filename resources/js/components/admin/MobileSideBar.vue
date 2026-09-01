@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { X, Database } from 'lucide-vue-next';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -10,7 +10,14 @@ defineProps({
     isOpen: Boolean,
 });
 
-defineEmits(['close']);
+const emit = defineEmits(['close']);
+
+const handleClearCache = () => {
+    if (confirm('Are you sure you want to clear all cache?')) {
+        emit('close');
+        router.post('/admin/clear-cache');
+    }
+};
 </script>
 
 <template>
@@ -58,16 +65,15 @@ defineEmits(['close']);
             </div>
 
             <div class="space-y-3">
-                <Link
+                <button
                     v-if="can('clear cache')"
-                    method="post"
-                    href="/admin/clear-cache"
-                    as="button"
+                    type="button"
+                    @click="handleClearCache"
                     class="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50/60 dark:text-rose-400 dark:hover:bg-rose-500/10"
                 >
                     <Database class="h-4 w-4" />
-                    Clear Cache
-                </Link>
+                    <span>Clear Cache</span>
+                </button>
             </div>
         </div>
     </div>
