@@ -12,7 +12,7 @@ import {
     CheckCircle2,
     HeartHandshake,
     Heart,
-    ThumbsUp,
+    ArrowBigUp,
     Clock,
     LifeBuoy,
 } from 'lucide-vue-next';
@@ -511,12 +511,12 @@ onBeforeUnmount(() => {
                                     "
                                     class="h-4 w-4 text-rose-500"
                                 />
-                                <ThumbsUp
+                                <ArrowBigUp
                                     v-else-if="
                                         item.data?.type === 'forum_vote' ||
                                         item.data?.type === 'node_vote'
                                     "
-                                    class="h-4 w-4 text-emerald-500"
+                                    class="h-4.5 w-4.5 fill-indigo-500/30 text-indigo-600 dark:fill-indigo-400/30 dark:text-indigo-400"
                                 />
                                 <AtSign
                                     v-else-if="
