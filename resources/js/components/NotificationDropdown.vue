@@ -11,6 +11,7 @@ import {
     CheckCircle2,
     HeartHandshake,
     Heart,
+    ThumbsUp,
     LifeBuoy,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -429,6 +430,10 @@ onBeforeUnmount(() => {
                                         item.data?.type === 'blog_reaction'
                                     "
                                     class="h-4 w-4 text-rose-500"
+                                />
+                                <ThumbsUp
+                                    v-else-if="item.data?.type === 'forum_vote'"
+                                    class="h-4 w-4 text-emerald-500"
                                 />
                                 <AtSign
                                     v-else-if="

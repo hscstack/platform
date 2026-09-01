@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
+use App\Notifications\ForumVoteNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +26,9 @@ class ForumVoteController extends Controller
 
         $value = (int) $validated['value'];
         $userId = auth()->id();
+        $isFirstTimeUpvote = false;
 
-        DB::transaction(function () use ($post, $userId, $value) {
+        DB::transaction(function () use ($post, $userId, $value, &$isFirstTimeUpvote) {
             $lockedPost = ForumPost::where('id', $post->id)->lockForUpdate()->first();
             if (! $lockedPost) {
                 return;
@@ -45,6 +47,10 @@ class ForumVoteController extends Controller
                     'user_id' => $userId,
                     'value' => $value,
                 ]);
+
+                if ($value === 1) {
+                    $isFirstTimeUpvote = true;
+                }
             }
 
             $upvotes = (int) $lockedPost->votes()->where('value', 1)->count();
@@ -56,6 +62,10 @@ class ForumVoteController extends Controller
                 'vote_score' => $upvotes - $downvotes,
             ]);
         });
+
+        if ($isFirstTimeUpvote && $post->user_id !== $userId) {
+            $post->user->notify(new ForumVoteNotification($post, $user));
+        }
 
         return back();
     }
@@ -75,8 +85,9 @@ class ForumVoteController extends Controller
 
         $value = (int) $validated['value'];
         $userId = auth()->id();
+        $isFirstTimeUpvote = false;
 
-        DB::transaction(function () use ($answer, $userId, $value) {
+        DB::transaction(function () use ($answer, $userId, $value, &$isFirstTimeUpvote) {
             $lockedAnswer = ForumAnswer::where('id', $answer->id)->lockForUpdate()->first();
             if (! $lockedAnswer) {
                 return;
@@ -95,6 +106,10 @@ class ForumVoteController extends Controller
                     'user_id' => $userId,
                     'value' => $value,
                 ]);
+
+                if ($value === 1) {
+                    $isFirstTimeUpvote = true;
+                }
             }
 
             $upvotes = (int) $lockedAnswer->votes()->where('value', 1)->count();
@@ -106,6 +121,10 @@ class ForumVoteController extends Controller
                 'vote_score' => $upvotes - $downvotes,
             ]);
         });
+
+        if ($isFirstTimeUpvote && $answer->user_id !== $userId) {
+            $answer->user->notify(new ForumVoteNotification($answer, $user));
+        }
 
         return back();
     }
