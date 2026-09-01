@@ -198,7 +198,10 @@ const openImageModal = (src: string, alt = 'Attached image') => {
 // Toggle Answered
 const isTogglingAnswered = ref(false);
 const toggleAnswered = () => {
-    if (!user.value || user.value.id !== props.post.user_id) {
+    if (
+        !user.value ||
+        (user.value.id !== props.post.user_id && !can('manage forums'))
+    ) {
         return;
     }
 
@@ -868,9 +871,12 @@ function parseMentions(
                         </span>
                     </button>
 
-                    <!-- Owner "Mark as Answered" Toggle -->
+                    <!-- Author or Moderator "Mark as Answered" Toggle -->
                     <button
-                        v-if="user && user.id === post.user_id"
+                        v-if="
+                            user &&
+                            (user.id === post.user_id || can('manage forums'))
+                        "
                         type="button"
                         @click="toggleAnswered"
                         :disabled="isTogglingAnswered"
