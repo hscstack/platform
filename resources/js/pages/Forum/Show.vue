@@ -26,8 +26,8 @@ import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
-import ForumImageModal from '@/components/forum/ForumImageModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
+import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -1687,7 +1687,7 @@ function parseMentions(
         </div>
 
         <!-- Reusable Components -->
-        <ForumImageModal
+        <ImageViewerModal
             v-model="showImageModal"
             :src="modalImageSrc"
             :alt="modalImageAlt"
