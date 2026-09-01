@@ -7,6 +7,7 @@ use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Report;
+use App\Notifications\ForumStatusNotification;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -63,6 +64,10 @@ class ForumController extends Controller
 
         $status = $post->is_locked ? 'locked' : 'unlocked';
 
+        if ($post->user_id && $post->user_id !== auth()->id()) {
+            $post->user->notify(new ForumStatusNotification($post, $status));
+        }
+
         return back()->with('success', "Discussion has been {$status}.");
     }
 
@@ -75,6 +80,10 @@ class ForumController extends Controller
         $newStatus = $validated['moderation_status'];
 
         $post->update(['moderation_status' => $newStatus]);
+
+        if ($post->user_id && $post->user_id !== auth()->id()) {
+            $post->user->notify(new ForumStatusNotification($post, $newStatus));
+        }
 
         return back()->with('success', "Discussion status updated to {$newStatus}.");
     }

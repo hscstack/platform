@@ -8,12 +8,16 @@ use App\Models\ForumPost;
 use App\Models\ForumVote;
 use App\Models\Node;
 use App\Models\Subject;
+use App\Models\User;
+use App\Notifications\ForumReportNotification;
+use App\Notifications\ForumStatusNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -322,7 +326,12 @@ class ForumController extends Controller
                 $pendingReportsCount = $post->reports()->where('status', 'pending')->count();
 
                 if ($pendingReportsCount >= $threshold) {
+                    $wasNotFlagged = $post->moderation_status !== 'flagged';
                     $post->update(['moderation_status' => 'flagged']);
+
+                    if ($wasNotFlagged && $author) {
+                        $author->notify(new ForumStatusNotification($post, 'flagged', 'Your question was flagged by community reports', 'Your question has been temporarily hidden pending review due to community reports.'));
+                    }
                 }
             }
 
@@ -333,6 +342,14 @@ class ForumController extends Controller
             return response()->json([
                 'message' => 'You have already reported this question.',
             ], 422);
+        }
+
+        $moderators = User::permission('manage forums')
+            ->select(['id', 'name', 'email'])
+            ->get();
+
+        if ($moderators->isNotEmpty()) {
+            Notification::send($moderators, new ForumReportNotification($report, $user));
         }
 
         return response()->json([
