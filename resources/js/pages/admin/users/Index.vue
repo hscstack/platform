@@ -4,6 +4,7 @@ import { Plus, Search, ShieldCheck, Users, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 import UserRow from '@/components/admin/UserRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import Pagination from '@/components/Pagination.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 interface PaginationLink {
@@ -289,103 +290,15 @@ const clearSearch = () => {
                 v-if="users.links && users.links.length > 3"
                 class="mt-6 border-t border-slate-100 pt-4 dark:border-gray-800"
             >
-                <!-- Desktop Pagination (Tablet/PC) -->
-                <div class="hidden items-center justify-between gap-3 sm:flex">
-                    <p class="text-xs text-slate-500 dark:text-gray-400">
-                        Showing
-                        <span
-                            class="font-semibold text-slate-700 dark:text-gray-200"
-                            >{{ users.from ?? 0 }}</span
-                        >
-                        to
-                        <span
-                            class="font-semibold text-slate-700 dark:text-gray-200"
-                            >{{ users.to ?? 0 }}</span
-                        >
-                        of
-                        <span
-                            class="font-semibold text-slate-700 dark:text-gray-200"
-                            >{{ users.total ?? 0 }}</span
-                        >
-                        users
-                    </p>
-
-                    <div
-                        class="flex flex-wrap items-center justify-center gap-1"
-                    >
-                        <component
-                            :is="link.url ? Link : 'span'"
-                            v-for="(link, index) in users.links"
-                            :key="index"
-                            :href="link.url || '#'"
-                            preserve-scroll
-                            class="inline-flex min-h-8 min-w-8 items-center justify-center rounded-lg px-2.5 py-1 text-xs font-semibold transition-all"
-                            :class="{
-                                'bg-indigo-600 text-white shadow-2xs':
-                                    link.active,
-                                'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800':
-                                    !link.active && link.url,
-                                'cursor-not-allowed text-slate-300 dark:text-gray-600':
-                                    !link.url,
-                            }"
-                        >
-                            <span v-html="link.label"></span>
-                        </component>
-                    </div>
-                </div>
-
-                <!-- Mobile Pagination (Phone) -->
-                <div class="flex flex-col gap-2.5 sm:hidden">
-                    <div class="flex items-center justify-between gap-2">
-                        <component
-                            :is="users.links[0].url ? Link : 'span'"
-                            :href="users.links[0].url || '#'"
-                            preserve-scroll
-                            class="flex flex-1 items-center justify-center rounded-xl border px-3 py-2 text-center text-xs font-semibold shadow-2xs transition active:scale-95"
-                            :class="
-                                users.links[0].url
-                                    ? 'border-slate-200 bg-white text-slate-700 active:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:active:bg-gray-800'
-                                    : 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-600'
-                            "
-                        >
-                            &larr; Prev
-                        </component>
-
-                        <div
-                            class="shrink-0 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300"
-                        >
-                            Page {{ users.current_page }} of
-                            {{ users.last_page }}
-                        </div>
-
-                        <component
-                            :is="
-                                users.links[users.links.length - 1].url
-                                    ? Link
-                                    : 'span'
-                            "
-                            :href="
-                                users.links[users.links.length - 1].url || '#'
-                            "
-                            preserve-scroll
-                            class="flex flex-1 items-center justify-center rounded-xl border px-3 py-2 text-center text-xs font-semibold shadow-2xs transition active:scale-95"
-                            :class="
-                                users.links[users.links.length - 1].url
-                                    ? 'border-slate-200 bg-white text-slate-700 active:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:active:bg-gray-800'
-                                    : 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-600'
-                            "
-                        >
-                            Next &rarr;
-                        </component>
-                    </div>
-
-                    <p
-                        class="text-center text-[11px] text-slate-400 dark:text-gray-500"
-                    >
-                        Showing {{ users.from ?? 0 }} to {{ users.to ?? 0 }} of
-                        {{ users.total ?? 0 }} users
-                    </p>
-                </div>
+                <Pagination
+                    :links="users.links"
+                    :from="users.from"
+                    :to="users.to"
+                    :total="users.total"
+                    :current-page="users.current_page"
+                    :last-page="users.last_page"
+                    show-summary
+                />
             </div>
         </div>
     </div>

@@ -28,6 +28,7 @@ import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
+import Pagination from '@/components/Pagination.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -1503,24 +1504,11 @@ function parseMentions(
             v-if="answers.links && answers.links.length > 3"
             class="mb-10 border-t border-slate-100 pt-5 dark:border-gray-800"
         >
-            <div class="flex items-center justify-center gap-1.5">
-                <component
-                    :is="link.url ? Link : 'span'"
-                    v-for="(link, index) in answers.links"
-                    :key="index"
-                    :href="link.url"
-                    class="rounded-lg px-3 py-1.5 text-xs font-medium transition"
-                    :class="{
-                        'bg-indigo-600 text-white': link.active,
-                        'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300':
-                            !link.active && link.url,
-                        'cursor-not-allowed text-slate-300 dark:text-gray-700':
-                            !link.url,
-                    }"
-                >
-                    <span v-html="link.label"></span>
-                </component>
-            </div>
+            <Pagination
+                :links="answers.links"
+                :current-page="answers.current_page"
+                :last-page="answers.last_page"
+            />
         </div>
 
         <!-- Main Answer Submission Box -->

@@ -14,6 +14,7 @@ import {
 import { ref } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
+import Pagination from '@/components/Pagination.vue';
 
 interface ForumPostItem {
     id: number;
@@ -462,11 +463,13 @@ const openBanModal = (post: ForumPostItem) => {
             <!-- Pagination -->
             <div
                 v-if="posts.links && posts.links.length > 3"
-                class="flex items-center justify-between border-t border-slate-100 bg-slate-50/40 px-4 py-2.5 text-xs dark:border-gray-800 dark:bg-gray-900"
+                class="border-t border-slate-100 bg-slate-50/40 px-4 py-1 dark:border-gray-800 dark:bg-gray-900"
             >
-                <div class="text-slate-400">
-                    Page {{ posts.current_page }} of {{ posts.last_page }}
-                </div>
+                <Pagination
+                    :links="posts.links"
+                    :current-page="posts.current_page"
+                    :last-page="posts.last_page"
+                />
             </div>
         </div>
 

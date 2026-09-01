@@ -15,6 +15,7 @@ import {
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
+import Pagination from '@/components/Pagination.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 
 interface User {
@@ -899,28 +900,12 @@ function timeAgo(dateString?: string): string {
         </div>
 
         <!-- Pagination -->
-        <div
-            v-if="posts.links && posts.links.length > 3"
-            class="mt-8 flex items-center justify-center gap-1"
-        >
-            <Component
-                :is="link.url ? Link : 'span'"
-                v-for="(link, i) in posts.links"
-                :key="i"
-                :href="link.url || '#'"
-                preserve-scroll
-                class="flex h-8 min-w-[32px] items-center justify-center rounded-lg px-2 text-xs font-semibold transition"
-                :class="[
-                    link.active
-                        ? 'bg-indigo-600 text-white'
-                        : link.url
-                          ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800'
-                          : 'cursor-not-allowed text-slate-400 opacity-40 dark:text-gray-600',
-                ]"
-            >
-                <span v-html="link.label"></span>
-            </Component>
-        </div>
+        <Pagination
+            :links="posts.links"
+            :current-page="posts.current_page"
+            :last-page="posts.last_page"
+            class="mt-8"
+        />
 
         <!-- Filter & Sort Modal -->
         <Teleport to="body">

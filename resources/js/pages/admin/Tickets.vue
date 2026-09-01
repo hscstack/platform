@@ -15,6 +15,7 @@ import {
     X,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import Pagination from '@/components/Pagination.vue';
 
 interface UserInfo {
     id: number;
@@ -524,28 +525,14 @@ const formatDate = (dateString: string) => {
 
             <!-- Pagination Links -->
             <div
-                v-if="tickets.last_page > 1"
-                class="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/60"
+                v-if="tickets.links && tickets.links.length > 3"
+                class="border-t border-slate-100 bg-slate-50/50 px-4 py-1 dark:border-gray-800 dark:bg-gray-900/60"
             >
-                <div class="text-xs text-slate-500 dark:text-gray-400">
-                    Showing page {{ tickets.current_page }} of
-                    {{ tickets.last_page }}
-                </div>
-                <div class="flex items-center gap-1">
-                    <Link
-                        v-for="(link, i) in tickets.links"
-                        :key="i"
-                        :href="link.url || '#'"
-                        class="rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors"
-                        :class="
-                            link.active
-                                ? 'bg-indigo-600 text-white'
-                                : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                        "
-                    >
-                        <span v-html="link.label"></span>
-                    </Link>
-                </div>
+                <Pagination
+                    :links="tickets.links"
+                    :current-page="tickets.current_page"
+                    :last-page="tickets.last_page"
+                />
             </div>
         </div>
 
