@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\AppSetting;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
+use App\Models\User;
+use App\Notifications\ForumAnswerNotification;
+use App\Notifications\ForumReportNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class ForumAnswerController extends Controller
@@ -62,14 +66,31 @@ class ForumAnswerController extends Controller
             $imagePath = $request->file('image')->store('forum/answers');
         }
 
-        $post->answers()->create([
-            'user_id' => auth()->id(),
+        $answer = $post->answers()->create([
+            'user_id' => $user->id,
             'parent_id' => $parentId,
             'body' => $validated['body'],
             'image_path' => $imagePath,
         ]);
 
         $post->increment('answers_count');
+
+        $targetUser = null;
+        $isReply = false;
+
+        if (isset($parent)) {
+            $isReply = true;
+            if (preg_match('/@([a-zA-Z0-9_]+)/', $validated['body'], $matches)) {
+                $targetUser = User::where('username', $matches[1])->first();
+            }
+            $targetUser = $targetUser ?: $parent->user;
+        } elseif ($post->user_id) {
+            $targetUser = $post->user;
+        }
+
+        if ($targetUser && $targetUser->id !== $user->id) {
+            $targetUser->notify(new ForumAnswerNotification($post, $answer, $isReply));
+        }
 
         return back()->with('success', 'Answer posted!');
     }
@@ -128,6 +149,14 @@ class ForumAnswerController extends Controller
             'reason' => $validated['reason'],
             'status' => 'pending',
         ]);
+
+        $moderators = User::permission('manage forums')
+            ->select(['id', 'name', 'email'])
+            ->get();
+
+        if ($moderators->isNotEmpty()) {
+            Notification::send($moderators, new ForumReportNotification($report, $user));
+        }
 
         return response()->json([
             'message' => 'Answer reported successfully. Our moderation team will review it.',
