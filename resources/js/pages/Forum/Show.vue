@@ -1608,7 +1608,9 @@ function parseMentions(
                 </p>
                 <button
                     type="button"
-                    @click="showAuthModal = true"
+                    @click="
+                        requireAuth('Please sign in to answer this question.')
+                    "
                     class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700"
                 >
                     Sign In
