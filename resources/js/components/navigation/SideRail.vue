@@ -69,16 +69,20 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
         ]"
         aria-label="Side navigation"
     >
-        <!-- Header: Logo + Collapse toggle -->
+        <!-- Header: Logo + Collapse toggle — collapsed stacks vertically to fit 72px rail -->
         <div
-            class="flex h-16 shrink-0 items-center border-b border-slate-200/60 bg-white/70 px-3 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl"
-            :class="collapsed ? 'justify-center gap-0' : 'justify-between'"
+            :class="[
+                'flex shrink-0 items-center border-b border-slate-200/60 bg-white/70 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl',
+                collapsed
+                    ? 'h-auto flex-col justify-center gap-3 px-2 py-3'
+                    : 'h-16 flex-row justify-between px-3',
+            ]"
         >
             <AppLogo v-if="!collapsed" />
             <Link
                 v-else
                 :href="homeHref"
-                class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm dark:bg-gray-100"
+                class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm ring-1 ring-slate-900/10 dark:bg-gray-100"
                 aria-label="Home"
             >
                 <img
@@ -95,7 +99,7 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
             >
                 <MaterialIcon
                     :name="collapsed ? 'chevron_right' : 'chevron_left'"
-                    :size="20"
+                    :size="18"
                 />
             </button>
         </div>

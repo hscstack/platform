@@ -62,18 +62,29 @@ function persist(hrefs: string[]) {
     } catch {}
 }
 
+// Client-side module-level singleton — shared across all consumers
+const sharedMiddleHrefs = ref<string[]>(
+    loadStored() ?? [...DEFAULT_MIDDLE_HREFS],
+);
+let hasPersistWatcher = false;
+
+function ensurePersistWatcher() {
+    if (hasPersistWatcher || typeof window === 'undefined') {
+        return;
+    }
+
+    hasPersistWatcher = true;
+    watch(sharedMiddleHrefs, (v) => persist(v), { deep: true });
+}
+
 export function useBottomNavCustomization() {
     const page = usePage();
     const user = computed(
         () => page.props.auth?.user as App.Data.UserData | undefined,
     );
 
-    const middleHrefs = ref<string[]>(
-        loadStored() ?? [...DEFAULT_MIDDLE_HREFS],
-    );
-
-    // Persist on change
-    watch(middleHrefs, (v) => persist(v), { deep: true });
+    ensurePersistWatcher();
+    const middleHrefs = sharedMiddleHrefs;
 
     const homeItem = computed<NavItem>(
         () => allNavItems.find((i) => i.href === HOME_HREF)!,
