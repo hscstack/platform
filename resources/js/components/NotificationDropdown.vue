@@ -17,6 +17,7 @@ import {
     LifeBuoy,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { getCsrfToken } from '@/lib/useCsrf';
 
 interface NotificationItem {
     id: string;
@@ -61,13 +62,6 @@ watch(
         }
     },
 );
-
-const getCsrfToken = (): string => {
-    return (
-        (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)
-            ?.content || ''
-    );
-};
 
 const fetchNotifications = async () => {
     isLoading.value = true;

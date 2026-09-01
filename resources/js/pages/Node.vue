@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ArrowBigDown, ArrowBigUp, LogIn, X } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { ArrowBigDown, ArrowBigUp, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
+import AuthModal from '@/components/AuthModal.vue';
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import NodeRow from '@/components/NodeRow.vue';
 import ResourceRow from '@/components/ResourceRow.vue';
 import UserListItem from '@/components/UserListItem.vue';
+import { useAuth } from '@/lib/useAuth';
 
 const props = defineProps({
     subject: {
@@ -48,8 +50,12 @@ const props = defineProps({
     },
 });
 
-const page = usePage();
-const currentUser = computed(() => page.props.auth?.user);
+const {
+    user: currentUser,
+    requireAuth,
+    showAuthModal,
+    authModalMessage,
+} = useAuth();
 
 const crumbs = computed(() => props.breadcrumb ?? []);
 const currentTitle = computed(
@@ -63,9 +69,7 @@ const totalItemsCount = computed(
 );
 
 // Modals
-const showAuthModal = ref(false);
 const showUpvotersModal = ref(false);
-const authModalMessage = ref('Please sign in to vote on folders.');
 
 // Optimistic Vote State
 const localUserVote = ref(props.userVote);
@@ -103,10 +107,7 @@ watch(
 );
 
 const handleVote = (type: 'up' | 'down') => {
-    if (!currentUser.value) {
-        authModalMessage.value = 'Please sign in to vote on folders.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to vote on folders.')) {
         return;
     }
 
@@ -404,64 +405,18 @@ const handleVote = (type: 'up' | 'down') => {
                         :resource="resource"
                     />
                 </template>
-                <EmptyState v-else />
+                <EmptyState
+                    v-else
+                    title="কোনো রিসোর্স পাওয়া যায়নি"
+                    description="শীঘ্রই এখানে নতুন স্টাডি ম্যাটেরিয়াল ও নোট আপলোড করা হবে।"
+                    :show-cta="true"
+                />
             </div>
         </div>
     </div>
 
     <!-- Sign-in Dialog Modal for Guest Users -->
-    <Teleport to="body">
-        <Transition
-            enter-active-class="transition duration-150 ease-out"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-        >
-            <div
-                v-if="showAuthModal"
-                class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs dark:bg-black/50"
-            >
-                <div
-                    class="relative w-full max-w-xs rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <button
-                        @click="showAuthModal = false"
-                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
-                    >
-                        <X class="h-3.5 w-3.5" />
-                    </button>
-
-                    <h3
-                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        Sign in required
-                    </h3>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                        {{ authModalMessage }}
-                    </p>
-
-                    <div class="mt-4 flex items-center gap-2">
-                        <Link
-                            :href="`/login?redirect=${encodeURIComponent($page.url)}`"
-                            @click="showAuthModal = false"
-                            class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
-                        >
-                            <LogIn class="h-3.5 w-3.5" />
-                            <span>Sign in</span>
-                        </Link>
-                        <button
-                            @click="showAuthModal = false"
-                            class="cursor-pointer rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Transition>
-    </Teleport>
+    <AuthModal v-model="showAuthModal" :message="authModalMessage" />
 
     <!-- Upvoters Modal (Shows list of upvoters; downvotes list is intentionally hidden) -->
     <Teleport to="body">

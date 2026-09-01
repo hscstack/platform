@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { Search } from 'lucide-vue-next';
 import { computed } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -78,20 +80,20 @@ const filteredSubjects = computed(() => {
             />
         </div>
 
-        <div
+        <EmptyState
             v-if="filteredSubjects.length === 0"
-            class="rounded-xl border border-dashed border-slate-200 bg-white/50 py-12 text-center dark:border-gray-700 dark:bg-gray-900/50"
+            :icon="Search"
+            variant="dashed"
+            :title="`No subjects found matching &quot;${globalSearchQuery}&quot;`"
         >
-            <p class="text-sm font-semibold text-slate-400 dark:text-gray-500">
-                No subjects found matching "{{ searchQuery }}"
-            </p>
             <button
-                @click="searchQuery = ''"
-                class="mt-2 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                type="button"
+                @click="globalSearchQuery = ''"
+                class="cursor-pointer text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
             >
                 Show all subjects
             </button>
-        </div>
+        </EmptyState>
 
         <div
             v-if="featured_blogs?.length"

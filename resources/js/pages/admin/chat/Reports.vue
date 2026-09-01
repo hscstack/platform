@@ -13,9 +13,8 @@ import {
 import { ref, computed } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-
-defineOptions({ layout: AdminLayout });
+import EmptyState from '@/components/EmptyState.vue';
+import { formatDateTime } from '@/lib/useDate';
 
 interface ReportItem {
     id: number;
@@ -117,25 +116,7 @@ const openBanModal = (report: ReportItem) => {
     isBanModalOpen.value = true;
 };
 
-const formatDate = (isoString?: string | null) => {
-    if (!isoString) {
-        return '';
-    }
-
-    try {
-        const d = new Date(isoString);
-
-        return d.toLocaleString([], {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    } catch {
-        return '';
-    }
-};
+const formatDate = formatDateTime;
 </script>
 
 <template>
@@ -365,26 +346,13 @@ const formatDate = (isoString?: string | null) => {
 
         <!-- Reports List Feed -->
         <div class="space-y-4">
-            <div
+            <EmptyState
                 v-if="filteredReports.length === 0"
-                class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-16 text-center dark:border-gray-800 dark:bg-gray-900/40"
-            >
-                <div
-                    class="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-2xs dark:bg-gray-800 dark:text-gray-400"
-                >
-                    <Flag class="h-6 w-6 text-slate-400 dark:text-gray-500" />
-                </div>
-                <h3
-                    class="mt-3 text-sm font-bold text-slate-800 dark:text-gray-200"
-                >
-                    No
-                    {{ currentFilter !== 'all' ? currentFilter : '' }} reports
-                    found
-                </h3>
-                <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                    Everything looks clean for this filter criteria.
-                </p>
-            </div>
+                :icon="Flag"
+                variant="dashed"
+                :title="`No ${currentFilter !== 'all' ? currentFilter : ''} reports found`"
+                description="Everything looks clean for this filter criteria."
+            />
 
             <div v-else class="space-y-3.5">
                 <div

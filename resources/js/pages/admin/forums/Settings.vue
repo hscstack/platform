@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Settings, Flag, Save, Loader2 } from 'lucide-vue-next';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-
-defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
     settings: {

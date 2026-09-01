@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     ArrowBigUp,
@@ -28,8 +28,11 @@ import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
+import Pagination from '@/components/Pagination.vue';
 import UserListItem from '@/components/UserListItem.vue';
-import { usePermissions } from '@/lib/usePermissions';
+import { useAuth } from '@/lib/useAuth';
+import { getCsrfToken } from '@/lib/useCsrf';
+import { formatTimeAgo } from '@/lib/useDate';
 
 interface User {
     id: number;
@@ -120,12 +123,8 @@ const props = defineProps<{
     disabledReason?: string;
 }>();
 
-const page = usePage();
-const user = computed(() => (page.props.auth as any)?.user);
+const { user, can, requireAuth, showAuthModal, authModalMessage } = useAuth();
 const isUserBanned = computed(() => Boolean(user.value?.is_banned));
-
-const showAuthModal = ref(false);
-const authModalMessage = ref('Please sign in to continue.');
 
 // Moderator Suspension Modal State
 const isBanModalOpen = ref(false);
@@ -227,8 +226,6 @@ const deletePost = () => {
     }
 };
 
-const { can } = usePermissions();
-
 // Moderator Actions
 const toggleLock = () => {
     router.patch(
@@ -288,10 +285,7 @@ const openReportModal = (
     authorName: string | undefined,
     contentPreview: string,
 ) => {
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to report this content.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to report this content.')) {
         return;
     }
 
@@ -327,9 +321,7 @@ const submitReport = async () => {
     reportErrorMessage.value = null;
 
     try {
-        const token = (
-            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-        )?.content;
+        const token = getCsrfToken();
 
         const endpoint =
             reportingTarget.value.type === 'post'
@@ -402,10 +394,7 @@ const removeAnswerImage = () => {
 };
 
 const submitAnswer = () => {
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to answer this question.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to answer this question.')) {
         return;
     }
 
@@ -439,10 +428,7 @@ const openReplyForm = (
         return;
     }
 
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to reply.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to reply.')) {
         return;
     }
 
@@ -502,10 +488,7 @@ const removeReplyImage = () => {
 };
 
 const submitReply = () => {
-    if (!user.value) {
-        authModalMessage.value = 'Please sign in to reply.';
-        showAuthModal.value = true;
-
+    if (!requireAuth('Please sign in to reply.')) {
         return;
     }
 
@@ -518,47 +501,7 @@ const submitReply = () => {
     });
 };
 
-function timeAgo(dateString?: string): string {
-    if (!dateString) {
-        return '';
-    }
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) {
-        return 'just now';
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m ago`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h ago`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    if (days < 30) {
-        return `${days}d ago`;
-    }
-
-    const months = Math.floor(days / 30);
-
-    if (months < 12) {
-        return `${months}mo ago`;
-    }
-
-    const years = Math.floor(days / 365);
-
-    return `${years}y ago`;
-}
+const timeAgo = formatTimeAgo;
 
 function parseMentions(
     content: string,
@@ -1503,24 +1446,11 @@ function parseMentions(
             v-if="answers.links && answers.links.length > 3"
             class="mb-10 border-t border-slate-100 pt-5 dark:border-gray-800"
         >
-            <div class="flex items-center justify-center gap-1.5">
-                <component
-                    :is="link.url ? Link : 'span'"
-                    v-for="(link, index) in answers.links"
-                    :key="index"
-                    :href="link.url"
-                    class="rounded-lg px-3 py-1.5 text-xs font-medium transition"
-                    :class="{
-                        'bg-indigo-600 text-white': link.active,
-                        'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300':
-                            !link.active && link.url,
-                        'cursor-not-allowed text-slate-300 dark:text-gray-700':
-                            !link.url,
-                    }"
-                >
-                    <span v-html="link.label"></span>
-                </component>
-            </div>
+            <Pagination
+                :links="answers.links"
+                :current-page="answers.current_page"
+                :last-page="answers.last_page"
+            />
         </div>
 
         <!-- Main Answer Submission Box -->
@@ -1678,7 +1608,9 @@ function parseMentions(
                 </p>
                 <button
                     type="button"
-                    @click="showAuthModal = true"
+                    @click="
+                        requireAuth('Please sign in to answer this question.')
+                    "
                     class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700"
                 >
                     Sign In

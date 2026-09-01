@@ -2,10 +2,12 @@
 import { usePage } from '@inertiajs/vue3';
 import { Share2, Check, Loader2, Link as LinkIcon } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { useAuth } from '@/lib/useAuth';
+import { getCsrfToken } from '@/lib/useCsrf';
 import AuthModal from './AuthModal.vue';
 
 const page = usePage();
-const user = computed(() => page.props.auth?.user);
+const { requireAuth, showAuthModal, authModalMessage } = useAuth();
 
 const shareablePages = [
     'Node',
@@ -20,43 +22,15 @@ const shouldShow = computed(() => shareablePages.includes(page.component));
 const isMenuOpen = ref(false);
 const isLoading = ref(false);
 const isCopied = ref(false);
-const showAuthModal = ref(false);
 
 const toolbarRef = ref<HTMLElement | null>(null);
 
-const getCsrfToken = (): string => {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-
-    return match ? decodeURIComponent(match[1]) : '';
-};
-
 const copyToClipboard = async (text: string): Promise<boolean> => {
-    if (navigator.clipboard && window.isSecureContext) {
-        try {
-            await navigator.clipboard.writeText(text);
-
-            return true;
-        } catch {
-            // Fall back to execCommand
-        }
-    }
-
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
     try {
-        const ok = document.execCommand('copy');
-        document.body.removeChild(textArea);
+        await navigator.clipboard.writeText(text);
 
-        return ok;
+        return true;
     } catch {
-        document.body.removeChild(textArea);
-
         return false;
     }
 };
@@ -85,9 +59,10 @@ const handleCopyLink = async () => {
         return;
     }
 
-    if (!user.value) {
+    if (
+        !requireAuth('Please sign in to generate and copy short share links.')
+    ) {
         closeMenu();
-        showAuthModal.value = true;
 
         return;
     }
@@ -233,9 +208,5 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Auth Modal using reusable component -->
-    <AuthModal
-        v-model="showAuthModal"
-        title="Sign in required"
-        message="Please sign in to generate and copy short share links."
-    />
+    <AuthModal v-model="showAuthModal" :message="authModalMessage" />
 </template>

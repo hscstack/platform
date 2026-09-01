@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Search,
     X,
@@ -14,8 +14,13 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
+import BaseModal from '@/components/BaseModal.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
+import Pagination from '@/components/Pagination.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
+import { useAuth } from '@/lib/useAuth';
+import { formatTimeAgo } from '@/lib/useDate';
 
 interface User {
     id: number;
@@ -95,10 +100,8 @@ const props = defineProps<{
     disabledReason?: string;
 }>();
 
-const page = usePage();
-const user = computed(() => (page.props.auth as any)?.user);
+const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
 
-const showAuthModal = ref(false);
 const showFilterModal = ref(false);
 const searchQuery = ref(props.filters.search || '');
 
@@ -351,54 +354,12 @@ const handleAskQuestion = () => {
         return;
     }
 
-    if (!user.value) {
-        showAuthModal.value = true;
-    } else {
+    if (requireAuth('Please sign in to ask a question in the forum.')) {
         router.visit('/forum/ask');
     }
 };
 
-function timeAgo(dateString?: string): string {
-    if (!dateString) {
-        return '';
-    }
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) {
-        return 'just now';
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m ago`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h ago`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    if (days < 30) {
-        return `${days}d ago`;
-    }
-
-    const months = Math.floor(days / 30);
-
-    if (months < 12) {
-        return `${months}mo ago`;
-    }
-
-    const years = Math.floor(days / 365);
-
-    return `${years}y ago`;
-}
+const timeAgo = formatTimeAgo;
 </script>
 
 <template>
@@ -844,30 +805,19 @@ function timeAgo(dateString?: string): string {
         </div>
 
         <!-- Empty State -->
-        <div
+        <EmptyState
             v-else
-            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            :icon="Search"
+            variant="card"
+            title="No questions found"
+            description="We couldn't find any questions matching your current filters. Try changing your search keywords or resetting filters."
         >
-            <div
-                class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500"
-            >
-                <Search class="h-6 w-6" />
-            </div>
-            <h3
-                class="mt-4 text-base font-bold text-slate-900 dark:text-gray-100"
-            >
-                No questions found
-            </h3>
-            <p class="mt-1 max-w-sm text-xs text-slate-500 dark:text-gray-400">
-                We couldn't find any questions matching your current filters.
-                Try changing your search keywords or resetting filters.
-            </p>
-            <div class="mt-6 flex items-center gap-3">
+            <div class="flex items-center gap-3">
                 <button
                     v-if="searchQuery || activeFilterCount > 0"
                     type="button"
                     @click="resetAllFilters"
-                    class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                     Reset Filters
                 </button>
@@ -875,7 +825,7 @@ function timeAgo(dateString?: string): string {
                     type="button"
                     @click="handleAskQuestion"
                     :disabled="props.postingEnabled === false || isUserBanned"
-                    class="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold shadow-xs transition"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold shadow-xs transition"
                     :class="[
                         props.postingEnabled === false || isUserBanned
                             ? 'cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-gray-800 dark:text-gray-500'
@@ -896,280 +846,225 @@ function timeAgo(dateString?: string): string {
                     }}</span>
                 </button>
             </div>
-        </div>
+        </EmptyState>
 
         <!-- Pagination -->
-        <div
-            v-if="posts.links && posts.links.length > 3"
-            class="mt-8 flex items-center justify-center gap-1"
-        >
-            <Component
-                :is="link.url ? Link : 'span'"
-                v-for="(link, i) in posts.links"
-                :key="i"
-                :href="link.url || '#'"
-                preserve-scroll
-                class="flex h-8 min-w-[32px] items-center justify-center rounded-lg px-2 text-xs font-semibold transition"
-                :class="[
-                    link.active
-                        ? 'bg-indigo-600 text-white'
-                        : link.url
-                          ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800'
-                          : 'cursor-not-allowed text-slate-400 opacity-40 dark:text-gray-600',
-                ]"
-            >
-                <span v-html="link.label"></span>
-            </Component>
-        </div>
+        <Pagination
+            :links="posts.links"
+            :current-page="posts.current_page"
+            :last-page="posts.last_page"
+            class="mt-8"
+        />
 
         <!-- Filter & Sort Modal -->
-        <Teleport to="body">
-            <Transition
-                enter-active-class="transition duration-150 ease-out"
-                enter-from-class="opacity-0 scale-95"
-                enter-to-class="opacity-100 scale-100"
-                leave-active-class="transition duration-100 ease-in"
-                leave-from-class="opacity-100 scale-100"
-                leave-to-class="opacity-0 scale-95"
-            >
-                <div
-                    v-if="showFilterModal"
-                    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs dark:bg-black/60"
-                    @click.self="showFilterModal = false"
-                >
+        <BaseModal
+            :is-open="showFilterModal"
+            max-width="md"
+            position="center"
+            @close="showFilterModal = false"
+        >
+            <template #header>
+                <div class="flex items-center gap-2">
                     <div
-                        class="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                     >
-                        <!-- Modal Header -->
-                        <div
-                            class="mb-5 flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-gray-800"
+                        <SlidersHorizontal class="h-4 w-4" />
+                    </div>
+                    <h3
+                        class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        Filter & Sort Questions
+                    </h3>
+                </div>
+            </template>
+
+            <!-- Modal Form Fields -->
+            <div class="space-y-4.5 p-5">
+                <!-- 1. Sort Order -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                    >
+                        Sort Order
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button
+                            v-for="sort in sortOptions"
+                            :key="sort.key"
+                            type="button"
+                            @click="draftSort = sort.key"
+                            class="flex items-center justify-between rounded-xl border px-3 py-2 text-xs font-semibold transition"
+                            :class="[
+                                draftSort === sort.key
+                                    ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 ring-1 ring-indigo-600/30 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-300'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
                         >
-                            <div class="flex items-center gap-2">
-                                <div
-                                    class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                                >
-                                    <SlidersHorizontal class="h-4 w-4" />
-                                </div>
-                                <h3
-                                    class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                                >
-                                    Filter & Sort Questions
-                                </h3>
-                            </div>
-
-                            <button
-                                type="button"
-                                @click="showFilterModal = false"
-                                class="cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
-                                aria-label="Close filter modal"
-                            >
-                                <X class="h-4 w-4" />
-                            </button>
-                        </div>
-
-                        <!-- Modal Form Fields -->
-                        <div class="space-y-4.5">
-                            <!-- 1. Sort Order -->
-                            <div>
-                                <label
-                                    class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
-                                >
-                                    Sort Order
-                                </label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button
-                                        v-for="sort in sortOptions"
-                                        :key="sort.key"
-                                        type="button"
-                                        @click="draftSort = sort.key"
-                                        class="flex items-center justify-between rounded-xl border px-3 py-2 text-xs font-semibold transition"
-                                        :class="[
-                                            draftSort === sort.key
-                                                ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 ring-1 ring-indigo-600/30 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-300'
-                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                                        ]"
-                                    >
-                                        <span>{{ sort.label }}</span>
-                                        <Check
-                                            v-if="draftSort === sort.key"
-                                            class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
-                                        />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- 2. Answer Status (Independent from Sort) -->
-                            <div>
-                                <label
-                                    class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
-                                >
-                                    Answer Status
-                                </label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button
-                                        v-for="status in statusOptions"
-                                        :key="status.key"
-                                        type="button"
-                                        @click="draftStatus = status.key"
-                                        class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
-                                        :class="[
-                                            draftStatus === status.key
-                                                ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
-                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                                        ]"
-                                    >
-                                        {{ status.label }}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- 3. Curriculum -->
-                            <div>
-                                <label
-                                    class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
-                                >
-                                    Curriculum
-                                </label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button
-                                        type="button"
-                                        @click="draftCurriculum = ''"
-                                        class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
-                                        :class="[
-                                            !draftCurriculum
-                                                ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
-                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                                        ]"
-                                    >
-                                        All
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="draftCurriculum = 'hsc'"
-                                        class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
-                                        :class="[
-                                            draftCurriculum === 'hsc'
-                                                ? 'border-indigo-600 bg-indigo-600 text-white'
-                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                                        ]"
-                                    >
-                                        HSC
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="draftCurriculum = 'ssc'"
-                                        class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
-                                        :class="[
-                                            draftCurriculum === 'ssc'
-                                                ? 'border-emerald-600 bg-emerald-600 text-white'
-                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                                        ]"
-                                    >
-                                        SSC
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- 4. Subject -->
-                            <div>
-                                <label
-                                    for="modal-subject-select"
-                                    class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
-                                >
-                                    Subject
-                                </label>
-                                <select
-                                    id="modal-subject-select"
-                                    v-model="draftSubjectId"
-                                    class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 shadow-2xs transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                                >
-                                    <option value="">All Subjects</option>
-                                    <option value="other">
-                                        Other / General
-                                    </option>
-                                    <option
-                                        v-for="subj in modalFilteredSubjects"
-                                        :key="subj.id"
-                                        :value="subj.id.toString()"
-                                    >
-                                        {{ subj.name }} ({{
-                                            subj.course.toUpperCase()
-                                        }})
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- 5. Chapter / Topic (If subject has nodes) -->
-                            <div
-                                v-if="
-                                    draftSubjectId &&
-                                    modalSubjectNodes.length > 0
-                                "
-                            >
-                                <label
-                                    for="modal-node-select"
-                                    class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
-                                >
-                                    Chapter / Topic
-                                </label>
-                                <select
-                                    id="modal-node-select"
-                                    v-model="draftNodeId"
-                                    class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 shadow-2xs transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                                >
-                                    <option value="">All Chapters</option>
-                                    <option
-                                        v-for="node in modalSubjectNodes"
-                                        :key="node.id"
-                                        :value="node.id.toString()"
-                                    >
-                                        {{ node.name }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Modal Actions Footer -->
-                        <div
-                            class="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-gray-800"
-                        >
-                            <button
-                                type="button"
-                                @click="handleResetModalFilters"
-                                class="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                <RotateCcw class="h-3.5 w-3.5" />
-                                <span>Reset</span>
-                            </button>
-
-                            <div class="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    @click="showFilterModal = false"
-                                    class="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    @click="handleApplyModalFilters"
-                                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-[0.98]"
-                                >
-                                    <span>Apply Filters</span>
-                                </button>
-                            </div>
-                        </div>
+                            <span>{{ sort.label }}</span>
+                            <Check
+                                v-if="draftSort === sort.key"
+                                class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                            />
+                        </button>
                     </div>
                 </div>
-            </Transition>
-        </Teleport>
+
+                <!-- 2. Answer Status (Independent from Sort) -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                    >
+                        Answer Status
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button
+                            v-for="status in statusOptions"
+                            :key="status.key"
+                            type="button"
+                            @click="draftStatus = status.key"
+                            class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
+                            :class="[
+                                draftStatus === status.key
+                                    ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                        >
+                            {{ status.label }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Curriculum -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                    >
+                        Curriculum
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button
+                            type="button"
+                            @click="draftCurriculum = ''"
+                            class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
+                            :class="[
+                                !draftCurriculum
+                                    ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                        >
+                            All
+                        </button>
+                        <button
+                            type="button"
+                            @click="draftCurriculum = 'hsc'"
+                            class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
+                            :class="[
+                                draftCurriculum === 'hsc'
+                                    ? 'border-indigo-600 bg-indigo-600 text-white'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                        >
+                            HSC
+                        </button>
+                        <button
+                            type="button"
+                            @click="draftCurriculum = 'ssc'"
+                            class="flex items-center justify-center rounded-xl border py-2 text-xs font-semibold transition"
+                            :class="[
+                                draftCurriculum === 'ssc'
+                                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                        >
+                            SSC
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Subject -->
+                <div>
+                    <label
+                        for="modal-subject-select"
+                        class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                    >
+                        Subject
+                    </label>
+                    <select
+                        id="modal-subject-select"
+                        v-model="draftSubjectId"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 shadow-2xs transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                        <option value="">All Subjects</option>
+                        <option value="other">Other / General</option>
+                        <option
+                            v-for="subj in modalFilteredSubjects"
+                            :key="subj.id"
+                            :value="subj.id.toString()"
+                        >
+                            {{ subj.name }} ({{ subj.course.toUpperCase() }})
+                        </option>
+                    </select>
+                </div>
+
+                <!-- 5. Chapter / Topic (If subject has nodes) -->
+                <div v-if="draftSubjectId && modalSubjectNodes.length > 0">
+                    <label
+                        for="modal-node-select"
+                        class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                    >
+                        Chapter / Topic
+                    </label>
+                    <select
+                        id="modal-node-select"
+                        v-model="draftNodeId"
+                        class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 shadow-2xs transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                        <option value="">All Chapters</option>
+                        <option
+                            v-for="node in modalSubjectNodes"
+                            :key="node.id"
+                            :value="node.id.toString()"
+                        >
+                            {{ node.name }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Modal Actions Footer -->
+            <template #footer>
+                <div class="flex items-center justify-between">
+                    <button
+                        type="button"
+                        @click="handleResetModalFilters"
+                        class="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        <RotateCcw class="h-3.5 w-3.5" />
+                        <span>Reset</span>
+                    </button>
+
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            @click="showFilterModal = false"
+                            class="cursor-pointer rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            @click="handleApplyModalFilters"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-[0.98]"
+                        >
+                            <span>Apply Filters</span>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </BaseModal>
 
         <!-- Auth Modal -->
-        <AuthModal
-            v-model="showAuthModal"
-            title="Sign in required"
-            message="Please sign in to ask a question in the forum."
-        />
+        <AuthModal v-model="showAuthModal" :message="authModalMessage" />
 
         <!-- PWA Install Prompt Modal -->
         <PwaInstallPrompt variant="modal" />

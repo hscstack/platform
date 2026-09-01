@@ -1,5 +1,6 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import { getCsrfToken } from '@/lib/useCsrf';
 
 declare global {
     interface Window {
@@ -33,12 +34,7 @@ export function getEcho(key?: string, cluster?: string): Echo<'pusher'> | null {
         authEndpoint: '/broadcasting/auth',
         auth: {
             headers: {
-                'X-CSRF-TOKEN':
-                    (
-                        document.querySelector(
-                            'meta[name="csrf-token"]',
-                        ) as HTMLMetaElement
-                    )?.content || '',
+                'X-CSRF-TOKEN': getCsrfToken(),
                 'X-Requested-With': 'XMLHttpRequest',
             },
         },

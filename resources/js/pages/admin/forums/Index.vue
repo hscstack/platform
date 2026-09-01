@@ -14,9 +14,8 @@ import {
 import { ref } from 'vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-
-defineOptions({ layout: AdminLayout });
+import EmptyState from '@/components/EmptyState.vue';
+import Pagination from '@/components/Pagination.vue';
 
 interface ForumPostItem {
     id: number;
@@ -285,14 +284,12 @@ const openBanModal = (post: ForumPostItem) => {
         <div
             class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
-            <div v-if="posts.data.length === 0" class="py-14 text-center">
-                <HelpCircle class="mx-auto h-7 w-7 text-slate-400" />
-                <p
-                    class="mt-2 text-xs font-bold text-slate-700 dark:text-gray-300"
-                >
-                    No discussions match your filter
-                </p>
-            </div>
+            <EmptyState
+                v-if="posts.data.length === 0"
+                :icon="HelpCircle"
+                title="No discussions match your filter"
+                description="Try changing your search keywords or filter status."
+            />
 
             <div v-else class="overflow-x-auto">
                 <table
@@ -465,11 +462,13 @@ const openBanModal = (post: ForumPostItem) => {
             <!-- Pagination -->
             <div
                 v-if="posts.links && posts.links.length > 3"
-                class="flex items-center justify-between border-t border-slate-100 bg-slate-50/40 px-4 py-2.5 text-xs dark:border-gray-800 dark:bg-gray-900"
+                class="border-t border-slate-100 bg-slate-50/40 px-4 py-1 dark:border-gray-800 dark:bg-gray-900"
             >
-                <div class="text-slate-400">
-                    Page {{ posts.current_page }} of {{ posts.last_page }}
-                </div>
+                <Pagination
+                    :links="posts.links"
+                    :current-page="posts.current_page"
+                    :last-page="posts.last_page"
+                />
             </div>
         </div>
 

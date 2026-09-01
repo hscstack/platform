@@ -26,8 +26,10 @@ import {
     X,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import EmptyState from '@/components/EmptyState.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
+import { formatTimeAgo } from '@/lib/useDate';
 
 const props = defineProps<{
     profileUser: {
@@ -280,52 +282,7 @@ const handleAppreciate = () => {
     );
 };
 
-function timeAgo(dateString?: string): string {
-    if (!dateString) {
-        return '';
-    }
-
-    const date = new Date(dateString);
-
-    if (isNaN(date.getTime())) {
-        return dateString;
-    }
-
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) {
-        return 'just now';
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m ago`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h ago`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    if (days < 30) {
-        return `${days}d ago`;
-    }
-
-    const months = Math.floor(days / 30);
-
-    if (months < 12) {
-        return `${months}mo ago`;
-    }
-
-    const years = Math.floor(days / 365);
-
-    return `${years}y ago`;
-}
+const timeAgo = formatTimeAgo;
 </script>
 
 <template>
@@ -813,27 +770,13 @@ function timeAgo(dateString?: string): string {
 
                     <!-- Questions Sub-panel -->
                     <div v-if="forumSubTab === 'questions'">
-                        <div
+                        <EmptyState
                             v-if="!forumPosts || forumPosts.length === 0"
-                            class="rounded-2xl border border-dashed border-slate-200 bg-white p-7 text-center sm:rounded-3xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div
-                                class="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:bg-indigo-950/60 dark:text-indigo-400"
-                            >
-                                <HelpCircle class="h-5 w-5 stroke-[1.8]" />
-                            </div>
-                            <h3
-                                class="mt-2 text-xs font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                No questions asked yet
-                            </h3>
-                            <p
-                                class="mx-auto mt-1 max-w-xs text-[11px] text-slate-500 dark:text-gray-400"
-                            >
-                                Questions posted to the academic forum will
-                                appear here.
-                            </p>
-                        </div>
+                            :icon="HelpCircle"
+                            variant="dashed"
+                            title="No questions asked yet"
+                            description="Questions posted to the academic forum will appear here."
+                        />
 
                         <div v-else class="space-y-2">
                             <Link
@@ -954,29 +897,13 @@ function timeAgo(dateString?: string): string {
 
                     <!-- Answers Sub-panel -->
                     <div v-else-if="forumSubTab === 'answers'">
-                        <div
+                        <EmptyState
                             v-if="!forumAnswers || forumAnswers.length === 0"
-                            class="rounded-2xl border border-dashed border-slate-200 bg-white p-7 text-center sm:rounded-3xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div
-                                class="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 sm:h-10 sm:w-10 dark:bg-amber-950/60 dark:text-amber-400"
-                            >
-                                <MessageSquareCheck
-                                    class="h-5 w-5 stroke-[1.8]"
-                                />
-                            </div>
-                            <h3
-                                class="mt-2 text-xs font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                No answers contributed yet
-                            </h3>
-                            <p
-                                class="mx-auto mt-1 max-w-xs text-[11px] text-slate-500 dark:text-gray-400"
-                            >
-                                Solutions provided to questions will appear
-                                here.
-                            </p>
-                        </div>
+                            :icon="MessageSquareCheck"
+                            variant="dashed"
+                            title="No answers contributed yet"
+                            description="Solutions provided to questions will appear here."
+                        />
 
                         <div v-else class="space-y-2">
                             <Link
@@ -1068,27 +995,13 @@ function timeAgo(dateString?: string): string {
                             </Link>
                         </div>
 
-                        <div
+                        <EmptyState
                             v-if="blogs.length === 0"
-                            class="rounded-2xl border border-dashed border-slate-200 bg-white p-7 text-center sm:rounded-3xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div
-                                class="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 sm:h-10 sm:w-10 dark:bg-blue-950/60 dark:text-blue-400"
-                            >
-                                <FileText class="h-5 w-5 stroke-[1.8]" />
-                            </div>
-                            <h3
-                                class="mt-2 text-xs font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                No published articles yet
-                            </h3>
-                            <p
-                                class="mx-auto mt-1 max-w-xs text-[11px] text-slate-500 dark:text-gray-400"
-                            >
-                                Educational blogs written by this author will
-                                appear here.
-                            </p>
-                        </div>
+                            :icon="FileText"
+                            variant="dashed"
+                            title="No published articles yet"
+                            description="Educational blogs written by this author will appear here."
+                        />
 
                         <div v-else class="space-y-2">
                             <Link

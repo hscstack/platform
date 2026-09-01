@@ -1,19 +1,8 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-
-import {
-    Search,
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-    Pencil,
-    Trash2,
-} from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
+import StatusBadge from '@/components/StatusBadge.vue';
+import SubjectIcon from '@/components/SubjectIcon.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
@@ -25,18 +14,6 @@ const { subject } = defineProps({
 const emit = defineEmits<{
     (e: 'edit', subject: any): void;
 }>();
-
-const icons = {
-    Atom,
-    FlaskConical,
-    Dna,
-    Sigma,
-    Laptop,
-    BookOpen,
-    PenTool,
-    BarChart3,
-    Search,
-};
 
 const handleDelete = () => {
     if (confirm('Are you sure you want to delete this Subject?')) {
@@ -59,9 +36,9 @@ const handleDelete = () => {
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 sm:h-10 sm:w-10 dark:border-white/10',
                 ]"
             >
-                <component
-                    :is="icons[subject.icon] || BookOpen"
-                    class="h-4.5 w-4.5 stroke-[2]"
+                <SubjectIcon
+                    :name="subject.icon"
+                    class-name="h-4.5 w-4.5 stroke-[2]"
                 />
             </div>
 
@@ -73,19 +50,11 @@ const handleDelete = () => {
                 </h3>
 
                 <!-- Course Badge (HSC / SSC) -->
-                <span
+                <StatusBadge
                     v-if="subject.course"
-                    :class="[
-                        subject.course.toUpperCase() === 'SSC'
-                            ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30'
-                            : subject.course.toUpperCase() === 'HSC'
-                              ? 'bg-indigo-50 text-indigo-700 ring-indigo-700/10 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/30'
-                              : 'bg-slate-100 text-slate-600 ring-slate-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-500/20',
-                        'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ring-1 ring-inset',
-                    ]"
-                >
-                    {{ subject.course }}
-                </span>
+                    :status="subject.course"
+                    size="xs"
+                />
             </div>
         </div>
 

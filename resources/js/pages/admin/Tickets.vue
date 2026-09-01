@@ -12,12 +12,13 @@ import {
     Trash2,
     Image as ImageIcon,
     User as UserIcon,
-    X,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-
-defineOptions({ layout: AdminLayout });
+import BaseModal from '@/components/BaseModal.vue';
+import EmptyState from '@/components/EmptyState.vue';
+import Pagination from '@/components/Pagination.vue';
+import StatusBadge from '@/components/StatusBadge.vue';
+import { formatDateTime } from '@/lib/useDate';
 
 interface UserInfo {
     id: number;
@@ -170,55 +171,7 @@ const getCategoryLabel = (key: string) => {
     return props.categories[key] || key;
 };
 
-const getStatusBadge = (status: string) => {
-    switch (status) {
-        case 'open':
-            return {
-                label: 'Open',
-                bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-                icon: Clock,
-            };
-        case 'in_progress':
-            return {
-                label: 'In Progress',
-                bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-                icon: HelpCircle,
-            };
-        case 'resolved':
-            return {
-                label: 'Resolved',
-                bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                icon: CheckCircle2,
-            };
-        case 'closed':
-            return {
-                label: 'Closed',
-                bg: 'bg-slate-500/10 text-slate-600 dark:text-gray-400 border-slate-500/20',
-                icon: XCircle,
-            };
-        default:
-            return {
-                label: status,
-                bg: 'bg-slate-500/10 text-slate-600 dark:text-gray-400 border-slate-500/20',
-                icon: Clock,
-            };
-    }
-};
-
-const formatDate = (dateString: string) => {
-    if (!dateString) {
-        return '';
-    }
-
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
+const formatDate = formatDateTime;
 </script>
 
 <template>
@@ -385,22 +338,12 @@ const formatDate = (dateString: string) => {
         <div
             class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
         >
-            <div
+            <EmptyState
                 v-if="tickets.data.length === 0"
-                class="p-12 text-center text-sm text-slate-500 dark:text-gray-400"
-            >
-                <div
-                    class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500"
-                >
-                    <LifeBuoy class="h-6 w-6" />
-                </div>
-                <p class="font-bold text-slate-800 dark:text-gray-200">
-                    No tickets found
-                </p>
-                <p class="mt-1 text-xs text-slate-400">
-                    Try changing your search keywords or filter options.
-                </p>
-            </div>
+                :icon="LifeBuoy"
+                title="No tickets found"
+                description="Try changing your search keywords or filter options."
+            />
 
             <div v-else class="divide-y divide-slate-100 dark:divide-gray-800">
                 <div
@@ -417,18 +360,7 @@ const formatDate = (dateString: string) => {
                                 {{ ticket.ticket_number }}
                             </span>
 
-                            <span
-                                class="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-bold"
-                                :class="getStatusBadge(ticket.status).bg"
-                            >
-                                <component
-                                    :is="getStatusBadge(ticket.status).icon"
-                                    class="h-3 w-3"
-                                />
-                                <span>{{
-                                    getStatusBadge(ticket.status).label
-                                }}</span>
-                            </span>
+                            <StatusBadge :status="ticket.status" />
 
                             <span
                                 class="rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
@@ -527,65 +459,42 @@ const formatDate = (dateString: string) => {
 
             <!-- Pagination Links -->
             <div
-                v-if="tickets.last_page > 1"
-                class="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/60"
+                v-if="tickets.links && tickets.links.length > 3"
+                class="border-t border-slate-100 bg-slate-50/50 px-4 py-1 dark:border-gray-800 dark:bg-gray-900/60"
             >
-                <div class="text-xs text-slate-500 dark:text-gray-400">
-                    Showing page {{ tickets.current_page }} of
-                    {{ tickets.last_page }}
-                </div>
-                <div class="flex items-center gap-1">
-                    <Link
-                        v-for="(link, i) in tickets.links"
-                        :key="i"
-                        :href="link.url || '#'"
-                        class="rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors"
-                        :class="
-                            link.active
-                                ? 'bg-indigo-600 text-white'
-                                : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                        "
-                    >
-                        <span v-html="link.label"></span>
-                    </Link>
-                </div>
+                <Pagination
+                    :links="tickets.links"
+                    :current-page="tickets.current_page"
+                    :last-page="tickets.last_page"
+                />
             </div>
         </div>
 
         <!-- Reply / Resolution Modal -->
-        <div
-            v-if="isModalOpen && activeTicket"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
+        <BaseModal
+            :is-open="isModalOpen && !!activeTicket"
+            max-width="2xl"
+            position="center"
+            @close="closeReplyModal"
         >
-            <div
-                class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
-            >
-                <!-- Modal Header -->
-                <div
-                    class="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-gray-800"
-                >
-                    <div class="flex items-center gap-2">
-                        <span
-                            class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
-                        >
-                            {{ activeTicket.ticket_number }}
-                        </span>
-                        <h3
-                            class="text-base font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            {{ activeTicket.subject }}
-                        </h3>
-                    </div>
-                    <button
-                        @click="closeReplyModal"
-                        class="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-800"
+            <template #header>
+                <div v-if="activeTicket" class="flex items-center gap-2">
+                    <span
+                        class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
                     >
-                        <X class="h-5 w-5" />
-                    </button>
+                        {{ activeTicket.ticket_number }}
+                    </span>
+                    <h3
+                        class="text-base font-bold text-slate-900 dark:text-gray-100"
+                    >
+                        {{ activeTicket.subject }}
+                    </h3>
                 </div>
+            </template>
 
+            <div v-if="activeTicket" class="p-6 pt-4">
                 <!-- User Query Details -->
-                <div class="mt-4 space-y-4">
+                <div class="space-y-4">
                     <div
                         class="rounded-xl border border-slate-200/60 bg-slate-50 p-4 dark:border-gray-800 dark:bg-gray-950/60"
                     >
@@ -617,49 +526,46 @@ const formatDate = (dateString: string) => {
                             <a
                                 :href="activeTicket.attachment_url"
                                 target="_blank"
-                                class="inline-block overflow-hidden rounded-lg border border-slate-200 transition-opacity hover:opacity-90 dark:border-gray-700"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                             >
-                                <img
-                                    :src="activeTicket.attachment_url"
-                                    alt="Ticket screenshot"
-                                    class="max-h-48 rounded object-contain"
-                                />
+                                <ImageIcon class="h-3.5 w-3.5" />
+                                <span>View Attachment</span>
                             </a>
                         </div>
                     </div>
 
                     <!-- Reply Form -->
-                    <form @submit.prevent="submitReply" class="space-y-4 pt-2">
+                    <form @submit.prevent="submitReply" class="space-y-3">
                         <div>
                             <label
-                                class="mb-1.5 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                                class="mb-1 block text-xs font-bold text-slate-700 dark:text-gray-300"
                             >
-                                Admin Response / Resolution *
+                                Your Response / Staff Message
                             </label>
                             <textarea
                                 v-model="replyForm.admin_reply"
                                 rows="5"
-                                placeholder="Type your response to the student..."
+                                placeholder="Type your response to the user here..."
+                                class="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs leading-relaxed text-slate-800 focus:border-indigo-600 focus:outline-none dark:border-gray-800 dark:bg-gray-950 dark:text-gray-200"
                                 required
-                                class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 focus:outline-none dark:border-gray-800 dark:bg-gray-950 dark:text-gray-100"
                             ></textarea>
-                            <p
+                            <div
                                 v-if="replyForm.errors.admin_reply"
                                 class="mt-1 text-xs text-rose-500"
                             >
                                 {{ replyForm.errors.admin_reply }}
-                            </p>
+                            </div>
                         </div>
 
-                        <!-- Update Status Selector -->
                         <div
-                            class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                            class="flex flex-wrap items-center justify-between gap-3 pt-2"
                         >
                             <div class="flex items-center gap-2">
                                 <label
                                     class="text-xs font-bold text-slate-700 dark:text-gray-300"
                                 >
-                                    Set Status to:
+                                    Update Status:
                                 </label>
                                 <select
                                     v-model="replyForm.status"
@@ -679,14 +585,14 @@ const formatDate = (dateString: string) => {
                                 <button
                                     type="button"
                                     @click="closeReplyModal"
-                                    class="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                                    class="cursor-pointer rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     :disabled="replyForm.processing"
-                                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700 disabled:opacity-50"
+                                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700 disabled:opacity-50"
                                 >
                                     <Send class="h-3.5 w-3.5" />
                                     <span>{{
@@ -700,6 +606,6 @@ const formatDate = (dateString: string) => {
                     </form>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     </div>
 </template>

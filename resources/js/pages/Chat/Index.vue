@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, usePage, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Send,
     Trash2,
@@ -23,13 +23,16 @@ import {
     Users,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import AuthModal from '@/components/AuthModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { getEcho } from '@/lib/echo';
-import { usePermissions } from '@/lib/usePermissions';
+import { useAuth } from '@/lib/useAuth';
+import { getCsrfToken } from '@/lib/useCsrf';
+import { formatDateDivider, formatTime } from '@/lib/useDate';
 
 interface ChatUser {
     id: number;
@@ -96,9 +99,13 @@ const props = defineProps<{
     };
 }>();
 
-const page = usePage();
-const { can } = usePermissions();
-const currentUser = computed(() => page.props.auth?.user);
+const {
+    user: currentUser,
+    can,
+    requireAuth,
+    showAuthModal,
+    authModalMessage,
+} = useAuth();
 
 const chatChannelName = computed(
     () => props.chatState.channel_name || 'global-chat',
@@ -846,9 +853,7 @@ const sendMessage = async () => {
     isSending.value = true;
 
     try {
-        const token = (
-            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-        )?.content;
+        const token = getCsrfToken();
         const replyToId = activeReplyTo.value ? activeReplyTo.value.id : null;
         const res = await fetch('/api/chat/messages', {
             method: 'POST',
@@ -906,9 +911,7 @@ const deleteMessage = async (messageId: number) => {
     }
 
     try {
-        const token = (
-            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-        )?.content;
+        const token = getCsrfToken();
         const res = await fetch(`/api/chat/messages/${messageId}`, {
             method: 'DELETE',
             headers: {
@@ -953,9 +956,7 @@ const toggleReactionPicker = (messageId: number) => {
 };
 
 const reactToMessage = async (message: ChatMessageItem, emoji: string) => {
-    if (!currentUser.value) {
-        alert('Please sign in to react to messages.');
-
+    if (!requireAuth('Please sign in to react to messages.')) {
         return;
     }
 
@@ -1008,9 +1009,7 @@ const reactToMessage = async (message: ChatMessageItem, emoji: string) => {
     }
 
     try {
-        const token = (
-            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-        )?.content;
+        const token = getCsrfToken();
         const res = await fetch(`/api/chat/messages/${message.id}/reactions`, {
             method: 'POST',
             headers: {
@@ -1125,9 +1124,7 @@ const reportReasons = [
 const openReportModal = (message: ChatMessageItem) => {
     closeMobileActions();
 
-    if (!currentUser.value) {
-        alert('Please sign in to report a message.');
-
+    if (!requireAuth('Please sign in to report a message.')) {
         return;
     }
 
@@ -1154,9 +1151,7 @@ const submitReport = async () => {
     reportErrorMessage.value = null;
 
     try {
-        const token = (
-            document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-        )?.content;
+        const token = getCsrfToken();
 
         const res = await fetch('/api/chat/reports', {
             method: 'POST',
@@ -1258,47 +1253,6 @@ const parseMessageSegments = (content: string): MessageSegment[] => {
     }
 
     return segments;
-};
-
-const formatTime = (isoString: string) => {
-    try {
-        const date = new Date(isoString);
-
-        return date.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    } catch {
-        return '';
-    }
-};
-
-const formatDateDivider = (isoString: string) => {
-    try {
-        const date = new Date(isoString);
-        const today = new Date();
-        const yesterday = new Date();
-        yesterday.setDate(today.getDate() - 1);
-
-        if (date.toDateString() === today.toDateString()) {
-            return 'Today';
-        }
-
-        if (date.toDateString() === yesterday.toDateString()) {
-            return 'Yesterday';
-        }
-
-        return date.toLocaleDateString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year:
-                date.getFullYear() !== today.getFullYear()
-                    ? 'numeric'
-                    : undefined,
-        });
-    } catch {
-        return '';
-    }
 };
 
 const shouldShowDateDivider = (index: number) => {
@@ -2810,5 +2764,7 @@ onUnmounted(() => {
                 </div>
             </div>
         </div>
+
+        <AuthModal v-model="showAuthModal" :message="authModalMessage" />
     </main>
 </template>
