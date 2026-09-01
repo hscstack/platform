@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\SupportTicket;
+use App\Models\User;
+use App\Notifications\SupportTicketCreatedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class SupportTicketController extends Controller
@@ -71,6 +74,14 @@ class SupportTicketController extends Controller
             'attachment_path' => $attachmentPath,
             'status' => SupportTicket::STATUS_OPEN,
         ]);
+
+        $staff = User::permission('manage tickets')
+            ->select(['id', 'name', 'email'])
+            ->get();
+
+        if ($staff->isNotEmpty()) {
+            Notification::send($staff, new SupportTicketCreatedNotification($ticket, $user));
+        }
 
         return redirect()->route('support.my-tickets')->with('success', "Ticket {$ticket->ticket_number} created successfully! Our team will review and reply.");
     }

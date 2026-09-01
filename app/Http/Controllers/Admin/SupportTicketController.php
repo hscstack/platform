@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
+use App\Notifications\SupportTicketUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -87,6 +88,10 @@ class SupportTicketController extends Controller
         }
 
         $ticket->update($updates);
+
+        if ($ticket->user) {
+            $ticket->user->notify(new SupportTicketUpdatedNotification($ticket));
+        }
 
         return back()->with('success', "Ticket {$ticket->ticket_number} updated successfully.");
     }
