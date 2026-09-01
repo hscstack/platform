@@ -27,6 +27,7 @@ yarn-error.log
 /.idea
 /.nova
 /.vscode
+!/.vscode/settings.json
 /.zed
 /prompt
 storage/debugbar/
