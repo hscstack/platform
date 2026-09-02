@@ -32,7 +32,7 @@ class StoreUserRequest extends FormRequest
             'role' => ['nullable', 'string'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
-            'file' => ['nullable', 'image', 'max:2048'],
+            'file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'about' => ['nullable', 'string', 'max:1000', new CleanText],
             'title' => ['nullable', 'string', 'max:255', new CleanText],
             'institution' => ['nullable', 'string', 'max:255', new CleanText],

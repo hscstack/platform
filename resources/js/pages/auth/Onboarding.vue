@@ -10,6 +10,7 @@ import {
     Loader2,
 } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
+import { compressImage } from '@/lib/imageCompression';
 
 interface OnboardingUser {
     google_id: string;
@@ -39,28 +40,70 @@ const form = useForm<{
 
 const previewUrl = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const isCompressing = ref(false);
 
-const handleImageChange = (e: Event) => {
+const handleImageChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
-    const file = target.files?.[0];
+    const rawFile = target.files?.[0];
 
-    if (file) {
-        form.image = file;
+    if (rawFile) {
+        form.errors.image = '';
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
 
-        if (previewUrl.value) {
-            URL.revokeObjectURL(previewUrl.value);
+        if (!allowed.includes(rawFile.type)) {
+            form.errors.image = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+
+            return;
         }
 
-        previewUrl.value = URL.createObjectURL(file);
+        try {
+            isCompressing.value = true;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(rawFile, {
+                    maxWidth: 512,
+                    maxHeight: 512,
+                    quality: 0.85,
+                });
+            } catch {
+                resultFile = rawFile;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                form.errors.image = 'ছবিটির আকার ৫MB এর চেয়ে কম হতে হবে।';
+
+                return;
+            }
+
+            form.image = resultFile;
+
+            if (previewUrl.value) {
+                URL.revokeObjectURL(previewUrl.value);
+            }
+
+            previewUrl.value = URL.createObjectURL(resultFile);
+        } finally {
+            isCompressing.value = false;
+        }
     }
 };
 
 const triggerFileInput = () => {
+    if (isCompressing.value) {
+        return;
+    }
+
     fileInputRef.value?.click();
 };
 
 const removeCustomImage = () => {
+    if (isCompressing.value) {
+        return;
+    }
+
     form.image = null;
+    form.errors.image = '';
 
     if (previewUrl.value) {
         URL.revokeObjectURL(previewUrl.value);
@@ -79,6 +122,10 @@ onUnmounted(() => {
 });
 
 const submit = () => {
+    if (isCompressing.value) {
+        return;
+    }
+
     form.post('/onboarding', {
         forceFormData: true,
     });
@@ -145,8 +192,16 @@ const submit = () => {
                     <div class="flex items-center gap-3.5">
                         <!-- Avatar with upload trigger overlay -->
                         <div class="group relative shrink-0">
+                            <div
+                                v-if="isCompressing"
+                                class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-indigo-400 bg-indigo-50 dark:bg-indigo-950/40"
+                            >
+                                <Loader2
+                                    class="h-5 w-5 animate-spin text-indigo-600 dark:text-indigo-400"
+                                />
+                            </div>
                             <img
-                                v-if="previewUrl || props.user.avatar"
+                                v-else-if="previewUrl || props.user.avatar"
                                 :src="previewUrl || props.user.avatar!"
                                 :alt="props.user.name"
                                 class="h-14 w-14 rounded-full border-2 border-indigo-500/20 object-cover shadow-xs dark:border-indigo-400/30"
@@ -165,7 +220,8 @@ const submit = () => {
                             <button
                                 type="button"
                                 @click="triggerFileInput"
-                                class="absolute -right-1 -bottom-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition hover:scale-110 hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                :disabled="isCompressing"
+                                class="absolute -right-1 -bottom-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition hover:scale-110 hover:bg-indigo-700 active:scale-95 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                 title="Upload custom photo"
                             >
                                 <Camera class="h-3.5 w-3.5" />
@@ -188,12 +244,15 @@ const submit = () => {
                                 <button
                                     type="button"
                                     @click="triggerFileInput"
-                                    class="cursor-pointer text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                                    :disabled="isCompressing"
+                                    class="cursor-pointer text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-400 dark:hover:text-indigo-300"
                                 >
                                     {{
-                                        previewUrl
-                                            ? 'Change Photo'
-                                            : 'Upload Photo'
+                                        isCompressing
+                                            ? 'Optimizing...'
+                                            : previewUrl
+                                              ? 'Change Photo'
+                                              : 'Upload Photo'
                                     }}
                                 </button>
                                 <span
@@ -205,7 +264,8 @@ const submit = () => {
                                     v-if="previewUrl"
                                     type="button"
                                     @click="removeCustomImage"
-                                    class="cursor-pointer text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:underline dark:text-rose-400"
+                                    :disabled="isCompressing"
+                                    class="cursor-pointer text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:underline disabled:opacity-50 dark:text-rose-400"
                                 >
                                     Reset
                                 </button>
@@ -216,7 +276,7 @@ const submit = () => {
                         <input
                             ref="fileInputRef"
                             type="file"
-                            accept="image/*"
+                            accept="image/jpeg,image/png,image/webp"
                             class="hidden"
                             @change="handleImageChange"
                         />
@@ -351,7 +411,7 @@ const submit = () => {
                     <div class="pt-2">
                         <button
                             type="submit"
-                            :disabled="form.processing"
+                            :disabled="form.processing || isCompressing"
                             class="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                         >
                             <Loader2

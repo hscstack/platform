@@ -23,8 +23,8 @@ class UpdateResourceRequest extends FormRequest
             'file' => [
                 'nullable',
                 'file',
-                'max:10000',
-                'mimes:jpg,jpeg,png',
+                'max:5120',
+                'mimes:jpg,jpeg,png,webp',
                 Rule::requiredIf(
                     $this->resource_type === 'image'
                         && ! $this->route('resource')->file_path

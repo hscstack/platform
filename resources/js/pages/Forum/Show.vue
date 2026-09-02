@@ -31,6 +31,7 @@ import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import Pagination from '@/components/Pagination.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
+import { compressImage } from '@/lib/imageCompression';
 import { useAuth } from '@/lib/useAuth';
 import { getCsrfToken } from '@/lib/useCsrf';
 import { formatTimeAgo } from '@/lib/useDate';
@@ -374,19 +375,62 @@ const answerForm = useForm({
 
 const answerImagePreview = ref<string | null>(null);
 const answerFileInputRef = ref<HTMLInputElement | null>(null);
+const isCompressingAnswerImage = ref(false);
 
-const handleAnswerFileChange = (e: Event) => {
+const handleAnswerFileChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
 
     if (target.files && target.files[0]) {
-        const file = target.files[0];
-        answerForm.image = file;
-        answerImagePreview.value = URL.createObjectURL(file);
+        const rawFile = target.files[0];
+        answerForm.errors.image = '';
+
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(rawFile.type)) {
+            answerForm.errors.image = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+            target.value = '';
+
+            return;
+        }
+
+        try {
+            isCompressingAnswerImage.value = true;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(rawFile, {
+                    maxWidth: 2048,
+                    maxHeight: 2048,
+                    quality: 0.85,
+                });
+            } catch {
+                resultFile = rawFile;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                answerForm.errors.image =
+                    'ছবিটি অপটিমাইজ করার পরও ৫MB এর বেশি। অনুগ্রহ করে ছোট ছবি নির্বাচন করুন।';
+                target.value = '';
+
+                return;
+            }
+
+            answerForm.image = resultFile;
+
+            if (answerImagePreview.value) {
+                URL.revokeObjectURL(answerImagePreview.value);
+            }
+
+            answerImagePreview.value = URL.createObjectURL(resultFile);
+        } finally {
+            isCompressingAnswerImage.value = false;
+        }
     }
 };
 
 const removeAnswerImage = () => {
     answerForm.image = null;
+    answerForm.errors.image = '';
 
     if (answerImagePreview.value) {
         URL.revokeObjectURL(answerImagePreview.value);
@@ -399,6 +443,10 @@ const removeAnswerImage = () => {
 };
 
 const submitAnswer = () => {
+    if (isCompressingAnswerImage.value) {
+        return;
+    }
+
     if (!requireAuth('Please sign in to answer this question.')) {
         return;
     }
@@ -459,18 +507,62 @@ const cancelReply = () => {
     }
 };
 
-const handleReplyFileChange = (e: Event) => {
+const isCompressingReplyImage = ref(false);
+
+const handleReplyFileChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
 
     if (target.files && target.files[0]) {
-        const file = target.files[0];
-        replyForm.image = file;
-        replyImagePreview.value = URL.createObjectURL(file);
+        const rawFile = target.files[0];
+        replyForm.errors.image = '';
+
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(rawFile.type)) {
+            replyForm.errors.image = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+            target.value = '';
+
+            return;
+        }
+
+        try {
+            isCompressingReplyImage.value = true;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(rawFile, {
+                    maxWidth: 2048,
+                    maxHeight: 2048,
+                    quality: 0.85,
+                });
+            } catch {
+                resultFile = rawFile;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                replyForm.errors.image =
+                    'ছবিটি অপটিমাইজ করার পরও ৫MB এর বেশি। অনুগ্রহ করে ছোট ছবি নির্বাচন করুন।';
+                target.value = '';
+
+                return;
+            }
+
+            replyForm.image = resultFile;
+
+            if (replyImagePreview.value) {
+                URL.revokeObjectURL(replyImagePreview.value);
+            }
+
+            replyImagePreview.value = URL.createObjectURL(resultFile);
+        } finally {
+            isCompressingReplyImage.value = false;
+        }
     }
 };
 
 const removeReplyImage = () => {
     replyForm.image = null;
+    replyForm.errors.image = '';
 
     if (replyImagePreview.value) {
         URL.revokeObjectURL(replyImagePreview.value);
@@ -493,6 +585,10 @@ const removeReplyImage = () => {
 };
 
 const submitReply = () => {
+    if (isCompressingReplyImage.value) {
+        return;
+    }
+
     if (!requireAuth('Please sign in to reply.')) {
         return;
     }
@@ -1441,7 +1537,10 @@ function parseMentions(
                                 </button>
                                 <button
                                     type="submit"
-                                    :disabled="replyForm.processing"
+                                    :disabled="
+                                        replyForm.processing ||
+                                        isCompressingReplyImage
+                                    "
                                     class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50"
                                 >
                                     <Send class="h-3 w-3" />
@@ -1593,7 +1692,9 @@ function parseMentions(
                 <div class="flex justify-end pt-2">
                     <button
                         type="submit"
-                        :disabled="answerForm.processing"
+                        :disabled="
+                            answerForm.processing || isCompressingAnswerImage
+                        "
                         class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50"
                     >
                         <Send class="h-4 w-4" />

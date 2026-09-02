@@ -35,7 +35,7 @@ class UpdateProfileRequest extends FormRequest
                 Rule::unique('users', 'username')->ignore($this->user()->id),
                 new CleanText,
             ],
-            'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
+            'file' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'about' => ['sometimes', 'nullable', 'string', 'max:1000', new CleanText],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],

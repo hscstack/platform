@@ -38,7 +38,7 @@ class UpdateUserRequest extends FormRequest
                 new CleanText,
             ],
             'email' => ['sometimes', 'email', 'unique:users,email,'.$user->id],
-            'file' => ['sometimes', 'nullable', 'image', 'max:2048'],
+            'file' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'about' => ['sometimes', 'nullable', 'string', 'max:1000', new CleanText],
             'title' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],

@@ -50,7 +50,7 @@ class EmailController extends Controller
             'recipient_email' => ['required_if:recipient_type,single', 'nullable', 'email', 'max:255'],
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
-            'image' => ['sometimes', 'nullable', 'image', 'max:5120'],
+            'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         $subject = $validated['subject'];

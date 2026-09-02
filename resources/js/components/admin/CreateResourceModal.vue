@@ -12,6 +12,7 @@ import {
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import { compressImage } from '@/lib/imageCompression';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -67,6 +68,7 @@ const content = ref('');
 const externalUrl = ref('');
 const file = ref<File | null>(null);
 const isSaving = ref(false);
+const isCompressing = ref(false);
 const errorMessage = ref('');
 
 const requiresFile = computed(() => resourceType.value === 'image');
@@ -91,6 +93,7 @@ const initForm = () => {
 
     errorMessage.value = '';
     isSaving.value = false;
+    isCompressing.value = false;
 };
 
 watch(
@@ -102,16 +105,51 @@ watch(
     },
 );
 
-const handleFileSelect = (event: Event) => {
+const handleFileSelect = async (event: Event) => {
     const target = event.target as HTMLInputElement;
 
     if (target.files && target.files[0]) {
-        file.value = target.files[0];
+        const raw = target.files[0];
+        errorMessage.value = '';
+
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(raw.type)) {
+            errorMessage.value =
+                'Please select a valid JPG, PNG, or WEBP image.';
+            target.value = '';
+
+            return;
+        }
+
+        try {
+            isCompressing.value = true;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(raw);
+            } catch {
+                resultFile = raw;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                errorMessage.value =
+                    'The optimized image is still larger than 5MB. Please choose a smaller image.';
+                file.value = null;
+                target.value = '';
+
+                return;
+            }
+
+            file.value = resultFile;
+        } finally {
+            isCompressing.value = false;
+        }
     }
 };
 
 const handleClose = () => {
-    if (isSaving.value) {
+    if (isSaving.value || isCompressing.value) {
         return;
     }
 
@@ -119,7 +157,7 @@ const handleClose = () => {
 };
 
 const submitForm = () => {
-    if (!title.value.trim() || isSaving.value) {
+    if (!title.value.trim() || isSaving.value || isCompressing.value) {
         return;
     }
 
@@ -320,31 +358,42 @@ const submitForm = () => {
                             type="file"
                             id="resource_file_upload"
                             class="hidden"
+                            :disabled="isCompressing || isSaving"
                             @change="handleFileSelect"
-                            accept="image/jpeg,image/png,image/jpg"
+                            accept="image/jpeg,image/png,image/jpg,image/webp"
                         />
                         <label
                             for="resource_file_upload"
                             class="flex cursor-pointer flex-col items-center justify-center"
+                            :class="{
+                                'cursor-not-allowed opacity-60':
+                                    isCompressing || isSaving,
+                            }"
                         >
                             <div
                                 class="mb-1.5 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-2xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                             >
-                                <Upload class="h-4 w-4" />
+                                <Loader2
+                                    v-if="isCompressing"
+                                    class="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400"
+                                />
+                                <Upload v-else class="h-4 w-4" />
                             </div>
                             <span
                                 class="text-xs font-medium text-indigo-600 dark:text-indigo-400"
                             >
                                 {{
-                                    file
-                                        ? file.name
-                                        : 'Choose image file or drag here'
+                                    isCompressing
+                                        ? 'Optimizing image...'
+                                        : file
+                                          ? file.name
+                                          : 'Choose image file or drag here'
                                 }}
                             </span>
                             <span
                                 class="mt-0.5 text-[10px] text-slate-400 dark:text-gray-500"
                             >
-                                Max size: 10MB (JPG, JPEG, PNG)
+                                Max size: 20MB (JPG, PNG, WEBP — auto-optimized)
                             </span>
                         </label>
                     </div>
@@ -386,7 +435,7 @@ const submitForm = () => {
 
                 <button
                     type="submit"
-                    :disabled="isSaving || !title.trim()"
+                    :disabled="isSaving || isCompressing || !title.trim()"
                     class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />

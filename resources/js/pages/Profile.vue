@@ -13,6 +13,7 @@ import {
     LifeBuoy,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { compressImage } from '@/lib/imageCompression';
 
 const props = defineProps({
     user: Object,
@@ -27,6 +28,7 @@ const isUnverified = computed(() => {
 
 const showAdvancedSettings = ref(false);
 const showConfirmModal = ref(false);
+const isCompressingAvatar = ref(false);
 
 const form = useForm({
     _method: 'PUT',
@@ -40,6 +42,48 @@ const form = useForm({
     instagram: user.value?.instagram || '',
     receive_emails: user.value?.receive_emails ?? true,
 });
+
+const handleAvatarSelect = async (event: Event) => {
+    const input = event.target as HTMLInputElement;
+
+    if (input.files && input.files[0]) {
+        const raw = input.files[0];
+        form.errors.file = '';
+
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(raw.type)) {
+            form.errors.file = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+
+            return;
+        }
+
+        try {
+            isCompressingAvatar.value = true;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(raw, {
+                    maxWidth: 512,
+                    maxHeight: 512,
+                    quality: 0.85,
+                });
+            } catch {
+                resultFile = raw;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                form.errors.file = 'ছবিটির আকার ৫MB এর চেয়ে কম হতে হবে।';
+
+                return;
+            }
+
+            form.file = resultFile;
+        } finally {
+            isCompressingAvatar.value = false;
+        }
+    }
+};
 
 const handleEmailToggle = () => {
     if (form.receive_emails) {
@@ -55,6 +99,10 @@ const confirmDisable = () => {
 };
 
 const submitForm = () => {
+    if (isCompressingAvatar.value) {
+        return;
+    }
+
     form.post('/profile', {
         preserveScroll: true,
     });
@@ -320,18 +368,26 @@ const submitForm = () => {
                 </div>
 
                 <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
-                    <div class="shrink-0">
+                    <div class="relative shrink-0">
                         <img
-                            v-if="user?.image_url"
+                            v-if="user?.image_url && !isCompressingAvatar"
                             :src="user.image_url"
                             :alt="user.name"
                             class="h-20 w-20 rounded-full border-2 border-slate-200 object-cover shadow-xs dark:border-gray-700"
                         />
                         <div
-                            v-else
+                            v-else-if="!isCompressingAvatar"
                             class="flex h-20 w-20 items-center justify-center rounded-full bg-slate-900 text-xl font-bold text-white dark:bg-gray-800"
                         >
                             {{ user?.name?.charAt(0)?.toUpperCase() }}
+                        </div>
+                        <div
+                            v-if="isCompressingAvatar"
+                            class="flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-indigo-400 bg-indigo-50 dark:bg-indigo-950/40"
+                        >
+                            <Loader2
+                                class="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400"
+                            />
                         </div>
                     </div>
 
@@ -345,13 +401,9 @@ const submitForm = () => {
                         <input
                             type="file"
                             id="file"
-                            accept="image/*"
-                            @change="
-                                form.file =
-                                    ($event.target as HTMLInputElement)
-                                        .files?.[0] || null
-                            "
-                            :disabled="form.processing"
+                            accept="image/jpeg,image/png,image/webp"
+                            @change="handleAvatarSelect"
+                            :disabled="form.processing || isCompressingAvatar"
                             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-500 transition outline-none file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 file:transition hover:file:bg-slate-200 disabled:bg-slate-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-400 dark:file:bg-gray-800 dark:file:text-gray-300 dark:hover:file:bg-gray-700"
                             :class="{
                                 'border-rose-500 focus:ring-rose-500/20':
@@ -361,7 +413,11 @@ const submitForm = () => {
                         <p
                             class="mt-1 text-xs text-slate-400 dark:text-gray-500"
                         >
-                            Supports PNG, JPG, or WEBP up to 2MB.
+                            {{
+                                isCompressingAvatar
+                                    ? 'Optimizing avatar...'
+                                    : 'Supports PNG, JPG, or WEBP up to 20MB (auto-optimized).'
+                            }}
                         </p>
                         <p
                             v-if="form.errors.file"
@@ -623,7 +679,7 @@ const submitForm = () => {
             <div class="flex justify-end pt-2">
                 <button
                     type="submit"
-                    :disabled="form.processing"
+                    :disabled="form.processing || isCompressingAvatar"
                     class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Loader2

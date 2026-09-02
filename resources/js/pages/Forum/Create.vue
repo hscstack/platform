@@ -12,6 +12,7 @@ import {
     Loader2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import { compressImage } from '@/lib/imageCompression';
 
 interface NodeItem {
     id: number;
@@ -85,29 +86,75 @@ const setCurriculum = (curriculum: 'hsc' | 'ssc') => {
     form.node_id = '';
 };
 
+const isCompressingImage = ref(false);
+const imageError = ref('');
+
+const processSelectedImage = async (rawFile: File) => {
+    imageError.value = '';
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowed.includes(rawFile.type)) {
+        imageError.value = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+
+        return;
+    }
+
+    try {
+        isCompressingImage.value = true;
+        let resultFile: File;
+
+        try {
+            resultFile = await compressImage(rawFile, {
+                maxWidth: 2048,
+                maxHeight: 2048,
+                quality: 0.85,
+            });
+        } catch {
+            resultFile = rawFile;
+        }
+
+        if (resultFile.size > 5 * 1024 * 1024) {
+            imageError.value =
+                'ছবিটি অপটিমাইজ করার পরও ৫MB এর বেশি। অনুগ্রহ করে ছোট ছবি নির্বাচন করুন।';
+
+            return;
+        }
+
+        form.image = resultFile;
+
+        if (imagePreview.value) {
+            URL.revokeObjectURL(imagePreview.value);
+        }
+
+        imagePreview.value = URL.createObjectURL(resultFile);
+    } finally {
+        isCompressingImage.value = false;
+    }
+};
+
 const handleFileChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
 
     if (target.files && target.files[0]) {
-        const file = target.files[0];
-        form.image = file;
-        imagePreview.value = URL.createObjectURL(file);
+        processSelectedImage(target.files[0]);
     }
 };
 
 const handleFileDrop = (e: DragEvent) => {
     if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
         const file = e.dataTransfer.files[0];
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
 
-        if (file.type.startsWith('image/')) {
-            form.image = file;
-            imagePreview.value = URL.createObjectURL(file);
+        if (allowed.includes(file.type)) {
+            processSelectedImage(file);
         }
     }
 };
 
 const removeImage = () => {
     form.image = null;
+    imageError.value = '';
 
     if (imagePreview.value) {
         URL.revokeObjectURL(imagePreview.value);
@@ -120,6 +167,10 @@ const removeImage = () => {
 };
 
 const handleOpenModal = () => {
+    if (isCompressingImage.value) {
+        return;
+    }
+
     // Basic frontend checks before modal
     if (!form.title.trim()) {
         form.post('/forum'); // trigger inertia validation errors if fields are empty
@@ -132,7 +183,7 @@ const handleOpenModal = () => {
 };
 
 const submit = () => {
-    if (!modalConfirmed.value) {
+    if (isCompressingImage.value || !modalConfirmed.value) {
         return;
     }
 
@@ -362,7 +413,7 @@ const submit = () => {
                     >
                         Attach Image
                         <span class="text-xs font-normal text-slate-400"
-                            >(Optional, Max 5MB)</span
+                            >(Optional, Max 20MB, auto-optimized)</span
                         >
                     </label>
 
@@ -372,6 +423,7 @@ const submit = () => {
                             type="file"
                             id="post-image-file"
                             accept="image/jpeg,image/png,image/jpg,image/webp"
+                            :disabled="isCompressingImage"
                             @click="
                                 (e) =>
                                     ((e.target as HTMLInputElement).value = '')
@@ -385,19 +437,32 @@ const submit = () => {
                             @dragenter.prevent
                             @drop.prevent="handleFileDrop"
                             class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-indigo-500 hover:bg-indigo-50/20 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-indigo-500"
+                            :class="{
+                                'cursor-not-allowed opacity-60':
+                                    isCompressingImage,
+                            }"
                         >
+                            <Loader2
+                                v-if="isCompressingImage"
+                                class="mb-2 h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400"
+                            />
                             <Upload
+                                v-else
                                 class="mb-2 h-6 w-6 text-slate-400 dark:text-gray-500"
                             />
                             <span
                                 class="text-xs font-semibold text-slate-700 dark:text-gray-300"
                             >
-                                Click or drag to upload an image
+                                {{
+                                    isCompressingImage
+                                        ? 'Optimizing image...'
+                                        : 'Click or drag to upload an image'
+                                }}
                             </span>
                             <span
                                 class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
                             >
-                                JPG, PNG, WEBP up to 5MB
+                                JPG, PNG, WEBP up to 20MB (auto-optimized)
                             </span>
                         </label>
                     </div>
@@ -419,6 +484,10 @@ const submit = () => {
                         </button>
                     </div>
 
+                    <p v-if="imageError" class="mt-1.5 text-xs text-rose-500">
+                        {{ imageError }}
+                    </p>
+
                     <p
                         v-if="form.errors.image"
                         class="mt-1.5 text-xs text-rose-500"
@@ -439,7 +508,7 @@ const submit = () => {
                     </Link>
                     <button
                         type="submit"
-                        :disabled="form.processing"
+                        :disabled="form.processing || isCompressingImage"
                         class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <Send class="h-4 w-4" />
@@ -572,7 +641,11 @@ const submit = () => {
                             <button
                                 type="button"
                                 @click="submit"
-                                :disabled="!modalConfirmed || form.processing"
+                                :disabled="
+                                    !modalConfirmed ||
+                                    form.processing ||
+                                    isCompressingImage
+                                "
                                 class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Loader2

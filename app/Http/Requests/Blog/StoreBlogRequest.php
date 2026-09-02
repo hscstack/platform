@@ -38,7 +38,7 @@ class StoreBlogRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:10240',
+                'max:5120',
             ],
 
             'is_published' => ['required', 'boolean'],
