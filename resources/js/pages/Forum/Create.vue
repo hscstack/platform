@@ -12,6 +12,7 @@ import {
     Loader2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import { compressImage } from '@/lib/imageCompression';
 
 interface NodeItem {
     id: number;
@@ -85,13 +86,41 @@ const setCurriculum = (curriculum: 'hsc' | 'ssc') => {
     form.node_id = '';
 };
 
+const isCompressingImage = ref(false);
+
+const processSelectedImage = async (rawFile: File) => {
+    try {
+        isCompressingImage.value = true;
+        const compressed = await compressImage(rawFile, {
+            maxWidth: 2048,
+            maxHeight: 2048,
+            quality: 0.85,
+        });
+        form.image = compressed;
+
+        if (imagePreview.value) {
+            URL.revokeObjectURL(imagePreview.value);
+        }
+
+        imagePreview.value = URL.createObjectURL(compressed);
+    } catch {
+        form.image = rawFile;
+
+        if (imagePreview.value) {
+            URL.revokeObjectURL(imagePreview.value);
+        }
+
+        imagePreview.value = URL.createObjectURL(rawFile);
+    } finally {
+        isCompressingImage.value = false;
+    }
+};
+
 const handleFileChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
 
     if (target.files && target.files[0]) {
-        const file = target.files[0];
-        form.image = file;
-        imagePreview.value = URL.createObjectURL(file);
+        processSelectedImage(target.files[0]);
     }
 };
 
@@ -100,8 +129,7 @@ const handleFileDrop = (e: DragEvent) => {
         const file = e.dataTransfer.files[0];
 
         if (file.type.startsWith('image/')) {
-            form.image = file;
-            imagePreview.value = URL.createObjectURL(file);
+            processSelectedImage(file);
         }
     }
 };
@@ -362,7 +390,7 @@ const submit = () => {
                     >
                         Attach Image
                         <span class="text-xs font-normal text-slate-400"
-                            >(Optional, Max 5MB)</span
+                            >(Optional, Max 20MB, auto-optimized)</span
                         >
                     </label>
 
@@ -372,6 +400,7 @@ const submit = () => {
                             type="file"
                             id="post-image-file"
                             accept="image/jpeg,image/png,image/jpg,image/webp"
+                            :disabled="isCompressingImage"
                             @click="
                                 (e) =>
                                     ((e.target as HTMLInputElement).value = '')
@@ -385,19 +414,32 @@ const submit = () => {
                             @dragenter.prevent
                             @drop.prevent="handleFileDrop"
                             class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-indigo-500 hover:bg-indigo-50/20 dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-indigo-500"
+                            :class="{
+                                'cursor-not-allowed opacity-60':
+                                    isCompressingImage,
+                            }"
                         >
+                            <Loader2
+                                v-if="isCompressingImage"
+                                class="mb-2 h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400"
+                            />
                             <Upload
+                                v-else
                                 class="mb-2 h-6 w-6 text-slate-400 dark:text-gray-500"
                             />
                             <span
                                 class="text-xs font-semibold text-slate-700 dark:text-gray-300"
                             >
-                                Click or drag to upload an image
+                                {{
+                                    isCompressingImage
+                                        ? 'Optimizing image...'
+                                        : 'Click or drag to upload an image'
+                                }}
                             </span>
                             <span
                                 class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
                             >
-                                JPG, PNG, WEBP up to 5MB
+                                JPG, PNG, WEBP up to 20MB (auto-optimized)
                             </span>
                         </label>
                     </div>

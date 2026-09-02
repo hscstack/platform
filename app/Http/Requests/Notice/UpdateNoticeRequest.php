@@ -25,7 +25,7 @@ class UpdateNoticeRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'remove_image' => ['nullable', 'boolean'],
             'show_button' => ['required', 'boolean'],
             'button_title' => ['nullable', 'required_if:show_button,true', 'string', 'max:100'],

@@ -140,7 +140,7 @@ class AuthController extends Controller
                 new CleanText,
             ],
             'school' => ['required', 'string', 'max:255', new CleanText],
-            'image' => ['sometimes', 'nullable', 'image', 'max:5120'],
+            'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ], [
             'school.required' => 'Please enter your school, college, or institution name.',
             'username.regex' => 'Username can only contain letters, numbers, and underscores.',

@@ -31,6 +31,7 @@ import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import Pagination from '@/components/Pagination.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
+import { compressImage } from '@/lib/imageCompression';
 import { useAuth } from '@/lib/useAuth';
 import { getCsrfToken } from '@/lib/useCsrf';
 import { formatTimeAgo } from '@/lib/useDate';
@@ -374,14 +375,39 @@ const answerForm = useForm({
 
 const answerImagePreview = ref<string | null>(null);
 const answerFileInputRef = ref<HTMLInputElement | null>(null);
+const isCompressingAnswerImage = ref(false);
 
-const handleAnswerFileChange = (e: Event) => {
+const handleAnswerFileChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
 
     if (target.files && target.files[0]) {
-        const file = target.files[0];
-        answerForm.image = file;
-        answerImagePreview.value = URL.createObjectURL(file);
+        const rawFile = target.files[0];
+
+        try {
+            isCompressingAnswerImage.value = true;
+            const compressed = await compressImage(rawFile, {
+                maxWidth: 2048,
+                maxHeight: 2048,
+                quality: 0.85,
+            });
+            answerForm.image = compressed;
+
+            if (answerImagePreview.value) {
+                URL.revokeObjectURL(answerImagePreview.value);
+            }
+
+            answerImagePreview.value = URL.createObjectURL(compressed);
+        } catch {
+            answerForm.image = rawFile;
+
+            if (answerImagePreview.value) {
+                URL.revokeObjectURL(answerImagePreview.value);
+            }
+
+            answerImagePreview.value = URL.createObjectURL(rawFile);
+        } finally {
+            isCompressingAnswerImage.value = false;
+        }
     }
 };
 
@@ -459,13 +485,39 @@ const cancelReply = () => {
     }
 };
 
-const handleReplyFileChange = (e: Event) => {
+const isCompressingReplyImage = ref(false);
+
+const handleReplyFileChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
 
     if (target.files && target.files[0]) {
-        const file = target.files[0];
-        replyForm.image = file;
-        replyImagePreview.value = URL.createObjectURL(file);
+        const rawFile = target.files[0];
+
+        try {
+            isCompressingReplyImage.value = true;
+            const compressed = await compressImage(rawFile, {
+                maxWidth: 2048,
+                maxHeight: 2048,
+                quality: 0.85,
+            });
+            replyForm.image = compressed;
+
+            if (replyImagePreview.value) {
+                URL.revokeObjectURL(replyImagePreview.value);
+            }
+
+            replyImagePreview.value = URL.createObjectURL(compressed);
+        } catch {
+            replyForm.image = rawFile;
+
+            if (replyImagePreview.value) {
+                URL.revokeObjectURL(replyImagePreview.value);
+            }
+
+            replyImagePreview.value = URL.createObjectURL(rawFile);
+        } finally {
+            isCompressingReplyImage.value = false;
+        }
     }
 };
 

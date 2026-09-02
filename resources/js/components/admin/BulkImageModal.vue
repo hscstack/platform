@@ -10,6 +10,7 @@ import {
 } from 'lucide-vue-next';
 import { ref, computed, watch, onUnmounted } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import { compressImagesSequentially } from '@/lib/imageCompression';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -28,6 +29,8 @@ const isDragging = ref(false);
 const fileLimitError = ref('');
 const errorMessage = ref('');
 const isSaving = ref(false);
+const isCompressing = ref(false);
+const compressionStatusText = ref('');
 const uploadProgress = ref<number | null>(null);
 const isProcessingServer = ref(false);
 
@@ -108,6 +111,8 @@ const clearAll = () => {
     fileLimitError.value = '';
     errorMessage.value = '';
     isSaving.value = false;
+    isCompressing.value = false;
+    compressionStatusText.value = '';
     uploadProgress.value = null;
     isProcessingServer.value = false;
 };
@@ -134,22 +139,40 @@ onUnmounted(() => {
     clearAll();
 });
 
-const submitForm = () => {
+const submitForm = async () => {
     if (selectedFiles.value.length === 0 || isSaving.value) {
         return;
     }
 
     isSaving.value = true;
+    errorMessage.value = '';
+
+    let filesToUpload = selectedFiles.value.map((item) => item.file);
+
+    // If any file is larger than 300KB, optimize sequentially
+    const needsOptimization = filesToUpload.some((f) => f.size > 300 * 1024);
+
+    if (needsOptimization) {
+        isCompressing.value = true;
+        compressionStatusText.value = 'Preparing images...';
+        filesToUpload = await compressImagesSequentially(
+            filesToUpload,
+            (processed, total) => {
+                compressionStatusText.value = `Optimizing image ${processed} of ${total} to WebP...`;
+            },
+        );
+        isCompressing.value = false;
+    }
+
     uploadProgress.value = 0;
     isProcessingServer.value = false;
-    errorMessage.value = '';
 
     const payload: Record<string, any> = {
         node_id: props.node.id,
         naming_strategy: namingStrategy.value,
         naming_prefix: namingPrefix.value,
         start_number: startNumber.value,
-        files: selectedFiles.value.map((item) => item.file),
+        files: filesToUpload,
         custom_titles: processedTitles.value,
     };
 
@@ -427,9 +450,22 @@ const submitForm = () => {
                 </div>
             </div>
 
+            <!-- Compression Status Bar -->
+            <div
+                v-if="isCompressing"
+                class="border-t border-slate-100 bg-indigo-50/70 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-indigo-950/30"
+            >
+                <div
+                    class="flex items-center gap-2 text-xs font-medium text-indigo-600 dark:text-indigo-400"
+                >
+                    <Loader2 class="h-3.5 w-3.5 animate-spin" />
+                    <span>{{ compressionStatusText }}</span>
+                </div>
+            </div>
+
             <!-- Upload Progress Bar -->
             <div
-                v-if="isSaving && uploadProgress !== null"
+                v-if="!isCompressing && isSaving && uploadProgress !== null"
                 class="border-t border-slate-100 bg-slate-50/80 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/80"
             >
                 <div class="mb-1.5 flex items-center justify-between text-xs">
