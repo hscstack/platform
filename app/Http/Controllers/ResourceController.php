@@ -26,7 +26,7 @@ class ResourceController extends Controller
 
             return [
                 'resource' => $resource->toArray(),
-                'subject' => $resource->node?->subject,
+                'subject' => $resource->node?->subject?->toArray(),
                 'previousResourceId' => $previousResourceId,
                 'nextResourceId' => $nextResourceId,
             ];
