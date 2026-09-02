@@ -47,28 +47,42 @@ const handleImageChange = async (e: Event) => {
     const rawFile = target.files?.[0];
 
     if (rawFile) {
+        form.errors.image = '';
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(rawFile.type)) {
+            form.errors.image = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+
+            return;
+        }
+
         try {
             isCompressing.value = true;
-            const compressed = await compressImage(rawFile, {
-                maxWidth: 512,
-                maxHeight: 512,
-                quality: 0.85,
-            });
-            form.image = compressed;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(rawFile, {
+                    maxWidth: 512,
+                    maxHeight: 512,
+                    quality: 0.85,
+                });
+            } catch {
+                resultFile = rawFile;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                form.errors.image = 'ছবিটির আকার ৫MB এর চেয়ে কম হতে হবে।';
+
+                return;
+            }
+
+            form.image = resultFile;
 
             if (previewUrl.value) {
                 URL.revokeObjectURL(previewUrl.value);
             }
 
-            previewUrl.value = URL.createObjectURL(compressed);
-        } catch {
-            form.image = rawFile;
-
-            if (previewUrl.value) {
-                URL.revokeObjectURL(previewUrl.value);
-            }
-
-            previewUrl.value = URL.createObjectURL(rawFile);
+            previewUrl.value = URL.createObjectURL(resultFile);
         } finally {
             isCompressing.value = false;
         }
@@ -76,11 +90,20 @@ const handleImageChange = async (e: Event) => {
 };
 
 const triggerFileInput = () => {
+    if (isCompressing.value) {
+        return;
+    }
+
     fileInputRef.value?.click();
 };
 
 const removeCustomImage = () => {
+    if (isCompressing.value) {
+        return;
+    }
+
     form.image = null;
+    form.errors.image = '';
 
     if (previewUrl.value) {
         URL.revokeObjectURL(previewUrl.value);
@@ -99,6 +122,10 @@ onUnmounted(() => {
 });
 
 const submit = () => {
+    if (isCompressing.value) {
+        return;
+    }
+
     form.post('/onboarding', {
         forceFormData: true,
     });
@@ -384,7 +411,7 @@ const submit = () => {
                     <div class="pt-2">
                         <button
                             type="submit"
-                            :disabled="form.processing"
+                            :disabled="form.processing || isCompressing"
                             class="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                         >
                             <Loader2

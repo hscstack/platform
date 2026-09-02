@@ -110,12 +110,38 @@ const handleFileSelect = async (event: Event) => {
 
     if (target.files && target.files[0]) {
         const raw = target.files[0];
+        errorMessage.value = '';
+
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(raw.type)) {
+            errorMessage.value =
+                'Please select a valid JPG, PNG, or WEBP image.';
+            target.value = '';
+
+            return;
+        }
 
         try {
             isCompressing.value = true;
-            file.value = await compressImage(raw);
-        } catch {
-            file.value = raw;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(raw);
+            } catch {
+                resultFile = raw;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                errorMessage.value =
+                    'The optimized image is still larger than 5MB. Please choose a smaller image.';
+                file.value = null;
+                target.value = '';
+
+                return;
+            }
+
+            file.value = resultFile;
         } finally {
             isCompressing.value = false;
         }
@@ -123,7 +149,7 @@ const handleFileSelect = async (event: Event) => {
 };
 
 const handleClose = () => {
-    if (isSaving.value) {
+    if (isSaving.value || isCompressing.value) {
         return;
     }
 
@@ -131,7 +157,7 @@ const handleClose = () => {
 };
 
 const submitForm = () => {
-    if (!title.value.trim() || isSaving.value) {
+    if (!title.value.trim() || isSaving.value || isCompressing.value) {
         return;
     }
 
@@ -409,7 +435,7 @@ const submitForm = () => {
 
                 <button
                     type="submit"
-                    :disabled="isSaving || !title.trim()"
+                    :disabled="isSaving || isCompressing || !title.trim()"
                     class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />

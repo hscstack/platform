@@ -117,7 +117,7 @@ watch(
         <input
             ref="fileInputRef"
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept="image/jpeg,image/png,image/webp"
             class="hidden"
             :disabled="disabled || isCompressing"
             @change="handleFileInput"

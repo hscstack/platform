@@ -192,11 +192,16 @@ export async function compressImage(
         }
 
         // Only use compressed file if it's actually smaller than the original
-        if (blob.size >= file.size && file.type === opts.targetFormat) {
+        if (blob.size >= file.size) {
             return file;
         }
 
-        const extension = opts.targetFormat === 'image/webp' ? '.webp' : '.jpg';
+        const extension =
+            opts.targetFormat === 'image/webp'
+                ? '.webp'
+                : opts.targetFormat === 'image/png'
+                  ? '.png'
+                  : '.jpg';
         const newName = file.name.replace(/\.[^/.]+$/, '') + extension;
 
         return new File([blob], newName, { type: opts.targetFormat });

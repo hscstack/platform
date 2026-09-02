@@ -48,16 +48,37 @@ const handleAvatarSelect = async (event: Event) => {
 
     if (input.files && input.files[0]) {
         const raw = input.files[0];
+        form.errors.file = '';
+
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(raw.type)) {
+            form.errors.file = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+
+            return;
+        }
 
         try {
             isCompressingAvatar.value = true;
-            form.file = await compressImage(raw, {
-                maxWidth: 512,
-                maxHeight: 512,
-                quality: 0.85,
-            });
-        } catch {
-            form.file = raw;
+            let resultFile: File;
+
+            try {
+                resultFile = await compressImage(raw, {
+                    maxWidth: 512,
+                    maxHeight: 512,
+                    quality: 0.85,
+                });
+            } catch {
+                resultFile = raw;
+            }
+
+            if (resultFile.size > 5 * 1024 * 1024) {
+                form.errors.file = 'ছবিটির আকার ৫MB এর চেয়ে কম হতে হবে।';
+
+                return;
+            }
+
+            form.file = resultFile;
         } finally {
             isCompressingAvatar.value = false;
         }
@@ -78,6 +99,10 @@ const confirmDisable = () => {
 };
 
 const submitForm = () => {
+    if (isCompressingAvatar.value) {
+        return;
+    }
+
     form.post('/profile', {
         preserveScroll: true,
     });
@@ -654,7 +679,7 @@ const submitForm = () => {
             <div class="flex justify-end pt-2">
                 <button
                     type="submit"
-                    :disabled="form.processing"
+                    :disabled="form.processing || isCompressingAvatar"
                     class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Loader2

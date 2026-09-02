@@ -4,6 +4,7 @@ import type { CompressOptions } from './imageCompression';
 
 export interface UseImageUploadOptions {
     maxOriginalSizeMB?: number; // Max size the file picker will accept before compression (default: 20MB)
+    maxCompressedSizeMB?: number; // Max size allowed after compression (default: 5MB)
     allowedTypes?: string[]; // Allowed MIME types
     compressOptions?: CompressOptions;
     onCompressed?: (file: File) => void;
@@ -12,11 +13,11 @@ export interface UseImageUploadOptions {
 
 export function useImageUpload(options: UseImageUploadOptions = {}) {
     const maxOriginalSizeMB = options.maxOriginalSizeMB ?? 20;
+    const maxCompressedSizeMB = options.maxCompressedSizeMB ?? 5;
     const allowedTypes = options.allowedTypes ?? [
         'image/jpeg',
         'image/png',
         'image/webp',
-        'image/gif',
     ];
 
     const file = ref<File | null>(null);
@@ -47,7 +48,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 
         // 1. Validate file type
         if (!allowedTypes.includes(rawFile.type)) {
-            const msg = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP (অথবা GIF)।';
+            const msg = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
             error.value = msg;
             options.onError?.(msg);
 
@@ -68,25 +69,37 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 
         try {
             isCompressing.value = true;
-            const compressed = await compressImage(
-                rawFile,
-                options.compressOptions,
-            );
-            compressedSizeFormatted.value = formatFileSize(compressed.size);
+            let resultFile: File;
 
-            file.value = compressed;
-            previewUrl.value = URL.createObjectURL(compressed);
+            try {
+                resultFile = await compressImage(
+                    rawFile,
+                    options.compressOptions,
+                );
+            } catch (err: any) {
+                console.error(
+                    '[useImageUpload] Compression error, using original:',
+                    err,
+                );
+                resultFile = rawFile;
+            }
 
-            options.onCompressed?.(compressed);
+            // Enforce max size on the final compressed file
+            if (resultFile.size > maxCompressedSizeMB * 1024 * 1024) {
+                const msg = `ছবিটির আকার ${maxCompressedSizeMB}MB এর চেয়ে কম হতে হবে।`;
+                error.value = msg;
+                options.onError?.(msg);
 
-            return compressed;
-        } catch (err: any) {
-            console.error('[useImageUpload] Compression error:', err);
-            // Fall back to original file if compression fails unexpectedly
-            file.value = rawFile;
-            previewUrl.value = URL.createObjectURL(rawFile);
+                return null;
+            }
 
-            return rawFile;
+            compressedSizeFormatted.value = formatFileSize(resultFile.size);
+            file.value = resultFile;
+            previewUrl.value = URL.createObjectURL(resultFile);
+
+            options.onCompressed?.(resultFile);
+
+            return resultFile;
         } finally {
             isCompressing.value = false;
         }

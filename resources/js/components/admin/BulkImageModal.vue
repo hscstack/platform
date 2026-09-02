@@ -7,6 +7,7 @@ import {
     Hash,
     Loader2,
     AlertCircle,
+    X,
 } from 'lucide-vue-next';
 import { ref, computed, watch, onUnmounted } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
@@ -55,10 +56,16 @@ const processedTitles = computed(() => {
     });
 });
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 const addFiles = (files: FileList | File[]) => {
+    if (isSaving.value || isCompressing.value) {
+        return;
+    }
+
     fileLimitError.value = '';
     const imageFiles = Array.from(files).filter((file) =>
-        file.type.startsWith('image/'),
+        ALLOWED_IMAGE_TYPES.includes(file.type),
     );
 
     if (imageFiles.length === 0) {
@@ -81,6 +88,10 @@ const addFiles = (files: FileList | File[]) => {
 };
 
 const handleFileSelect = (event: Event) => {
+    if (isSaving.value || isCompressing.value) {
+        return;
+    }
+
     const input = event.target as HTMLInputElement;
 
     if (input.files?.length) {
@@ -92,12 +103,20 @@ const handleFileSelect = (event: Event) => {
 const handleDrop = (event: DragEvent) => {
     isDragging.value = false;
 
+    if (isSaving.value || isCompressing.value) {
+        return;
+    }
+
     if (event.dataTransfer?.files?.length) {
         addFiles(event.dataTransfer.files);
     }
 };
 
 const removeFile = (index: number) => {
+    if (isSaving.value || isCompressing.value) {
+        return;
+    }
+
     if (selectedFiles.value[index]) {
         URL.revokeObjectURL(selectedFiles.value[index].previewUrl);
         selectedFiles.value.splice(index, 1);
@@ -106,6 +125,10 @@ const removeFile = (index: number) => {
 };
 
 const clearAll = () => {
+    if (isSaving.value || isCompressing.value) {
+        return;
+    }
+
     selectedFiles.value.forEach((item) => URL.revokeObjectURL(item.previewUrl));
     selectedFiles.value = [];
     fileLimitError.value = '';
@@ -118,7 +141,7 @@ const clearAll = () => {
 };
 
 const handleClose = () => {
-    if (isSaving.value) {
+    if (isSaving.value || isCompressing.value) {
         return;
     }
 
@@ -129,7 +152,7 @@ const handleClose = () => {
 watch(
     () => props.isOpen,
     (open) => {
-        if (!open) {
+        if (!open && !isSaving.value && !isCompressing.value) {
             clearAll();
         }
     },
@@ -140,7 +163,11 @@ onUnmounted(() => {
 });
 
 const submitForm = async () => {
-    if (selectedFiles.value.length === 0 || isSaving.value) {
+    if (
+        selectedFiles.value.length === 0 ||
+        isSaving.value ||
+        isCompressing.value
+    ) {
         return;
     }
 
@@ -162,6 +189,23 @@ const submitForm = async () => {
             },
         );
         isCompressing.value = false;
+    }
+
+    // Verify modal was not closed/cancelled during compression
+    if (!props.isOpen || selectedFiles.value.length === 0) {
+        isSaving.value = false;
+
+        return;
+    }
+
+    // Post-compression 5MB check
+    const oversized = filesToUpload.find((f) => f.size > 5 * 1024 * 1024);
+
+    if (oversized) {
+        errorMessage.value = `ছবি "${oversized.name}" অপটিমাইজ করার পরও ৫MB এর বেশি। অনুগ্রহ করে ছোট ছবি নির্বাচন করুন।`;
+        isSaving.value = false;
+
+        return;
     }
 
     uploadProgress.value = 0;
@@ -272,13 +316,18 @@ const submitForm = async () => {
                             type="file"
                             id="modal-bulk-image-upload"
                             multiple
-                            accept="image/jpeg,image/png,image/jpg,image/webp,image/gif"
+                            accept="image/jpeg,image/png,image/jpg,image/webp"
                             class="hidden"
+                            :disabled="isSaving || isCompressing"
                             @change="handleFileSelect"
                         />
                         <label
                             for="modal-bulk-image-upload"
                             class="flex cursor-pointer flex-col items-center justify-center"
+                            :class="{
+                                'cursor-not-allowed opacity-60':
+                                    isSaving || isCompressing,
+                            }"
                         >
                             <div
                                 class="mb-2 rounded-full border border-slate-200 bg-white p-2.5 text-indigo-600 shadow-2xs dark:border-gray-700 dark:bg-gray-800 dark:text-indigo-400"
@@ -406,7 +455,8 @@ const submitForm = async () => {
                         <button
                             type="button"
                             @click="clearAll"
-                            class="flex cursor-pointer items-center gap-1 font-medium text-rose-600 hover:text-rose-700"
+                            :disabled="isSaving || isCompressing"
+                            class="flex cursor-pointer items-center gap-1 font-medium text-rose-600 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <Trash2 class="h-3 w-3" />
                             <span>Clear all</span>
@@ -432,7 +482,8 @@ const submitForm = async () => {
                                 <button
                                     type="button"
                                     @click="removeFile(index)"
-                                    class="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-slate-900/70 text-white backdrop-blur-xs transition hover:bg-rose-600"
+                                    :disabled="isSaving || isCompressing"
+                                    class="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-slate-900/70 text-white backdrop-blur-xs transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <X class="h-3 w-3" />
                                 </button>

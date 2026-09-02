@@ -87,30 +87,47 @@ const setCurriculum = (curriculum: 'hsc' | 'ssc') => {
 };
 
 const isCompressingImage = ref(false);
+const imageError = ref('');
 
 const processSelectedImage = async (rawFile: File) => {
+    imageError.value = '';
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowed.includes(rawFile.type)) {
+        imageError.value = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
+
+        return;
+    }
+
     try {
         isCompressingImage.value = true;
-        const compressed = await compressImage(rawFile, {
-            maxWidth: 2048,
-            maxHeight: 2048,
-            quality: 0.85,
-        });
-        form.image = compressed;
+        let resultFile: File;
+
+        try {
+            resultFile = await compressImage(rawFile, {
+                maxWidth: 2048,
+                maxHeight: 2048,
+                quality: 0.85,
+            });
+        } catch {
+            resultFile = rawFile;
+        }
+
+        if (resultFile.size > 5 * 1024 * 1024) {
+            imageError.value =
+                'ছবিটি অপটিমাইজ করার পরও ৫MB এর বেশি। অনুগ্রহ করে ছোট ছবি নির্বাচন করুন।';
+
+            return;
+        }
+
+        form.image = resultFile;
 
         if (imagePreview.value) {
             URL.revokeObjectURL(imagePreview.value);
         }
 
-        imagePreview.value = URL.createObjectURL(compressed);
-    } catch {
-        form.image = rawFile;
-
-        if (imagePreview.value) {
-            URL.revokeObjectURL(imagePreview.value);
-        }
-
-        imagePreview.value = URL.createObjectURL(rawFile);
+        imagePreview.value = URL.createObjectURL(resultFile);
     } finally {
         isCompressingImage.value = false;
     }
@@ -127,8 +144,9 @@ const handleFileChange = (e: Event) => {
 const handleFileDrop = (e: DragEvent) => {
     if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
         const file = e.dataTransfer.files[0];
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
 
-        if (file.type.startsWith('image/')) {
+        if (allowed.includes(file.type)) {
             processSelectedImage(file);
         }
     }
@@ -136,6 +154,7 @@ const handleFileDrop = (e: DragEvent) => {
 
 const removeImage = () => {
     form.image = null;
+    imageError.value = '';
 
     if (imagePreview.value) {
         URL.revokeObjectURL(imagePreview.value);
@@ -148,6 +167,10 @@ const removeImage = () => {
 };
 
 const handleOpenModal = () => {
+    if (isCompressingImage.value) {
+        return;
+    }
+
     // Basic frontend checks before modal
     if (!form.title.trim()) {
         form.post('/forum'); // trigger inertia validation errors if fields are empty
@@ -160,7 +183,7 @@ const handleOpenModal = () => {
 };
 
 const submit = () => {
-    if (!modalConfirmed.value) {
+    if (isCompressingImage.value || !modalConfirmed.value) {
         return;
     }
 
@@ -461,6 +484,10 @@ const submit = () => {
                         </button>
                     </div>
 
+                    <p v-if="imageError" class="mt-1.5 text-xs text-rose-500">
+                        {{ imageError }}
+                    </p>
+
                     <p
                         v-if="form.errors.image"
                         class="mt-1.5 text-xs text-rose-500"
@@ -481,7 +508,7 @@ const submit = () => {
                     </Link>
                     <button
                         type="submit"
-                        :disabled="form.processing"
+                        :disabled="form.processing || isCompressingImage"
                         class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <Send class="h-4 w-4" />
@@ -614,7 +641,11 @@ const submit = () => {
                             <button
                                 type="button"
                                 @click="submit"
-                                :disabled="!modalConfirmed || form.processing"
+                                :disabled="
+                                    !modalConfirmed ||
+                                    form.processing ||
+                                    isCompressingImage
+                                "
                                 class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Loader2
