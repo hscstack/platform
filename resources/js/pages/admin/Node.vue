@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Plus, FolderPlus, ArrowLeft, ChevronDown } from 'lucide-vue-next';
+import {
+    Plus,
+    FolderPlus,
+    ArrowLeft,
+    ChevronDown,
+    PencilLine,
+} from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkImageModal from '@/components/admin/BulkImageModal.vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
+import BulkRenameModal from '@/components/admin/BulkRenameModal.vue';
 import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
 import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
@@ -29,6 +36,7 @@ const folderDropdownRef = ref<HTMLElement | null>(null);
 const isBulkModalOpen = ref(false);
 const isBulkImageModalOpen = ref(false);
 const isBulkVideoModalOpen = ref(false);
+const isBulkRenameModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
 const editingNode = ref<any | null>(null);
 const isSingleResourceModalOpen = ref(false);
@@ -285,12 +293,31 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             @close="isBulkVideoModalOpen = false"
         />
 
+        <!-- Bulk Rename Modal -->
+        <BulkRenameModal
+            v-if="parent"
+            :is-open="isBulkRenameModalOpen"
+            :node="parent"
+            :resources-count="resources?.length ?? 0"
+            @close="isBulkRenameModalOpen = false"
+        />
+
         <div class="flex flex-1 flex-col">
             <template v-if="totalItemsCount > 0">
                 <div
                     class="flex shrink-0 items-center justify-between rounded-t-lg border-b border-gray-100 bg-gray-50/70 px-4 py-2.5 text-xs font-semibold tracking-wider text-gray-400 uppercase dark:border-gray-700 dark:bg-gray-800/70 dark:text-gray-500"
                 >
                     <span>Resources</span>
+
+                    <button
+                        v-if="can('edit resources') && resources?.length"
+                        type="button"
+                        @click="isBulkRenameModalOpen = true"
+                        class="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-300"
+                    >
+                        <PencilLine class="h-3.5 w-3.5" />
+                        <span>Bulk Rename</span>
+                    </button>
                 </div>
 
                 <div class="flex flex-col gap-2.5 sm:gap-3">

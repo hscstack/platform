@@ -7,7 +7,9 @@ use App\Http\Requests\Resource\BulkImageStoreRequest;
 use App\Http\Requests\Resource\BulkVideoStoreRequest;
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
+use App\Models\Node;
 use App\Models\Resource;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -159,5 +161,29 @@ class ResourceController extends Controller
         });
 
         return back()->with('success', 'YouTube playlist imported successfully.');
+    }
+
+    public function bulkRename(Request $request, Node $node)
+    {
+        $validated = $request->validate([
+            'prefix' => ['required', 'string', 'max:100'],
+            'start_number' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $rawPrefix = trim($validated['prefix']);
+        $cleanPrefix = rtrim($rawPrefix, ' -');
+        $startNumber = (int) ($validated['start_number'] ?? 1);
+
+        $resources = $node->resources()->orderBy('id')->get();
+
+        DB::transaction(function () use ($resources, $cleanPrefix, $startNumber) {
+            foreach ($resources as $index => $resource) {
+                $number = str_pad((string) ($startNumber + $index), 2, '0', STR_PAD_LEFT);
+                $title = $cleanPrefix !== '' ? "{$cleanPrefix} - {$number}" : $number;
+                $resource->update(['title' => $title]);
+            }
+        });
+
+        return back()->with('success', "Renamed {$resources->count()} resources successfully.");
     }
 }
