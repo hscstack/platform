@@ -13,9 +13,9 @@ import {
     LifeBuoy,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { compressImage } from '@/lib/imageCompression';
 
 import BottomNavCustomizer from '@/components/navigation/BottomNavCustomizer.vue';
+import { compressImage } from '@/lib/imageCompression';
 
 const props = defineProps({
     user: Object,
