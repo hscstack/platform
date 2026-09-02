@@ -1,16 +1,14 @@
 # Contributing to HSCStack
 
-Thanks for your interest in HSCStack! This project is built by and for HSC & SSC students in Bangladesh, and we welcome help from fellow developers.
+Thanks for your interest in HSCStack! This project is built by and for HSC & SSC students in Bangladesh, and we welcome contributions from all developers.
 
-## Before You Start
+## Getting Started
 
-HSCStack's codebase is **not open for general, unsolicited pull requests**. To contribute code, you first need to be onboarded as a core developer:
+HSCStack is an open-source project and contributions to the codebase are open to everyone. Whether you want to fix a bug, implement a new feature, optimize performance, or improve documentation, we appreciate your help!
 
-1. Apply at [hscstack.site/join](https://hscstack.site/join)
-2. Once your application is reviewed and accepted, you'll be onboarded to the codebase.
-3. After that, you're free to open issues, pick up tasks, and submit PRs following the workflow below.
-
-If you're not yet a core developer but found a bug or have a suggestion, please [open a GitHub Issue](https://github.com/hscstack/platform/issues) instead — no membership required for that.
+1. Check existing [GitHub Issues](https://github.com/hscstack/platform/issues) to find tasks or open a new issue to discuss your ideas before starting large changes.
+2. Fork the repository and follow the [Development Setup](#development-setup) instructions below.
+3. Submit a pull request following our [Workflow](#workflow).
 
 ## Tech Stack
 
@@ -62,20 +60,25 @@ pnpm dev
 
 ## Workflow
 
-1. Create a new branch off `main`:
+1. Fork the repository on GitHub and clone your fork locally:
+    ```bash
+    git clone https://github.com/<your-username>/platform.git
+    cd platform
+    ```
+2. Create a new branch off `main`:
     ```bash
     git checkout -b feature/your-feature-name
     ```
-2. Make your changes, following the code style guidelines below.
-3. Commit with a clear, descriptive message:
+3. Make your changes, following the code style guidelines below.
+4. Commit with a clear, descriptive message:
     ```bash
-    git commit -m "Add: your feature"
+    git commit -m "feat: your feature"
     ```
-4. Push your branch and open a Pull Request:
+5. Push your branch to your fork:
     ```bash
     git push origin feature/your-feature-name
     ```
-5. Fill out the PR description explaining what changed and why, and link any related issue.
+6. Open a Pull Request against `main` on the upstream repository. Fill out the PR description explaining what changed and why, and link any related issue.
 
 ### Branch naming
 

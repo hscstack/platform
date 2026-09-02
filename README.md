@@ -98,7 +98,7 @@ Only HSCStack members can upload resources. To become a member:
 
 ## 🤝 Contributing
 
-HSCStack welcomes contributions from core developers. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, workflow, and code style guidelines.
+HSCStack is open-source and welcomes contributions from everyone! See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, workflow, and code style guidelines.
 
 Not a developer? You can still contribute academic resources (notes, PDFs, questions) by joining at **[hscstack.site/join][join]**.
 
