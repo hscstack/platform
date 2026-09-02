@@ -49,6 +49,30 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        'smtp2' => [
+            'transport' => 'smtp',
+            'scheme' => env('MAIL2_SCHEME'),
+            'url' => env('MAIL2_URL'),
+            'host' => env('MAIL2_HOST', '127.0.0.1'),
+            'port' => env('MAIL2_PORT', 2525),
+            'username' => env('MAIL2_USERNAME'),
+            'password' => env('MAIL2_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
+        'smtp3' => [
+            'transport' => 'smtp',
+            'scheme' => env('MAIL3_SCHEME'),
+            'url' => env('MAIL3_URL'),
+            'host' => env('MAIL3_HOST', '127.0.0.1'),
+            'port' => env('MAIL3_PORT', 2525),
+            'username' => env('MAIL3_USERNAME'),
+            'password' => env('MAIL3_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
@@ -90,10 +114,7 @@ return [
 
         'roundrobin' => [
             'transport' => 'roundrobin',
-            'mailers' => [
-                'ses',
-                'postmark',
-            ],
+            'mailers' => explode(',', env('MAIL_ROUNDROBIN_MAILERS', 'smtp,smtp2')),
             'retry_after' => 60,
         ],
 
