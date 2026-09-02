@@ -68,6 +68,7 @@ Route::middleware('permission:create resources')->group(function () {
 
 Route::middleware('permission:edit resources')->group(function () {
     Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update']);
+    Route::post('/nodes/{node}/resources/bulk-rename', [AdminResourceController::class, 'bulkRename'])->name('resources.bulk-rename');
 });
 
 Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy'])->middleware('permission:delete resources');
