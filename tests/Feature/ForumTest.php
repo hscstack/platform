@@ -546,11 +546,11 @@ test('author and admin can view pending or flagged questions but other users get
     $this->actingAs($admin)->get(route('forum.show', $flaggedPost))->assertStatus(200);
 
     // Other user gets 404
-    $this->actingAs($otherUser)->get(route('forum.show', $pendingPost))->assertSee('errors\/404');
-    $this->actingAs($otherUser)->get(route('forum.show', $flaggedPost))->assertSee('errors\/404');
+    $this->actingAs($otherUser)->get(route('forum.show', $pendingPost))->assertInertia(fn ($page) => $page->component('errors/404'));
+    $this->actingAs($otherUser)->get(route('forum.show', $flaggedPost))->assertInertia(fn ($page) => $page->component('errors/404'));
 
     // Guest gets 404
-    $this->get(route('forum.show', $pendingPost))->assertSee('errors\/404');
+    $this->get(route('forum.show', $pendingPost))->assertInertia(fn ($page) => $page->component('errors/404'));
 });
 
 test('suspended user cannot access ask question page', function () {

@@ -12,7 +12,7 @@ class ResourceController extends Controller
     public function show($id)
     {
         $data = Cache::rememberForever("resource_{$id}", function () use ($id) {
-            $resource = Resource::with('user')->findOrFail($id);
+            $resource = Resource::with(['user', 'node.subject'])->findOrFail($id);
 
             $previousResourceId = Resource::where('node_id', $resource->node_id)
                 ->where('id', '<', $resource->id)
@@ -26,6 +26,7 @@ class ResourceController extends Controller
 
             return [
                 'resource' => $resource->toArray(),
+                'subject' => $resource->node?->subject,
                 'previousResourceId' => $previousResourceId,
                 'nextResourceId' => $nextResourceId,
             ];

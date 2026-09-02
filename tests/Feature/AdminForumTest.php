@@ -105,7 +105,7 @@ test('unpublished post is not visible on public forum index and returns 404 for 
 
     // Show endpoint returns 404 for regular non-author user on rejected post
     $hiddenResponse = $this->actingAs($user)->get(route('forum.show', $hiddenPost));
-    $hiddenResponse->assertSee('errors\/404');
+    $hiddenResponse->assertInertia(fn ($page) => $page->component('errors/404'));
     $this->actingAs($user)->get(route('forum.show', $publishedPost))->assertStatus(200);
 });
 
