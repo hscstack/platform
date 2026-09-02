@@ -151,6 +151,8 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                 <button
                     type="button"
                     @click="toggle"
+                    :aria-label="collapsed ? `Theme: ${theme}` : undefined"
+                    :title="collapsed ? `Theme: ${theme}` : undefined"
                     :class="[
                         'flex h-11 w-full items-center gap-2.5 rounded-xl border px-3 text-[13px] font-semibold transition-all duration-150',
                         'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100',
@@ -187,6 +189,8 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                 <button
                     v-if="canInstallApp"
                     type="button"
+                    aria-label="Install App"
+                    :title="collapsed ? 'Install App' : undefined"
                     @click="handleInstallApp"
                     :class="[
                         'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
@@ -217,10 +221,24 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                         v-else
                         :class="[
                             'flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800',
-                            collapsed ? 'justify-center' : 'justify-between',
+                            collapsed
+                                ? 'flex-col justify-center gap-2 py-3'
+                                : 'justify-between',
                         ]"
                     >
-                        <div class="flex min-w-0 items-center gap-2.5">
+                        <Link
+                            :href="
+                                user.username
+                                    ? `/u/${user.username}`
+                                    : '/profile'
+                            "
+                            :class="[
+                                'flex items-center gap-2.5',
+                                collapsed ? 'justify-center' : 'min-w-0',
+                            ]"
+                            :title="collapsed ? 'Profile' : undefined"
+                            :aria-label="collapsed ? 'Profile' : undefined"
+                        >
                             <img
                                 v-if="user.image_url"
                                 :src="user.image_url"
@@ -232,7 +250,7 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                                 class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20"
                                 >{{ user.name.charAt(0).toUpperCase() }}</span
                             >
-                            <div v-if="!collapsed" class="min-w-0">
+                            <div v-if="!collapsed" class="min-w-0 text-left">
                                 <p
                                     class="truncate text-xs font-semibold text-slate-900 dark:text-slate-100"
                                 >
@@ -244,12 +262,18 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                                     {{ user.email }}
                                 </p>
                             </div>
-                        </div>
+                        </Link>
                         <Link
-                            v-if="!collapsed && canAccessAdmin"
+                            v-if="canAccessAdmin"
                             :href="isAdminRoute ? '/' : '/admin'"
-                            class="shrink-0 rounded-lg bg-slate-50 p-1.5 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                            :class="[
+                                'shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100',
+                                collapsed
+                                    ? 'bg-slate-50 dark:bg-slate-900'
+                                    : 'bg-slate-50 dark:bg-slate-900',
+                            ]"
                             :title="isAdminRoute ? 'Home' : 'Staff Panel'"
+                            :aria-label="isAdminRoute ? 'Home' : 'Staff Panel'"
                         >
                             <MaterialIcon name="dashboard" :size="20" />
                         </Link>

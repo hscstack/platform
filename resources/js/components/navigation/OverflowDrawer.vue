@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, watch } from 'vue';
+import { computed, onBeforeUnmount, watch } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
@@ -50,6 +50,8 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
     return currentUrl.value.startsWith(href);
 };
 
+let previousOverflow: string | null = null;
+
 watch(
     () => props.open,
     (v) => {
@@ -57,9 +59,28 @@ watch(
             return;
         }
 
-        document.body.style.overflow = v ? 'hidden' : '';
+        if (v) {
+            previousOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = previousOverflow ?? '';
+            previousOverflow = null;
+        }
     },
 );
+
+onBeforeUnmount(() => {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    if (previousOverflow !== null) {
+        document.body.style.overflow = previousOverflow;
+        previousOverflow = null;
+    } else if (props.open) {
+        document.body.style.overflow = '';
+    }
+});
 </script>
 
 <template>
