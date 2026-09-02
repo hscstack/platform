@@ -129,6 +129,7 @@ onBeforeUnmount(() => {
                 v-if="isOpen"
                 role="dialog"
                 aria-modal="true"
+                :aria-label="title || 'Modal dialog'"
                 class="fixed inset-0 z-50 flex justify-center"
                 :class="[
                     position === 'responsive'

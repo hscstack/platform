@@ -2,6 +2,22 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
+        <script>
+            (function () {
+                try {
+                    var stored = localStorage.getItem('theme');
+                    var isDark =
+                        stored === 'dark' ||
+                        (stored !== 'light' &&
+                            window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    if (isDark) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                } catch (_) {}
+            })();
+        </script>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="manifest" href="/build/manifest.webmanifest">
