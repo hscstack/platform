@@ -23,6 +23,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    subject: {
+        type: Object,
+        default: null,
+    },
     previousResourceId: {
         type: Number,
         default: null,
@@ -180,15 +184,25 @@ const toggleFullscreen = () => {
 
 <template>
     <Head>
-        <title>{{ resource.title }}</title>
+        <title>
+            {{ resource.title
+            }}{{
+                subject
+                    ? ` - ${subject.course.toUpperCase()} - ${subject.name}`
+                    : ''
+            }}
+        </title>
         <meta
             name="description"
-            :content="`Study material: ${resource.title} (${resource.type}) on HSCStack - Open Learning Platform.`"
+            :content="`Study material: ${resource.title} (${resource.resource_type})${subject ? ` for ${subject.course.toUpperCase()} - ${subject.name}` : ''} on HSCStack.`"
         />
-        <meta property="og:title" :content="`${resource.title} - HSCStack`" />
+        <meta
+            property="og:title"
+            :content="`${resource.title}${subject ? ` - ${subject.course.toUpperCase()} - ${subject.name}` : ''} - HSCStack`"
+        />
         <meta
             property="og:description"
-            :content="`Study material: ${resource.title} (${resource.type}) on HSCStack.`"
+            :content="`Study material: ${resource.title} (${resource.resource_type})${subject ? ` for ${subject.course.toUpperCase()} - ${subject.name}` : ''} on HSCStack.`"
         />
     </Head>
 
@@ -211,12 +225,20 @@ const toggleFullscreen = () => {
                     />
                 </button>
 
-                <h1
-                    class="truncate text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
-                    :title="resource.title"
-                >
-                    {{ resource.title }}
-                </h1>
+                <div class="min-w-0">
+                    <span
+                        v-if="subject"
+                        class="block truncate text-xs font-semibold text-indigo-600 dark:text-indigo-400"
+                    >
+                        {{ subject.course.toUpperCase() }} - {{ subject.name }}
+                    </span>
+                    <h1
+                        class="truncate text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
+                        :title="resource.title"
+                    >
+                        {{ resource.title }}
+                    </h1>
+                </div>
             </div>
 
             <!-- Right: Action Buttons -->
