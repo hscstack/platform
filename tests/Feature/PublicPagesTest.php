@@ -102,4 +102,49 @@ test('public resource page loads with subject, node, and enriched SEO metadata',
     $appName = config('app.name', 'HSCStack');
     $response->assertSee("Matrix o nirnayok 01 - HSC - Higher Mathematics - {$appName}", false);
     $response->assertSee('Study material: Matrix o nirnayok 01 (video) for HSC - Higher Mathematics on HSCStack.', false);
+
+    // Ensure subsequent cache-hit request works properly without incomplete class errors
+    $cachedResponse = $this->get("/resources/{$resource->id}");
+    $cachedResponse->assertStatus(200);
+});
+
+test('resource can be marked as completed and reloaded from cache', function () {
+    $user = User::factory()->create();
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics-test',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-blue-500',
+        'icon' => 'atom',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Dynamics',
+        'slug' => 'dynamics-test',
+    ]);
+
+    $resource = App\Models\Resource::create([
+        'node_id' => $node->id,
+        'resource_type' => 'video',
+        'title' => 'Newtonian Mechanics 01',
+        'external_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    ]);
+
+    // Initial visit (populates cache)
+    $this->actingAs($user)->get("/resources/{$resource->id}")->assertStatus(200);
+
+    // Toggle complete (marks as done)
+    $toggleResponse = $this->actingAs($user)->post(route('resources.complete', $resource));
+    $toggleResponse->assertRedirect();
+
+    // Subsequent visit (cache hit with completion)
+    $response = $this->actingAs($user)->get("/resources/{$resource->id}");
+    $response->assertStatus(200);
+    $response->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Resource')
+        ->where('isCompleted', true)
+        ->where('completionsCount', 1)
+        ->where('subject.name', 'Physics')
+    );
 });
