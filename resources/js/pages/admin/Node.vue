@@ -298,7 +298,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             v-if="parent"
             :is-open="isBulkRenameModalOpen"
             :node="parent"
-            :resources-count="resources?.length ?? 0"
+            :resources="resources ?? []"
             @close="isBulkRenameModalOpen = false"
         />
 
