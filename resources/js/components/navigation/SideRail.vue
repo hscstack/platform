@@ -146,14 +146,14 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
         <div
             class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm"
         >
-            <div class="space-y-1">
+            <div class="space-y-1.5">
                 <!-- Theme -->
                 <button
                     type="button"
                     @click="toggle"
                     :class="[
-                        'flex w-full items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-[13px] font-medium transition-all duration-150',
-                        'text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                        'flex h-11 w-full items-center gap-2.5 rounded-xl border px-3 text-[13px] font-semibold transition-all duration-150',
+                        'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                         collapsed ? 'justify-center' : '',
                     ]"
                 >
@@ -183,15 +183,15 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                     <NotificationDropdown />
                 </div>
 
-                <!-- PWA Install — absolute bottom, above login -->
+                <!-- PWA Install — absolute bottom, above login — same size as Login -->
                 <button
                     v-if="canInstallApp"
                     type="button"
                     @click="handleInstallApp"
                     :class="[
-                        'flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[13px] font-bold shadow-sm transition-all duration-150',
+                        'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
                         collapsed
-                            ? 'justify-center border-slate-900 bg-slate-900 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900'
+                            ? 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900'
                             : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20',
                     ]"
                 >
@@ -205,9 +205,9 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                         v-if="!user"
                         href="/login"
                         :class="[
-                            'flex items-center justify-center gap-2 rounded-xl border border-transparent px-3 py-2.5 text-[13px] font-bold shadow-sm transition-all duration-150',
-                            'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md dark:bg-indigo-500 dark:hover:bg-indigo-400',
-                            collapsed ? 'px-2' : '',
+                            'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
+                            'border-transparent bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md dark:bg-indigo-500 dark:hover:bg-indigo-400',
+                            collapsed ? '' : '',
                         ]"
                     >
                         <MaterialIcon name="login" :size="20" />
