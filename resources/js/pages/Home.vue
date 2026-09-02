@@ -65,8 +65,6 @@ const filteredSubjects = computed(() => {
 
     <NoticeDialog v-if="notice" :notice="notice" />
 
-    <PwaInstallPrompt v-if="!notice" variant="modal" />
-
     <HomeHeader />
 
     <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
