@@ -75,6 +75,11 @@ const close = () => {
                 <div
                     class="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-900/5 dark:bg-gray-900 dark:ring-gray-700/50"
                     role="alertdialog"
+                    aria-modal="true"
+                    :aria-labelledby="
+                        notice.title ? 'notice-dialog-title' : undefined
+                    "
+                    :aria-label="notice.title ? undefined : 'Notice'"
                 >
                     <button
                         @click="close"
@@ -94,6 +99,7 @@ const close = () => {
                     <div class="p-6">
                         <h2
                             v-if="notice.title"
+                            id="notice-dialog-title"
                             class="text-lg font-semibold text-slate-900 dark:text-gray-100"
                         >
                             {{ notice.title }}

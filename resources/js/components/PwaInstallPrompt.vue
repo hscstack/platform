@@ -92,6 +92,7 @@ const handleDismiss = () => {
                 class="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-6"
                 role="dialog"
                 aria-modal="true"
+                aria-labelledby="pwa-install-dialog-title"
             >
                 <!-- Backdrop -->
                 <div
@@ -130,6 +131,7 @@ const handleDismiss = () => {
                         </div>
                         <div class="min-w-0 flex-1 pr-3">
                             <h3
+                                id="pwa-install-dialog-title"
                                 class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
                             >
                                 {{ title }}
