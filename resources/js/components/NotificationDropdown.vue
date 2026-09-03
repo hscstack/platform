@@ -131,10 +131,26 @@ const loadMore = async () => {
     }
 };
 
+const triggerButtonRef = ref<HTMLElement | null>(null);
+const panelRef = ref<HTMLElement | null>(null);
+const panelStyle = ref<Record<string, string>>({});
+
+const updatePanelPosition = () => {
+    if (!triggerButtonRef.value) return;
+    const rect = triggerButtonRef.value.getBoundingClientRect();
+    panelStyle.value = {
+        position: 'fixed',
+        left: `${Math.round(rect.right + 12)}px`,
+        bottom: `${Math.max(16, Math.round(window.innerHeight - rect.bottom))}px`,
+        zIndex: '9999',
+    };
+};
+
 const toggleDropdown = () => {
     isOpen.value = !isOpen.value;
 
     if (isOpen.value) {
+        updatePanelPosition();
         fetchNotifications();
     }
 };
@@ -144,7 +160,12 @@ const closeDropdown = () => {
 };
 
 const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+    const target = e.target as Node;
+    if (
+        dropdownRef.value &&
+        !dropdownRef.value.contains(target) &&
+        (!panelRef.value || !panelRef.value.contains(target))
+    ) {
         closeDropdown();
     }
 };
@@ -343,9 +364,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div ref="dropdownRef" :class="dropUp ? 'contents' : 'relative'">
+    <div ref="dropdownRef" :class="dropUp ? 'relative' : 'relative'">
         <!-- Bell Trigger Button (plain blends into rail rows) -->
         <button
+            ref="triggerButtonRef"
             @click="toggleDropdown"
             type="button"
             :class="
@@ -369,23 +391,26 @@ onBeforeUnmount(() => {
         </button>
 
         <!-- Dropdown Menu -->
-        <Transition
-            enter-active-class="transition duration-150 ease-out"
-            enter-from-class="scale-95 opacity-0"
-            enter-to-class="scale-100 opacity-100"
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="scale-100 opacity-100"
-            leave-to-class="scale-95 opacity-0"
-        >
-            <div
-                v-if="isOpen"
-                :class="[
-                    'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900',
-                    dropUp
-                        ? 'absolute bottom-0 left-full z-50 ml-3 flex h-[420px] max-h-[calc(100dvh-2rem)] w-96 max-w-[calc(100vw-320px)] origin-bottom-left flex-col'
-                        : 'fixed inset-x-3 top-[68px] z-50 mx-auto max-w-md origin-top sm:absolute sm:inset-auto sm:top-auto sm:right-0 sm:mx-0 sm:mt-2 sm:w-96 sm:max-w-none sm:origin-top-right',
-                ]"
+        <Teleport to="body" :disabled="!dropUp">
+            <Transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="scale-95 opacity-0"
+                enter-to-class="scale-100 opacity-100"
+                leave-active-class="transition duration-100 ease-in"
+                leave-from-class="scale-100 opacity-100"
+                leave-to-class="scale-95 opacity-0"
             >
+                <div
+                    v-if="isOpen"
+                    ref="panelRef"
+                    :style="dropUp ? panelStyle : undefined"
+                    :class="[
+                        'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900',
+                        dropUp
+                            ? 'flex h-[420px] max-h-[calc(100dvh-2rem)] w-96 max-w-[calc(100vw-320px)] origin-bottom-left flex-col'
+                            : 'fixed inset-x-3 top-[68px] z-50 mx-auto max-w-md origin-top sm:absolute sm:inset-auto sm:top-auto sm:right-0 sm:mx-0 sm:mt-2 sm:w-96 sm:max-w-none sm:origin-top-right',
+                    ]"
+                >
                 <!-- Header -->
                 <div
                     class="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-gray-800"
@@ -668,5 +693,6 @@ onBeforeUnmount(() => {
                 </div>
             </div>
         </Transition>
+        </Teleport>
     </div>
 </template>
