@@ -81,14 +81,8 @@ const drawerOpen = ref(false);
                     :class="[
                         'min-w-0 flex-1',
                         showBottomNav
-                            ? $page.component === 'Resource' ||
-                              $page.component === 'Forum/Show' ||
-                              $page.component === 'Profile' ||
-                              $page.component === 'User/Show' ||
-                              $page.component === 'auth/Login'
-                                ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
-                                : 'pb-4'
-                            : 'min-h-[calc(100vh-4rem)]',
+                            ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
+                            : 'min-h-[calc(100vh-4rem)] pb-4',
                     ]"
                 >
                     <slot />

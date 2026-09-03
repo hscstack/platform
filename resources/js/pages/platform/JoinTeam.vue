@@ -535,165 +535,167 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
     </main>
 
     <!-- Application Modal -->
-    <div
-        v-if="isModalOpen"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="apply-modal-title"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
-        @click.self="closeModal"
-    >
+    <Teleport to="body">
         <div
-            class="w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all dark:border-gray-800 dark:bg-gray-900"
+            v-if="isModalOpen"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="apply-modal-title"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
+            @click.self="closeModal"
         >
-            <!-- Modal Header -->
             <div
-                class="flex items-center justify-between border-b border-slate-100 p-5 dark:border-gray-800"
+                class="w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all dark:border-gray-800 dark:bg-gray-900"
             >
-                <div class="flex items-center gap-2.5">
-                    <div
-                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                    >
-                        <Sparkles class="h-4.5 w-4.5" />
-                    </div>
-                    <div>
-                        <h3
-                            id="apply-modal-title"
-                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            Contributor Application
-                        </h3>
-                        <p class="text-xs text-slate-500 dark:text-gray-400">
-                            তথ্যগুলো পূরণ করে সরাসরি টিকেট খুলুন
-                        </p>
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    @click="closeModal"
-                    class="rounded-xl p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-                >
-                    <X class="h-4.5 w-4.5" />
-                </button>
-            </div>
-
-            <!-- Modal Form Body -->
-            <form @submit.prevent="submitModalApplication" class="p-5 sm:p-6">
-                <!-- Errors Banner -->
+                <!-- Modal Header -->
                 <div
-                    v-if="ticketForm.errors.general"
-                    class="mb-4 rounded-xl border border-rose-200 bg-rose-50/90 p-3 text-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400"
+                    class="flex items-center justify-between border-b border-slate-100 p-5 dark:border-gray-800"
                 >
-                    {{ ticketForm.errors.general }}
-                </div>
-
-                <!-- Role Selector Pills -->
-                <div class="mb-4">
-                    <label
-                        class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
-                    >
-                        যেসব রোলে কাজ করতে চান (একাধিক সিলেক্ট করা যাবে) *
-                    </label>
-                    <div class="flex flex-wrap gap-1.5">
-                        <button
-                            v-for="role in roles"
-                            :key="role.id"
-                            type="button"
-                            @click="toggleRoleSelection(role.id)"
-                            class="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all"
-                            :class="[
-                                selectedRoleIds.includes(role.id)
-                                    ? 'border-indigo-600 bg-indigo-600 text-white shadow-xs'
-                                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600',
-                            ]"
+                    <div class="flex items-center gap-2.5">
+                        <div
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                         >
-                            <component
-                                :is="
-                                    selectedRoleIds.includes(role.id)
-                                        ? Check
-                                        : role.icon
-                                "
-                                class="h-3.5 w-3.5"
-                            />
-                            <span>{{ role.title }}</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Profile Completeness Notice for Trust -->
-                <div
-                    class="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
-                >
-                    <ShieldCheck
-                        class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
-                    />
-                    <div>
-                        <p class="font-bold">প্রোফাইল আপডেট রাখার অনুরোধ:</p>
-                        <p
-                            class="mt-0.5 text-[11px] text-amber-800 dark:text-amber-400/90"
-                        >
-                            আপনার প্রোফাইল তথ্য (নাম, ছবি, শিক্ষা প্রতিষ্ঠান ও
-                            যোগাযোগ) এডমিন টিম সরাসরি রিভিউ করবে। আবেদন করার আগে
-                            প্রোফাইল সম্পূর্ণ নিশ্চিত করুন।
-                            <Link
-                                href="/me"
-                                target="_blank"
-                                class="ml-1 font-bold underline hover:text-amber-950 dark:hover:text-amber-200"
+                            <Sparkles class="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                            <h3
+                                id="apply-modal-title"
+                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
                             >
-                                প্রোফাইল দেখুন/এডিট করুন
-                            </Link>
-                        </p>
+                                Contributor Application
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-gray-400">
+                                তথ্যগুলো পূরণ করে সরাসরি টিকেট খুলুন
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Input: Experience & Note -->
-                <div class="mb-5">
-                    <label
-                        for="apply-note"
-                        class="mb-1.5 block text-xs font-bold text-slate-700 dark:text-gray-300"
-                    >
-                        আপনার আগ্রহ, অভিজ্ঞতা বা পরিকল্পনা *
-                    </label>
-                    <textarea
-                        id="apply-note"
-                        v-model="formNote"
-                        rows="4"
-                        required
-                        placeholder="কেন এই রোলে কাজ করতে চান বা আপনার কোনো পূর্ব অভিজ্ঞতা ও পরিকল্পনা থাকলে সংক্ষেপে লিখুন..."
-                        class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-medium text-slate-900 transition focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-100 dark:focus:border-indigo-500 dark:focus:bg-gray-900"
-                    ></textarea>
-                </div>
-
-                <!-- Modal Action Buttons -->
-                <div class="flex items-center justify-end gap-2.5">
                     <button
                         type="button"
                         @click="closeModal"
-                        class="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                        class="rounded-xl p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                     >
-                        বাতিল
-                    </button>
-                    <button
-                        type="submit"
-                        :disabled="ticketForm.processing"
-                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
-                    >
-                        <Send class="h-3.5 w-3.5" />
-                        <span>{{
-                            ticketForm.processing
-                                ? 'আবেদন পাঠানো হচ্ছে...'
-                                : 'Apply Now'
-                        }}</span>
-                        <ArrowRight
-                            v-if="!ticketForm.processing"
-                            class="h-3.5 w-3.5 opacity-80"
-                        />
+                        <X class="h-4.5 w-4.5" />
                     </button>
                 </div>
-            </form>
+
+                <!-- Modal Form Body -->
+                <form @submit.prevent="submitModalApplication" class="p-5 sm:p-6">
+                    <!-- Errors Banner -->
+                    <div
+                        v-if="ticketForm.errors.general"
+                        class="mb-4 rounded-xl border border-rose-200 bg-rose-50/90 p-3 text-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400"
+                    >
+                        {{ ticketForm.errors.general }}
+                    </div>
+
+                    <!-- Role Selector Pills -->
+                    <div class="mb-4">
+                        <label
+                            class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                        >
+                            যেসব রোলে কাজ করতে চান (একাধিক সিলেক্ট করা যাবে) *
+                        </label>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button
+                                v-for="role in roles"
+                                :key="role.id"
+                                type="button"
+                                @click="toggleRoleSelection(role.id)"
+                                class="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all"
+                                :class="[
+                                    selectedRoleIds.includes(role.id)
+                                        ? 'border-indigo-600 bg-indigo-600 text-white shadow-xs'
+                                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600',
+                                ]"
+                            >
+                                <component
+                                    :is="
+                                        selectedRoleIds.includes(role.id)
+                                            ? Check
+                                            : role.icon
+                                    "
+                                    class="h-3.5 w-3.5"
+                                />
+                                <span>{{ role.title }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Profile Completeness Notice for Trust -->
+                    <div
+                        class="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                    >
+                        <ShieldCheck
+                            class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+                        />
+                        <div>
+                            <p class="font-bold">প্রোফাইল আপডেট রাখার অনুরোধ:</p>
+                            <p
+                                class="mt-0.5 text-[11px] text-amber-800 dark:text-amber-400/90"
+                            >
+                                আপনার প্রোফাইল তথ্য (নাম, ছবি, শিক্ষা প্রতিষ্ঠান ও
+                                যোগাযোগ) এডমিন টিম সরাসরি রিভিউ করবে। আবেদন করার আগে
+                                প্রোফাইল সম্পূর্ণ নিশ্চিত করুন।
+                                <Link
+                                    href="/me"
+                                    target="_blank"
+                                    class="ml-1 font-bold underline hover:text-amber-950 dark:hover:text-amber-200"
+                                >
+                                    প্রোফাইল দেখুন/এডিট করুন
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Input: Experience & Note -->
+                    <div class="mb-5">
+                        <label
+                            for="apply-note"
+                            class="mb-1.5 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                        >
+                            আপনার আগ্রহ, অভিজ্ঞতা বা পরিকল্পনা *
+                        </label>
+                        <textarea
+                            id="apply-note"
+                            v-model="formNote"
+                            rows="4"
+                            required
+                            placeholder="কেন এই রোলে কাজ করতে চান বা আপনার কোনো পূর্ব অভিজ্ঞতা ও পরিকল্পনা থাকলে সংক্ষেপে লিখুন..."
+                            class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-medium text-slate-900 transition focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-100 dark:focus:border-indigo-500 dark:focus:bg-gray-900"
+                        ></textarea>
+                    </div>
+
+                    <!-- Modal Action Buttons -->
+                    <div class="flex items-center justify-end gap-2.5">
+                        <button
+                            type="button"
+                            @click="closeModal"
+                            class="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                        >
+                            বাতিল
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="ticketForm.processing"
+                            class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
+                        >
+                            <Send class="h-3.5 w-3.5" />
+                            <span>{{
+                                ticketForm.processing
+                                    ? 'আবেদন পাঠানো হচ্ছে...'
+                                    : 'Apply Now'
+                            }}</span>
+                            <ArrowRight
+                                v-if="!ticketForm.processing"
+                                class="h-3.5 w-3.5 opacity-80"
+                            />
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    </Teleport>
 
     <!-- Auth Modal for Guests -->
     <AuthModal

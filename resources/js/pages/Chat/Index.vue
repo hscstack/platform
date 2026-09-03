@@ -2195,172 +2195,175 @@ onUnmounted(() => {
         </div>
 
         <!-- Mobile Action Sheet Bottom Drawer -->
-        <div
-            v-if="mobileActionMessage"
-            class="fixed inset-0 z-50 flex items-end bg-black/50 backdrop-blur-xs sm:hidden"
-            @click.self="closeMobileActions"
-        >
+        <Teleport to="body">
             <div
-                class="w-full rounded-t-2xl border-t border-slate-200 bg-white p-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
+                v-if="mobileActionMessage"
+                class="fixed inset-0 z-50 flex items-end bg-black/50 backdrop-blur-xs sm:hidden"
+                @click.self="closeMobileActions"
             >
-                <!-- Header with message preview -->
                 <div
-                    class="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
+                    class="w-full rounded-t-2xl border-t border-slate-200 bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
                 >
-                    <span
-                        class="text-xs font-bold text-slate-700 dark:text-zinc-300"
+                    <!-- Header with message preview -->
+                    <div
+                        class="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
                     >
-                        Message by @{{ mobileActionMessage.user.username }}
-                    </span>
-                    <button
-                        type="button"
-                        @click="closeMobileActions"
-                        class="rounded-lg p-1 text-slate-400"
-                    >
-                        <X class="h-4 w-4" />
-                    </button>
-                </div>
-
-                <!-- Quick Emoji Reactions (active messages only) -->
-                <div
-                    v-if="
-                        currentUser &&
-                        !mobileActionMessage.is_deleted &&
-                        !mobileActionMessage.deleted_at
-                    "
-                    class="my-3 flex justify-between gap-1"
-                >
-                    <button
-                        v-for="emoji in reactionEmojis"
-                        :key="emoji"
-                        type="button"
-                        @click="reactToMessage(mobileActionMessage, emoji)"
-                        class="cursor-pointer text-xl transition active:scale-95"
-                    >
-                        {{ emoji }}
-                    </button>
-                </div>
-
-                <!-- Action Rows -->
-                <div class="space-y-1 pt-1 text-xs">
-                    <button
-                        v-if="
-                            mobileActionMessage.reactions &&
-                            mobileActionMessage.reactions.length > 0
-                        "
-                        type="button"
-                        @click="
-                            openReactorsModal(mobileActionMessage);
-                            closeMobileActions();
-                        "
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-slate-700 hover:bg-slate-100 active:scale-98 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                    >
-                        <Smile class="h-4 w-4 text-amber-500" />
-                        <span>
-                            View Reactions ({{
-                                mobileActionMessage.reactions.reduce(
-                                    (sum, r) => sum + r.count,
-                                    0,
-                                )
-                            }})
+                        <span
+                            class="text-xs font-bold text-slate-700 dark:text-zinc-300"
+                        >
+                            Message by @{{ mobileActionMessage.user.username }}
                         </span>
-                    </button>
+                        <button
+                            type="button"
+                            @click="closeMobileActions"
+                            class="rounded-lg p-1 text-slate-400"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
 
-                    <button
+                    <!-- Quick Emoji Reactions (active messages only) -->
+                    <div
                         v-if="
                             currentUser &&
-                            canPost &&
                             !mobileActionMessage.is_deleted &&
                             !mobileActionMessage.deleted_at
                         "
-                        type="button"
-                        @click="startReply(mobileActionMessage)"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-slate-700 hover:bg-slate-100 active:scale-98 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        class="my-3 flex justify-between gap-1"
                     >
-                        <Reply class="h-4 w-4 text-indigo-500" />
-                        <span>Reply</span>
-                    </button>
+                        <button
+                            v-for="emoji in reactionEmojis"
+                            :key="emoji"
+                            type="button"
+                            @click="reactToMessage(mobileActionMessage, emoji)"
+                            class="cursor-pointer text-xl transition active:scale-95"
+                        >
+                            {{ emoji }}
+                        </button>
+                    </div>
 
-                    <button
-                        v-if="
-                            currentUser &&
-                            Number(currentUser.id) !==
-                                Number(mobileActionMessage.user.id) &&
-                            !mobileActionMessage.is_deleted &&
-                            !mobileActionMessage.deleted_at
-                        "
-                        type="button"
-                        @click="openReportModal(mobileActionMessage)"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-amber-600 hover:bg-amber-50 active:scale-98 dark:text-amber-400 dark:hover:bg-amber-950/40"
-                    >
-                        <Flag class="h-4 w-4" />
-                        <span>Report Message</span>
-                    </button>
+                    <!-- Action Rows -->
+                    <div class="space-y-1 pt-1 text-xs">
+                        <button
+                            v-if="
+                                mobileActionMessage.reactions &&
+                                mobileActionMessage.reactions.length > 0
+                            "
+                            type="button"
+                            @click="
+                                openReactorsModal(mobileActionMessage);
+                                closeMobileActions();
+                            "
+                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-slate-700 hover:bg-slate-100 active:scale-98 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        >
+                            <Smile class="h-4 w-4 text-amber-500" />
+                            <span>
+                                View Reactions ({{
+                                    mobileActionMessage.reactions.reduce(
+                                        (sum, r) => sum + r.count,
+                                        0,
+                                    )
+                                }})
+                            </span>
+                        </button>
 
-                    <!-- Ban User (Staff) - stays visible on deleted messages -->
-                    <button
-                        v-if="
-                            (can('manage chat') || canDelete) &&
-                            Number(currentUser?.id) !==
-                                Number(mobileActionMessage.user.id)
-                        "
-                        type="button"
-                        @click="openBanModal(mobileActionMessage.user)"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                    >
-                        <Ban class="h-4 w-4" />
-                        <span>Ban User</span>
-                    </button>
+                        <button
+                            v-if="
+                                currentUser &&
+                                canPost &&
+                                !mobileActionMessage.is_deleted &&
+                                !mobileActionMessage.deleted_at
+                            "
+                            type="button"
+                            @click="startReply(mobileActionMessage)"
+                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-slate-700 hover:bg-slate-100 active:scale-98 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        >
+                            <Reply class="h-4 w-4 text-indigo-500" />
+                            <span>Reply</span>
+                        </button>
 
-                    <button
-                        v-if="
-                            canDelete &&
-                            !mobileActionMessage.is_deleted &&
-                            !mobileActionMessage.deleted_at
-                        "
-                        type="button"
-                        @click="deleteMessage(mobileActionMessage.id)"
-                        class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                    >
-                        <Trash2 class="h-4 w-4" />
-                        <span>Delete Message</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Report Modal -->
-        <div
-            v-if="reportingMessage"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
-            @click.self="closeReportModal"
-        >
-            <div
-                class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6 dark:border-zinc-800 dark:bg-zinc-900"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-zinc-800"
-                >
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                        <button
+                            v-if="
+                                currentUser &&
+                                Number(currentUser.id) !==
+                                    Number(mobileActionMessage.user.id) &&
+                                !mobileActionMessage.is_deleted &&
+                                !mobileActionMessage.deleted_at
+                            "
+                            type="button"
+                            @click="openReportModal(mobileActionMessage)"
+                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-amber-600 hover:bg-amber-50 active:scale-98 dark:text-amber-400 dark:hover:bg-amber-950/40"
                         >
                             <Flag class="h-4 w-4" />
-                        </div>
-                        <h3
-                            class="text-sm font-bold text-slate-900 dark:text-zinc-100"
+                            <span>Report Message</span>
+                        </button>
+
+                        <!-- Ban User (Staff) - stays visible on deleted messages -->
+                        <button
+                            v-if="
+                                (can('manage chat') || canDelete) &&
+                                Number(currentUser?.id) !==
+                                    Number(mobileActionMessage.user.id)
+                            "
+                            type="button"
+                            @click="openBanModal(mobileActionMessage.user)"
+                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
                         >
-                            Report Message
-                        </h3>
+                            <Ban class="h-4 w-4" />
+                            <span>Ban User</span>
+                        </button>
+
+                        <button
+                            v-if="
+                                canDelete &&
+                                !mobileActionMessage.is_deleted &&
+                                !mobileActionMessage.deleted_at
+                            "
+                            type="button"
+                            @click="deleteMessage(mobileActionMessage.id)"
+                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                        >
+                            <Trash2 class="h-4 w-4" />
+                            <span>Delete Message</span>
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        @click="closeReportModal"
-                        class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                    >
-                        <X class="h-4 w-4" />
-                    </button>
                 </div>
+            </div>
+        </Teleport>
+
+        <!-- Report Modal -->
+        <Teleport to="body">
+            <div
+                v-if="reportingMessage"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+                @click.self="closeReportModal"
+            >
+                <div
+                    class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6 dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                    <div
+                        class="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-zinc-800"
+                    >
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                            >
+                                <Flag class="h-4 w-4" />
+                            </div>
+                            <h3
+                                class="text-sm font-bold text-slate-900 dark:text-zinc-100"
+                            >
+                                Report Message
+                            </h3>
+                        </div>
+                        <button
+                            type="button"
+                            @click="closeReportModal"
+                            class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
 
                 <!-- Success State -->
                 <div
@@ -2460,118 +2463,121 @@ onUnmounted(() => {
                 </form>
             </div>
         </div>
+        </Teleport>
 
         <!-- Reactions Modal -->
-        <div
-            v-if="isReactorsModalOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
+        <Teleport to="body">
             <div
-                class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-                @click="closeReactorsModal"
-            ></div>
-
-            <div
-                class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all dark:border-zinc-800 dark:bg-zinc-900"
+                v-if="isReactorsModalOpen"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-                <button
+                <div
+                    class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
                     @click="closeReactorsModal"
-                    class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
-                >
-                    <X class="h-4 w-4" />
-                </button>
+                ></div>
 
-                <div class="mb-4 flex items-center gap-2.5">
-                    <div
-                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                    >
-                        <Smile class="h-4 w-4 stroke-[2.2]" />
-                    </div>
-                    <div>
-                        <h3
-                            class="text-sm font-bold text-slate-900 dark:text-zinc-100"
-                        >
-                            Message Reactions
-                        </h3>
-                        <p
-                            class="text-[11px] font-medium text-slate-500 dark:text-zinc-400"
-                        >
-                            {{ activeReactorsTotalCount }} reaction{{
-                                activeReactorsTotalCount === 1 ? '' : 's'
-                            }}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Tabs -->
                 <div
-                    v-if="
-                        activeReactorsMessage?.reactions &&
-                        activeReactorsMessage.reactions.length > 1
-                    "
-                    class="mb-3 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-2.5 dark:border-zinc-800"
+                    class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all dark:border-zinc-800 dark:bg-zinc-900"
                 >
                     <button
-                        type="button"
-                        @click="selectedReactorTab = 'all'"
-                        class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition select-none"
-                        :class="
-                            selectedReactorTab === 'all'
-                                ? 'border-indigo-300 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
-                                : 'border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400'
-                        "
+                        @click="closeReactorsModal"
+                        class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
                     >
-                        <span>All</span>
-                        <span class="font-bold">{{
-                            activeReactorsTotalCount
-                        }}</span>
+                        <X class="h-4 w-4" />
                     </button>
-                    <button
-                        v-for="r in activeReactorsMessage.reactions"
-                        :key="r.emoji"
-                        type="button"
-                        @click="selectedReactorTab = r.emoji"
-                        class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition select-none"
-                        :class="
-                            selectedReactorTab === r.emoji
-                                ? 'border-indigo-300 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
-                                : 'border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400'
-                        "
-                    >
-                        <span>{{ r.emoji }}</span>
-                        <span class="font-bold">{{ r.count }}</span>
-                    </button>
-                </div>
 
-                <!-- Reactors List -->
-                <div
-                    class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-zinc-800/80"
-                >
-                    <div
-                        v-if="displayedReactors.length === 0"
-                        class="py-6 text-center text-xs text-slate-500 dark:text-zinc-400"
-                    >
-                        No reactions recorded.
+                    <div class="mb-4 flex items-center gap-2.5">
+                        <div
+                            class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                        >
+                            <Smile class="h-4 w-4 stroke-[2.2]" />
+                        </div>
+                        <div>
+                            <h3
+                                class="text-sm font-bold text-slate-900 dark:text-zinc-100"
+                            >
+                                Message Reactions
+                            </h3>
+                            <p
+                                class="text-[11px] font-medium text-slate-500 dark:text-zinc-400"
+                            >
+                                {{ activeReactorsTotalCount }} reaction{{
+                                    activeReactorsTotalCount === 1 ? '' : 's'
+                                }}
+                            </p>
+                        </div>
                     </div>
 
+                    <!-- Tabs -->
                     <div
-                        v-for="(item, idx) in displayedReactors"
-                        :key="`${item.user.id}-${item.emoji}-${idx}`"
-                        class="flex items-center justify-between gap-2"
+                        v-if="
+                            activeReactorsMessage?.reactions &&
+                            activeReactorsMessage.reactions.length > 1
+                        "
+                        class="mb-3 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-2.5 dark:border-zinc-800"
                     >
-                        <UserListItem
-                            :user="item.user"
-                            class="min-w-0 flex-1"
-                        />
-                        <span
-                            class="shrink-0 rounded-lg bg-slate-100 px-2 py-0.5 text-sm dark:bg-zinc-800"
+                        <button
+                            type="button"
+                            @click="selectedReactorTab = 'all'"
+                            class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition select-none"
+                            :class="
+                                selectedReactorTab === 'all'
+                                    ? 'border-indigo-300 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
+                                    : 'border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400'
+                            "
                         >
-                            {{ item.emoji }}
-                        </span>
+                            <span>All</span>
+                            <span class="font-bold">{{
+                                activeReactorsTotalCount
+                            }}</span>
+                        </button>
+                        <button
+                            v-for="r in activeReactorsMessage.reactions"
+                            :key="r.emoji"
+                            type="button"
+                            @click="selectedReactorTab = r.emoji"
+                            class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition select-none"
+                            :class="
+                                selectedReactorTab === r.emoji
+                                    ? 'border-indigo-300 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
+                                    : 'border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-400'
+                            "
+                        >
+                            <span>{{ r.emoji }}</span>
+                            <span class="font-bold">{{ r.count }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Reactors List -->
+                    <div
+                        class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-zinc-800/80"
+                    >
+                        <div
+                            v-if="displayedReactors.length === 0"
+                            class="py-6 text-center text-xs text-slate-500 dark:text-zinc-400"
+                        >
+                            No reactions recorded.
+                        </div>
+
+                        <div
+                            v-for="(item, idx) in displayedReactors"
+                            :key="`${item.user.id}-${item.emoji}-${idx}`"
+                            class="flex items-center justify-between gap-2"
+                        >
+                            <UserListItem
+                                :user="item.user"
+                                class="min-w-0 flex-1"
+                            />
+                            <span
+                                class="shrink-0 rounded-lg bg-slate-100 px-2 py-0.5 text-sm dark:bg-zinc-800"
+                            >
+                                {{ item.emoji }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </Teleport>
 
         <!-- Reusable Quick Ban Moderation Modal (Staff) -->
         <ChatBanModal
@@ -2584,186 +2590,196 @@ onUnmounted(() => {
         <PwaInstallPrompt variant="modal" />
 
         <!-- Chat Guidelines & Rules Alert Dialog Modal -->
-        <div
-            v-if="showRulesModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
+        <Teleport to="body">
             <div
-                class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-                @click="showRulesModal = false"
-            ></div>
-
-            <div
-                class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-zinc-800 dark:bg-zinc-900"
+                v-if="showRulesModal"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
                 <div
-                    class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-zinc-800"
-                >
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                        >
-                            <ShieldCheck class="h-5 w-5" />
-                        </div>
-                        <div>
-                            <h3
-                                class="text-base font-bold text-slate-900 dark:text-zinc-100"
-                            >
-                                Global Chat Rules & Guidelines
-                            </h3>
-                            <p
-                                class="text-xs text-slate-500 dark:text-zinc-400"
-                            >
-                                সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে নিচের
-                                নিয়মগুলো মেনে চলুন।
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        type="button"
-                        @click="showRulesModal = false"
-                        class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                    >
-                        <X class="h-4 w-4" />
-                    </button>
-                </div>
+                    class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+                    @click="showRulesModal = false"
+                ></div>
 
-                <!-- Rules List -->
                 <div
-                    class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-zinc-300"
+                    class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-zinc-800 dark:bg-zinc-900"
                 >
-                    <div class="flex items-start gap-2.5">
-                        <div
-                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
-                        >
-                            1
-                        </div>
-                        <div>
-                            <strong
-                                class="font-semibold text-slate-900 dark:text-zinc-100"
-                                >পরস্পরকে সম্মান করুন (Respectful
-                                Environment):</strong
-                            >
-                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
-                                অন্য শিক্ষার্থী ও মডারেটরদের সাথে শালীন আচরণ
-                                বজায় রাখুন। কোনো ধরনের ব্যক্তিগত আক্রমণ, বুলিং
-                                বা হেট স্পিচ কঠোরভাবে নিষিদ্ধ।
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-2.5">
-                        <div
-                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
-                        >
-                            2
-                        </div>
-                        <div>
-                            <strong
-                                class="font-semibold text-slate-900 dark:text-zinc-100"
-                                >খারাপ ভাষা ও গালিগালাজ নিষেধ (No Abuse /
-                                Slang):</strong
-                            >
-                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
-                                বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই গালাগালি বা
-                                অশালীন শব্দ ব্যবহার করা যাবে না। এমন মেসেজ
-                                অটোমেটিক ব্লক হবে।
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-2.5">
-                        <div
-                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
-                        >
-                            3
-                        </div>
-                        <div>
-                            <strong
-                                class="font-semibold text-slate-900 dark:text-zinc-100"
-                                >স্প্যামিং ও অ্যাডভার্টাইজিং নিষেধ (No
-                                Spam):</strong
-                            >
-                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
-                                একই মেসেজ বারবার পাঠানো, চ্যাট ফ্লাড করা বা
-                                অনুমতি ছাড়া কোনো প্রোমোশন বা অপ্রাসঙ্গিক লিংক
-                                শেয়ার করা যাবে না।
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-2.5">
-                        <div
-                            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
-                        >
-                            4
-                        </div>
-                        <div>
-                            <strong
-                                class="font-semibold text-slate-900 dark:text-zinc-100"
-                                >অনুপযুক্ত মেসেজ রিপোর্ট করুন (Report
-                                Violations):</strong
-                            >
-                            <p class="mt-0.5 text-slate-500 dark:text-zinc-400">
-                                কারো মেসেজে নিয়ম লঙ্ঘন দেখতে পেলে মেসেজের
-                                ডানপাশে থাকা রিপোর্ট বাটনে ক্লিক করে মডারেটরদের
-                                জানান।
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Notice -->
-                <div
-                    class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300"
-                >
-                    <div class="flex items-center gap-1.5 font-bold">
-                        <AlertCircle
-                            class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
-                        />
-                        <span>অটো-ব্যান ও এনফোর্সমেন্ট পলিসি:</span>
-                    </div>
-                    <p class="mt-1 leading-relaxed">
-                        একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports) পড়লে
-                        সংশ্লিষ্ট ব্যবহারকারী
-                        <strong
-                            >স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট ব্যান</strong
-                        >
-                        হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী ব্যান
-                        দিতে পারেন।
-                    </p>
-                </div>
-
-                <!-- Support Notice in Chat Modal -->
-                <div
-                    class="mt-3 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-2.5 text-[11px] text-slate-600 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400"
-                >
-                    <div class="flex items-center gap-2">
-                        <LifeBuoy
-                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                        />
-                        <span>কোনো টেকনিক্যাল সমস্যা বা সহায়তার জন্য?</span>
-                    </div>
-                    <Link
-                        href="/support"
-                        class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                    <div
+                        class="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-zinc-800"
                     >
-                        সাপোর্ট সেন্টার &rarr;
-                    </Link>
-                </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                            >
+                                <ShieldCheck class="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h3
+                                    class="text-base font-bold text-slate-900 dark:text-zinc-100"
+                                >
+                                    Global Chat Rules & Guidelines
+                                </h3>
+                                <p
+                                    class="text-xs text-slate-500 dark:text-zinc-400"
+                                >
+                                    সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে
+                                    নিচের নিয়মগুলো মেনে চলুন।
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            @click="showRulesModal = false"
+                            class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
 
-                <!-- Footer Close Button -->
-                <div class="mt-4 flex justify-end">
-                    <button
-                        type="button"
-                        @click="showRulesModal = false"
-                        class="cursor-pointer rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                    <!-- Rules List -->
+                    <div
+                        class="my-4 space-y-3.5 text-xs text-slate-700 dark:text-zinc-300"
                     >
-                        বুঝেছি (Close)
-                    </button>
+                        <div class="flex items-start gap-2.5">
+                            <div
+                                class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                            >
+                                1
+                            </div>
+                            <div>
+                                <strong
+                                    class="font-semibold text-slate-900 dark:text-zinc-100"
+                                    >পরস্পরকে সম্মান করুন (Respectful
+                                    Environment):</strong
+                                >
+                                <p
+                                    class="mt-0.5 text-slate-500 dark:text-zinc-400"
+                                >
+                                    অন্য শিক্ষার্থী ও মডারেটরদের সাথে শালীন আচরণ
+                                    বজায় রাখুন। কোনো ধরনের ব্যক্তিগত আক্রমণ,
+                                    বুলিং বা হেট স্পিচ কঠোরভাবে নিষিদ্ধ।
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5">
+                            <div
+                                class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                            >
+                                2
+                            </div>
+                            <div>
+                                <strong
+                                    class="font-semibold text-slate-900 dark:text-zinc-100"
+                                    >খারাপ ভাষা ও গালিগালাজ নিষেধ (No Abuse /
+                                    Slang):</strong
+                                >
+                                <p
+                                    class="mt-0.5 text-slate-500 dark:text-zinc-400"
+                                >
+                                    বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই
+                                    গালাগালি বা অশালীন শব্দ ব্যবহার করা যাবে না।
+                                    এমন মেসেজ অটোমেটিক ব্লক হবে।
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5">
+                            <div
+                                class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                            >
+                                3
+                            </div>
+                            <div>
+                                <strong
+                                    class="font-semibold text-slate-900 dark:text-zinc-100"
+                                    >স্প্যামিং ও অ্যাডভার্টাইজিং নিষেধ (No
+                                    Spam):</strong
+                                >
+                                <p
+                                    class="mt-0.5 text-slate-500 dark:text-zinc-400"
+                                >
+                                    একই মেসেজ বারবার পাঠানো, চ্যাট ফ্লাড করা বা
+                                    অনুমতি ছাড়া কোনো প্রোমোশন বা অপ্রাসঙ্গিক
+                                    লিংক শেয়ার করা যাবে না।
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5">
+                            <div
+                                class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300"
+                            >
+                                4
+                            </div>
+                            <div>
+                                <strong
+                                    class="font-semibold text-slate-900 dark:text-zinc-100"
+                                    >অনুপযুক্ত মেসেজ রিপোর্ট করুন (Report
+                                    Violations):</strong
+                                >
+                                <p
+                                    class="mt-0.5 text-slate-500 dark:text-zinc-400"
+                                >
+                                    কারো মেসেজে নিয়ম লঙ্ঘন দেখতে পেলে মেসেজের
+                                    ডানপাশে থাকা রিপোর্ট বাটনে ক্লিক করে
+                                    মডারেটরদের জানান।
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notice -->
+                    <div
+                        class="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300"
+                    >
+                        <div class="flex items-center gap-1.5 font-bold">
+                            <AlertCircle
+                                class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
+                            />
+                            <span>অটো-ব্যান ও এনফোর্সমেন্ট পলিসি:</span>
+                        </div>
+                        <p class="mt-1 leading-relaxed">
+                            একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports)
+                            পড়লে সংশ্লিষ্ট ব্যবহারকারী
+                            <strong
+                                >স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট ব্যান</strong
+                            >
+                            হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী
+                            ব্যান দিতে পারেন।
+                        </p>
+                    </div>
+
+                    <!-- Support Notice in Chat Modal -->
+                    <div
+                        class="mt-3 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-2.5 text-[11px] text-slate-600 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400"
+                    >
+                        <div class="flex items-center gap-2">
+                            <LifeBuoy
+                                class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                            />
+                            <span>কোনো টেকনিক্যাল সমস্যা বা সহায়তার জন্য?</span>
+                        </div>
+                        <Link
+                            href="/support"
+                            class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >
+                            সাপোর্ট সেন্টার &rarr;
+                        </Link>
+                    </div>
+
+                    <!-- Footer Close Button -->
+                    <div class="mt-4 flex justify-end">
+                        <button
+                            type="button"
+                            @click="showRulesModal = false"
+                            class="cursor-pointer rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                        >
+                            বুঝেছি (Close)
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Teleport>
 
         <AuthModal v-model="showAuthModal" :message="authModalMessage" />
     </main>
