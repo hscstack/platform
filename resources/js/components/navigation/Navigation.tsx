@@ -1827,12 +1827,9 @@ export const BottomNavCustomizer = defineComponent({
         };
 
         return () => (
-            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                <div class="mb-6">
-                    <h3 class="text-base font-semibold text-slate-900 dark:text-gray-100">
-                        Bottom navigation
-                    </h3>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
+            <div class="space-y-5 pt-1">
+                <div>
+                    <p class="text-xs text-slate-500 dark:text-gray-400">
                         Customize your mobile bottom bar (3–5 items). Home and
                         Account are pinned — drag the middle items to reorder.
                         Changes save automatically to this device.
