@@ -143,6 +143,7 @@ onBeforeUnmount(() => {
                         href="/logout"
                         method="post"
                         as="button"
+                        @click="close"
                         class="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-rose-700 active:scale-95 dark:bg-rose-600 dark:hover:bg-rose-500"
                     >
                         <MaterialIcon name="logout" :size="16" />
