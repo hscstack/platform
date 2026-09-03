@@ -644,9 +644,9 @@ const submitForm = () => {
                 </transition>
             </div>
 
-            <!-- Edit Bottom Navigation (Collapsible Dropdown) -->
+            <!-- Edit Bottom Navigation (Collapsible Dropdown - Mobile only) -->
             <div
-                class="rounded-xl border border-slate-200/60 bg-slate-50/40 p-3 sm:p-4 dark:border-gray-800 dark:bg-gray-900/30"
+                class="rounded-xl border border-slate-200/60 bg-slate-50/40 p-3 sm:p-4 lg:hidden dark:border-gray-800 dark:bg-gray-900/30"
             >
                 <button
                     type="button"
