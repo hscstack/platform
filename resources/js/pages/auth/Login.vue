@@ -7,7 +7,6 @@ import {
     KeyRound,
     UserCheck,
     AlertCircle,
-    ArrowLeft,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -39,7 +38,7 @@ const googleAuthUrl = redirectParam
     >
         <div class="w-full max-w-md">
             <!-- Header -->
-            <div class="mb-8 text-center">
+            <div class="mb-6 text-center">
                 <div
                     class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm dark:bg-indigo-500/10 dark:text-indigo-400"
                 >
@@ -50,11 +49,6 @@ const googleAuthUrl = redirectParam
                 >
                     Welcome to HSCStack
                 </h1>
-                <p
-                    class="mt-2 text-xs font-semibold text-slate-500 dark:text-gray-400"
-                >
-                    সহজ ও নিরাপদ Passwordless Login সিস্টেম
-                </p>
             </div>
 
             <!-- Flash Error Alert -->
@@ -206,17 +200,6 @@ const googleAuthUrl = redirectParam
                         >-তে সম্মতি দিচ্ছেন।
                     </p>
                 </div>
-            </div>
-
-            <!-- Back to site link -->
-            <div class="mt-6 text-center">
-                <Link
-                    href="/"
-                    class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 transition-colors hover:text-slate-900 dark:text-gray-500 dark:hover:text-gray-200"
-                >
-                    <ArrowLeft class="h-3.5 w-3.5" />
-                    <span>Back to Site</span>
-                </Link>
             </div>
         </div>
     </div>

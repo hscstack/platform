@@ -828,7 +828,17 @@ export const SiteDrawer = defineComponent({
                         <AppLogo />
                     </div>
                     <div class="ml-auto flex items-center gap-1.5">
-                        {user.value && <NotificationDropdown />}
+                        {user.value ? (
+                            <NotificationDropdown />
+                        ) : (
+                            <Link
+                                href="/login"
+                                class="flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                            >
+                                <MaterialIcon name="login" size={18} />
+                                Login
+                            </Link>
+                        )}
                     </div>
                 </div>
 
