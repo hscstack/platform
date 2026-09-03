@@ -351,6 +351,49 @@ export const SiteRail = defineComponent({
                                     )}
                             </Link>
                         ))}
+                        {canAccessAdmin.value && (
+                            <Link
+                                href="/admin"
+                                class={[
+                                    'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
+                                    isActiveAdminRoute(
+                                        '/admin',
+                                        currentUrl.value,
+                                    )
+                                        ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                        : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                    props.collapsed
+                                        ? 'justify-center px-2'
+                                        : '',
+                                ]}
+                                title={
+                                    props.collapsed ? 'Dashboard' : undefined
+                                }
+                            >
+                                <MaterialIcon
+                                    name="dashboard"
+                                    size={22}
+                                    class={`shrink-0 transition-colors duration-150 ${
+                                        isActiveAdminRoute(
+                                            '/admin',
+                                            currentUrl.value,
+                                        )
+                                            ? 'text-indigo-600 dark:text-indigo-300'
+                                            : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                    }`}
+                                />
+                                {!props.collapsed && (
+                                    <span class="truncate">Dashboard</span>
+                                )}
+                                {!props.collapsed &&
+                                    isActiveAdminRoute(
+                                        '/admin',
+                                        currentUrl.value,
+                                    ) && (
+                                        <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                    )}
+                            </Link>
+                        )}
                     </nav>
                 </div>
 
@@ -581,37 +624,6 @@ export const SiteRail = defineComponent({
                                                 : 'flex-row',
                                         ]}
                                     >
-                                        {canAccessAdmin.value && (
-                                            <Link
-                                                href={
-                                                    isAdminRoute(
-                                                        currentUrl.value,
-                                                    )
-                                                        ? '/'
-                                                        : '/admin'
-                                                }
-                                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                                                title={
-                                                    isAdminRoute(
-                                                        currentUrl.value,
-                                                    )
-                                                        ? 'Home'
-                                                        : 'Staff Panel'
-                                                }
-                                                aria-label={
-                                                    isAdminRoute(
-                                                        currentUrl.value,
-                                                    )
-                                                        ? 'Home'
-                                                        : 'Staff Panel'
-                                                }
-                                            >
-                                                <MaterialIcon
-                                                    name="dashboard"
-                                                    size={20}
-                                                />
-                                            </Link>
-                                        )}
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -913,6 +925,43 @@ export const SiteDrawer = defineComponent({
                                                     Bottom navigation.
                                                 </p>
                                             )}
+                                            {canAccessAdmin.value && (
+                                                <Link
+                                                    href="/admin"
+                                                    onClick={close}
+                                                    class={[
+                                                        'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
+                                                        isActiveAdminRoute(
+                                                            '/admin',
+                                                            currentUrl.value,
+                                                        )
+                                                            ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                                            : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                                    ]}
+                                                >
+                                                    <MaterialIcon
+                                                        name="dashboard"
+                                                        size={22}
+                                                        class={`shrink-0 transition-colors duration-150 ${
+                                                            isActiveAdminRoute(
+                                                                '/admin',
+                                                                currentUrl.value,
+                                                            )
+                                                                ? 'text-indigo-600 dark:text-indigo-300'
+                                                                : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                        }`}
+                                                    />
+                                                    <span class="truncate">
+                                                        Dashboard
+                                                    </span>
+                                                    {isActiveAdminRoute(
+                                                        '/admin',
+                                                        currentUrl.value,
+                                                    ) && (
+                                                        <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                                    )}
+                                                </Link>
+                                            )}
                                         </nav>
 
                                         {/* Install */}
@@ -1036,38 +1085,6 @@ export const SiteDrawer = defineComponent({
                                                         </span>
                                                     </span>
                                                 </Link>
-                                                {canAccessAdmin.value && (
-                                                    <Link
-                                                        href={
-                                                            isAdminRoute(
-                                                                currentUrl.value,
-                                                            )
-                                                                ? '/'
-                                                                : '/admin'
-                                                        }
-                                                        onClick={close}
-                                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                                                        title={
-                                                            isAdminRoute(
-                                                                currentUrl.value,
-                                                            )
-                                                                ? 'Home'
-                                                                : 'Staff Panel'
-                                                        }
-                                                        aria-label={
-                                                            isAdminRoute(
-                                                                currentUrl.value,
-                                                            )
-                                                                ? 'Home'
-                                                                : 'Staff Panel'
-                                                        }
-                                                    >
-                                                        <MaterialIcon
-                                                            name="dashboard"
-                                                            size={20}
-                                                        />
-                                                    </Link>
-                                                )}
                                                 <button
                                                     type="button"
                                                     onClick={askLogout}
