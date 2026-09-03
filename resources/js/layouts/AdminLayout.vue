@@ -4,6 +4,7 @@ import { computed, ref, watch } from 'vue';
 
 import MobileSideBar from '@/components/admin/MobileSideBar.vue';
 import AppLogo from '@/components/AppLogo.vue';
+import AtmosphericBackground from '@/components/AtmosphericBackground.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import AdminSideRail from '@/components/navigation/AdminSideRail.vue';
 import type { AdminNavItem } from '@/components/navigation/AdminSideRail.vue';
@@ -98,7 +99,8 @@ const closeMobileSidebar = () => {
     <div
         class="min-h-screen overflow-x-clip bg-slate-100/70 font-sans text-slate-900 antialiased selection:bg-indigo-600 selection:text-white dark:bg-gray-950 dark:text-gray-100"
     >
-        <div class="flex min-h-screen">
+        <AtmosphericBackground />
+        <div class="relative z-10 flex min-h-screen">
             <!-- Desktop staff rail — unified with site SideRail -->
             <AdminSideRail
                 :navigation="navigation"

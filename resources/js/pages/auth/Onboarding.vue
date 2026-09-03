@@ -141,16 +141,6 @@ const submit = () => {
         />
     </Head>
 
-    <!-- Atmospheric Blobs -->
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div
-            class="absolute top-[-10%] left-[-10%] h-[50%] w-[50%] rounded-full bg-indigo-200/40 blur-[120px] dark:bg-indigo-500/10"
-        ></div>
-        <div
-            class="absolute right-[-5%] bottom-[10%] h-[40%] w-[40%] rounded-full bg-violet-200/30 blur-[100px] dark:bg-violet-500/10"
-        ></div>
-    </div>
-
     <div
         class="relative z-10 flex min-h-[85vh] items-center justify-center px-4 py-8 sm:px-6 sm:py-10"
     >
