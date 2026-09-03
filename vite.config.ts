@@ -46,7 +46,7 @@ export default defineConfig({
                             cacheName: 'google-fonts-stylesheets',
                             expiration: {
                                 maxEntries: 10,
-                                maxAgeSeconds: 60 * 60 * 24 * 30,
+                                maxAgeSeconds: 60 * 60 * 24 * 10,
                             },
                         },
                     },
@@ -58,7 +58,7 @@ export default defineConfig({
                             cacheName: 'google-fonts-webfonts',
                             expiration: {
                                 maxEntries: 30,
-                                maxAgeSeconds: 60 * 60 * 24 * ,
+                                maxAgeSeconds: 60 * 60 * 24 * 10,
                             },
                             cacheableResponse: {
                                 statuses: [0, 200],
