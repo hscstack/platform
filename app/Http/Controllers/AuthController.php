@@ -55,6 +55,8 @@ class AuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (\Throwable $e) {
+            report($e);
+
             return redirect()->route('login')->with('error', 'Failed to authenticate with Google. Please try again.');
         }
 
@@ -202,11 +204,12 @@ class AuthController extends Controller
         try {
             // Replace small size parameter (=s96-c) with high-res (=s500-c) if present
             $highResUrl = preg_replace('/=s\d+(-c)?$/i', '=s500-c', $avatarUrl);
+            $verifySsl = config('services.google.guzzle.verify', true);
 
-            $response = Http::timeout(6)->get($highResUrl);
+            $response = Http::withOptions(['verify' => $verifySsl])->timeout(6)->get($highResUrl);
             if (! $response->successful()) {
                 // Fallback to original URL if high-res request fails
-                $response = Http::timeout(6)->get($avatarUrl);
+                $response = Http::withOptions(['verify' => $verifySsl])->timeout(6)->get($avatarUrl);
             }
 
             if ($response->successful()) {
