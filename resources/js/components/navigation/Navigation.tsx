@@ -1157,12 +1157,18 @@ export const AdminRail = defineComponent({
                     ]}
                 >
                     {!props.collapsed ? (
-                        <AppLogo />
+                        <div class="flex min-w-0 items-center gap-2">
+                            <AppLogo />
+                            <span class="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:bg-indigo-500/10 dark:text-indigo-300">
+                                Staff
+                            </span>
+                        </div>
                     ) : (
                         <Link
                             href="/admin"
                             class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm ring-1 ring-slate-900/10 dark:bg-gray-100"
                             aria-label="Staff Panel"
+                            title="Staff Panel"
                         >
                             <img
                                 src="/favicon.svg"
@@ -1194,13 +1200,6 @@ export const AdminRail = defineComponent({
 
                 {/* Scrollable admin nav */}
                 <div class="flex flex-1 flex-col overflow-y-auto py-3.5">
-                    {!props.collapsed && (
-                        <div class="px-4 pb-2.5">
-                            <p class="text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                Management
-                            </p>
-                        </div>
-                    )}
                     <nav class="space-y-0.5 px-2.5">
                         {props.navigation.map((item) => (
                             <Link
@@ -1572,7 +1571,12 @@ export const AdminDrawer = defineComponent({
                                 >
                                     <div class="flex-1 overflow-y-auto py-3.5">
                                         <div class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/60 px-4 dark:border-slate-800/60">
-                                            <AppLogo />
+                                            <div class="flex min-w-0 items-center gap-2">
+                                                <AppLogo />
+                                                <span class="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:bg-indigo-500/10 dark:text-indigo-300">
+                                                    Staff
+                                                </span>
+                                            </div>
                                             <button
                                                 ref={closeButtonRef}
                                                 onClick={close}
@@ -1586,10 +1590,7 @@ export const AdminDrawer = defineComponent({
                                             </button>
                                         </div>
 
-                                        <p class="mt-3 mb-2 px-4 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                            Management
-                                        </p>
-                                        <nav class="space-y-0.5 px-2.5">
+                                        <nav class="mt-3 space-y-0.5 px-2.5">
                                             {props.navigation.map((item) => (
                                                 <div key={item.name}>
                                                     <Link
