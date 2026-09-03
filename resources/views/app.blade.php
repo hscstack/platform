@@ -35,7 +35,10 @@
         <meta name="msapplication-TileColor" content="#0f172a">
         <meta name="msapplication-navbutton-color" content="#f8fafc">
         <script>
-            // Sync the fallback theme-color with the resolved theme (runs after the meta tags above are parsed).
+            // Sync the fallback theme-color + PWA manifest with the resolved theme
+            // (runs after the meta tags above are parsed).
+            // Note: the web manifest spec only allows one static theme_color, so we
+            // swap between the light (Vite-generated) and dark (static) manifests.
             (function () {
                 try {
                     var isDark = document.documentElement.classList.contains('dark');
@@ -44,10 +47,17 @@
                     if (meta) meta.setAttribute('content', themeColor);
                     var navButton = document.querySelector('meta[name="msapplication-navbutton-color"]');
                     if (navButton) navButton.setAttribute('content', themeColor);
+                    var manifest = document.querySelector('link#app-manifest');
+                    if (manifest) {
+                        manifest.setAttribute(
+                            'href',
+                            isDark ? '/manifest-dark.webmanifest' : '/build/manifest.webmanifest',
+                        );
+                    }
                 } catch (_) {}
             })();
         </script>
-        <link rel="manifest" href="/build/manifest.webmanifest">
+        <link id="app-manifest" rel="manifest" href="/build/manifest.webmanifest">
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/favicon.png">
