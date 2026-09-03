@@ -887,7 +887,7 @@ export const SiteDrawer = defineComponent({
         });
 
         return () => (
-            <div>
+            <>
                 {/* Top bar hamburger (mobile) */}
                 <div class="sticky top-0 z-30 flex h-[56px] items-center gap-2.5 border-b border-slate-200/70 bg-white/90 px-3.5 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
                     <button
@@ -1203,7 +1203,7 @@ export const SiteDrawer = defineComponent({
                 </Teleport>
 
                 <LogoutConfirmModal {...bindOpen(showLogoutModal)} />
-            </div>
+            </>
         );
     },
 });
