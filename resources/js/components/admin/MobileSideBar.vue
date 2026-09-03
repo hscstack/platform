@@ -24,6 +24,19 @@ defineProps<{
 
 const emit = defineEmits(['close']);
 
+const currentUrl = computed(() => String(page.url));
+
+const isActive = (to: string) => {
+    if (to === '/admin') {
+        return (
+            currentUrl.value === '/admin' ||
+            currentUrl.value.startsWith('/admin?')
+        );
+    }
+
+    return currentUrl.value.startsWith(to);
+};
+
 const handleClearCache = () => {
     if (confirm('Are you sure you want to clear all cache?')) {
         emit('close');
@@ -40,52 +53,67 @@ const handleClearCache = () => {
         ></div>
 
         <div
-            class="relative flex w-full max-w-xs flex-1 flex-col justify-between border-r border-slate-200 bg-white/95 p-5 shadow-2xl backdrop-blur-xl dark:border-gray-700 dark:bg-gray-900/95"
+            class="relative flex w-full max-w-[320px] flex-1 flex-col justify-between border-r border-slate-200/60 bg-white/85 shadow-[8px_0_32px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/70 dark:backdrop-blur-xl"
         >
-            <div class="flex-1 overflow-y-auto">
-                <div class="mb-6 flex items-center justify-between">
+            <div class="flex-1 overflow-y-auto py-3.5">
+                <div
+                    class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/60 px-4 dark:border-slate-800/60"
+                >
                     <AppLogo />
                     <button
                         @click="$emit('close')"
-                        class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
                         aria-label="Close staff menu"
                     >
-                        <MaterialIcon name="close" :size="20" />
+                        <MaterialIcon name="close" :size="18" />
                     </button>
                 </div>
 
                 <p
-                    class="mb-2 px-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-gray-500"
+                    class="mt-3 mb-2 px-4 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500"
                 >
                     Management
                 </p>
-                <nav class="space-y-1">
-                    <div v-for="(item, index) in navigation" :key="item.name">
+                <nav class="space-y-0.5 px-2.5">
+                    <div v-for="item in navigation" :key="item.name">
                         <Link
                             :href="item.to"
                             @click="$emit('close')"
-                            class="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-indigo-50/60 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
+                            :class="[
+                                'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
+                                isActive(item.to)
+                                    ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                            ]"
                         >
-                            <MaterialIcon :name="item.icon" :size="20" />
-                            <span>{{ item.name }}</span>
+                            <MaterialIcon
+                                :name="item.icon"
+                                :size="22"
+                                :class="[
+                                    'shrink-0 transition-colors duration-150',
+                                    isActive(item.to)
+                                        ? 'text-indigo-600 dark:text-indigo-300'
+                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300',
+                                ]"
+                            />
+                            <span class="truncate">{{ item.name }}</span>
+                            <span
+                                v-if="isActive(item.to)"
+                                class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            />
                         </Link>
-
-                        <hr
-                            v-if="index < navigation.length - 1"
-                            class="mx-3 my-1 border-slate-200/60 dark:border-gray-700/60"
-                        />
                     </div>
                 </nav>
             </div>
 
             <div
-                class="space-y-1.5 border-t border-slate-100 pt-4 dark:border-gray-800"
+                class="space-y-1.5 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm"
             >
                 <button
                     v-if="can('clear cache')"
                     type="button"
                     @click="handleClearCache"
-                    class="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50/60 dark:text-rose-400 dark:hover:bg-rose-500/10"
+                    class="group flex h-11 w-full items-center gap-2.5 rounded-xl px-3 text-[13px] font-semibold text-rose-600 transition-all duration-150 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
                 >
                     <MaterialIcon name="cached" :size="20" />
                     <span>Clear Cache</span>
@@ -93,7 +121,7 @@ const handleClearCache = () => {
                 <Link
                     href="/"
                     @click="$emit('close')"
-                    class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-transparent px-3 text-[13px] font-semibold text-slate-600 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                 >
                     <MaterialIcon name="home" :size="20" />
                     <span>Back to site</span>
@@ -103,7 +131,7 @@ const handleClearCache = () => {
                     href="/logout"
                     method="post"
                     as="button"
-                    class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                    class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-transparent px-3 text-[13px] font-bold text-rose-600 transition-all duration-150 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                 >
                     <MaterialIcon name="logout" :size="20" />
                     <span>Log out</span>

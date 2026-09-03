@@ -209,8 +209,8 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                     <span v-if="!collapsed">Install App</span>
                 </button>
 
-                <!-- Auth -->
-                <div :class="collapsed ? 'px-0' : 'px-2 pt-1'">
+                <!-- Auth — no side padding so Login/user card matches Install App width -->
+                <div :class="collapsed ? 'px-0' : 'pt-1'">
                     <Link
                         v-if="!user"
                         href="/login"
@@ -278,7 +278,7 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                             <Link
                                 v-if="canAccessAdmin"
                                 :href="isAdminRoute ? '/' : '/admin'"
-                                class="shrink-0 rounded-lg bg-slate-50 p-1.5 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
                                 :title="isAdminRoute ? 'Home' : 'Staff Panel'"
                                 :aria-label="
                                     isAdminRoute ? 'Home' : 'Staff Panel'
@@ -292,7 +292,7 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                                 as="button"
                                 title="Log out"
                                 aria-label="Log out"
-                                class="shrink-0 rounded-lg p-1.5 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                             >
                                 <MaterialIcon name="logout" :size="20" />
                             </Link>

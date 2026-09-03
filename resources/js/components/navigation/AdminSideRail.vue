@@ -202,13 +202,13 @@ const handleClearCache = () => {
                     </span>
                 </div>
 
-                <!-- Back to site — same size as other bottom actions -->
+                <!-- Back to site — ghost row like Theme/Notifications, subtle hover -->
                 <Link
                     href="/"
                     :class="[
-                        'flex h-11 w-full items-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
-                        'justify-center border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700',
-                        collapsed ? '' : '',
+                        'flex h-11 w-full items-center gap-2.5 rounded-xl border px-3 text-[13px] font-semibold transition-all duration-150',
+                        'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                        collapsed ? 'justify-center' : '',
                     ]"
                     :title="collapsed ? 'Back to site' : undefined"
                     aria-label="Back to site"
@@ -217,8 +217,8 @@ const handleClearCache = () => {
                     <span v-if="!collapsed">Back to site</span>
                 </Link>
 
-                <!-- User + logout -->
-                <div v-if="user" :class="collapsed ? 'px-0' : 'px-2 pt-1'">
+                <!-- User + logout — no side padding to match Back to site width -->
+                <div v-if="user" :class="collapsed ? 'px-0' : 'pt-1'">
                     <div
                         :class="[
                             'flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800',
@@ -270,7 +270,7 @@ const handleClearCache = () => {
                             as="button"
                             title="Log out"
                             aria-label="Log out"
-                            class="shrink-0 rounded-lg p-1.5 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                         >
                             <MaterialIcon name="logout" :size="20" />
                         </Link>

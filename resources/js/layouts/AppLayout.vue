@@ -52,7 +52,7 @@ const drawerOpen = ref(false);
 <template>
     <LoadingSpinner />
     <div
-        class="relative min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-indigo-600 selection:text-white dark:bg-gray-950 dark:text-gray-100"
+        class="relative min-h-screen overflow-x-clip bg-slate-50 font-sans text-slate-900 antialiased selection:bg-indigo-600 selection:text-white dark:bg-gray-950 dark:text-gray-100"
     >
         <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
             <div
@@ -75,7 +75,7 @@ const drawerOpen = ref(false);
                 @toggle="toggleRail"
             />
 
-            <div class="flex min-h-screen flex-1 flex-col">
+            <div class="flex min-h-screen w-full min-w-0 flex-1 flex-col">
                 <!-- Mobile top bar + hamburger -->
                 <OverflowDrawer
                     v-if="showBottomNav"
@@ -86,7 +86,7 @@ const drawerOpen = ref(false);
 
                 <main
                     :class="[
-                        'flex-1',
+                        'min-w-0 flex-1',
                         showBottomNav ? 'pb-4' : 'min-h-[calc(100vh-4rem)]',
                     ]"
                 >

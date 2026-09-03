@@ -96,7 +96,7 @@ const closeMobileSidebar = () => {
 <template>
     <LoadingSpinner />
     <div
-        class="min-h-screen bg-slate-100/70 font-sans text-slate-900 antialiased selection:bg-indigo-600 selection:text-white dark:bg-gray-950 dark:text-gray-100"
+        class="min-h-screen overflow-x-clip bg-slate-100/70 font-sans text-slate-900 antialiased selection:bg-indigo-600 selection:text-white dark:bg-gray-950 dark:text-gray-100"
     >
         <div class="flex min-h-screen">
             <!-- Desktop staff rail — unified with site SideRail -->
@@ -107,7 +107,7 @@ const closeMobileSidebar = () => {
                 @toggle="adminCollapsed = !adminCollapsed"
             />
 
-            <div class="flex min-h-screen flex-1 flex-col">
+            <div class="flex min-h-screen w-full min-w-0 flex-1 flex-col">
                 <!-- Single mobile top bar (replaces old NavBar + subheader duplication) -->
                 <div
                     class="sticky top-0 z-30 flex h-[56px] items-center gap-2.5 border-b border-slate-200/70 bg-white/90 px-3.5 backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-900/90"

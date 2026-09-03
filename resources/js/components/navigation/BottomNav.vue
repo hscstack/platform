@@ -44,11 +44,11 @@ const resolvedHref = (item: { href: string }) => {
 <template>
     <!-- YT / YT Music style: full-width bottom bar, icon above label, active filled -->
     <nav
-        class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95"
+        class="fixed inset-x-0 bottom-0 z-40 w-full border-t border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95"
         aria-label="Bottom navigation"
     >
         <div
-            class="mx-auto flex max-w-md items-center justify-around px-1 py-2"
+            class="mx-auto flex w-full max-w-md items-center justify-around px-1 py-2"
         >
             <Link
                 v-for="item in bottomNavItems"
@@ -67,7 +67,7 @@ const resolvedHref = (item: { href: string }) => {
                     :filled="isActive(item.href, item.match)"
                     :weight="400"
                     :class="[
-                        'transition-transform duration-150',
+                        'shrink-0 transition-transform duration-150',
                         isActive(item.href, item.match)
                             ? 'scale-[1.02] text-slate-900 dark:text-white'
                             : 'text-slate-500 dark:text-slate-400',
