@@ -103,6 +103,29 @@ function isActiveAdminRoute(to: string, currentUrl: string): boolean {
     return currentUrl.startsWith(to);
 }
 
+/**
+ * Forwards row-level interaction to the notification bell inside it.
+ * Skips when the event already targets the bell (natural toggle),
+ * so the dropdown never double-toggles.
+ */
+function forwardNotificationToggle(
+    e: MouseEvent | KeyboardEvent,
+    scope: Ref<HTMLElement | null>,
+) {
+    const button = scope.value?.querySelector('button');
+
+    if (!button) {
+        return;
+    }
+
+    if (e.target instanceof Node && button.contains(e.target)) {
+        return;
+    }
+
+    e.preventDefault();
+    button.click();
+}
+
 /** Spread onto LogoutConfirmModal: avoids the ambiguous JSX
  *  `v-model:open` spelling and stays type-safe. */
 function bindOpen(source: Ref<boolean>): {
@@ -224,6 +247,7 @@ export const SiteRail = defineComponent({
 
         const { theme, toggle, setTheme } = useDarkMode();
         const showLogoutModal = ref(false);
+        const notifRowRef = ref<HTMLElement | null>(null);
         const { deferredPrompt, isInstalled, promptInstall } = usePwa();
         const canInstallApp = computed(
             () => !isInstalled.value && Boolean(deferredPrompt.value),
@@ -423,8 +447,22 @@ export const SiteRail = defineComponent({
                         {/* Notifications */}
                         {user.value && (
                             <div
+                                ref={notifRowRef}
+                                role="button"
+                                tabindex={0}
+                                onClick={(e: MouseEvent) =>
+                                    forwardNotificationToggle(e, notifRowRef)
+                                }
+                                onKeydown={(e: KeyboardEvent) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        forwardNotificationToggle(
+                                            e,
+                                            notifRowRef,
+                                        );
+                                    }
+                                }}
                                 class={[
-                                    'flex h-11 w-full items-center gap-2.5 px-3',
+                                    'flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-3 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:shadow-sm dark:hover:border-slate-700 dark:hover:bg-slate-800',
                                     props.collapsed
                                         ? 'justify-center px-0'
                                         : 'justify-start',
@@ -432,6 +470,7 @@ export const SiteRail = defineComponent({
                             >
                                 <NotificationDropdown
                                     plain={!props.collapsed}
+                                    dropUp
                                 />
                                 {!props.collapsed && (
                                     <span class="text-[13px] font-semibold text-slate-600 dark:text-slate-400">
@@ -1092,6 +1131,7 @@ export const AdminRail = defineComponent({
         const { can } = usePermissions();
         const { theme, toggle, setTheme } = useDarkMode();
         const showLogoutModal = ref(false);
+        const notifRowRef = ref<HTMLElement | null>(null);
 
         const handleClearCache = () => {
             if (confirm('Are you sure you want to clear all cache?')) {
@@ -1320,8 +1360,22 @@ export const AdminRail = defineComponent({
                         {/* Notifications */}
                         {user.value && (
                             <div
+                                ref={notifRowRef}
+                                role="button"
+                                tabindex={0}
+                                onClick={(e: MouseEvent) =>
+                                    forwardNotificationToggle(e, notifRowRef)
+                                }
+                                onKeydown={(e: KeyboardEvent) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        forwardNotificationToggle(
+                                            e,
+                                            notifRowRef,
+                                        );
+                                    }
+                                }}
                                 class={[
-                                    'flex h-11 w-full items-center gap-2.5 px-3',
+                                    'flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-3 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:shadow-sm dark:hover:border-slate-700 dark:hover:bg-slate-800',
                                     props.collapsed
                                         ? 'justify-center px-0'
                                         : 'justify-start',
@@ -1329,6 +1383,7 @@ export const AdminRail = defineComponent({
                             >
                                 <NotificationDropdown
                                     plain={!props.collapsed}
+                                    dropUp
                                 />
                                 {!props.collapsed && (
                                     <span class="text-[13px] font-semibold text-slate-600 dark:text-slate-400">
