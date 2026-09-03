@@ -37,6 +37,35 @@ export default defineConfig({
             registerType: 'autoUpdate',
             workbox: {
                 mode: 'development',
+                runtimeCaching: [
+                    {
+                        // Material Symbols stylesheet (short-lived, revalidate in background)
+                        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+                        handler: 'StaleWhileRevalidate',
+                        options: {
+                            cacheName: 'google-fonts-stylesheets',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 30,
+                            },
+                        },
+                    },
+                    {
+                        // Material Symbols woff2 (immutable versioned files, keep for a year)
+                        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'google-fonts-webfonts',
+                            expiration: {
+                                maxEntries: 30,
+                                maxAgeSeconds: 60 * 60 * 24 * ,
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200],
+                            },
+                        },
+                    },
+                ],
             },
             devOptions: {
                 enabled: true,
