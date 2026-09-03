@@ -1543,7 +1543,6 @@ export const AdminDrawer = defineComponent({
             () => (page.props.auth as any)?.user as AuthedUser | undefined,
         );
         const currentUrl = computed(() => String(page.url));
-        const { theme, setTheme } = useDarkMode();
 
         const showLogoutModal = ref(false);
         const panelRef = ref<HTMLElement | null>(null);
@@ -1604,17 +1603,31 @@ export const AdminDrawer = defineComponent({
                                                     Staff
                                                 </span>
                                             </div>
-                                            <button
-                                                ref={closeButtonRef}
-                                                onClick={close}
-                                                class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                                                aria-label="Close staff menu"
-                                            >
-                                                <MaterialIcon
-                                                    name="close"
-                                                    size={18}
-                                                />
-                                            </button>
+                                            <div class="flex items-center gap-1.5">
+                                                <Link
+                                                    href="/"
+                                                    onClick={close}
+                                                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                                                    aria-label="Home"
+                                                    title="Home"
+                                                >
+                                                    <MaterialIcon
+                                                        name="home"
+                                                        size={18}
+                                                    />
+                                                </Link>
+                                                <button
+                                                    ref={closeButtonRef}
+                                                    onClick={close}
+                                                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                                                    aria-label="Close staff menu"
+                                                >
+                                                    <MaterialIcon
+                                                        name="close"
+                                                        size={18}
+                                                    />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <nav class="mt-3 space-y-0.5 px-2.5">
@@ -1661,67 +1674,6 @@ export const AdminDrawer = defineComponent({
                                     </div>
 
                                     <div class="space-y-2 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
-                                        <div>
-                                            <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                                Appearance
-                                            </p>
-                                            <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setTheme('light')
-                                                    }
-                                                    class={[
-                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
-                                                        theme.value === 'light'
-                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                                    ]}
-                                                >
-                                                    <MaterialIcon
-                                                        name="light_mode"
-                                                        size={16}
-                                                    />
-                                                    Light
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setTheme('dark')
-                                                    }
-                                                    class={[
-                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
-                                                        theme.value === 'dark'
-                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                                    ]}
-                                                >
-                                                    <MaterialIcon
-                                                        name="dark_mode"
-                                                        size={16}
-                                                    />
-                                                    Dark
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setTheme('system')
-                                                    }
-                                                    class={[
-                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
-                                                        theme.value === 'system'
-                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                                    ]}
-                                                >
-                                                    <MaterialIcon
-                                                        name="computer"
-                                                        size={16}
-                                                    />
-                                                    System
-                                                </button>
-                                            </div>
-                                        </div>
                                         {can('clear cache') && (
                                             <button
                                                 type="button"
@@ -1735,17 +1687,6 @@ export const AdminDrawer = defineComponent({
                                                 <span>Clear Cache</span>
                                             </button>
                                         )}
-                                        <Link
-                                            href="/"
-                                            onClick={close}
-                                            class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-transparent px-3 text-[13px] font-semibold text-slate-600 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                                        >
-                                            <MaterialIcon
-                                                name="home"
-                                                size={20}
-                                            />
-                                            <span>Back to site</span>
-                                        </Link>
                                         {user.value && (
                                             <div class="flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                                                 <Link
