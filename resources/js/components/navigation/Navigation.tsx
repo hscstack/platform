@@ -910,8 +910,8 @@ export const SiteDrawer = defineComponent({
 
         return () => (
             <>
-                {/* Top bar hamburger (mobile) */}
-                <div class="sticky top-0 z-30 flex h-[56px] items-center gap-2.5 border-b border-slate-200/70 bg-white/90 px-3.5 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
+                {/* Top bar hamburger (mobile) — fixed top-0 with spacer */}
+                <div class="fixed inset-x-0 top-0 z-30 flex h-[56px] items-center gap-2.5 border-b border-slate-200/70 bg-white/90 px-3.5 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
                     <button
                         type="button"
                         onClick={() => emit('update:open', true)}
@@ -937,6 +937,8 @@ export const SiteDrawer = defineComponent({
                         )}
                     </div>
                 </div>
+                {/* Spacer to prevent content from jumping behind fixed navbar */}
+                <div class="h-[56px] shrink-0" aria-hidden="true" />
 
                 {/* Drawer */}
                 <Teleport to="body">
