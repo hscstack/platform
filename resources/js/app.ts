@@ -6,7 +6,10 @@ import { initPwa } from './lib/usePwa';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-registerSW({ immediate: true });
+if (import.meta.env.PROD) {
+    registerSW({ immediate: true });
+}
+
 initPwa();
 
 router.on('navigate', () => {
