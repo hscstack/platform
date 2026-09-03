@@ -94,15 +94,15 @@ const drawerOpen = ref(false);
                     <slot />
                 </main>
 
-                <!-- Footer: hidden always on Profile/User/Show; hidden on mobile for Resource, Forum/Show, Login -->
+                <!-- Footer: hidden on Chat/Index; hidden on mobile for Profile, User/Show, Resource, Forum/Show, Login -->
                 <div
                     v-if="
                         $page.component !== 'Chat/Index' &&
-                        $page.component !== 'Profile' &&
-                        $page.component !== 'User/Show' &&
                         !(
                             showBottomNav &&
-                            ($page.component === 'Resource' ||
+                            ($page.component === 'Profile' ||
+                                $page.component === 'User/Show' ||
+                                $page.component === 'Resource' ||
                                 $page.component === 'Forum/Show' ||
                                 $page.component === 'auth/Login')
                         )

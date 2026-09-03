@@ -99,6 +99,20 @@ function isActiveAdminRoute(to: string, currentUrl: string): boolean {
     return currentUrl.startsWith(to);
 }
 
+function getCollapsedAdminLabel(name: string): string {
+    const map: Record<string, string> = {
+        'Manage Contents': 'Contents',
+        'Manage Blogs': 'Blogs',
+        'Manage Forum': 'Forum',
+        'Support Tickets': 'Support',
+        'Site Notice': 'Notice',
+        'Global Chat': 'Chat',
+        'Send Emails': 'Emails',
+    };
+
+    return map[name] || name.replace(/^Manage\s+/i, '');
+}
+
 /**
  * Opens the dropdown from the row label. Stops propagation so the
  * label-targeted event never reaches the document outside-click
@@ -369,6 +383,10 @@ export const SiteRail = defineComponent({
                             <nav class="w-[280px] space-y-1 px-2.5">
                                 {allNavItems.map((item) => {
                                     const active = isActive(item.href, item.match);
+                                    const label =
+                                        item.href === '/chat'
+                                            ? 'Global Chat'
+                                            : item.label;
 
                                     return (
                                         <Link
@@ -394,7 +412,7 @@ export const SiteRail = defineComponent({
                                                         : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
                                                 }`}
                                             />
-                                            <span class="truncate">{item.label}</span>
+                                            <span class="truncate">{label}</span>
                                             {active && (
                                                 <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                             )}
@@ -448,7 +466,7 @@ export const SiteRail = defineComponent({
                                 <button
                                     type="button"
                                     onClick={toggle}
-                                    class="group flex h-[60px] w-full flex-col items-center justify-center rounded-xl px-1 text-center text-slate-600 transition-colors hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100"
+                                    class="flex h-10 w-full items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100"
                                     title={`Current theme: ${theme.value}. Click to switch.`}
                                     aria-label="Toggle theme"
                                 >
@@ -461,11 +479,8 @@ export const SiteRail = defineComponent({
                                                   : 'computer'
                                         }
                                         size={22}
-                                        class="shrink-0 text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300"
+                                        class="shrink-0 text-slate-500 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
                                     />
-                                    <span class="mt-1 max-w-[56px] truncate text-[10px] leading-tight font-medium capitalize">
-                                        {theme.value}
-                                    </span>
                                 </button>
 
                                 {/* Notifications */}
@@ -502,7 +517,7 @@ export const SiteRail = defineComponent({
                                         <MaterialIcon name="login" size={20} />
                                     </Link>
                                 ) : (
-                                    <div class="flex flex-col items-center gap-1.5 py-1">
+                                    <div class="flex flex-col items-center py-1">
                                         <Link
                                             href={
                                                 user.value.username
@@ -527,20 +542,6 @@ export const SiteRail = defineComponent({
                                                 </span>
                                             )}
                                         </Link>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                showLogoutModal.value = true;
-                                            }}
-                                            title="Log out"
-                                            aria-label="Log out"
-                                            class="flex h-7 w-7 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                                        >
-                                            <MaterialIcon
-                                                name="logout"
-                                                size={18}
-                                            />
-                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -1290,6 +1291,7 @@ export const AdminRail = defineComponent({
                                         item.to,
                                         currentUrl.value,
                                     );
+                                    const label = getCollapsedAdminLabel(item.name);
 
                                     return (
                                         <Link
@@ -1313,7 +1315,7 @@ export const AdminRail = defineComponent({
                                                 }`}
                                             />
                                             <span class="mt-1 max-w-[64px] truncate text-[10px] leading-tight font-medium">
-                                                {item.name}
+                                                {label}
                                             </span>
                                         </Link>
                                     );
@@ -1410,7 +1412,7 @@ export const AdminRail = defineComponent({
 
                                 {/* User + logout */}
                                 {user.value && (
-                                    <div class="flex flex-col items-center gap-1.5 py-1">
+                                    <div class="flex flex-col items-center py-1">
                                         <Link
                                             href={
                                                 user.value.username
@@ -1435,20 +1437,6 @@ export const AdminRail = defineComponent({
                                                 </span>
                                             )}
                                         </Link>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                showLogoutModal.value = true;
-                                            }}
-                                            title="Log out"
-                                            aria-label="Log out"
-                                            class="flex h-7 w-7 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                                        >
-                                            <MaterialIcon
-                                                name="logout"
-                                                size={18}
-                                            />
-                                        </button>
                                     </div>
                                 )}
                             </div>
