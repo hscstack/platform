@@ -55,7 +55,8 @@ const clearSearch = () => {
                 <p
                     class="hidden text-xs text-slate-500 sm:mt-1 sm:block sm:text-sm dark:text-gray-400"
                 >
-                    পড়াশোনার টিপস, শিক্ষাসংক্রান্ত খবর এবং অন্যান্য গুরুত্বপূর্ণ তথ্য পড়ুন।
+                    পড়াশোনার টিপস, শিক্ষাসংক্রান্ত খবর এবং অন্যান্য
+                    গুরুত্বপূর্ণ তথ্য পড়ুন।
                 </p>
             </div>
         </div>
@@ -75,7 +76,9 @@ const clearSearch = () => {
                     @keyup.enter="handleSearch"
                     class="w-full rounded-xl border border-slate-200 bg-white py-2 pr-16 pl-8.5 text-xs text-slate-900 shadow-2xs transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none sm:py-2.5 sm:pr-20 sm:pl-10 sm:text-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                 />
-                <div class="absolute inset-y-0 right-1.5 flex items-center gap-1">
+                <div
+                    class="absolute inset-y-0 right-1.5 flex items-center gap-1"
+                >
                     <button
                         v-if="searchQuery"
                         @click="clearSearch"

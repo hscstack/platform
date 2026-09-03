@@ -312,8 +312,14 @@ export const SiteRail = defineComponent({
                             /* Collapsed: Compact YouTube Mini-Guide (strictly w-[72px] fixed) */
                             <nav class="flex w-[72px] flex-col items-center space-y-1 px-1">
                                 {allNavItems.map((item) => {
-                                    const active = isActive(item.href, item.match);
-                                    const label = item.href === '/support' ? 'Support' : item.label;
+                                    const active = isActive(
+                                        item.href,
+                                        item.match,
+                                    );
+                                    const label =
+                                        item.href === '/support'
+                                            ? 'Support'
+                                            : item.label;
 
                                     return (
                                         <Link
@@ -382,7 +388,10 @@ export const SiteRail = defineComponent({
                             /* Expanded: Standard 280px Guide */
                             <nav class="w-[280px] space-y-1 px-2.5">
                                 {allNavItems.map((item) => {
-                                    const active = isActive(item.href, item.match);
+                                    const active = isActive(
+                                        item.href,
+                                        item.match,
+                                    );
                                     const label =
                                         item.href === '/chat'
                                             ? 'Global Chat'
@@ -412,7 +421,9 @@ export const SiteRail = defineComponent({
                                                         : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
                                                 }`}
                                             />
-                                            <span class="truncate">{label}</span>
+                                            <span class="truncate">
+                                                {label}
+                                            </span>
                                             {active && (
                                                 <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                             )}
@@ -502,7 +513,10 @@ export const SiteRail = defineComponent({
                                         onClick={handleInstallApp}
                                         class="flex h-10 w-full items-center justify-center rounded-xl border border-slate-900 bg-slate-900 text-white shadow-sm transition-all hover:border-slate-700 hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:border-slate-200 dark:hover:bg-slate-200"
                                     >
-                                        <MaterialIcon name="download" size={20} />
+                                        <MaterialIcon
+                                            name="download"
+                                            size={20}
+                                        />
                                     </button>
                                 )}
 
@@ -647,7 +661,10 @@ export const SiteRail = defineComponent({
                                         onClick={handleInstallApp}
                                         class="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-[13px] font-bold text-indigo-700 shadow-sm transition-all duration-150 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
                                     >
-                                        <MaterialIcon name="download" size={20} />
+                                        <MaterialIcon
+                                            name="download"
+                                            size={20}
+                                        />
                                         <span>Install App</span>
                                     </button>
                                 )}
@@ -660,7 +677,10 @@ export const SiteRail = defineComponent({
                                             aria-label="Login"
                                             class="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-transparent bg-indigo-600 px-3 text-[13px] font-bold text-white shadow-sm transition-all duration-150 hover:border-indigo-700 hover:bg-indigo-700 hover:shadow-md dark:border-transparent dark:bg-indigo-500 dark:hover:border-indigo-400 dark:hover:bg-indigo-400"
                                         >
-                                            <MaterialIcon name="login" size={20} />
+                                            <MaterialIcon
+                                                name="login"
+                                                size={20}
+                                            />
                                             <span>Login</span>
                                         </Link>
                                     ) : (
@@ -675,7 +695,9 @@ export const SiteRail = defineComponent({
                                             >
                                                 {user.value.image_url ? (
                                                     <img
-                                                        src={user.value.image_url}
+                                                        src={
+                                                            user.value.image_url
+                                                        }
                                                         alt={user.value.name}
                                                         class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
                                                     />
@@ -1291,7 +1313,9 @@ export const AdminRail = defineComponent({
                                         item.to,
                                         currentUrl.value,
                                     );
-                                    const label = getCollapsedAdminLabel(item.name);
+                                    const label = getCollapsedAdminLabel(
+                                        item.name,
+                                    );
 
                                     return (
                                         <Link
@@ -1367,7 +1391,9 @@ export const AdminRail = defineComponent({
                                                         : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
                                                 }`}
                                             />
-                                            <span class="truncate">{item.name}</span>
+                                            <span class="truncate">
+                                                {item.name}
+                                            </span>
                                             {active && (
                                                 <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                             )}
@@ -1388,7 +1414,9 @@ export const AdminRail = defineComponent({
                                                 size={22}
                                                 class="shrink-0"
                                             />
-                                            <span class="truncate">Clear cache</span>
+                                            <span class="truncate">
+                                                Clear cache
+                                            </span>
                                         </button>
                                     </div>
                                 )}
@@ -1490,7 +1518,9 @@ export const AdminRail = defineComponent({
                                             >
                                                 {user.value.image_url ? (
                                                     <img
-                                                        src={user.value.image_url}
+                                                        src={
+                                                            user.value.image_url
+                                                        }
                                                         alt={user.value.name}
                                                         class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
                                                     />
