@@ -1571,6 +1571,43 @@ export const AdminDrawer = defineComponent({
                                     </div>
 
                                     <div class="space-y-2 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
+                                        {user.value && (
+                                            <Link
+                                                href={
+                                                    user.value.username
+                                                        ? `/u/${user.value.username}`
+                                                        : '/profile'
+                                                }
+                                                onClick={close}
+                                                class="flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                                                title="Profile"
+                                                aria-label="Profile"
+                                            >
+                                                {user.value.image_url ? (
+                                                    <img
+                                                        src={
+                                                            user.value.image_url
+                                                        }
+                                                        alt={user.value.name}
+                                                        class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    />
+                                                ) : (
+                                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20">
+                                                        {user.value.name
+                                                            .charAt(0)
+                                                            .toUpperCase()}
+                                                    </span>
+                                                )}
+                                                <span class="min-w-0 text-left">
+                                                    <span class="block truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                                        {user.value.name}
+                                                    </span>
+                                                    <span class="block truncate text-xs text-slate-500 dark:text-slate-400">
+                                                        {user.value.email}
+                                                    </span>
+                                                </span>
+                                            </Link>
+                                        )}
                                         <div>
                                             <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
                                                 Appearance
