@@ -18,10 +18,36 @@
                 } catch (_) {}
             })();
         </script>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="color-scheme" content="light dark">
+        {{-- Browser chrome: top status bar + bottom nav bar (Chrome / Edge / Samsung Internet) --}}
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc">
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030712">
+        <meta name="theme-color" content="#f8fafc">
+        {{-- PWA / fullscreen web app capabilities --}}
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="HSCStack">
+        {{-- iOS status bar: black-translucent lets the page bleed edge-to-edge behind the notch --}}
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        {{-- Windows / legacy Edge chrome --}}
+        <meta name="msapplication-TileColor" content="#0f172a">
+        <meta name="msapplication-navbutton-color" content="#f8fafc">
+        <script>
+            // Sync the fallback theme-color with the resolved theme (runs after the meta tags above are parsed).
+            (function () {
+                try {
+                    var isDark = document.documentElement.classList.contains('dark');
+                    var themeColor = isDark ? '#030712' : '#f8fafc';
+                    var meta = document.querySelector('meta[name="theme-color"]:not([media])');
+                    if (meta) meta.setAttribute('content', themeColor);
+                    var navButton = document.querySelector('meta[name="msapplication-navbutton-color"]');
+                    if (navButton) navButton.setAttribute('content', themeColor);
+                } catch (_) {}
+            })();
+        </script>
         <link rel="manifest" href="/build/manifest.webmanifest">
-        <meta name="theme-color" content="#000000">
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/favicon.png">

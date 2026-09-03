@@ -31,6 +31,15 @@ function resolveTheme(t: Theme): boolean {
 function applyTheme(dark: boolean) {
     if (typeof document !== 'undefined') {
         document.documentElement.classList.toggle('dark', dark);
+        // Keep browser / PWA system chrome (status bar + nav bar) in sync.
+        // Matches the slate-50 / gray-950 app background.
+        const themeColor = dark ? '#030712' : '#f8fafc';
+        document
+            .querySelector('meta[name="theme-color"]:not([media])')
+            ?.setAttribute('content', themeColor);
+        document
+            .querySelector('meta[name="msapplication-navbutton-color"]')
+            ?.setAttribute('content', themeColor);
     }
 }
 
