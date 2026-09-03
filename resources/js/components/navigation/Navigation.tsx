@@ -893,32 +893,32 @@ export const SiteDrawer = defineComponent({
                                                 </button>
                                             )}
                                         </div>
+                                    </div>
 
-                                        {/* Theme */}
-                                        <div class="mt-4 px-2.5">
-                                            <p class="mb-2 px-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-gray-500">
+                                    {/* Pinned footer: appearance + account never scroll away */}
+                                    <div class="shrink-0 space-y-2 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
+                                        <div>
+                                            <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
                                                 Appearance
                                             </p>
-                                            <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-gray-900">
+                                            <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
                                                 <button
                                                     type="button"
                                                     onClick={() =>
                                                         setTheme('light')
                                                     }
                                                     class={[
-                                                        'rounded-lg py-2 text-xs font-semibold',
+                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
                                                         theme.value === 'light'
-                                                            ? 'bg-white shadow dark:bg-gray-800'
-                                                            : 'text-slate-500',
+                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
                                                     ]}
                                                 >
-                                                    <span class="flex items-center justify-center gap-1">
-                                                        <MaterialIcon
-                                                            name="light_mode"
-                                                            size={16}
-                                                        />
-                                                        Light
-                                                    </span>
+                                                    <MaterialIcon
+                                                        name="light_mode"
+                                                        size={16}
+                                                    />
+                                                    Light
                                                 </button>
                                                 <button
                                                     type="button"
@@ -926,19 +926,17 @@ export const SiteDrawer = defineComponent({
                                                         setTheme('dark')
                                                     }
                                                     class={[
-                                                        'rounded-lg py-2 text-xs font-semibold',
+                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
                                                         theme.value === 'dark'
-                                                            ? 'bg-white shadow dark:bg-gray-800'
-                                                            : 'text-slate-500',
+                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
                                                     ]}
                                                 >
-                                                    <span class="flex items-center justify-center gap-1">
-                                                        <MaterialIcon
-                                                            name="dark_mode"
-                                                            size={16}
-                                                        />
-                                                        Dark
-                                                    </span>
+                                                    <MaterialIcon
+                                                        name="dark_mode"
+                                                        size={16}
+                                                    />
+                                                    Dark
                                                 </button>
                                                 <button
                                                     type="button"
@@ -946,26 +944,20 @@ export const SiteDrawer = defineComponent({
                                                         setTheme('system')
                                                     }
                                                     class={[
-                                                        'rounded-lg py-2 text-xs font-semibold',
+                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
                                                         theme.value === 'system'
-                                                            ? 'bg-white shadow dark:bg-gray-800'
-                                                            : 'text-slate-500',
+                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
                                                     ]}
                                                 >
-                                                    <span class="flex items-center justify-center gap-1">
-                                                        <MaterialIcon
-                                                            name="computer"
-                                                            size={16}
-                                                        />
-                                                        System
-                                                    </span>
+                                                    <MaterialIcon
+                                                        name="computer"
+                                                        size={16}
+                                                    />
+                                                    System
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    {/* Account footer (fixed, desktop-style card) */}
-                                    <div class="shrink-0 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
                                         {user.value ? (
                                             <div class="flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                                                 <Link
@@ -1463,6 +1455,7 @@ export const AdminDrawer = defineComponent({
             () => (page.props.auth as any)?.user as AuthedUser | undefined,
         );
         const currentUrl = computed(() => String(page.url));
+        const { theme, setTheme } = useDarkMode();
 
         const showLogoutModal = ref(false);
         const panelRef = ref<HTMLElement | null>(null);
@@ -1577,7 +1570,68 @@ export const AdminDrawer = defineComponent({
                                         </nav>
                                     </div>
 
-                                    <div class="space-y-1.5 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
+                                    <div class="space-y-2 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
+                                        <div>
+                                            <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
+                                                Appearance
+                                            </p>
+                                            <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setTheme('light')
+                                                    }
+                                                    class={[
+                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
+                                                        theme.value === 'light'
+                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                                                    ]}
+                                                >
+                                                    <MaterialIcon
+                                                        name="light_mode"
+                                                        size={16}
+                                                    />
+                                                    Light
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setTheme('dark')
+                                                    }
+                                                    class={[
+                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
+                                                        theme.value === 'dark'
+                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                                                    ]}
+                                                >
+                                                    <MaterialIcon
+                                                        name="dark_mode"
+                                                        size={16}
+                                                    />
+                                                    Dark
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setTheme('system')
+                                                    }
+                                                    class={[
+                                                        'flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold transition-all',
+                                                        theme.value === 'system'
+                                                            ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                                                    ]}
+                                                >
+                                                    <MaterialIcon
+                                                        name="computer"
+                                                        size={16}
+                                                    />
+                                                    System
+                                                </button>
+                                            </div>
+                                        </div>
                                         {can('clear cache') && (
                                             <button
                                                 type="button"
