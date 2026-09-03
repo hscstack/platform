@@ -256,370 +256,277 @@ export const SiteRail = defineComponent({
         return () => (
             <aside
                 class={[
-                    'flex shrink-0 flex-col bg-white/70 backdrop-blur-xl transition-all duration-300 dark:bg-slate-900/60 dark:backdrop-blur-xl',
-                    'sticky top-0 z-30 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
+                    'sticky top-0 z-30 flex h-screen shrink-0 flex-col overflow-x-hidden bg-white/70 backdrop-blur-xl transition-[width] duration-300 ease-in-out dark:bg-slate-900/60 dark:backdrop-blur-xl',
+                    'border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
                     props.collapsed ? 'w-[72px]' : 'w-[280px]',
                 ]}
                 aria-label="Side navigation"
             >
-                {/* Header: Logo + Collapse toggle */}
-                <div
-                    class={[
-                        'flex shrink-0 items-center border-b border-slate-200/60 bg-white/70 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl',
-                        props.collapsed
-                            ? 'h-auto flex-col justify-center gap-3 px-2 py-3'
-                            : 'h-16 flex-row justify-between px-3',
-                    ]}
-                >
-                    {!props.collapsed ? (
-                        <AppLogo />
-                    ) : (
-                        <Link
-                            href={homeHref.value}
-                            class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm ring-1 ring-slate-900/10 dark:bg-gray-100"
-                            aria-label="Home"
-                        >
-                            <img
-                                src="/favicon.svg"
-                                alt="HSCStack"
-                                class="h-6 w-6 scale-120 object-cover"
-                            />
-                        </Link>
-                    )}
-                    <button
-                        type="button"
-                        onClick={() => emit('toggle')}
-                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                        aria-label={
-                            props.collapsed
-                                ? 'Expand sidebar'
-                                : 'Collapse sidebar'
-                        }
-                    >
-                        <MaterialIcon
-                            name={
+                {/* Fixed container width ensures children never recalculate middle during width transition */}
+                <div class="flex h-full w-[280px] flex-col">
+                    {/* Header: Hamburger + Logo */}
+                    <div class="flex h-16 shrink-0 items-center border-b border-slate-200/60 bg-white/70 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl">
+                        <div class="flex w-[72px] shrink-0 items-center justify-center">
+                            <button
+                                type="button"
+                                onClick={() => emit('toggle')}
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                                aria-label={
+                                    props.collapsed
+                                        ? 'Expand sidebar'
+                                        : 'Collapse sidebar'
+                                }
+                            >
+                                <MaterialIcon name="menu" size={24} />
+                            </button>
+                        </div>
+                        <div
+                            class={[
+                                'flex items-center overflow-hidden transition-all duration-300 ease-in-out',
                                 props.collapsed
-                                    ? 'chevron_right'
-                                    : 'chevron_left'
-                            }
-                            size={18}
-                        />
-                    </button>
-                </div>
+                                    ? 'pointer-events-none w-0 opacity-0'
+                                    : 'w-[200px] opacity-100',
+                            ]}
+                        >
+                            <AppLogo />
+                        </div>
+                    </div>
 
-                {/* Scrollable nav */}
-                <div class="flex flex-1 flex-col overflow-y-auto py-3.5">
-                    <nav class="space-y-0.5 px-2.5">
-                        {allNavItems.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={
-                                    item.href === '/'
-                                        ? homeHref.value
-                                        : item.href
-                                }
-                                class={[
-                                    'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
-                                    isActive(item.href, item.match)
-                                        ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
-                                        : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
-                                    props.collapsed
-                                        ? 'justify-center px-2'
-                                        : '',
-                                ]}
-                                title={props.collapsed ? item.label : undefined}
-                            >
-                                <MaterialIcon
-                                    name={item.icon}
-                                    size={22}
-                                    class={`shrink-0 transition-colors duration-150 ${
-                                        isActive(item.href, item.match)
-                                            ? 'text-indigo-600 dark:text-indigo-300'
-                                            : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                    }`}
-                                />
-                                {!props.collapsed && (
-                                    <span class="truncate">{item.label}</span>
+                    {/* Scrollable nav */}
+                    <div class="flex flex-1 flex-col overflow-y-auto py-2">
+                        {props.collapsed ? (
+                            /* Collapsed: Compact YouTube Mini-Guide (strictly w-[72px] fixed) */
+                            <nav class="flex w-[72px] flex-col items-center space-y-1 px-1">
+                                {allNavItems.map((item) => {
+                                    const active = isActive(item.href, item.match);
+                                    const label = item.href === '/support' ? 'Support' : item.label;
+
+                                    return (
+                                        <Link
+                                            key={item.href}
+                                            href={
+                                                item.href === '/'
+                                                    ? homeHref.value
+                                                    : item.href
+                                            }
+                                            class={[
+                                                'group flex h-[60px] w-full flex-col items-center justify-center rounded-xl px-1 text-center transition-colors duration-150',
+                                                active
+                                                    ? 'bg-indigo-50/80 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200'
+                                                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                            ]}
+                                            title={item.label}
+                                        >
+                                            <MaterialIcon
+                                                name={item.icon}
+                                                size={22}
+                                                class={`shrink-0 transition-colors duration-150 ${
+                                                    active
+                                                        ? 'text-indigo-600 dark:text-indigo-300'
+                                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                }`}
+                                            />
+                                            <span class="mt-1 max-w-[64px] truncate text-[10px] leading-tight font-medium">
+                                                {label}
+                                            </span>
+                                        </Link>
+                                    );
+                                })}
+                                {canAccessAdmin.value && (
+                                    <Link
+                                        href="/admin"
+                                        class={[
+                                            'group flex h-[60px] w-full flex-col items-center justify-center rounded-xl px-1 text-center transition-colors duration-150',
+                                            isActiveAdminRoute(
+                                                '/admin',
+                                                currentUrl.value,
+                                            )
+                                                ? 'bg-indigo-50/80 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200'
+                                                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                        ]}
+                                        title="Dashboard"
+                                    >
+                                        <MaterialIcon
+                                            name="dashboard"
+                                            size={22}
+                                            class={`shrink-0 transition-colors duration-150 ${
+                                                isActiveAdminRoute(
+                                                    '/admin',
+                                                    currentUrl.value,
+                                                )
+                                                    ? 'text-indigo-600 dark:text-indigo-300'
+                                                    : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                            }`}
+                                        />
+                                        <span class="mt-1 max-w-[64px] truncate text-[10px] leading-tight font-medium">
+                                            Dashboard
+                                        </span>
+                                    </Link>
                                 )}
-                                {!props.collapsed &&
-                                    isActive(item.href, item.match) && (
-                                        <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                                    )}
-                            </Link>
-                        ))}
-                        {canAccessAdmin.value && (
-                            <Link
-                                href="/admin"
-                                class={[
-                                    'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
-                                    isActiveAdminRoute(
-                                        '/admin',
-                                        currentUrl.value,
-                                    )
-                                        ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
-                                        : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
-                                    props.collapsed
-                                        ? 'justify-center px-2'
-                                        : '',
-                                ]}
-                                title={
-                                    props.collapsed ? 'Dashboard' : undefined
-                                }
-                            >
-                                <MaterialIcon
-                                    name="dashboard"
-                                    size={22}
-                                    class={`shrink-0 transition-colors duration-150 ${
-                                        isActiveAdminRoute(
+                            </nav>
+                        ) : (
+                            /* Expanded: Standard 280px Guide */
+                            <nav class="w-[280px] space-y-1 px-2.5">
+                                {allNavItems.map((item) => {
+                                    const active = isActive(item.href, item.match);
+
+                                    return (
+                                        <Link
+                                            key={item.href}
+                                            href={
+                                                item.href === '/'
+                                                    ? homeHref.value
+                                                    : item.href
+                                            }
+                                            class={[
+                                                'group flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight transition-colors duration-150',
+                                                active
+                                                    ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                            ]}
+                                        >
+                                            <MaterialIcon
+                                                name={item.icon}
+                                                size={22}
+                                                class={`shrink-0 transition-colors duration-150 ${
+                                                    active
+                                                        ? 'text-indigo-600 dark:text-indigo-300'
+                                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                }`}
+                                            />
+                                            <span class="truncate">{item.label}</span>
+                                            {active && (
+                                                <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                            )}
+                                        </Link>
+                                    );
+                                })}
+                                {canAccessAdmin.value && (
+                                    <Link
+                                        href="/admin"
+                                        class={[
+                                            'group flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight transition-colors duration-150',
+                                            isActiveAdminRoute(
+                                                '/admin',
+                                                currentUrl.value,
+                                            )
+                                                ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                        ]}
+                                    >
+                                        <MaterialIcon
+                                            name="dashboard"
+                                            size={22}
+                                            class={`shrink-0 transition-colors duration-150 ${
+                                                isActiveAdminRoute(
+                                                    '/admin',
+                                                    currentUrl.value,
+                                                )
+                                                    ? 'text-indigo-600 dark:text-indigo-300'
+                                                    : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                            }`}
+                                        />
+                                        <span class="truncate">Dashboard</span>
+                                        {isActiveAdminRoute(
                                             '/admin',
                                             currentUrl.value,
-                                        )
-                                            ? 'text-indigo-600 dark:text-indigo-300'
-                                            : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                    }`}
-                                />
-                                {!props.collapsed && (
-                                    <span class="truncate">Dashboard</span>
-                                )}
-                                {!props.collapsed &&
-                                    isActiveAdminRoute(
-                                        '/admin',
-                                        currentUrl.value,
-                                    ) && (
-                                        <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                                    )}
-                            </Link>
-                        )}
-                    </nav>
-                </div>
-
-                {/* Footer controls */}
-                <div class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
-                    <div class="space-y-1.5">
-                        {/* Appearance — segmented group */}
-                        {!props.collapsed ? (
-                            <div>
-                                <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                    Appearance
-                                </p>
-                                <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-                                    <button
-                                        type="button"
-                                        onClick={() => setTheme('light')}
-                                        class={[
-                                            'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                            theme.value === 'light'
-                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                        ]}
-                                    >
-                                        <MaterialIcon
-                                            name="light_mode"
-                                            size={16}
-                                        />
-                                        Light
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setTheme('dark')}
-                                        class={[
-                                            'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                            theme.value === 'dark'
-                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                        ]}
-                                    >
-                                        <MaterialIcon
-                                            name="dark_mode"
-                                            size={16}
-                                        />
-                                        Dark
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setTheme('system')}
-                                        class={[
-                                            'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                            theme.value === 'system'
-                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                        ]}
-                                    >
-                                        <MaterialIcon
-                                            name="computer"
-                                            size={16}
-                                        />
-                                        System
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={toggle}
-                                aria-label="Toggle theme"
-                                title={`Theme: ${theme.value}`}
-                                class="flex h-11 w-full items-center justify-center rounded-xl border border-transparent text-slate-600 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                            >
-                                <MaterialIcon
-                                    name={
-                                        theme.value === 'system'
-                                            ? 'computer'
-                                            : theme.value === 'light'
-                                              ? 'light_mode'
-                                              : 'dark_mode'
-                                    }
-                                    size={20}
-                                />
-                            </button>
-                        )}
-
-                        {/* Notifications */}
-                        {user.value && (
-                            <div
-                                ref={notifRowRef}
-                                class={[
-                                    'flex h-11 w-full items-center gap-2.5 px-3',
-                                    props.collapsed
-                                        ? 'justify-center px-0'
-                                        : 'justify-start',
-                                ]}
-                            >
-                                <NotificationDropdown
-                                    plain={!props.collapsed}
-                                    dropUp
-                                />
-                                {!props.collapsed && (
-                                    <span
-                                        role="button"
-                                        tabindex={0}
-                                        onClick={(e: MouseEvent) =>
-                                            openNotificationsFromLabel(
-                                                e,
-                                                notifRowRef,
-                                            )
-                                        }
-                                        onKeydown={(e: KeyboardEvent) => {
-                                            if (
-                                                e.key === 'Enter' ||
-                                                e.key === ' '
-                                            ) {
-                                                openNotificationsFromLabel(
-                                                    e,
-                                                    notifRowRef,
-                                                );
-                                            }
-                                        }}
-                                        class="flex-1 cursor-pointer truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                                    >
-                                        Notifications
-                                    </span>
-                                )}
-                            </div>
-                        )}
-
-                        {/* PWA Install */}
-                        {canInstallApp.value && (
-                            <button
-                                type="button"
-                                aria-label="Install App"
-                                title={
-                                    props.collapsed ? 'Install App' : undefined
-                                }
-                                onClick={handleInstallApp}
-                                class={[
-                                    'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
-                                    props.collapsed
-                                        ? 'border-slate-900 bg-slate-900 text-white hover:border-slate-700 hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:border-slate-200 dark:hover:bg-slate-200'
-                                        : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20',
-                                ]}
-                            >
-                                <MaterialIcon name="download" size={20} />
-                                {!props.collapsed && <span>Install App</span>}
-                            </button>
-                        )}
-
-                        {/* Auth */}
-                        <div class={props.collapsed ? 'px-0' : 'pt-1'}>
-                            {!user.value ? (
-                                <Link
-                                    href="/login"
-                                    title={
-                                        props.collapsed ? 'Login' : undefined
-                                    }
-                                    aria-label="Login"
-                                    class={[
-                                        'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
-                                        'border-transparent bg-indigo-600 text-white hover:border-indigo-700 hover:bg-indigo-700 hover:shadow-md dark:border-transparent dark:bg-indigo-500 dark:hover:border-indigo-400 dark:hover:bg-indigo-400',
-                                    ]}
-                                >
-                                    <MaterialIcon name="login" size={20} />
-                                    {!props.collapsed && <span>Login</span>}
-                                </Link>
-                            ) : (
-                                <div
-                                    class={[
-                                        'flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800',
-                                        props.collapsed
-                                            ? 'flex-col justify-center gap-2 py-3'
-                                            : 'justify-between',
-                                    ]}
-                                >
-                                    <Link
-                                        href={
-                                            user.value.username
-                                                ? `/u/${user.value.username}`
-                                                : '/profile'
-                                        }
-                                        class={[
-                                            'flex items-center gap-2.5',
-                                            props.collapsed
-                                                ? 'justify-center'
-                                                : 'min-w-0',
-                                        ]}
-                                        title={
-                                            props.collapsed
-                                                ? 'Profile'
-                                                : undefined
-                                        }
-                                        aria-label={
-                                            props.collapsed
-                                                ? 'Profile'
-                                                : undefined
-                                        }
-                                    >
-                                        {user.value.image_url ? (
-                                            <img
-                                                src={user.value.image_url}
-                                                alt={user.value.name}
-                                                class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
-                                            />
-                                        ) : (
-                                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20">
-                                                {user.value.name
-                                                    .charAt(0)
-                                                    .toUpperCase()}
-                                            </span>
-                                        )}
-                                        {!props.collapsed && (
-                                            <div class="min-w-0 text-left">
-                                                <p class="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                                                    {user.value.name}
-                                                </p>
-                                                <p class="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                                                    {user.value.email}
-                                                </p>
-                                            </div>
+                                        ) && (
+                                            <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                         )}
                                     </Link>
+                                )}
+                            </nav>
+                        )}
+                    </div>
+
+                    {/* Footer controls */}
+                    <div class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
+                        {props.collapsed ? (
+                            /* Collapsed footer (strictly w-[56px] centered within 72px sidebar) */
+                            <div class="flex w-[56px] flex-col items-center space-y-1.5">
+                                {/* Appearance */}
+                                <button
+                                    type="button"
+                                    onClick={toggle}
+                                    class="group flex h-[60px] w-full flex-col items-center justify-center rounded-xl px-1 text-center text-slate-600 transition-colors hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100"
+                                    title={`Current theme: ${theme.value}. Click to switch.`}
+                                    aria-label="Toggle theme"
+                                >
+                                    <MaterialIcon
+                                        name={
+                                            theme.value === 'dark'
+                                                ? 'dark_mode'
+                                                : theme.value === 'light'
+                                                  ? 'light_mode'
+                                                  : 'computer'
+                                        }
+                                        size={22}
+                                        class="shrink-0 text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300"
+                                    />
+                                    <span class="mt-1 max-w-[56px] truncate text-[10px] leading-tight font-medium capitalize">
+                                        {theme.value}
+                                    </span>
+                                </button>
+
+                                {/* Notifications */}
+                                {user.value && (
                                     <div
-                                        class={[
-                                            'flex shrink-0 items-center gap-1',
-                                            props.collapsed
-                                                ? 'flex-col'
-                                                : 'flex-row',
-                                        ]}
+                                        ref={notifRowRef}
+                                        class="flex h-10 w-full items-center justify-center"
                                     >
+                                        <NotificationDropdown plain dropUp />
+                                    </div>
+                                )}
+
+                                {/* PWA Install */}
+                                {canInstallApp.value && (
+                                    <button
+                                        type="button"
+                                        aria-label="Install App"
+                                        title="Install App"
+                                        onClick={handleInstallApp}
+                                        class="flex h-10 w-full items-center justify-center rounded-xl border border-slate-900 bg-slate-900 text-white shadow-sm transition-all hover:border-slate-700 hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:border-slate-200 dark:hover:bg-slate-200"
+                                    >
+                                        <MaterialIcon name="download" size={20} />
+                                    </button>
+                                )}
+
+                                {/* Auth */}
+                                {!user.value ? (
+                                    <Link
+                                        href="/login"
+                                        title="Login"
+                                        aria-label="Login"
+                                        class="flex h-10 w-full items-center justify-center rounded-xl border border-transparent bg-indigo-600 text-white shadow-sm transition-all hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                                    >
+                                        <MaterialIcon name="login" size={20} />
+                                    </Link>
+                                ) : (
+                                    <div class="flex flex-col items-center gap-1.5 py-1">
+                                        <Link
+                                            href={
+                                                user.value.username
+                                                    ? `/u/${user.value.username}`
+                                                    : '/profile'
+                                            }
+                                            title="Profile"
+                                            aria-label="Profile"
+                                            class="flex items-center justify-center"
+                                        >
+                                            {user.value.image_url ? (
+                                                <img
+                                                    src={user.value.image_url}
+                                                    alt={user.value.name}
+                                                    class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                                                />
+                                            ) : (
+                                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20">
+                                                    {user.value.name
+                                                        .charAt(0)
+                                                        .toUpperCase()}
+                                                </span>
+                                            )}
+                                        </Link>
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -627,17 +534,187 @@ export const SiteRail = defineComponent({
                                             }}
                                             title="Log out"
                                             aria-label="Log out"
-                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                            class="flex h-7 w-7 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
                                         >
                                             <MaterialIcon
                                                 name="logout"
-                                                size={20}
+                                                size={18}
                                             />
                                         </button>
                                     </div>
+                                )}
+                            </div>
+                        ) : (
+                            /* Expanded footer (w-[264px]) */
+                            <div class="w-[264px] space-y-1.5 overflow-hidden">
+                                {/* Appearance */}
+                                <div class="transition-opacity duration-300">
+                                    <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
+                                        Appearance
+                                    </p>
+                                    <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+                                        <button
+                                            type="button"
+                                            onClick={() => setTheme('light')}
+                                            class={[
+                                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
+                                                theme.value === 'light'
+                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                                            ]}
+                                        >
+                                            <MaterialIcon
+                                                name="light_mode"
+                                                size={16}
+                                            />
+                                            Light
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTheme('dark')}
+                                            class={[
+                                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
+                                                theme.value === 'dark'
+                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                                            ]}
+                                        >
+                                            <MaterialIcon
+                                                name="dark_mode"
+                                                size={16}
+                                            />
+                                            Dark
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTheme('system')}
+                                            class={[
+                                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
+                                                theme.value === 'system'
+                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                                            ]}
+                                        >
+                                            <MaterialIcon
+                                                name="computer"
+                                                size={16}
+                                            />
+                                            System
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
+
+                                {/* Notifications */}
+                                {user.value && (
+                                    <div
+                                        ref={notifRowRef}
+                                        class="flex h-11 w-full items-center justify-start gap-2.5 px-3"
+                                    >
+                                        <NotificationDropdown plain dropUp />
+                                        <span
+                                            role="button"
+                                            tabindex={0}
+                                            onClick={(e: MouseEvent) =>
+                                                openNotificationsFromLabel(
+                                                    e,
+                                                    notifRowRef,
+                                                )
+                                            }
+                                            onKeydown={(e: KeyboardEvent) => {
+                                                if (
+                                                    e.key === 'Enter' ||
+                                                    e.key === ' '
+                                                ) {
+                                                    openNotificationsFromLabel(
+                                                        e,
+                                                        notifRowRef,
+                                                    );
+                                                }
+                                            }}
+                                            class="flex-1 cursor-pointer truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                                        >
+                                            Notifications
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* PWA Install */}
+                                {canInstallApp.value && (
+                                    <button
+                                        type="button"
+                                        aria-label="Install App"
+                                        onClick={handleInstallApp}
+                                        class="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-[13px] font-bold text-indigo-700 shadow-sm transition-all duration-150 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+                                    >
+                                        <MaterialIcon name="download" size={20} />
+                                        <span>Install App</span>
+                                    </button>
+                                )}
+
+                                {/* Auth */}
+                                <div class="pt-1">
+                                    {!user.value ? (
+                                        <Link
+                                            href="/login"
+                                            aria-label="Login"
+                                            class="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-transparent bg-indigo-600 px-3 text-[13px] font-bold text-white shadow-sm transition-all duration-150 hover:border-indigo-700 hover:bg-indigo-700 hover:shadow-md dark:border-transparent dark:bg-indigo-500 dark:hover:border-indigo-400 dark:hover:bg-indigo-400"
+                                        >
+                                            <MaterialIcon name="login" size={20} />
+                                            <span>Login</span>
+                                        </Link>
+                                    ) : (
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                                            <Link
+                                                href={
+                                                    user.value.username
+                                                        ? `/u/${user.value.username}`
+                                                        : '/profile'
+                                                }
+                                                class="flex min-w-0 items-center gap-2.5"
+                                            >
+                                                {user.value.image_url ? (
+                                                    <img
+                                                        src={user.value.image_url}
+                                                        alt={user.value.name}
+                                                        class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    />
+                                                ) : (
+                                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20">
+                                                        {user.value.name
+                                                            .charAt(0)
+                                                            .toUpperCase()}
+                                                    </span>
+                                                )}
+                                                <div class="min-w-0 text-left">
+                                                    <p class="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+                                                        {user.value.name}
+                                                    </p>
+                                                    <p class="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                                                        {user.value.email}
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                            <div class="flex shrink-0 items-center gap-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        showLogoutModal.value = true;
+                                                    }}
+                                                    title="Log out"
+                                                    aria-label="Log out"
+                                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                                >
+                                                    <MaterialIcon
+                                                        name="logout"
+                                                        size={20}
+                                                    />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -1151,7 +1228,6 @@ export const AdminRail = defineComponent({
         );
         const currentUrl = computed(() => String(page.url));
         const { can } = usePermissions();
-        const { theme, toggle, setTheme } = useDarkMode();
         const showLogoutModal = ref(false);
         const notifRowRef = ref<HTMLElement | null>(null);
 
@@ -1164,349 +1240,305 @@ export const AdminRail = defineComponent({
         return () => (
             <aside
                 class={[
-                    'flex shrink-0 flex-col bg-white/70 backdrop-blur-xl transition-all duration-300 dark:bg-slate-900/60 dark:backdrop-blur-xl',
-                    'sticky top-0 z-30 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
+                    'sticky top-0 z-30 flex h-screen shrink-0 flex-col overflow-x-hidden bg-white/70 backdrop-blur-xl transition-[width] duration-300 ease-in-out dark:bg-slate-900/60 dark:backdrop-blur-xl',
+                    'border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
                     props.collapsed ? 'w-[72px]' : 'w-[280px]',
                 ]}
                 aria-label="Staff navigation"
             >
-                {/* Header */}
-                <div
-                    class={[
-                        'flex shrink-0 items-center border-b border-slate-200/60 bg-white/70 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl',
-                        props.collapsed
-                            ? 'h-auto flex-col justify-center gap-3 px-2 py-3'
-                            : 'h-16 flex-row justify-between px-3',
-                    ]}
-                >
-                    {!props.collapsed ? (
-                        <div class="flex min-w-0 items-center gap-2">
-                            <AppLogo />
-                            <span class="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:bg-indigo-500/10 dark:text-indigo-300">
-                                Staff
-                            </span>
-                        </div>
-                    ) : (
-                        <Link
-                            href="/admin"
-                            class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm ring-1 ring-slate-900/10 dark:bg-gray-100"
-                            aria-label="Staff Panel"
-                            title="Staff Panel"
-                        >
-                            <img
-                                src="/favicon.svg"
-                                alt="HSCStack"
-                                class="h-6 w-6 scale-120 object-cover"
-                            />
-                        </Link>
-                    )}
-                    <button
-                        type="button"
-                        onClick={() => emit('toggle')}
-                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                        aria-label={
-                            props.collapsed
-                                ? 'Expand sidebar'
-                                : 'Collapse sidebar'
-                        }
-                    >
-                        <MaterialIcon
-                            name={
-                                props.collapsed
-                                    ? 'chevron_right'
-                                    : 'chevron_left'
-                            }
-                            size={18}
-                        />
-                    </button>
-                </div>
-
-                {/* Scrollable admin nav */}
-                <div class="flex flex-1 flex-col overflow-y-auto py-3.5">
-                    <nav class="space-y-0.5 px-2.5">
-                        {props.navigation.map((item) => (
-                            <Link
-                                key={item.to}
-                                href={item.to}
-                                class={[
-                                    'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
-                                    isActiveAdminRoute(
-                                        item.to,
-                                        currentUrl.value,
-                                    )
-                                        ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
-                                        : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
-                                    props.collapsed
-                                        ? 'justify-center px-2'
-                                        : '',
-                                ]}
-                                title={props.collapsed ? item.name : undefined}
-                            >
-                                <MaterialIcon
-                                    name={item.icon}
-                                    size={22}
-                                    class={`shrink-0 transition-colors duration-150 ${
-                                        isActiveAdminRoute(
-                                            item.to,
-                                            currentUrl.value,
-                                        )
-                                            ? 'text-indigo-600 dark:text-indigo-300'
-                                            : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                    }`}
-                                />
-                                {!props.collapsed && (
-                                    <span class="truncate">{item.name}</span>
-                                )}
-                                {!props.collapsed &&
-                                    isActiveAdminRoute(
-                                        item.to,
-                                        currentUrl.value,
-                                    ) && (
-                                        <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                                    )}
-                            </Link>
-                        ))}
-                    </nav>
-
-                    {/* Clear cache */}
-                    {can('clear cache') && (
-                        <div class="mt-4 px-2.5">
+                {/* Fixed inner width to prevent text reflow & dance during collapse transition */}
+                <div class="flex h-full w-[280px] flex-col">
+                    {/* Header: Hamburger + Logo */}
+                    <div class="flex h-16 shrink-0 items-center border-b border-slate-200/60 bg-white/70 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl">
+                        <div class="flex w-[72px] shrink-0 items-center justify-center">
                             <button
                                 type="button"
-                                onClick={handleClearCache}
-                                class={[
-                                    'flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight text-rose-600 transition-all duration-150 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10',
+                                onClick={() => emit('toggle')}
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                                aria-label={
                                     props.collapsed
-                                        ? 'justify-center px-2'
-                                        : '',
-                                ]}
-                                title={
-                                    props.collapsed ? 'Clear cache' : undefined
+                                        ? 'Expand sidebar'
+                                        : 'Collapse sidebar'
                                 }
                             >
-                                <MaterialIcon
-                                    name="cached"
-                                    size={22}
-                                    class="shrink-0"
-                                />
-                                {!props.collapsed && (
-                                    <span class="truncate">Clear cache</span>
-                                )}
+                                <MaterialIcon name="menu" size={24} />
                             </button>
                         </div>
-                    )}
-                </div>
+                        <div
+                            class={[
+                                'flex items-center overflow-hidden transition-all duration-300 ease-in-out',
+                                props.collapsed
+                                    ? 'pointer-events-none w-0 opacity-0'
+                                    : 'w-[200px] opacity-100',
+                            ]}
+                        >
+                            <div class="flex min-w-0 items-center gap-2">
+                                <AppLogo />
+                                <span class="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:bg-indigo-500/10 dark:text-indigo-300">
+                                    Staff
+                                </span>
+                            </div>
+                        </div>
+                    </div>
 
-                {/* Footer controls */}
-                <div class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
-                    <div class="space-y-1.5">
-                        {/* Appearance */}
-                        {!props.collapsed ? (
-                            <div>
-                                <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                    Appearance
-                                </p>
-                                <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+                    {/* Scrollable admin nav */}
+                    <div class="flex flex-1 flex-col overflow-y-auto py-2">
+                        {props.collapsed ? (
+                            <nav class="flex w-[72px] flex-col items-center space-y-1 px-1">
+                                {props.navigation.map((item) => {
+                                    const active = isActiveAdminRoute(
+                                        item.to,
+                                        currentUrl.value,
+                                    );
+
+                                    return (
+                                        <Link
+                                            key={item.to}
+                                            href={item.to}
+                                            class={[
+                                                'group flex h-[60px] w-full flex-col items-center justify-center rounded-xl px-1 text-center transition-colors duration-150',
+                                                active
+                                                    ? 'bg-indigo-50/80 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200'
+                                                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                            ]}
+                                            title={item.name}
+                                        >
+                                            <MaterialIcon
+                                                name={item.icon}
+                                                size={22}
+                                                class={`shrink-0 transition-colors duration-150 ${
+                                                    active
+                                                        ? 'text-indigo-600 dark:text-indigo-300'
+                                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                }`}
+                                            />
+                                            <span class="mt-1 max-w-[64px] truncate text-[10px] leading-tight font-medium">
+                                                {item.name}
+                                            </span>
+                                        </Link>
+                                    );
+                                })}
+
+                                {can('clear cache') && (
                                     <button
                                         type="button"
-                                        onClick={() => setTheme('light')}
-                                        class={[
-                                            'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                            theme.value === 'light'
-                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                        ]}
+                                        onClick={handleClearCache}
+                                        class="group flex h-[60px] w-full flex-col items-center justify-center rounded-xl px-1 text-center text-rose-600 transition-colors duration-150 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
+                                        title="Clear cache"
                                     >
                                         <MaterialIcon
-                                            name="light_mode"
-                                            size={16}
+                                            name="cached"
+                                            size={22}
+                                            class="shrink-0"
                                         />
-                                        Light
+                                        <span class="mt-1 max-w-[64px] truncate text-[10px] leading-tight font-medium">
+                                            Clear cache
+                                        </span>
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setTheme('dark')}
-                                        class={[
-                                            'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                            theme.value === 'dark'
-                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                        ]}
+                                )}
+                            </nav>
+                        ) : (
+                            <nav class="w-[280px] space-y-1 px-2.5">
+                                {props.navigation.map((item) => {
+                                    const active = isActiveAdminRoute(
+                                        item.to,
+                                        currentUrl.value,
+                                    );
+
+                                    return (
+                                        <Link
+                                            key={item.to}
+                                            href={item.to}
+                                            class={[
+                                                'group flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight transition-colors duration-150',
+                                                active
+                                                    ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                            ]}
+                                        >
+                                            <MaterialIcon
+                                                name={item.icon}
+                                                size={22}
+                                                class={`shrink-0 transition-colors duration-150 ${
+                                                    active
+                                                        ? 'text-indigo-600 dark:text-indigo-300'
+                                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                }`}
+                                            />
+                                            <span class="truncate">{item.name}</span>
+                                            {active && (
+                                                <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                            )}
+                                        </Link>
+                                    );
+                                })}
+
+                                {can('clear cache') && (
+                                    <div class="pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleClearCache}
+                                            class="flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight text-rose-600 transition-colors duration-150 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
+                                            title="Clear cache"
+                                        >
+                                            <MaterialIcon
+                                                name="cached"
+                                                size={22}
+                                                class="shrink-0"
+                                            />
+                                            <span class="truncate">Clear cache</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </nav>
+                        )}
+                    </div>
+
+                    {/* Footer controls */}
+                    <div class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm">
+                        {props.collapsed ? (
+                            <div class="flex w-[56px] flex-col items-center space-y-1.5">
+                                {/* Notifications */}
+                                {user.value && (
+                                    <div
+                                        ref={notifRowRef}
+                                        class="flex h-10 w-full items-center justify-center"
                                     >
-                                        <MaterialIcon
-                                            name="dark_mode"
-                                            size={16}
-                                        />
-                                        Dark
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setTheme('system')}
-                                        class={[
-                                            'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                            theme.value === 'system'
-                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                        ]}
-                                    >
-                                        <MaterialIcon
-                                            name="computer"
-                                            size={16}
-                                        />
-                                        System
-                                    </button>
-                                </div>
+                                        <NotificationDropdown plain dropUp />
+                                    </div>
+                                )}
+
+                                {/* User + logout */}
+                                {user.value && (
+                                    <div class="flex flex-col items-center gap-1.5 py-1">
+                                        <Link
+                                            href={
+                                                user.value.username
+                                                    ? `/u/${user.value.username}`
+                                                    : '/profile'
+                                            }
+                                            title="Profile"
+                                            aria-label="Profile"
+                                            class="flex items-center justify-center"
+                                        >
+                                            {user.value.image_url ? (
+                                                <img
+                                                    src={user.value.image_url}
+                                                    alt={user.value.name}
+                                                    class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                                                />
+                                            ) : (
+                                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20">
+                                                    {user.value.name
+                                                        .charAt(0)
+                                                        .toUpperCase()}
+                                                </span>
+                                            )}
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                showLogoutModal.value = true;
+                                            }}
+                                            title="Log out"
+                                            aria-label="Log out"
+                                            class="flex h-7 w-7 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                                        >
+                                            <MaterialIcon
+                                                name="logout"
+                                                size={18}
+                                            />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ) : (
-                            <button
-                                type="button"
-                                onClick={toggle}
-                                aria-label="Toggle theme"
-                                title={`Theme: ${theme.value}`}
-                                class="flex h-11 w-full items-center justify-center rounded-xl border border-transparent text-slate-600 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                            >
-                                <MaterialIcon
-                                    name={
-                                        theme.value === 'system'
-                                            ? 'computer'
-                                            : theme.value === 'light'
-                                              ? 'light_mode'
-                                              : 'dark_mode'
-                                    }
-                                    size={20}
-                                />
-                            </button>
-                        )}
-
-                        {/* Notifications */}
-                        {user.value && (
-                            <div
-                                ref={notifRowRef}
-                                class={[
-                                    'flex h-11 w-full items-center gap-2.5 px-3',
-                                    props.collapsed
-                                        ? 'justify-center px-0'
-                                        : 'justify-start',
-                                ]}
-                            >
-                                <NotificationDropdown
-                                    plain={!props.collapsed}
-                                    dropUp
-                                />
-                                {!props.collapsed && (
-                                    <span
-                                        role="button"
-                                        tabindex={0}
-                                        onClick={(e: MouseEvent) =>
-                                            openNotificationsFromLabel(
-                                                e,
-                                                notifRowRef,
-                                            )
-                                        }
-                                        onKeydown={(e: KeyboardEvent) => {
-                                            if (
-                                                e.key === 'Enter' ||
-                                                e.key === ' '
-                                            ) {
+                            <div class="w-[264px] space-y-1.5 overflow-hidden">
+                                {/* Notifications */}
+                                {user.value && (
+                                    <div
+                                        ref={notifRowRef}
+                                        class="flex h-11 w-full items-center justify-start gap-2.5 px-3"
+                                    >
+                                        <NotificationDropdown plain dropUp />
+                                        <span
+                                            role="button"
+                                            tabindex={0}
+                                            onClick={(e: MouseEvent) =>
                                                 openNotificationsFromLabel(
                                                     e,
                                                     notifRowRef,
-                                                );
+                                                )
                                             }
-                                        }}
-                                        class="flex-1 cursor-pointer truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                                    >
-                                        Notifications
-                                    </span>
+                                            onKeydown={(e: KeyboardEvent) => {
+                                                if (
+                                                    e.key === 'Enter' ||
+                                                    e.key === ' '
+                                                ) {
+                                                    openNotificationsFromLabel(
+                                                        e,
+                                                        notifRowRef,
+                                                    );
+                                                }
+                                            }}
+                                            class="flex-1 cursor-pointer truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                                        >
+                                            Notifications
+                                        </span>
+                                    </div>
                                 )}
-                            </div>
-                        )}
 
-                        {/* Back to site */}
-                        <Link
-                            href="/"
-                            class={[
-                                'flex h-11 w-full items-center gap-2.5 rounded-xl border px-3 text-[13px] font-semibold transition-all duration-150',
-                                'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100',
-                                props.collapsed ? 'justify-center' : '',
-                            ]}
-                            title={props.collapsed ? 'Back to site' : undefined}
-                            aria-label="Back to site"
-                        >
-                            <MaterialIcon name="home" size={20} />
-                            {!props.collapsed && <span>Back to site</span>}
-                        </Link>
-
-                        {/* User + logout */}
-                        {user.value && (
-                            <div class={props.collapsed ? 'px-0' : 'pt-1'}>
-                                <div
-                                    class={[
-                                        'flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800',
-                                        props.collapsed
-                                            ? 'flex-col justify-center gap-2 py-3'
-                                            : 'justify-between',
-                                    ]}
-                                >
-                                    <Link
-                                        href={
-                                            user.value.username
-                                                ? `/u/${user.value.username}`
-                                                : '/profile'
-                                        }
-                                        class={[
-                                            'flex items-center gap-2.5',
-                                            props.collapsed
-                                                ? 'justify-center'
-                                                : 'min-w-0',
-                                        ]}
-                                        title={
-                                            props.collapsed
-                                                ? 'Profile'
-                                                : undefined
-                                        }
-                                        aria-label={
-                                            props.collapsed
-                                                ? 'Profile'
-                                                : undefined
-                                        }
-                                    >
-                                        {user.value.image_url ? (
-                                            <img
-                                                src={user.value.image_url}
-                                                alt={user.value.name}
-                                                class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
-                                            />
-                                        ) : (
-                                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20">
-                                                {user.value.name
-                                                    .charAt(0)
-                                                    .toUpperCase()}
-                                            </span>
-                                        )}
-                                        {!props.collapsed && (
-                                            <div class="min-w-0 text-left">
-                                                <p class="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                                                    {user.value.name}
-                                                </p>
-                                                <p class="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                                                    {user.value.email}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </Link>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            showLogoutModal.value = true;
-                                        }}
-                                        title="Log out"
-                                        aria-label="Log out"
-                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
-                                    >
-                                        <MaterialIcon name="logout" size={20} />
-                                    </button>
-                                </div>
+                                {/* User + logout */}
+                                {user.value && (
+                                    <div class="pt-1">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                                            <Link
+                                                href={
+                                                    user.value.username
+                                                        ? `/u/${user.value.username}`
+                                                        : '/profile'
+                                                }
+                                                class="flex min-w-0 items-center gap-2.5"
+                                            >
+                                                {user.value.image_url ? (
+                                                    <img
+                                                        src={user.value.image_url}
+                                                        alt={user.value.name}
+                                                        class="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    />
+                                                ) : (
+                                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20">
+                                                        {user.value.name
+                                                            .charAt(0)
+                                                            .toUpperCase()}
+                                                    </span>
+                                                )}
+                                                <div class="min-w-0 text-left">
+                                                    <p class="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+                                                        {user.value.name}
+                                                    </p>
+                                                    <p class="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                                                        {user.value.email}
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    showLogoutModal.value = true;
+                                                }}
+                                                title="Log out"
+                                                aria-label="Log out"
+                                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                            >
+                                                <MaterialIcon
+                                                    name="logout"
+                                                    size={20}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
