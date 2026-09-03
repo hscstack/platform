@@ -343,7 +343,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div ref="dropdownRef" class="relative">
+    <div ref="dropdownRef" :class="dropUp ? 'contents' : 'relative'">
         <!-- Bell Trigger Button (plain blends into rail rows) -->
         <button
             @click="toggleDropdown"
@@ -382,7 +382,7 @@ onBeforeUnmount(() => {
                 :class="[
                     'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900',
                     dropUp
-                        ? 'absolute bottom-full left-0 z-50 mb-2 w-64 max-w-[calc(100vw-2rem)] origin-bottom'
+                        ? 'absolute bottom-0 left-full z-50 ml-3 max-h-[calc(100dvh-2rem)] w-96 max-w-[calc(100vw-320px)] origin-bottom-left'
                         : 'fixed inset-x-3 top-[68px] z-50 mx-auto max-w-md origin-top sm:absolute sm:inset-auto sm:top-auto sm:right-0 sm:mx-0 sm:mt-2 sm:w-96 sm:max-w-none sm:origin-top-right',
                 ]"
             >
@@ -457,10 +457,10 @@ onBeforeUnmount(() => {
                         >
                     </div>
 
-                    <!-- Empty State -->
+                    <!-- Empty State (compact so an empty panel stays a small card) -->
                     <div
                         v-else-if="notifications.length === 0"
-                        class="flex flex-col items-center justify-center px-4 py-12 text-center text-slate-400 dark:text-gray-500"
+                        class="flex flex-col items-center justify-center px-4 py-8 text-center text-slate-400 dark:text-gray-500"
                     >
                         <div
                             class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500"
