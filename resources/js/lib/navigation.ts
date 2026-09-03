@@ -53,16 +53,10 @@ export const overflowNavItems: NavItem[] = [
         match: (url) => url.startsWith('/blogs'),
     },
     {
-        label: 'Support',
+        label: 'Support Center',
         href: '/support',
         icon: 'help',
         match: (url) => url.startsWith('/support'),
-    },
-    {
-        label: 'About',
-        href: '/about-us',
-        icon: 'info',
-        match: (url) => url.startsWith('/about-us'),
     },
     {
         label: 'Join',
