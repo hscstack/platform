@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';
-import { allNavItems } from '@/lib/navigation';
 import { useDarkMode } from '@/lib/useDarkMode';
-import { usePwa } from '@/lib/usePwa';
+import { usePermissions } from '@/lib/usePermissions';
+
+export type AdminNavItem = {
+    name: string;
+    to: string;
+    icon: string;
+    permission?: string;
+};
 
 type Props = {
+    navigation: AdminNavItem[];
     collapsed: boolean;
 };
 
@@ -20,44 +27,26 @@ const page = usePage();
 const user = computed(
     () => page.props.auth?.user as App.Data.UserData | undefined,
 );
-const canAccessAdmin = computed(() =>
-    Boolean(page.props.auth?.can_access_admin),
-);
-const isAdminRoute = computed(() => String(page.url).startsWith('/admin'));
 const currentUrl = computed(() => String(page.url));
-
+const { can } = usePermissions();
 const { theme, toggle } = useDarkMode();
-const { deferredPrompt, isInstalled, promptInstall } = usePwa();
-const canInstallApp = computed(
-    () => !isInstalled.value && Boolean(deferredPrompt.value),
-);
-const handleInstallApp = async () => {
-    await promptInstall();
-};
 
-const homeHref = computed(() => {
-    if (typeof window !== 'undefined') {
-        try {
-            const pref = localStorage.getItem('preferred_course');
-
-            if (pref === 'ssc') {
-                return '/ssc';
-            }
-        } catch {}
+const isActive = (to: string) => {
+    if (to === '/admin') {
+        return (
+            currentUrl.value === '/admin' ||
+            currentUrl.value.startsWith('/admin?')
+        );
     }
 
-    return currentUrl.value.startsWith('/ssc') ? '/ssc' : '/';
-});
-
-const isActive = (href: string, match?: (url: string) => boolean) => {
-    if (match) {
-        return match(currentUrl.value);
-    }
-
-    return currentUrl.value.startsWith(href);
+    return currentUrl.value.startsWith(to);
 };
 
-// Persist collapsed is handled by parent
+const handleClearCache = () => {
+    if (confirm('Are you sure you want to clear all cache?')) {
+        router.post('/admin/clear-cache');
+    }
+};
 </script>
 
 <template>
@@ -67,9 +56,9 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
             'sticky top-0 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
             collapsed ? 'w-[72px]' : 'w-[280px]',
         ]"
-        aria-label="Side navigation"
+        aria-label="Staff navigation"
     >
-        <!-- Header: Logo + Collapse toggle — collapsed stacks vertically to fit 72px rail -->
+        <!-- Header: Logo + Collapse toggle -->
         <div
             :class="[
                 'flex shrink-0 items-center border-b border-slate-200/60 bg-white/70 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60 dark:backdrop-blur-xl',
@@ -81,9 +70,9 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
             <AppLogo v-if="!collapsed" />
             <Link
                 v-else
-                :href="homeHref"
+                href="/admin"
                 class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 shadow-sm ring-1 ring-slate-900/10 dark:bg-gray-100"
-                aria-label="Home"
+                aria-label="Staff Panel"
             >
                 <img
                     src="/favicon.svg"
@@ -104,45 +93,67 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
             </button>
         </div>
 
-        <!-- Scrollable nav -->
+        <!-- Scrollable admin nav -->
         <div class="flex flex-1 flex-col overflow-y-auto py-3.5">
-            <!-- Primary + Overflow combined for desktop rail -->
+            <div v-if="!collapsed" class="px-4 pb-2.5">
+                <p
+                    class="text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500"
+                >
+                    Management
+                </p>
+            </div>
             <nav class="space-y-0.5 px-2.5">
                 <Link
-                    v-for="item in allNavItems"
-                    :key="item.href"
-                    :href="item.href === '/' ? homeHref : item.href"
+                    v-for="item in navigation"
+                    :key="item.to"
+                    :href="item.to"
                     :class="[
                         'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
-                        isActive(item.href, item.match)
+                        isActive(item.to)
                             ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
                             : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
                         collapsed ? 'justify-center px-2' : '',
                     ]"
-                    :title="collapsed ? item.label : undefined"
+                    :title="collapsed ? item.name : undefined"
                 >
                     <MaterialIcon
                         :name="item.icon"
                         :size="22"
                         :class="[
                             'shrink-0 transition-colors duration-150',
-                            isActive(item.href, item.match)
+                            isActive(item.to)
                                 ? 'text-indigo-600 dark:text-indigo-300'
                                 : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300',
                         ]"
                     />
                     <span v-if="!collapsed" class="truncate">{{
-                        item.label
+                        item.name
                     }}</span>
                     <span
-                        v-if="!collapsed && isActive(item.href, item.match)"
+                        v-if="!collapsed && isActive(item.to)"
                         class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400"
                     />
                 </Link>
             </nav>
+
+            <!-- Clear cache -->
+            <div v-if="can('clear cache')" class="mt-4 px-2.5">
+                <button
+                    type="button"
+                    @click="handleClearCache"
+                    :class="[
+                        'flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight text-rose-600 transition-all duration-150 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10',
+                        collapsed ? 'justify-center px-2' : '',
+                    ]"
+                    :title="collapsed ? 'Clear cache' : undefined"
+                >
+                    <MaterialIcon name="cached" :size="22" class="shrink-0" />
+                    <span v-if="!collapsed" class="truncate">Clear cache</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Footer controls -->
+        <!-- Footer controls — same h-11 geometry as SideRail -->
         <div
             class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm"
         >
@@ -174,7 +185,7 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                     }}</span>
                 </button>
 
-                <!-- Notifications — same h-11 row geometry as Theme for alignment -->
+                <!-- Notifications -->
                 <div
                     v-if="user"
                     :class="[
@@ -191,40 +202,24 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                     </span>
                 </div>
 
-                <!-- PWA Install — absolute bottom, above login — same size as Login -->
-                <button
-                    v-if="canInstallApp"
-                    type="button"
-                    aria-label="Install App"
-                    :title="collapsed ? 'Install App' : undefined"
-                    @click="handleInstallApp"
+                <!-- Back to site — same size as other bottom actions -->
+                <Link
+                    href="/"
                     :class="[
-                        'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
-                        collapsed
-                            ? 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900'
-                            : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20',
+                        'flex h-11 w-full items-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
+                        'justify-center border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700',
+                        collapsed ? '' : '',
                     ]"
+                    :title="collapsed ? 'Back to site' : undefined"
+                    aria-label="Back to site"
                 >
-                    <MaterialIcon name="download" :size="20" />
-                    <span v-if="!collapsed">Install App</span>
-                </button>
+                    <MaterialIcon name="home" :size="20" />
+                    <span v-if="!collapsed">Back to site</span>
+                </Link>
 
-                <!-- Auth -->
-                <div :class="collapsed ? 'px-0' : 'px-2 pt-1'">
-                    <Link
-                        v-if="!user"
-                        href="/login"
-                        :class="[
-                            'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
-                            'border-transparent bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md dark:bg-indigo-500 dark:hover:bg-indigo-400',
-                            collapsed ? '' : '',
-                        ]"
-                    >
-                        <MaterialIcon name="login" :size="20" />
-                        <span v-if="!collapsed">Login</span>
-                    </Link>
+                <!-- User + logout -->
+                <div v-if="user" :class="collapsed ? 'px-0' : 'px-2 pt-1'">
                     <div
-                        v-else
                         :class="[
                             'flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800',
                             collapsed
@@ -269,34 +264,16 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                                 </p>
                             </div>
                         </Link>
-                        <div
-                            :class="[
-                                'flex shrink-0 items-center gap-1',
-                                collapsed ? 'flex-col' : 'flex-row',
-                            ]"
+                        <Link
+                            href="/logout"
+                            method="post"
+                            as="button"
+                            title="Log out"
+                            aria-label="Log out"
+                            class="shrink-0 rounded-lg p-1.5 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                         >
-                            <Link
-                                v-if="canAccessAdmin"
-                                :href="isAdminRoute ? '/' : '/admin'"
-                                class="shrink-0 rounded-lg bg-slate-50 p-1.5 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                                :title="isAdminRoute ? 'Home' : 'Staff Panel'"
-                                :aria-label="
-                                    isAdminRoute ? 'Home' : 'Staff Panel'
-                                "
-                            >
-                                <MaterialIcon name="dashboard" :size="20" />
-                            </Link>
-                            <Link
-                                href="/logout"
-                                method="post"
-                                as="button"
-                                title="Log out"
-                                aria-label="Log out"
-                                class="shrink-0 rounded-lg p-1.5 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
-                            >
-                                <MaterialIcon name="logout" :size="20" />
-                            </Link>
-                        </div>
+                            <MaterialIcon name="logout" :size="20" />
+                        </Link>
                     </div>
                 </div>
             </div>

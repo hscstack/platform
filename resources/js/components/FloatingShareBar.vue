@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
     <div
         v-if="shouldShow"
         ref="toolbarRef"
-        class="fixed right-5 bottom-6 z-40 sm:right-6 sm:bottom-6"
+        class="fixed right-4 bottom-[5.25rem] z-50 pb-[env(safe-area-inset-bottom)] sm:right-6 sm:bottom-6 sm:z-40 sm:pb-0"
     >
         <div class="relative">
             <!-- Share Popover Menu (Minimalist) -->
