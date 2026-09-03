@@ -261,7 +261,7 @@ export const SiteRail = defineComponent({
             <aside
                 class={[
                     'flex shrink-0 flex-col bg-white/70 backdrop-blur-xl transition-all duration-300 dark:bg-slate-900/60 dark:backdrop-blur-xl',
-                    'sticky top-0 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
+                    'sticky top-0 z-30 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
                     props.collapsed ? 'w-[72px]' : 'w-[280px]',
                 ]}
                 aria-label="Side navigation"
@@ -1142,7 +1142,7 @@ export const AdminRail = defineComponent({
             <aside
                 class={[
                     'flex shrink-0 flex-col bg-white/70 backdrop-blur-xl transition-all duration-300 dark:bg-slate-900/60 dark:backdrop-blur-xl',
-                    'sticky top-0 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
+                    'sticky top-0 z-30 h-screen border-r border-slate-200/60 shadow-[1px_0_3px_rgba(0,0,0,0.02),4px_0_16px_rgba(0,0,0,0.03)] dark:border-slate-800/60 dark:shadow-none',
                     props.collapsed ? 'w-[72px]' : 'w-[280px]',
                 ]}
                 aria-label="Staff navigation"

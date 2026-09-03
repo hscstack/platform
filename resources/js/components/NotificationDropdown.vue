@@ -382,7 +382,7 @@ onBeforeUnmount(() => {
                 :class="[
                     'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900',
                     dropUp
-                        ? 'absolute bottom-0 left-full z-50 ml-3 max-h-[calc(100dvh-2rem)] w-96 max-w-[calc(100vw-320px)] origin-bottom-left'
+                        ? 'absolute bottom-0 left-full z-50 ml-3 flex h-[420px] max-h-[calc(100dvh-2rem)] w-96 max-w-[calc(100vw-320px)] origin-bottom-left flex-col'
                         : 'fixed inset-x-3 top-[68px] z-50 mx-auto max-w-md origin-top sm:absolute sm:inset-auto sm:top-auto sm:right-0 sm:mx-0 sm:mt-2 sm:w-96 sm:max-w-none sm:origin-top-right',
                 ]"
             >
@@ -440,14 +440,14 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <!-- Notifications List -->
+                <!-- Notifications List (self-scrolling; fixed panel = stable size) -->
                 <div
-                    class="max-h-[360px] divide-y divide-slate-100 overflow-y-auto dark:divide-gray-800/60"
+                    class="max-h-[360px] min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto dark:divide-gray-800/60"
                 >
                     <!-- Loading Initial State -->
                     <div
                         v-if="isLoading && notifications.length === 0"
-                        class="flex flex-col items-center justify-center py-10 text-slate-400 dark:text-gray-500"
+                        class="flex flex-1 flex-col items-center justify-center py-10 text-slate-400 dark:text-gray-500"
                     >
                         <Loader2
                             class="mb-2 h-5 w-5 animate-spin text-indigo-500"
@@ -460,7 +460,7 @@ onBeforeUnmount(() => {
                     <!-- Empty State (compact so an empty panel stays a small card) -->
                     <div
                         v-else-if="notifications.length === 0"
-                        class="flex flex-col items-center justify-center px-4 py-8 text-center text-slate-400 dark:text-gray-500"
+                        class="flex flex-1 flex-col items-center justify-center px-4 py-8 text-center text-slate-400 dark:text-gray-500"
                     >
                         <div
                             class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500"
