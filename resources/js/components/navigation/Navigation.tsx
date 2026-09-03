@@ -91,10 +91,6 @@ function preferredHomeHref(currentUrl: string): string {
     return currentUrl.startsWith('/ssc') ? '/ssc' : '/';
 }
 
-function isAdminRoute(url: string): boolean {
-    return url.startsWith('/admin');
-}
-
 function isActiveAdminRoute(to: string, currentUrl: string): boolean {
     if (to === '/admin') {
         return currentUrl === '/admin' || currentUrl.startsWith('/admin?');
