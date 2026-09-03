@@ -2,13 +2,15 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
-import MobileSideBar from '@/components/admin/MobileSideBar.vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AtmosphericBackground from '@/components/AtmosphericBackground.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import AdminSideRail from '@/components/navigation/AdminSideRail.vue';
-import type { AdminNavItem } from '@/components/navigation/AdminSideRail.vue';
-import BottomNav from '@/components/navigation/BottomNav.vue';
+import {
+    AdminDrawer as MobileSideBar,
+    AdminRail as AdminSideRail,
+    SiteBottomNav as BottomNav,
+} from '@/components/navigation/Navigation';
+import type { AdminNavItem } from '@/components/navigation/Navigation';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';

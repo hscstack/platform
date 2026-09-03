@@ -14,7 +14,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import BottomNavCustomizer from '@/components/navigation/BottomNavCustomizer.vue';
+import { BottomNavCustomizer } from '@/components/navigation/Navigation';
 import { compressImage } from '@/lib/imageCompression';
 
 const props = defineProps({

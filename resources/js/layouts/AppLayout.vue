@@ -5,9 +5,11 @@ import AtmosphericBackground from '@/components/AtmosphericBackground.vue';
 import FloatingShareBar from '@/components/FloatingShareBar.vue';
 import Footer from '@/components/Footer.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import BottomNav from '@/components/navigation/BottomNav.vue';
-import OverflowDrawer from '@/components/navigation/OverflowDrawer.vue';
-import SideRail from '@/components/navigation/SideRail.vue';
+import {
+    SiteBottomNav as BottomNav,
+    SiteDrawer as OverflowDrawer,
+    SiteRail as SideRail,
+} from '@/components/navigation/Navigation';
 import ToastNotification from '@/components/ToastNotification.vue';
 import { useBreakpoint } from '@/lib/useBreakpoint';
 import { useOrientation } from '@/lib/useOrientation';

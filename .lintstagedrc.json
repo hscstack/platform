@@ -2,7 +2,7 @@
   "**/*.php": [
     "vendor/bin/pint"
   ],
-  "resources/**/*.{vue,ts,js}": [
+  "resources/**/*.{vue,ts,tsx,js}": [
     "prettier --write",
     "eslint --fix"
   ],
