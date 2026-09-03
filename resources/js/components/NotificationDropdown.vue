@@ -382,7 +382,7 @@ onBeforeUnmount(() => {
                 :class="[
                     'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900',
                     dropUp
-                        ? 'absolute bottom-full left-0 z-50 mb-2 w-96 max-w-[calc(100vw-2rem)] origin-bottom'
+                        ? 'absolute bottom-full left-0 z-50 mb-2 w-64 max-w-[calc(100vw-2rem)] origin-bottom'
                         : 'fixed inset-x-3 top-[68px] z-50 mx-auto max-w-md origin-top sm:absolute sm:inset-auto sm:top-auto sm:right-0 sm:mx-0 sm:mt-2 sm:w-96 sm:max-w-none sm:origin-top-right',
                 ]"
             >
