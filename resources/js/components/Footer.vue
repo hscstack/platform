@@ -30,7 +30,7 @@ const isFullFooter = computed(() => {
     <footer
         :class="[
             isFullFooter ? 'block' : 'hidden md:block',
-            'mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900',
+            'mt-auto border-t border-slate-100 bg-white py-12 sm:py-16 dark:border-gray-800 dark:bg-[#040816]',
         ]"
     >
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
@@ -222,7 +222,7 @@ const isFullFooter = computed(() => {
     <!-- Minimal, Clean Mobile Footer on Non-Home Pages (md:hidden) -->
     <footer
         v-if="!isFullFooter"
-        class="mt-auto border-t border-slate-200/70 bg-white/80 pt-8 pb-6 backdrop-blur-md md:hidden dark:border-gray-800/70 dark:bg-gray-950/80"
+        class="mt-auto border-t border-slate-200/70 bg-white/80 pt-8 pb-6 backdrop-blur-md md:hidden dark:border-gray-800/70 dark:bg-[#040816]/90"
     >
         <div
             class="mx-auto flex max-w-7xl flex-col items-center gap-3.5 px-4 text-center"

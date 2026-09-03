@@ -13,6 +13,8 @@ import {
     LifeBuoy,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+
+import { BottomNavCustomizer } from '@/components/navigation/Navigation';
 import { compressImage } from '@/lib/imageCompression';
 
 const props = defineProps({
@@ -74,6 +76,7 @@ const handleAvatarSelect = async (event: Event) => {
 
             if (resultFile.size > 5 * 1024 * 1024) {
                 form.errors.file = 'ছবিটির আকার ৫MB এর চেয়ে কম হতে হবে।';
+                form.file = null;
 
                 return;
             }
@@ -416,7 +419,7 @@ const submitForm = () => {
                             {{
                                 isCompressingAvatar
                                     ? 'Optimizing avatar...'
-                                    : 'Supports PNG, JPG, or WEBP up to 20MB (auto-optimized).'
+                                    : 'Supports PNG, JPG, or WEBP up to 5MB (auto-optimized).'
                             }}
                         </p>
                         <p
@@ -639,6 +642,9 @@ const submitForm = () => {
                     </div>
                 </transition>
             </div>
+
+            <!-- Bottom Navigation Customization (Mobile) -->
+            <BottomNavCustomizer />
 
             <!-- Support Center Link -->
             <div

@@ -3,7 +3,9 @@ import { usePage } from '@inertiajs/vue3';
 import { Share2, Check, Loader2, Link as LinkIcon } from 'lucide-vue-next';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useAuth } from '@/lib/useAuth';
+import { useBreakpoint } from '@/lib/useBreakpoint';
 import { getCsrfToken } from '@/lib/useCsrf';
+import { useOrientation } from '@/lib/useOrientation';
 import AuthModal from './AuthModal.vue';
 
 const page = usePage();
@@ -18,6 +20,17 @@ const shareablePages = [
 ];
 
 const shouldShow = computed(() => shareablePages.includes(page.component));
+
+// Mirror AppLayout's BottomNav rule so the button clears the nav on every
+// layout that shows it (including sm-width portrait, not just sub-sm).
+const { isMobile, isHydrated: breakpointReady } = useBreakpoint(1024);
+const { isLandscape, isHydrated: orientationReady } = useOrientation();
+const clearOfBottomNav = computed(
+    () =>
+        breakpointReady.value &&
+        orientationReady.value &&
+        (isMobile.value || !isLandscape.value),
+);
 
 const isMenuOpen = ref(false);
 const isLoading = ref(false);
@@ -136,7 +149,10 @@ onBeforeUnmount(() => {
     <div
         v-if="shouldShow"
         ref="toolbarRef"
-        class="fixed right-5 bottom-6 z-40 sm:right-6 sm:bottom-6"
+        :class="[
+            'fixed right-4 z-50 pb-[env(safe-area-inset-bottom)] sm:right-6',
+            clearOfBottomNav ? 'bottom-[5.25rem]' : 'bottom-6',
+        ]"
     >
         <div class="relative">
             <!-- Share Popover Menu (Minimalist) -->
