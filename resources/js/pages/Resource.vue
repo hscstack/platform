@@ -11,12 +11,14 @@ import {
     ExternalLink,
     CheckCircle2,
 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import YouTubePlayer from '@/components/YouTubePlayer.vue';
 import { useAuth } from '@/lib/useAuth';
+import { useBreakpoint } from '@/lib/useBreakpoint';
+import { useOrientation } from '@/lib/useOrientation';
 
 const props = defineProps({
     resource: {
@@ -51,6 +53,15 @@ const props = defineProps({
 
 const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
 const showCompletersModal = ref(false);
+
+const { isMobile, isHydrated: breakpointReady } = useBreakpoint(1024);
+const { isLandscape, isHydrated: orientationReady } = useOrientation();
+const clearOfBottomNav = computed(
+    () =>
+        breakpointReady.value &&
+        orientationReady.value &&
+        (isMobile.value || !isLandscape.value),
+);
 
 // Optimistic Completion state
 const localIsCompleted = ref(props.isCompleted);
@@ -504,25 +515,16 @@ const toggleFullscreen = () => {
                 </p>
             </div>
 
-            <!-- Author Note (For Images & other resources if provided) -->
-            <div
-                v-else-if="
-                    resource.content && resource.resource_type !== 'note'
-                "
-                class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs leading-relaxed text-slate-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-400"
-            >
-                <span class="font-bold text-slate-900 dark:text-gray-200"
-                    >Note:</span
-                >
-                <p class="mt-1 whitespace-pre-line">{{ resource.content }}</p>
-            </div>
         </div>
     </div>
 
-    <!-- Floating Bottom Navigation (Centered pill, no overlap with bottom-right floating share bar) -->
+    <!-- Floating Bottom Navigation (Centered pill, clears bottom navbar on mobile) -->
     <div
         v-if="previousResourceId || nextResourceId"
-        class="pointer-events-none fixed inset-x-0 bottom-6 z-30 flex justify-center px-4"
+        :class="[
+            'pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 pb-[env(safe-area-inset-bottom)] transition-all duration-200',
+            clearOfBottomNav ? 'bottom-[5.25rem]' : 'bottom-6',
+        ]"
     >
         <div
             class="pointer-events-auto flex items-center gap-1 rounded-full border border-slate-200/90 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/95"

@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
                     :class="[
                         maxWidthClass,
                         position === 'responsive'
-                            ? 'rounded-t-2xl sm:rounded-2xl'
+                            ? 'rounded-t-2xl pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0'
                             : 'rounded-2xl',
                     ]"
                 >
@@ -199,6 +199,11 @@ onBeforeUnmount(() => {
                     <div
                         v-if="$slots.footer"
                         class="border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/60"
+                        :class="[
+                            position === 'responsive'
+                                ? 'pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3'
+                                : '',
+                        ]"
                     >
                         <slot name="footer" />
                     </div>
