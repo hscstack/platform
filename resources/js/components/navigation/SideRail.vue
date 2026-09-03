@@ -248,7 +248,7 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                     :class="[
                         'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
                         collapsed
-                            ? 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900'
+                            ? 'border-slate-900 bg-slate-900 text-white hover:border-slate-700 hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:border-slate-200 dark:hover:bg-slate-200'
                             : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20',
                     ]"
                 >
@@ -261,10 +261,11 @@ const isActive = (href: string, match?: (url: string) => boolean) => {
                     <Link
                         v-if="!user"
                         href="/login"
+                        :title="collapsed ? 'Login' : undefined"
+                        aria-label="Login"
                         :class="[
                             'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-[13px] font-bold shadow-sm transition-all duration-150',
-                            'border-transparent bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md dark:bg-indigo-500 dark:hover:bg-indigo-400',
-                            collapsed ? '' : '',
+                            'border-transparent bg-indigo-600 text-white hover:border-indigo-700 hover:bg-indigo-700 hover:shadow-md dark:border-transparent dark:bg-indigo-500 dark:hover:border-indigo-400 dark:hover:bg-indigo-400',
                         ]"
                     >
                         <MaterialIcon name="login" :size="20" />
