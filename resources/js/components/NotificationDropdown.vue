@@ -37,6 +37,8 @@ interface NotificationItem {
     created_at_human: string;
 }
 
+withDefaults(defineProps<{ plain?: boolean }>(), { plain: false });
+
 const page = usePage();
 const isOpen = ref(false);
 const isLoading = ref(false);
@@ -339,11 +341,15 @@ onBeforeUnmount(() => {
 
 <template>
     <div ref="dropdownRef" class="relative">
-        <!-- Bell Trigger Button -->
+        <!-- Bell Trigger Button (plain blends into rail rows) -->
         <button
             @click="toggleDropdown"
             type="button"
-            class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+            :class="
+                plain
+                    ? 'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:text-slate-900 active:scale-95 dark:text-slate-400 dark:hover:text-slate-100'
+                    : 'relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
+            "
             :aria-expanded="isOpen"
             aria-label="Notifications"
             title="Notifications"

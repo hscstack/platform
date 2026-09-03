@@ -341,7 +341,9 @@ export const SiteRail = defineComponent({
                                         : 'justify-start',
                                 ]}
                             >
-                                <NotificationDropdown />
+                                <NotificationDropdown
+                                    plain={!props.collapsed}
+                                />
                                 {!props.collapsed && (
                                     <span class="text-[13px] font-semibold text-slate-600 dark:text-slate-400">
                                         Notifications
@@ -1228,7 +1230,9 @@ export const AdminRail = defineComponent({
                                         : 'justify-start',
                                 ]}
                             >
-                                <NotificationDropdown />
+                                <NotificationDropdown
+                                    plain={!props.collapsed}
+                                />
                                 {!props.collapsed && (
                                     <span class="text-[13px] font-semibold text-slate-600 dark:text-slate-400">
                                         Notifications
