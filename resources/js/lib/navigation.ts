@@ -21,6 +21,13 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Blogs',
+        href: '/blogs',
+        icon: 'menu_book',
+        match: (url) => url.startsWith('/blogs'),
+        showInBottom: true,
+    },
+    {
         label: 'Forum',
         href: '/forum',
         icon: 'forum',
@@ -47,23 +54,10 @@ export const primaryNavItems: NavItem[] = [
 
 export const overflowNavItems: NavItem[] = [
     {
-        label: 'Blogs',
-        href: '/blogs',
-        icon: 'menu_book',
-        match: (url) => url.startsWith('/blogs'),
-    },
-    {
         label: 'Support Center',
         href: '/support',
         icon: 'help',
         match: (url) => url.startsWith('/support'),
-    },
-    {
-        label: 'Join',
-        labelBn: 'Join Team',
-        href: '/join',
-        icon: 'group_add',
-        match: (url) => url.startsWith('/join'),
     },
     {
         label: 'Donate',
