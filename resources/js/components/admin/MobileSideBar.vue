@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
+import LogoutConfirmModal from '@/components/LogoutConfirmModal.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -23,6 +24,13 @@ defineProps<{
 }>();
 
 const emit = defineEmits(['close']);
+
+const showLogoutModal = ref(false);
+
+const askLogout = () => {
+    emit('close');
+    showLogoutModal.value = true;
+};
 
 const currentUrl = computed(() => String(page.url));
 
@@ -126,17 +134,18 @@ const handleClearCache = () => {
                     <MaterialIcon name="home" :size="20" />
                     <span>Back to site</span>
                 </Link>
-                <Link
+                <button
                     v-if="user"
-                    href="/logout"
-                    method="post"
-                    as="button"
-                    class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-transparent px-3 text-[13px] font-bold text-rose-600 transition-all duration-150 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                    type="button"
+                    @click="askLogout"
+                    class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-transparent px-3 text-left text-[13px] font-bold text-rose-600 transition-all duration-150 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                 >
                     <MaterialIcon name="logout" :size="20" />
                     <span>Log out</span>
-                </Link>
+                </button>
             </div>
         </div>
+
+        <LogoutConfirmModal v-model:open="showLogoutModal" />
     </div>
 </template>

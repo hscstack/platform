@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
+import LogoutConfirmModal from '@/components/LogoutConfirmModal.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';
 import { useDarkMode } from '@/lib/useDarkMode';
@@ -29,7 +30,8 @@ const user = computed(
 );
 const currentUrl = computed(() => String(page.url));
 const { can } = usePermissions();
-const { theme, toggle } = useDarkMode();
+const { theme, toggle, setTheme } = useDarkMode();
+const showLogoutModal = ref(false);
 
 const isActive = (to: string) => {
     if (to === '/admin') {
@@ -158,17 +160,65 @@ const handleClearCache = () => {
             class="border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm"
         >
             <div class="space-y-1.5">
-                <!-- Theme -->
+                <!-- Appearance — segmented group like mobile drawer -->
+                <div v-if="!collapsed">
+                    <p
+                        class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500"
+                    >
+                        Appearance
+                    </p>
+                    <div
+                        class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800"
+                    >
+                        <button
+                            type="button"
+                            @click="setTheme('light')"
+                            :class="[
+                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
+                                theme === 'light'
+                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                            ]"
+                        >
+                            <MaterialIcon name="light_mode" :size="16" />
+                            Light
+                        </button>
+                        <button
+                            type="button"
+                            @click="setTheme('dark')"
+                            :class="[
+                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
+                                theme === 'dark'
+                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                            ]"
+                        >
+                            <MaterialIcon name="dark_mode" :size="16" />
+                            Dark
+                        </button>
+                        <button
+                            type="button"
+                            @click="setTheme('system')"
+                            :class="[
+                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
+                                theme === 'system'
+                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
+                            ]"
+                        >
+                            <MaterialIcon name="computer" :size="16" />
+                            System
+                        </button>
+                    </div>
+                </div>
+                <!-- Collapsed: single cycling theme button -->
                 <button
+                    v-else
                     type="button"
                     @click="toggle"
-                    :aria-label="collapsed ? `Theme: ${theme}` : undefined"
-                    :title="collapsed ? `Theme: ${theme}` : undefined"
-                    :class="[
-                        'flex h-11 w-full items-center gap-2.5 rounded-xl border px-3 text-[13px] font-semibold transition-all duration-150',
-                        'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100',
-                        collapsed ? 'justify-center' : '',
-                    ]"
+                    aria-label="Toggle theme"
+                    :title="`Theme: ${theme}`"
+                    class="flex h-11 w-full items-center justify-center rounded-xl border border-transparent text-slate-600 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                 >
                     <MaterialIcon
                         :name="
@@ -180,9 +230,6 @@ const handleClearCache = () => {
                         "
                         :size="20"
                     />
-                    <span v-if="!collapsed" class="capitalize">{{
-                        theme
-                    }}</span>
                 </button>
 
                 <!-- Notifications -->
@@ -264,19 +311,20 @@ const handleClearCache = () => {
                                 </p>
                             </div>
                         </Link>
-                        <Link
-                            href="/logout"
-                            method="post"
-                            as="button"
+                        <button
+                            type="button"
+                            @click="showLogoutModal = true"
                             title="Log out"
                             aria-label="Log out"
                             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                         >
                             <MaterialIcon name="logout" :size="20" />
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <LogoutConfirmModal v-model:open="showLogoutModal" />
     </aside>
 </template>

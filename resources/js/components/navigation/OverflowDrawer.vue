@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
+import LogoutConfirmModal from '@/components/LogoutConfirmModal.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';
 import { useBottomNavCustomization } from '@/lib/useBottomNavCustomization';
@@ -32,9 +33,16 @@ const canInstallApp = computed(
 );
 const { availableItems } = useBottomNavCustomization();
 
+const showLogoutModal = ref(false);
+
 const close = () => {
     emit('update:open', false);
     emit('close');
+};
+
+const askLogout = () => {
+    close();
+    showLogoutModal.value = true;
 };
 
 const handleInstallApp = async () => {
@@ -266,108 +274,92 @@ onBeforeUnmount(() => {
                                     </button>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Account (bottom) -->
+                        <!-- Account footer (fixed, desktop-style card) -->
+                        <div
+                            class="shrink-0 border-t border-slate-200/60 bg-white/40 p-2 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:backdrop-blur-sm"
+                        >
                             <div
-                                class="mt-4 border-t border-slate-200/60 px-2.5 pt-3 dark:border-slate-800/60"
+                                v-if="user"
+                                class="flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800"
                             >
-                                <p
-                                    class="mb-2 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500"
-                                >
-                                    Account
-                                </p>
-                                <div
-                                    v-if="user"
-                                    class="mb-1 flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                                <Link
+                                    :href="
+                                        user.username
+                                            ? `/u/${user.username}`
+                                            : '/profile'
+                                    "
+                                    @click="close"
+                                    class="flex min-w-0 flex-1 items-center gap-2.5"
+                                    title="Profile"
+                                    aria-label="Profile"
                                 >
                                     <img
                                         v-if="user.image_url"
                                         :src="user.image_url"
                                         :alt="user.name"
-                                        class="h-10 w-10 rounded-full object-cover"
+                                        class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
                                     />
                                     <span
                                         v-else
-                                        class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white"
+                                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white ring-1 ring-indigo-600/20"
                                         >{{
                                             user.name.charAt(0).toUpperCase()
                                         }}</span
                                     >
-                                    <div class="min-w-0">
-                                        <p
-                                            class="truncate text-sm font-semibold text-slate-900 dark:text-gray-100"
+                                    <span class="min-w-0 text-left">
+                                        <span
+                                            class="block truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
                                         >
                                             {{ user.name }}
-                                        </p>
-                                        <p
-                                            class="truncate text-xs text-slate-500"
+                                        </span>
+                                        <span
+                                            class="block truncate text-xs text-slate-500 dark:text-slate-400"
                                         >
                                             {{ user.email }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <Link
-                                    v-else
-                                    href="/login"
-                                    @click="close"
-                                    class="mb-1 flex h-11 items-center justify-center gap-2.5 rounded-xl border border-transparent bg-indigo-600 px-3 text-[13px] font-bold text-white shadow-sm transition-all duration-150 hover:bg-indigo-700 hover:shadow-md dark:bg-indigo-500 dark:hover:bg-indigo-400"
-                                >
-                                    <MaterialIcon name="login" :size="20" />
-                                    Sign in
+                                        </span>
+                                    </span>
                                 </Link>
-                                <div v-if="user" class="space-y-0.5">
-                                    <Link
-                                        :href="
-                                            user.username
-                                                ? `/u/${user.username}`
-                                                : '/profile'
-                                        "
-                                        @click="close"
-                                        class="group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight text-slate-600 transition-all duration-150 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100"
-                                    >
-                                        <MaterialIcon
-                                            name="person"
-                                            :size="22"
-                                            class="shrink-0 text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300"
-                                        />
-                                        Profile
-                                    </Link>
-                                    <Link
-                                        v-if="canAccessAdmin"
-                                        :href="isAdminRoute ? '/' : '/admin'"
-                                        @click="close"
-                                        class="group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight text-slate-600 transition-all duration-150 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100"
-                                    >
-                                        <MaterialIcon
-                                            name="dashboard"
-                                            :size="22"
-                                            class="shrink-0 text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300"
-                                        />
-                                        {{
-                                            isAdminRoute
-                                                ? 'Home'
-                                                : 'Staff Panel'
-                                        }}
-                                    </Link>
-                                    <Link
-                                        href="/logout"
-                                        method="post"
-                                        as="button"
-                                        class="group flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight text-rose-600 transition-all duration-150 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                                    >
-                                        <MaterialIcon
-                                            name="logout"
-                                            :size="22"
-                                            class="shrink-0"
-                                        />
-                                        Sign out
-                                    </Link>
-                                </div>
+                                <Link
+                                    v-if="canAccessAdmin"
+                                    :href="isAdminRoute ? '/' : '/admin'"
+                                    @click="close"
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition-colors hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                                    :title="
+                                        isAdminRoute ? 'Home' : 'Staff Panel'
+                                    "
+                                    :aria-label="
+                                        isAdminRoute ? 'Home' : 'Staff Panel'
+                                    "
+                                >
+                                    <MaterialIcon name="dashboard" :size="20" />
+                                </Link>
+                                <button
+                                    type="button"
+                                    @click="askLogout"
+                                    title="Log out"
+                                    aria-label="Log out"
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 hover:shadow-sm dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                >
+                                    <MaterialIcon name="logout" :size="20" />
+                                </button>
                             </div>
+                            <Link
+                                v-else
+                                href="/login"
+                                @click="close"
+                                class="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-transparent bg-indigo-600 px-3 text-[13px] font-bold text-white shadow-sm transition-all duration-150 hover:bg-indigo-700 hover:shadow-md dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                            >
+                                <MaterialIcon name="login" :size="20" />
+                                Sign in
+                            </Link>
                         </div>
                     </aside>
                 </Transition>
             </div>
         </Teleport>
+
+        <LogoutConfirmModal v-model:open="showLogoutModal" />
     </div>
 </template>
