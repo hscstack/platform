@@ -76,6 +76,7 @@ const handleAvatarSelect = async (event: Event) => {
 
             if (resultFile.size > 5 * 1024 * 1024) {
                 form.errors.file = 'ছবিটির আকার ৫MB এর চেয়ে কম হতে হবে।';
+                form.file = null;
 
                 return;
             }
@@ -418,7 +419,7 @@ const submitForm = () => {
                             {{
                                 isCompressingAvatar
                                     ? 'Optimizing avatar...'
-                                    : 'Supports PNG, JPG, or WEBP up to 20MB (auto-optimized).'
+                                    : 'Supports PNG, JPG, or WEBP up to 5MB (auto-optimized).'
                             }}
                         </p>
                         <p

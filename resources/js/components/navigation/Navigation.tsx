@@ -21,8 +21,10 @@ import {
     Transition,
     computed,
     defineComponent,
+    nextTick,
     onBeforeUnmount,
     ref,
+    toRef,
     watch,
 } from 'vue';
 import type { PropType, Ref } from 'vue';
@@ -113,6 +115,93 @@ function bindOpen(source: Ref<boolean>): {
             source.value = value;
         },
     };
+}
+
+/**
+ * Keyboard accessibility for a modal drawer panel: Escape closes,
+ * focus moves to `initial` on open and returns to whatever had focus
+ * (usually the hamburger trigger) on close, and Tab cycles inside
+ * `panel` while open.
+ */
+function useDialogA11y(options: {
+    open: Ref<boolean>;
+    panel: Ref<HTMLElement | null>;
+    initial: Ref<HTMLElement | null>;
+    onEscape: () => void;
+}) {
+    const { open, panel, initial, onEscape } = options;
+    let lastFocused: Element | null = null;
+
+    const focusables = (): HTMLElement[] => {
+        if (!panel.value) {
+            return [];
+        }
+
+        return Array.from(
+            panel.value.querySelectorAll<HTMLElement>(
+                'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+        ).filter((el) => el.offsetParent !== null);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onEscape();
+
+            return;
+        }
+
+        if (e.key !== 'Tab') {
+            return;
+        }
+
+        const items = focusables();
+
+        if (items.length === 0) {
+            return;
+        }
+
+        const first = items[0];
+        const last = items[items.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    };
+
+    watch(open, (isOpen) => {
+        if (typeof document === 'undefined') {
+            return;
+        }
+
+        if (isOpen) {
+            lastFocused = document.activeElement;
+            document.addEventListener('keydown', onKeyDown);
+            nextTick(() => initial.value?.focus());
+        } else {
+            document.removeEventListener('keydown', onKeyDown);
+
+            if (
+                lastFocused &&
+                document.contains(lastFocused) &&
+                lastFocused instanceof HTMLElement
+            ) {
+                lastFocused.focus();
+            }
+
+            lastFocused = null;
+        }
+    });
+
+    onBeforeUnmount(() => {
+        if (typeof document !== 'undefined') {
+            document.removeEventListener('keydown', onKeyDown);
+        }
+    });
 }
 
 /* ------------------------------------------------------------------ */
@@ -608,11 +697,20 @@ export const SiteDrawer = defineComponent({
         const { availableItems } = useBottomNavCustomization();
 
         const showLogoutModal = ref(false);
+        const panelRef = ref<HTMLElement | null>(null);
+        const closeButtonRef = ref<HTMLElement | null>(null);
 
         const close = () => {
             emit('update:open', false);
             emit('close');
         };
+
+        useDialogA11y({
+            open: toRef(props, 'open'),
+            panel: panelRef,
+            initial: closeButtonRef,
+            onEscape: close,
+        });
 
         const askLogout = () => {
             close();
@@ -701,10 +799,17 @@ export const SiteDrawer = defineComponent({
                                 leaveFromClass="translate-x-0"
                                 leaveToClass="-translate-x-full"
                             >
-                                <aside class="relative flex h-full w-[84%] max-w-[320px] flex-col border-r border-slate-200/60 bg-white/85 shadow-[8px_0_32px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/70 dark:backdrop-blur-xl">
+                                <aside
+                                    ref={panelRef}
+                                    role="dialog"
+                                    aria-modal="true"
+                                    aria-label="Site menu"
+                                    class="relative flex h-full w-[84%] max-w-[320px] flex-col border-r border-slate-200/60 bg-white/85 shadow-[8px_0_32px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/70 dark:backdrop-blur-xl"
+                                >
                                     <div class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/60 px-4 dark:border-slate-800/60">
                                         <AppLogo />
                                         <button
+                                            ref={closeButtonRef}
                                             onClick={close}
                                             class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
                                             aria-label="Close menu"
@@ -1360,6 +1465,17 @@ export const AdminDrawer = defineComponent({
         const currentUrl = computed(() => String(page.url));
 
         const showLogoutModal = ref(false);
+        const panelRef = ref<HTMLElement | null>(null);
+        const closeButtonRef = ref<HTMLElement | null>(null);
+
+        const close = () => emit('close');
+
+        useDialogA11y({
+            open: toRef(props, 'isOpen'),
+            panel: panelRef,
+            initial: closeButtonRef,
+            onEscape: close,
+        });
 
         const askLogout = () => {
             emit('close');
@@ -1372,8 +1488,6 @@ export const AdminDrawer = defineComponent({
                 router.post('/admin/clear-cache');
             }
         };
-
-        const close = () => emit('close');
 
         return () => (
             <>
@@ -1394,11 +1508,18 @@ export const AdminDrawer = defineComponent({
                                 leaveFromClass="translate-x-0"
                                 leaveToClass="-translate-x-full"
                             >
-                                <div class="relative flex w-full max-w-[320px] flex-1 flex-col justify-between border-r border-slate-200/60 bg-white/85 shadow-[8px_0_32px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/70 dark:backdrop-blur-xl">
+                                <div
+                                    ref={panelRef}
+                                    role="dialog"
+                                    aria-modal="true"
+                                    aria-label="Staff menu"
+                                    class="relative flex w-full max-w-[320px] flex-1 flex-col justify-between border-r border-slate-200/60 bg-white/85 shadow-[8px_0_32px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/70 dark:backdrop-blur-xl"
+                                >
                                     <div class="flex-1 overflow-y-auto py-3.5">
                                         <div class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/60 px-4 dark:border-slate-800/60">
                                             <AppLogo />
                                             <button
+                                                ref={closeButtonRef}
                                                 onClick={close}
                                                 class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
                                                 aria-label="Close staff menu"
@@ -1519,7 +1640,7 @@ export const BottomNavCustomizer = defineComponent({
             availableItems,
             homeItem,
             accountItem,
-            middleHrefs,
+            middleItems,
             canAdd,
             canRemove,
             addItem,
@@ -1642,10 +1763,10 @@ export const BottomNavCustomizer = defineComponent({
                             </span>
                         </li>
 
-                        {/* Middle draggable */}
-                        {middleHrefs.value.map((href, idx) => (
+                        {/* Middle draggable (resolved items keep icon/label/remove aligned) */}
+                        {middleItems.value.map((item, idx) => (
                             <li
-                                key={href}
+                                key={item.href}
                                 draggable={true}
                                 onDragstart={(e: DragEvent) =>
                                     onDragStart(idx, e)
@@ -1666,19 +1787,42 @@ export const BottomNavCustomizer = defineComponent({
                                     class="shrink-0 cursor-grab text-slate-400 active:cursor-grabbing"
                                 />
                                 <MaterialIcon
-                                    name={
-                                        bottomNavItems.value[idx + 1]?.icon ??
-                                        'help'
-                                    }
+                                    name={item.icon}
                                     size={22}
                                     class="shrink-0 text-slate-600 dark:text-gray-300"
                                 />
                                 <span class="flex-1 text-sm font-medium text-slate-800 dark:text-gray-200">
-                                    {bottomNavItems.value[idx + 1]?.label}
+                                    {item.label}
                                 </span>
                                 <button
                                     type="button"
-                                    onClick={() => handleRemove(href)}
+                                    onClick={() => reorder(idx, idx - 1)}
+                                    disabled={idx === 0}
+                                    class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700/60"
+                                    aria-label={`Move ${item.label} earlier`}
+                                >
+                                    <MaterialIcon
+                                        name="keyboard_arrow_up"
+                                        size={16}
+                                    />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => reorder(idx, idx + 1)}
+                                    disabled={
+                                        idx === middleItems.value.length - 1
+                                    }
+                                    class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700/60"
+                                    aria-label={`Move ${item.label} later`}
+                                >
+                                    <MaterialIcon
+                                        name="keyboard_arrow_down"
+                                        size={16}
+                                    />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemove(item.href)}
                                     disabled={!canRemove.value}
                                     class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-30 dark:hover:bg-rose-950/40"
                                     aria-label="Remove from bottom bar"

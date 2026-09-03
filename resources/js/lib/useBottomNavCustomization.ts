@@ -16,6 +16,13 @@ const CUSTOMIZABLE_POOL: NavItem[] = allNavItems.filter(
 
 const DEFAULT_MIDDLE_HREFS = ['/forum', '/chat', '/ai']; // 3 middle → 5 total with Home+Account
 
+type BottomNavUser = {
+    name: string;
+    email: string;
+    username?: string | null;
+    image_url?: string | null;
+};
+
 function isValidHref(href: string): boolean {
     return CUSTOMIZABLE_POOL.some((i) => i.href === href);
 }
@@ -80,7 +87,7 @@ function ensurePersistWatcher() {
 export function useBottomNavCustomization() {
     const page = usePage();
     const user = computed(
-        () => page.props.auth?.user as App.Data.UserData | undefined,
+        () => page.props.auth?.user as BottomNavUser | undefined,
     );
 
     ensurePersistWatcher();
@@ -193,6 +200,7 @@ export function useBottomNavCustomization() {
         MAX_TOTAL,
         // state
         middleHrefs,
+        middleItems,
         bottomNavItems,
         availableItems,
         homeItem,

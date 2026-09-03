@@ -122,7 +122,7 @@ onUnmounted(() => {
 });
 
 const submit = () => {
-    if (isCompressing.value) {
+    if (isCompressing.value || form.errors.image) {
         return;
     }
 
