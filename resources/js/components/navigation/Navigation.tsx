@@ -104,26 +104,17 @@ function isActiveAdminRoute(to: string, currentUrl: string): boolean {
 }
 
 /**
- * Forwards row-level interaction to the notification bell inside it.
- * Skips when the event already targets the bell (natural toggle),
- * so the dropdown never double-toggles.
+ * Opens the dropdown from the row label. Stops propagation so the
+ * label-targeted event never reaches the document outside-click
+ * listener (which would instantly close what just opened).
  */
-function forwardNotificationToggle(
+function openNotificationsFromLabel(
     e: MouseEvent | KeyboardEvent,
     scope: Ref<HTMLElement | null>,
 ) {
-    const button = scope.value?.querySelector('button');
-
-    if (!button) {
-        return;
-    }
-
-    if (e.target instanceof Node && button.contains(e.target)) {
-        return;
-    }
-
+    e.stopPropagation();
     e.preventDefault();
-    button.click();
+    scope.value?.querySelector('button')?.click();
 }
 
 /** Spread onto LogoutConfirmModal: avoids the ambiguous JSX
@@ -448,21 +439,8 @@ export const SiteRail = defineComponent({
                         {user.value && (
                             <div
                                 ref={notifRowRef}
-                                role="button"
-                                tabindex={0}
-                                onClick={(e: MouseEvent) =>
-                                    forwardNotificationToggle(e, notifRowRef)
-                                }
-                                onKeydown={(e: KeyboardEvent) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        forwardNotificationToggle(
-                                            e,
-                                            notifRowRef,
-                                        );
-                                    }
-                                }}
                                 class={[
-                                    'flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-3 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:shadow-sm dark:hover:border-slate-700 dark:hover:bg-slate-800',
+                                    'flex h-11 w-full items-center gap-2.5 px-3',
                                     props.collapsed
                                         ? 'justify-center px-0'
                                         : 'justify-start',
@@ -473,7 +451,28 @@ export const SiteRail = defineComponent({
                                     dropUp
                                 />
                                 {!props.collapsed && (
-                                    <span class="text-[13px] font-semibold text-slate-600 dark:text-slate-400">
+                                    <span
+                                        role="button"
+                                        tabindex={0}
+                                        onClick={(e: MouseEvent) =>
+                                            openNotificationsFromLabel(
+                                                e,
+                                                notifRowRef,
+                                            )
+                                        }
+                                        onKeydown={(e: KeyboardEvent) => {
+                                            if (
+                                                e.key === 'Enter' ||
+                                                e.key === ' '
+                                            ) {
+                                                openNotificationsFromLabel(
+                                                    e,
+                                                    notifRowRef,
+                                                );
+                                            }
+                                        }}
+                                        class="flex-1 cursor-pointer truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                                    >
                                         Notifications
                                     </span>
                                 )}
@@ -1361,21 +1360,8 @@ export const AdminRail = defineComponent({
                         {user.value && (
                             <div
                                 ref={notifRowRef}
-                                role="button"
-                                tabindex={0}
-                                onClick={(e: MouseEvent) =>
-                                    forwardNotificationToggle(e, notifRowRef)
-                                }
-                                onKeydown={(e: KeyboardEvent) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        forwardNotificationToggle(
-                                            e,
-                                            notifRowRef,
-                                        );
-                                    }
-                                }}
                                 class={[
-                                    'flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-3 transition-all duration-150 hover:border-slate-200 hover:bg-white hover:shadow-sm dark:hover:border-slate-700 dark:hover:bg-slate-800',
+                                    'flex h-11 w-full items-center gap-2.5 px-3',
                                     props.collapsed
                                         ? 'justify-center px-0'
                                         : 'justify-start',
@@ -1386,7 +1372,28 @@ export const AdminRail = defineComponent({
                                     dropUp
                                 />
                                 {!props.collapsed && (
-                                    <span class="text-[13px] font-semibold text-slate-600 dark:text-slate-400">
+                                    <span
+                                        role="button"
+                                        tabindex={0}
+                                        onClick={(e: MouseEvent) =>
+                                            openNotificationsFromLabel(
+                                                e,
+                                                notifRowRef,
+                                            )
+                                        }
+                                        onKeydown={(e: KeyboardEvent) => {
+                                            if (
+                                                e.key === 'Enter' ||
+                                                e.key === ' '
+                                            ) {
+                                                openNotificationsFromLabel(
+                                                    e,
+                                                    notifRowRef,
+                                                );
+                                            }
+                                        }}
+                                        class="flex-1 cursor-pointer truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                                    >
                                         Notifications
                                     </span>
                                 )}
