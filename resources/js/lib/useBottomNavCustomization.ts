@@ -14,7 +14,7 @@ const CUSTOMIZABLE_POOL: NavItem[] = allNavItems.filter(
     (i) => i.href !== HOME_HREF,
 );
 
-const DEFAULT_MIDDLE_HREFS = ['/forum', '/chat', '/ai']; // 3 middle → 5 total with Home+Account
+const DEFAULT_MIDDLE_HREFS = ['/forum', '/chat', '/blogs']; // 3 middle → 5 total with Home+Account
 
 type BottomNavUser = {
     name: string;
