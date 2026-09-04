@@ -1152,7 +1152,7 @@ export const SiteDrawer = defineComponent({
                                                         }`}
                                                     />
                                                     <span class="truncate">
-                                                        More Projects
+                                                        More From Us
                                                     </span>
                                                     {isActive('/projects') && (
                                                         <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
