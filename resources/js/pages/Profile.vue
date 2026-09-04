@@ -764,9 +764,9 @@ const submitForm = () => {
                                     class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
                                 >
                                     You will stop receiving critical syllabus
-                                    announcements, new exam preparation materials,
-                                    and platform alerts. We strongly recommend
-                                    keeping this enabled.
+                                    announcements, new exam preparation
+                                    materials, and platform alerts. We strongly
+                                    recommend keeping this enabled.
                                 </p>
                             </div>
                         </div>

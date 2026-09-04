@@ -564,7 +564,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
                             >
                                 Contributor Application
                             </h3>
-                            <p class="text-xs text-slate-500 dark:text-gray-400">
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
                                 তথ্যগুলো পূরণ করে সরাসরি টিকেট খুলুন
                             </p>
                         </div>
@@ -580,7 +582,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
                 </div>
 
                 <!-- Modal Form Body -->
-                <form @submit.prevent="submitModalApplication" class="p-5 sm:p-6">
+                <form
+                    @submit.prevent="submitModalApplication"
+                    class="p-5 sm:p-6"
+                >
                     <!-- Errors Banner -->
                     <div
                         v-if="ticketForm.errors.general"
@@ -630,13 +635,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
                             class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
                         />
                         <div>
-                            <p class="font-bold">প্রোফাইল আপডেট রাখার অনুরোধ:</p>
+                            <p class="font-bold">
+                                প্রোফাইল আপডেট রাখার অনুরোধ:
+                            </p>
                             <p
                                 class="mt-0.5 text-[11px] text-amber-800 dark:text-amber-400/90"
                             >
-                                আপনার প্রোফাইল তথ্য (নাম, ছবি, শিক্ষা প্রতিষ্ঠান ও
-                                যোগাযোগ) এডমিন টিম সরাসরি রিভিউ করবে। আবেদন করার আগে
-                                প্রোফাইল সম্পূর্ণ নিশ্চিত করুন।
+                                আপনার প্রোফাইল তথ্য (নাম, ছবি, শিক্ষা প্রতিষ্ঠান
+                                ও যোগাযোগ) এডমিন টিম সরাসরি রিভিউ করবে। আবেদন
+                                করার আগে প্রোফাইল সম্পূর্ণ নিশ্চিত করুন।
                                 <Link
                                     href="/me"
                                     target="_blank"
