@@ -284,7 +284,12 @@ export const SiteRail = defineComponent({
                             <button
                                 type="button"
                                 onClick={() => emit('toggle')}
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                                class={[
+                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800',
+                                    props.collapsed
+                                        ? 'cursor-e-resize'
+                                        : 'cursor-w-resize',
+                                ]}
                                 aria-label={
                                     props.collapsed
                                         ? 'Expand sidebar'
@@ -1481,7 +1486,12 @@ export const AdminRail = defineComponent({
                             <button
                                 type="button"
                                 onClick={() => emit('toggle')}
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                                class={[
+                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800',
+                                    props.collapsed
+                                        ? 'cursor-e-resize'
+                                        : 'cursor-w-resize',
+                                ]}
                                 aria-label={
                                     props.collapsed
                                         ? 'Expand sidebar'
