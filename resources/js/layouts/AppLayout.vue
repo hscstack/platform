@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 import AtmosphericBackground from '@/components/AtmosphericBackground.vue';
@@ -14,6 +15,8 @@ import ToastNotification from '@/components/ToastNotification.vue';
 import { useBreakpoint } from '@/lib/useBreakpoint';
 import { useOrientation } from '@/lib/useOrientation';
 
+const page = usePage();
+
 const { isLandscape, isHydrated: orientationHydrated } = useOrientation();
 const { isMobile, isHydrated: breakpointHydrated } = useBreakpoint(1024);
 const isHydrated = computed(
@@ -26,6 +29,33 @@ const showSideRail = computed(() =>
 const showBottomNav = computed(() =>
     isHydrated.value ? isMobile.value || !isLandscape.value : false,
 );
+
+// Whitelisted pages that show the marketing footer on desktop
+const DESKTOP_FOOTER_COMPONENTS = new Set([
+    'Home',
+    'Blog/Index',
+    'Forum/Index',
+    'Donate',
+    'Projects',
+    'Support',
+    'SupportMyTickets',
+    'ContributorGuide',
+    'platform/AboutUs',
+    'platform/JoinTeam',
+    'legal/PrivacyPolicy',
+    'legal/TermsConditions',
+    'legal/ContentPolicy',
+]);
+
+const showFooter = computed(() => {
+    // Mobile / Portrait: only show on Home landing page
+    if (showBottomNav.value) {
+        return page.component === 'Home';
+    }
+
+    // Desktop / Landscape: only show on whitelisted discovery & marketing pages
+    return DESKTOP_FOOTER_COMPONENTS.has(page.component);
+});
 
 const railCollapsed = ref(false);
 
@@ -88,12 +118,9 @@ const drawerOpen = ref(false);
                     <slot />
                 </main>
 
-                <!-- Footer: shown on desktop across pages (except Chat/Index); on mobile/portrait shown ONLY on Home/SSC landing pages -->
+                <!-- Footer: whitelisted desktop pages + mobile Home -->
                 <div
-                    v-if="
-                        $page.component !== 'Chat/Index' &&
-                        (!showBottomNav || $page.component === 'Home')
-                    "
+                    v-if="showFooter"
                     :class="
                         showBottomNav
                             ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
