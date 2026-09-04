@@ -514,7 +514,6 @@ const toggleFullscreen = () => {
                     >.
                 </p>
             </div>
-
         </div>
     </div>
 

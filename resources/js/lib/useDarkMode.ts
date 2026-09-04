@@ -31,6 +31,25 @@ function resolveTheme(t: Theme): boolean {
 function applyTheme(dark: boolean) {
     if (typeof document !== 'undefined') {
         document.documentElement.classList.toggle('dark', dark);
+        // Keep browser / PWA system chrome (status bar + nav bar) in sync.
+        // Matches the slate-50 / gray-950 app background.
+        // The manifest spec only allows one static theme_color, so swap the
+        // linked manifest between the light (Vite-generated) and dark variants.
+        const themeColor = dark ? '#030712' : '#f8fafc';
+        document
+            .querySelector('meta[name="theme-color"]:not([media])')
+            ?.setAttribute('content', themeColor);
+        document
+            .querySelector('meta[name="msapplication-navbutton-color"]')
+            ?.setAttribute('content', themeColor);
+        document
+            .querySelector('link#app-manifest')
+            ?.setAttribute(
+                'href',
+                dark
+                    ? '/manifest-dark.webmanifest'
+                    : '/build/manifest.webmanifest',
+            );
     }
 }
 

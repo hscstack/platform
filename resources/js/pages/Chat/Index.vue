@@ -2365,104 +2365,104 @@ onUnmounted(() => {
                         </button>
                     </div>
 
-                <!-- Success State -->
-                <div
-                    v-if="reportSuccessMessage"
-                    class="my-6 flex flex-col items-center justify-center py-4 text-center"
-                >
+                    <!-- Success State -->
                     <div
-                        class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
-                    >
-                        <Check class="h-6 w-6" />
-                    </div>
-                    <p
-                        class="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
-                    >
-                        {{ reportSuccessMessage }}
-                    </p>
-                </div>
-
-                <!-- Form Content -->
-                <form
-                    v-else
-                    @submit.prevent="submitReport"
-                    class="mt-4 space-y-4"
-                >
-                    <div
-                        v-if="reportErrorMessage"
-                        class="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300"
-                    >
-                        {{ reportErrorMessage }}
-                    </div>
-
-                    <div
-                        class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-zinc-800 dark:bg-zinc-800/60"
+                        v-if="reportSuccessMessage"
+                        class="my-6 flex flex-col items-center justify-center py-4 text-center"
                     >
                         <div
-                            class="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400"
+                            class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
                         >
-                            <span
-                                class="font-semibold text-slate-700 dark:text-zinc-300"
-                            >
-                                {{ reportingMessage.user.name }} (@{{
-                                    reportingMessage.user.username
-                                }})
-                            </span>
-                            <span>{{
-                                formatTime(reportingMessage.created_at)
-                            }}</span>
+                            <Check class="h-6 w-6" />
                         </div>
                         <p
-                            class="mt-1.5 text-xs break-words text-slate-800 dark:text-zinc-200"
+                            class="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
                         >
-                            "{{ reportingMessage.content }}"
+                            {{ reportSuccessMessage }}
                         </p>
                     </div>
 
-                    <div>
-                        <label
-                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-zinc-300"
+                    <!-- Form Content -->
+                    <form
+                        v-else
+                        @submit.prevent="submitReport"
+                        class="mt-4 space-y-4"
+                    >
+                        <div
+                            v-if="reportErrorMessage"
+                            class="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300"
                         >
-                            Why are you reporting this message?
-                        </label>
-                        <select
-                            v-model="reportReason"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-medium text-slate-800 transition outline-none focus:border-indigo-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:focus:border-indigo-400 dark:focus:bg-zinc-800"
-                        >
-                            <option
-                                v-for="reason in reportReasons"
-                                :key="reason"
-                                :value="reason"
-                                class="bg-white text-slate-800 dark:bg-zinc-800 dark:text-zinc-200"
-                            >
-                                {{ reason }}
-                            </option>
-                        </select>
-                    </div>
+                            {{ reportErrorMessage }}
+                        </div>
 
-                    <div class="flex items-center justify-end gap-2 pt-2">
-                        <button
-                            type="button"
-                            @click="closeReportModal"
-                            class="cursor-pointer rounded-xl border border-slate-200 bg-transparent px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        <div
+                            class="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-zinc-800 dark:bg-zinc-800/60"
                         >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            :disabled="isSubmittingReport"
-                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-rose-700 active:scale-95 disabled:opacity-50 dark:bg-rose-500 dark:hover:bg-rose-600"
-                        >
-                            <Loader2
-                                v-if="isSubmittingReport"
-                                class="h-3.5 w-3.5 animate-spin"
-                            />
-                            <span>Submit Report</span>
-                        </button>
-                    </div>
-                </form>
+                            <div
+                                class="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400"
+                            >
+                                <span
+                                    class="font-semibold text-slate-700 dark:text-zinc-300"
+                                >
+                                    {{ reportingMessage.user.name }} (@{{
+                                        reportingMessage.user.username
+                                    }})
+                                </span>
+                                <span>{{
+                                    formatTime(reportingMessage.created_at)
+                                }}</span>
+                            </div>
+                            <p
+                                class="mt-1.5 text-xs break-words text-slate-800 dark:text-zinc-200"
+                            >
+                                "{{ reportingMessage.content }}"
+                            </p>
+                        </div>
+
+                        <div>
+                            <label
+                                class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-zinc-300"
+                            >
+                                Why are you reporting this message?
+                            </label>
+                            <select
+                                v-model="reportReason"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-medium text-slate-800 transition outline-none focus:border-indigo-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:focus:border-indigo-400 dark:focus:bg-zinc-800"
+                            >
+                                <option
+                                    v-for="reason in reportReasons"
+                                    :key="reason"
+                                    :value="reason"
+                                    class="bg-white text-slate-800 dark:bg-zinc-800 dark:text-zinc-200"
+                                >
+                                    {{ reason }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                @click="closeReportModal"
+                                class="cursor-pointer rounded-xl border border-slate-200 bg-transparent px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="isSubmittingReport"
+                                class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-rose-700 active:scale-95 disabled:opacity-50 dark:bg-rose-500 dark:hover:bg-rose-600"
+                            >
+                                <Loader2
+                                    v-if="isSubmittingReport"
+                                    class="h-3.5 w-3.5 animate-spin"
+                                />
+                                <span>Submit Report</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
         </Teleport>
 
         <!-- Reactions Modal -->
@@ -2742,7 +2742,8 @@ onUnmounted(() => {
                             একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports)
                             পড়লে সংশ্লিষ্ট ব্যবহারকারী
                             <strong
-                                >স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট ব্যান</strong
+                                >স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট
+                                ব্যান</strong
                             >
                             হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী
                             ব্যান দিতে পারেন।

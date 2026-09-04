@@ -79,8 +79,8 @@ export default defineConfig(({ mode }) => {
                     short_name: 'HSCStack',
                     start_url: '/',
                     display: 'standalone',
-                    background_color: '#ffffff',
-                    theme_color: '#000000',
+                    background_color: '#f8fafc',
+                    theme_color: '#f8fafc',
                     icons: [
                         {
                             src: '/favicon.png',
