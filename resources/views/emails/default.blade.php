@@ -181,8 +181,7 @@
                 </div>
 
                 <p class="footer-unsub">
-                    Need help or want to manage your preferences? Visit our
-                    <a href="{{ config('app.url') }}/support" target="_blank">Support Center</a>.
+                    Manage email preferences in your <a href="{{ config('app.url') }}/profile" target="_blank">Account Settings</a>, or visit our <a href="{{ config('app.url') }}/support" target="_blank">Support Center</a> if you need assistance or don't have an account.
                 </p>
             </div>
         </div>

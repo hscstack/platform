@@ -840,11 +840,16 @@ const submitForm = () => {
                             <p
                                 class="mt-3 text-[11px] text-slate-400 dark:text-gray-500"
                             >
-                                Need help or want to manage your preferences? Visit our
+                                Manage email preferences in your
+                                <span
+                                    class="text-indigo-600 underline dark:text-indigo-400"
+                                    >Account Settings</span
+                                >, or visit our
                                 <span
                                     class="text-indigo-600 underline dark:text-indigo-400"
                                     >Support Center</span
-                                >.
+                                >
+                                if you need assistance or don't have an account.
                             </p>
                         </div>
                     </div>
