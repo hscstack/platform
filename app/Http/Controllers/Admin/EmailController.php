@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\BulkAnnouncementMail;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -41,13 +42,35 @@ class EmailController extends Controller
     }
 
     /**
-     * Dispatch emails to either a single user or all/student subscribed users in bulk.
+     * Fetch raw subscribed email list for importing into the editor.
+     */
+    public function recipients(Request $request): JsonResponse
+    {
+        $type = $request->query('type', 'all');
+
+        $query = User::where('receive_emails', true)->whereNotNull('email');
+
+        if ($type === 'students') {
+            $query->doesntHave('roles');
+        } elseif ($type === 'staff') {
+            $query->has('roles');
+        }
+
+        $emails = $query->pluck('email')->unique()->values();
+
+        return response()->json([
+            'emails' => $emails,
+            'count' => $emails->count(),
+        ]);
+    }
+
+    /**
+     * Dispatch emails to a list of raw recipient emails.
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'recipient_type' => ['required', 'in:all,students,staff,single'],
-            'recipient_email' => ['required_if:recipient_type,single', 'nullable', 'email', 'max:255'],
+            'recipients' => ['required', 'string'],
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
             'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
@@ -56,6 +79,25 @@ class EmailController extends Controller
         $subject = $validated['subject'];
         $body = $validated['body'];
 
+        // Parse, clean, validate, and deduplicate emails
+        $rawLines = preg_split('/[\r\n,;]+/', $validated['recipients']);
+        $cleanedEmails = [];
+
+        foreach ($rawLines as $line) {
+            $email = strtolower(trim($line));
+            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $cleanedEmails[$email] = true;
+            }
+        }
+
+        $uniqueEmails = array_keys($cleanedEmails);
+
+        if (empty($uniqueEmails)) {
+            return redirect()
+                ->route('admin.emails.create')
+                ->with('error', 'No valid recipient email addresses found in the list.');
+        }
+
         $imageUrl = null;
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('emails/images');
@@ -63,64 +105,29 @@ class EmailController extends Controller
             $imageUrl = str_starts_with($relativeUrl, 'http') ? $relativeUrl : url($relativeUrl);
         }
 
-        // Single user mode
-        if ($validated['recipient_type'] === 'single') {
-            $recipientEmail = $validated['recipient_email'];
-            $targetUser = User::where('email', $recipientEmail)->first();
+        // Fetch known user names in bulk for personalization
+        $usersMap = User::whereIn('email', $uniqueEmails)
+            ->pluck('name', 'email')
+            ->toArray();
 
-            Mail::to($recipientEmail)->queue(
+        foreach ($uniqueEmails as $email) {
+            $recipientName = $usersMap[$email] ?? null;
+
+            Mail::to($email)->queue(
                 new BulkAnnouncementMail(
                     mailSubject: $subject,
                     mailContent: $body,
-                    recipientName: $targetUser?->name,
+                    recipientName: $recipientName,
                     imageUrl: $imageUrl,
                 )
             );
-
-            return redirect()
-                ->route('admin.emails.create')
-                ->with('success', "Email successfully queued for {$recipientEmail}.");
         }
 
-        // Bulk broadcast query
-        $usersQuery = User::where('receive_emails', true)
-            ->whereNotNull('email');
-
-        if ($validated['recipient_type'] === 'students') {
-            $usersQuery->doesntHave('roles');
-        } elseif ($validated['recipient_type'] === 'staff') {
-            $usersQuery->has('roles');
-        }
-
-        $totalRecipients = $usersQuery->count();
-
-        if ($totalRecipients === 0) {
-            return redirect()
-                ->route('admin.emails.create')
-                ->with('error', 'No subscribed recipients found for the selected target.');
-        }
-
-        $usersQuery->chunkById(100, function ($users) use ($subject, $body, $imageUrl) {
-            foreach ($users as $user) {
-                Mail::to($user->email)->queue(
-                    new BulkAnnouncementMail(
-                        mailSubject: $subject,
-                        mailContent: $body,
-                        recipientName: $user->name,
-                        imageUrl: $imageUrl,
-                    )
-                );
-            }
-        });
-
-        $targetLabel = match ($validated['recipient_type']) {
-            'students' => 'students (non-staff)',
-            'staff' => 'staff members',
-            default => 'all subscribed',
-        };
+        $totalCount = count($uniqueEmails);
+        $emailPlural = $totalCount === 1 ? 'recipient' : 'recipients';
 
         return redirect()
             ->route('admin.emails.create')
-            ->with('success', "Email broadcast successfully queued for {$totalRecipients} {$targetLabel} recipients.");
+            ->with('success', "Email successfully queued for {$totalCount} unique {$emailPlural}.");
     }
 }

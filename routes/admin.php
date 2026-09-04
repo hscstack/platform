@@ -105,6 +105,7 @@ Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->mid
 // Emails
 Route::middleware('permission:send email')->group(function () {
     Route::get('/emails/send', [AdminEmailController::class, 'create'])->name('emails.create');
+    Route::get('/emails/recipients', [AdminEmailController::class, 'recipients'])->name('emails.recipients');
     Route::post('/emails/send', [AdminEmailController::class, 'store'])->name('emails.store');
 });
 

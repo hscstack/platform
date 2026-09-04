@@ -32,84 +32,90 @@ test('user without send email permission cannot access email send page', functio
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');
 });
 
-test('admin can send email directly to a single user', function () {
+test('admin can fetch subscriber emails for import', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $student = User::factory()->create(['email' => 'student@example.com', 'receive_emails' => true]);
+    $staff = User::factory()->create(['email' => 'staff@example.com', 'receive_emails' => true]);
+    $editorRole = Role::findOrCreate('editor', 'web');
+    $staff->assignRole($editorRole);
+
+    $unsubscribed = User::factory()->create(['email' => 'unsub@example.com', 'receive_emails' => false]);
+
+    // All subscribed
+    $responseAll = $this->actingAs($admin)->get(route('admin.emails.recipients', ['type' => 'all']));
+    $responseAll->assertOk();
+    $dataAll = $responseAll->json();
+    expect($dataAll['emails'])->toContain('student@example.com', 'staff@example.com')
+        ->and($dataAll['emails'])->not->toContain('unsub@example.com');
+
+    // Students only
+    $responseStudents = $this->actingAs($admin)->get(route('admin.emails.recipients', ['type' => 'students']));
+    $responseStudents->assertOk();
+    $dataStudents = $responseStudents->json();
+    expect($dataStudents['emails'])->toContain('student@example.com')
+        ->and($dataStudents['emails'])->not->toContain('staff@example.com');
+
+    // Staff only
+    $responseStaff = $this->actingAs($admin)->get(route('admin.emails.recipients', ['type' => 'staff']));
+    $responseStaff->assertOk();
+    $dataStaff = $responseStaff->json();
+    expect($dataStaff['emails'])->toContain('staff@example.com')
+        ->and($dataStaff['emails'])->not->toContain('student@example.com');
+});
+
+test('admin can send email to custom and platform emails with automatic deduplication', function () {
     Mail::fake();
 
     $admin = User::factory()->create(['email' => 'admin@example.com']);
     $admin->assignRole('admin');
 
-    $targetUser = User::factory()->create([
+    $john = User::factory()->create([
         'name' => 'John Doe',
         'email' => 'john@example.com',
     ]);
 
+    $recipientsRaw = "john@example.com\nJOHN@EXAMPLE.COM\nextra-lead@3rdparty.com\ninvalid-email-format\n   extra-lead@3rdparty.com   ";
+
     $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
-        'recipient_type' => 'single',
-        'recipient_email' => 'john@example.com',
-        'subject' => 'Account Verification Notice',
-        'body' => '<p>Hello John, please review your account.</p>',
+        'recipients' => $recipientsRaw,
+        'subject' => 'Platform Update Notice',
+        'body' => '<p>Hello, check out the new features!</p>',
     ]);
 
     $response->assertRedirect(route('admin.emails.create'));
     $response->assertSessionHas('success');
 
+    // John receives email with personalized name (only once)
     Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) {
         return $mail->hasTo('john@example.com') &&
-            $mail->mailSubject === 'Account Verification Notice' &&
-            $mail->mailContent === '<p>Hello John, please review your account.</p>' &&
+            $mail->mailSubject === 'Platform Update Notice' &&
             $mail->recipientName === 'John Doe';
     });
+
+    // 3rd party lead receives email with null name (only once)
+    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) {
+        return $mail->hasTo('extra-lead@3rdparty.com') &&
+            $mail->mailSubject === 'Platform Update Notice' &&
+            $mail->recipientName === null;
+    });
+
+    // Total queued should be exactly 2
+    Mail::assertQueuedCount(2);
 });
 
-test('admin can queue bulk emails only to users with receive_emails enabled', function () {
-    Mail::fake();
-
-    $admin = User::factory()->create(['email' => 'admin@example.com']);
-    $admin->assignRole('admin');
-
-    // Create subscribed users
-    $subscribed1 = User::factory()->create(['email' => 'sub1@example.com', 'receive_emails' => true]);
-    $subscribed2 = User::factory()->create(['email' => 'sub2@example.com', 'receive_emails' => true]);
-
-    // Create unsubscribed user
-    $unsubscribed = User::factory()->create(['email' => 'unsub@example.com', 'receive_emails' => false]);
-
-    $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
-        'recipient_type' => 'all',
-        'subject' => 'Platform Update Announcement',
-        'body' => '<p>Check out our brand new video resources!</p>',
-    ]);
-
-    $response->assertRedirect(route('admin.emails.create'));
-    $response->assertSessionHas('success');
-
-    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($subscribed1) {
-        return $mail->hasTo($subscribed1->email) &&
-            $mail->mailSubject === 'Platform Update Announcement' &&
-            $mail->mailContent === '<p>Check out our brand new video resources!</p>';
-    });
-
-    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($subscribed2) {
-        return $mail->hasTo($subscribed2->email);
-    });
-
-    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($unsubscribed) {
-        return $mail->hasTo($unsubscribed->email);
-    });
-});
-
-test('single email requires valid recipient email', function () {
+test('submitting without valid recipients fails validation', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
     $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
-        'recipient_type' => 'single',
-        'recipient_email' => '',
+        'recipients' => '',
         'subject' => 'Test Subject',
         'body' => '<p>Test Body</p>',
     ]);
 
-    $response->assertSessionHasErrors(['recipient_email']);
+    $response->assertSessionHasErrors(['recipients']);
 });
 
 test('admin can upload cover image and attach url to queued mail', function () {
@@ -119,15 +125,10 @@ test('admin can upload cover image and attach url to queued mail', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $targetUser = User::factory()->create([
-        'email' => 'student@example.com',
-    ]);
-
     $image = UploadedFile::fake()->image('banner.jpg', 600, 300);
 
     $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
-        'recipient_type' => 'single',
-        'recipient_email' => 'student@example.com',
+        'recipients' => 'student@example.com',
         'subject' => 'Image Test Subject',
         'body' => '<p>Image Test Body</p>',
         'image' => $image,
@@ -139,89 +140,5 @@ test('admin can upload cover image and attach url to queued mail', function () {
     Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) {
         return $mail->hasTo('student@example.com') &&
             ! empty($mail->imageUrl);
-    });
-});
-
-test('admin can queue broadcast emails specifically to students non-staff users', function () {
-    Mail::fake();
-
-    $admin = User::factory()->create(['email' => 'admin@example.com']);
-    $admin->assignRole('admin');
-
-    $editor = User::factory()->create(['email' => 'editor@example.com', 'receive_emails' => true]);
-    $editorRole = Role::findOrCreate('editor', 'web');
-    $editor->assignRole($editorRole);
-
-    $student1 = User::factory()->create(['email' => 'student1@example.com', 'receive_emails' => true]);
-    $student2 = User::factory()->create(['email' => 'student2@example.com', 'receive_emails' => true]);
-    $unsubStudent = User::factory()->create(['email' => 'unsub_student@example.com', 'receive_emails' => false]);
-
-    $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
-        'recipient_type' => 'students',
-        'subject' => 'Student Community Update',
-        'body' => '<p>Special notice for all students.</p>',
-    ]);
-
-    $response->assertRedirect(route('admin.emails.create'));
-    $response->assertSessionHas('success');
-
-    // Students with receive_emails=true should receive the email
-    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($student1) {
-        return $mail->hasTo($student1->email) &&
-            $mail->mailSubject === 'Student Community Update';
-    });
-
-    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($student2) {
-        return $mail->hasTo($student2->email);
-    });
-
-    // Staff/role-assigned users should NOT receive it
-    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($editor) {
-        return $mail->hasTo($editor->email);
-    });
-
-    // Unsubscribed students should NOT receive it
-    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($unsubStudent) {
-        return $mail->hasTo($unsubStudent->email);
-    });
-});
-
-test('admin can queue broadcast emails specifically to staff members', function () {
-    Mail::fake();
-
-    $admin = User::factory()->create(['email' => 'admin@example.com']);
-    $admin->assignRole('admin');
-
-    $editor = User::factory()->create(['email' => 'editor@example.com', 'receive_emails' => true]);
-    $editorRole = Role::findOrCreate('editor', 'web');
-    $editor->assignRole($editorRole);
-
-    $student = User::factory()->create(['email' => 'student@example.com', 'receive_emails' => true]);
-    $unsubStaff = User::factory()->create(['email' => 'unsub_staff@example.com', 'receive_emails' => false]);
-    $unsubStaff->assignRole($editorRole);
-
-    $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
-        'recipient_type' => 'staff',
-        'subject' => 'Internal Staff Announcement',
-        'body' => '<p>Meeting at 5 PM.</p>',
-    ]);
-
-    $response->assertRedirect(route('admin.emails.create'));
-    $response->assertSessionHas('success');
-
-    // Subscribed staff members should receive it
-    Mail::assertQueued(BulkAnnouncementMail::class, function ($mail) use ($editor) {
-        return $mail->hasTo($editor->email) &&
-            $mail->mailSubject === 'Internal Staff Announcement';
-    });
-
-    // Students should NOT receive it
-    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($student) {
-        return $mail->hasTo($student->email);
-    });
-
-    // Unsubscribed staff should NOT receive it
-    Mail::assertNotQueued(BulkAnnouncementMail::class, function ($mail) use ($unsubStaff) {
-        return $mail->hasTo($unsubStaff->email);
     });
 });
