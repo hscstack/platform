@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { router, Head } from '@inertiajs/vue3';
-import { Search, X, ArrowRight, AlertTriangle } from 'lucide-vue-next';
+import { Search, X, AlertTriangle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -41,57 +41,59 @@ const clearSearch = () => {
         />
     </Head>
 
-    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-5xl px-3.5 py-4 sm:px-6 sm:py-8 lg:px-8">
+        <!-- Header Row -->
         <div
-            class="mb-10 flex flex-col gap-6 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800"
+            class="mb-3.5 flex items-center justify-between gap-3 sm:mb-6 sm:border-b sm:border-slate-100 sm:pb-5 dark:sm:border-gray-800"
         >
             <div>
                 <h1
-                    class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-gray-100"
+                    class="text-xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                 >
-                    Our Journal
+                    HSCStack <span class="text-indigo-600">Blogs</span>
                 </h1>
-                <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
+                <p
+                    class="hidden text-xs text-slate-500 sm:mt-1 sm:block sm:text-sm dark:text-gray-400"
+                >
                     পড়াশোনার টিপস, শিক্ষাসংক্রান্ত খবর এবং অন্যান্য
                     গুরুত্বপূর্ণ তথ্য পড়ুন।
                 </p>
             </div>
+        </div>
 
-            <div class="w-full lg:max-w-md">
-                <div class="flex flex-col gap-2.5 sm:flex-row">
-                    <div class="relative flex-1">
-                        <div
-                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
-                        >
-                            <Search class="h-5 w-5" />
-                        </div>
-
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="আর্টিকেল খুঁজুন..."
-                            @keyup.enter="handleSearch"
-                            class="w-full rounded-xl border border-slate-200 bg-white py-3 pr-10 pl-11 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
-                        />
-
-                        <button
-                            v-if="searchQuery"
-                            @click="clearSearch"
-                            type="button"
-                            class="absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-400"
-                            aria-label="Clear search"
-                        >
-                            <X class="h-4 w-4" />
-                        </button>
-                    </div>
-
+        <!-- Search Bar Row -->
+        <div class="mb-4 sm:mb-6">
+            <div class="relative w-full">
+                <div
+                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-gray-500"
+                >
+                    <Search class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                </div>
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search articles..."
+                    @keyup.enter="handleSearch"
+                    class="w-full rounded-xl border border-slate-200 bg-white py-2 pr-16 pl-8.5 text-xs text-slate-900 shadow-2xs transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none sm:py-2.5 sm:pr-20 sm:pl-10 sm:text-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
+                />
+                <div
+                    class="absolute inset-y-0 right-1.5 flex items-center gap-1"
+                >
+                    <button
+                        v-if="searchQuery"
+                        @click="clearSearch"
+                        type="button"
+                        class="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                        aria-label="Clear search"
+                    >
+                        <X class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    </button>
                     <button
                         @click="handleSearch"
                         type="button"
-                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 active:scale-[0.98]"
+                        class="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-slate-800 sm:px-3 sm:py-1.5 sm:text-xs dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                     >
-                        <span>Search</span>
-                        <ArrowRight class="hidden h-4 w-4 sm:block" />
+                        Search
                     </button>
                 </div>
             </div>
