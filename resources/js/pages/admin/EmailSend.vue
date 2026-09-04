@@ -14,10 +14,10 @@ import {
     Upload,
     Trash2,
     Download,
-    MinusCircle,
+    ChevronDown,
 } from 'lucide-vue-next';
 
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import HTMLEditor from '@/components/HTMLEditor.vue';
 
 const props = defineProps({
@@ -40,10 +40,10 @@ const appName = computed(() => (page.props as any).appName || 'HSCStack');
 
 const showConfirmModal = ref(false);
 const showPreviewModal = ref(false);
-const showExcludeModal = ref(false);
+const isImportDropdownOpen = ref(false);
 const isImporting = ref(false);
 
-const excludeInputText = ref('');
+const importDropdownRef = ref<HTMLElement | null>(null);
 const imagePreview = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
@@ -62,6 +62,24 @@ const formattedCurrentDate = computed(() => {
         hour: '2-digit',
         minute: '2-digit',
     });
+});
+
+// Click outside handler for import dropdown
+const handleClickOutside = (event: MouseEvent) => {
+    if (
+        importDropdownRef.value &&
+        !importDropdownRef.value.contains(event.target as Node)
+    ) {
+        isImportDropdownOpen.value = false;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside);
 });
 
 // Parse and analyze recipient emails in real-time
@@ -132,6 +150,7 @@ const handleRemoveImage = () => {
 const importSubscribers = async (type: 'all' | 'students' | 'staff') => {
     if (isImporting.value) return;
     isImporting.value = true;
+    isImportDropdownOpen.value = false;
 
     try {
         const response = await fetch(`/admin/emails/recipients?type=${type}`, {
@@ -159,33 +178,6 @@ const importSubscribers = async (type: 'all' | 'students' | 'staff') => {
     } finally {
         isImporting.value = false;
     }
-};
-
-// Exclude helper
-const applyExclusions = () => {
-    const excludeTokens = excludeInputText.value
-        .split(/[\r\n,;]+/)
-        .map((t) => t.trim().toLowerCase())
-        .filter(Boolean);
-
-    if (excludeTokens.length === 0) {
-        showExcludeModal.value = false;
-        return;
-    }
-
-    const excludeSet = new Set(excludeTokens);
-    const currentTokens = form.recipients
-        .split(/[\r\n,;]+/)
-        .map((t) => t.trim())
-        .filter(Boolean);
-
-    const filtered = currentTokens.filter(
-        (token) => !excludeSet.has(token.toLowerCase()),
-    );
-
-    form.recipients = filtered.join('\n');
-    excludeInputText.value = '';
-    showExcludeModal.value = false;
 };
 
 const cleanAndFormatRecipients = () => {
@@ -241,8 +233,8 @@ const submitForm = () => {
                     </h1>
                 </div>
                 <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
-                    Compose announcements or direct messages with a unified
-                    recipient list, subscriber imports, and exclusions.
+                    Compose and dispatch email announcements to custom recipient
+                    lists or imported platform subscribers.
                 </p>
             </div>
 
@@ -281,7 +273,7 @@ const submitForm = () => {
         </div>
 
         <form @submit.prevent="handleSendClick" class="space-y-6">
-            <!-- Recipients Box with Quick Import Toolbar -->
+            <!-- Recipients Box with Import Dropdown Toolbar -->
             <div
                 class="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs sm:p-6 dark:border-gray-800 dark:bg-gray-950"
             >
@@ -299,63 +291,107 @@ const submitForm = () => {
                             class="mt-0.5 text-xs text-slate-400 dark:text-gray-500"
                         >
                             Paste any third-party list, single email, or import
-                            registered platform subscribers below.
+                            registered platform subscribers.
                         </p>
                     </div>
 
-                    <!-- Quick Import & Action Buttons -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            :disabled="isImporting || recipientCount === 0"
-                            @click="importSubscribers('all')"
-                            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-                            title="Import all subscribed users from database"
-                        >
-                            <Download class="h-3.5 w-3.5" />
-                            <span>+ All Subscribed ({{ recipientCount }})</span>
-                        </button>
+                    <!-- Actions Toolbar: Import Dropdown & Clear -->
+                    <div class="flex items-center gap-2">
+                        <!-- Import Dropdown -->
+                        <div ref="importDropdownRef" class="relative">
+                            <button
+                                type="button"
+                                :disabled="isImporting"
+                                @click="
+                                    isImportDropdownOpen = !isImportDropdownOpen
+                                "
+                                class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                            >
+                                <Loader2
+                                    v-if="isImporting"
+                                    class="h-3.5 w-3.5 animate-spin"
+                                />
+                                <Download v-else class="h-3.5 w-3.5" />
+                                <span>Import Subscribers</span>
+                                <ChevronDown
+                                    class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200"
+                                    :class="{
+                                        'rotate-180': isImportDropdownOpen,
+                                    }"
+                                />
+                            </button>
 
-                        <button
-                            type="button"
-                            :disabled="isImporting || studentsCount === 0"
-                            @click="importSubscribers('students')"
-                            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-                            title="Import student accounts only"
-                        >
-                            <GraduationCap class="h-3.5 w-3.5" />
-                            <span>+ Students ({{ studentsCount }})</span>
-                        </button>
+                            <!-- Dropdown Menu -->
+                            <div
+                                v-if="isImportDropdownOpen"
+                                class="absolute right-0 z-30 mt-1.5 w-60 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-gray-800 dark:bg-gray-900"
+                            >
+                                <button
+                                    type="button"
+                                    :disabled="recipientCount === 0"
+                                    @click="importSubscribers('all')"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <Users class="h-4 w-4 text-indigo-500" />
+                                        <span>All Subscribed</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                    >
+                                        {{ recipientCount }}
+                                    </span>
+                                </button>
 
-                        <button
-                            type="button"
-                            :disabled="isImporting || staffCount === 0"
-                            @click="importSubscribers('staff')"
-                            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-                            title="Import staff accounts only"
-                        >
-                            <ShieldCheck class="h-3.5 w-3.5" />
-                            <span>+ Staff ({{ staffCount }})</span>
-                        </button>
+                                <button
+                                    type="button"
+                                    :disabled="studentsCount === 0"
+                                    @click="importSubscribers('students')"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <GraduationCap
+                                            class="h-4 w-4 text-indigo-500"
+                                        />
+                                        <span>Students (Non-Staff)</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                    >
+                                        {{ studentsCount }}
+                                    </span>
+                                </button>
 
-                        <button
-                            type="button"
-                            @click="showExcludeModal = true"
-                            class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 dark:border-rose-900/30 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-900/40"
-                            title="Exclude a list of emails"
-                        >
-                            <MinusCircle class="h-3.5 w-3.5" />
-                            <span>- Exclude Emails</span>
-                        </button>
+                                <button
+                                    type="button"
+                                    :disabled="staffCount === 0"
+                                    @click="importSubscribers('staff')"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <ShieldCheck
+                                            class="h-4 w-4 text-indigo-500"
+                                        />
+                                        <span>Staff Members</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                    >
+                                        {{ staffCount }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
 
+                        <!-- Clear Button -->
                         <button
                             v-if="form.recipients.trim()"
                             type="button"
                             @click="form.recipients = ''"
-                            class="inline-flex items-center gap-1 rounded-xl p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                            class="inline-flex items-center gap-1 rounded-xl p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
                             title="Clear all recipients"
                         >
-                            <Trash2 class="h-3.5 w-3.5" />
+                            <Trash2 class="h-4 w-4" />
                         </button>
                     </div>
                 </div>
@@ -625,64 +661,6 @@ const submitForm = () => {
             </div>
         </form>
     </div>
-
-    <!-- Exclude Emails Modal -->
-    <Teleport to="body">
-        <div
-            v-if="showExcludeModal"
-            class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs dark:bg-black/60"
-        >
-            <div
-                class="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="mb-4 flex items-center justify-between">
-                    <div
-                        class="flex items-center gap-2.5 text-sm font-bold text-slate-900 dark:text-gray-100"
-                    >
-                        <MinusCircle class="h-5 w-5 text-rose-600" />
-                        <span>Exclude / Remove Emails</span>
-                    </div>
-                    <button
-                        type="button"
-                        @click="showExcludeModal = false"
-                        class="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-800"
-                    >
-                        <X class="h-4 w-4" />
-                    </button>
-                </div>
-
-                <p class="mb-3 text-xs text-slate-500 dark:text-gray-400">
-                    Paste the emails you wish to exclude (comma or newline
-                    separated). They will be removed from your current
-                    recipients list.
-                </p>
-
-                <textarea
-                    v-model="excludeInputText"
-                    rows="5"
-                    placeholder="exclude1@example.com&#10;exclude2@example.com"
-                    class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs leading-relaxed text-slate-900 outline-none focus:border-rose-500 focus:bg-white focus:ring-4 focus:ring-rose-500/10 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
-                ></textarea>
-
-                <div class="mt-5 flex items-center justify-end gap-2.5">
-                    <button
-                        type="button"
-                        @click="showExcludeModal = false"
-                        class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        @click="applyExclusions"
-                        class="rounded-xl bg-rose-600 px-5 py-2 text-xs font-bold text-white transition hover:bg-rose-700"
-                    >
-                        Remove from List
-                    </button>
-                </div>
-            </div>
-        </div>
-    </Teleport>
 
     <!-- Live PC / Desktop Email Client Preview Modal -->
     <Teleport to="body">
@@ -1009,4 +987,3 @@ const submitForm = () => {
     text-decoration: underline;
 }
 </style>
-
