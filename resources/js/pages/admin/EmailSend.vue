@@ -838,19 +838,12 @@ const submitForm = () => {
                             </div>
 
                             <p
-                                class="mt-3 mb-1 text-[11px] text-slate-400 dark:text-gray-500"
+                                class="mt-3 text-[11px] text-slate-400 dark:text-gray-500"
                             >
-                                You are receiving this email because you have an
-                                active account on HSCStack or subscribed to our
-                                updates.
-                            </p>
-                            <p
-                                class="text-[11px] text-slate-400 dark:text-gray-500"
-                            >
-                                Manage your email preferences anytime in your
+                                Need help or want to manage your preferences? Visit our
                                 <span
                                     class="text-indigo-600 underline dark:text-indigo-400"
-                                    >Account Settings</span
+                                    >Support Center</span
                                 >.
                             </p>
                         </div>
