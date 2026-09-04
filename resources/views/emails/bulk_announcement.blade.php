@@ -210,12 +210,8 @@
                     <a href="{{ config('app.url') }}/donate" target="_blank">Support Us</a>
                 </div>
 
-                <p class="footer-notice">
-                    You are receiving this email because you have an active account on {{ config('app.name', 'HSCStack') }}.
-                </p>
                 <p class="footer-unsub">
-                    Manage your email preferences anytime in your
-                    <a href="{{ config('app.url') }}/profile" target="_blank">Account Settings</a>.
+                    Manage email preferences in your <a href="{{ config('app.url') }}/profile" target="_blank">Account Settings</a>, or visit our <a href="{{ config('app.url') }}/support" target="_blank">Support Center</a> if you need assistance or don't have an account.
                 </p>
             </div>
         </div>

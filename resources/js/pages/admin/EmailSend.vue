@@ -5,18 +5,19 @@ import {
     Mail,
     Send,
     Users,
-    User,
     GraduationCap,
     ShieldCheck,
     AlertCircle,
-    AtSign,
+    CheckCircle2,
     Eye,
     X,
     Upload,
     Trash2,
+    Download,
+    ChevronDown,
 } from 'lucide-vue-next';
 
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import HTMLEditor from '@/components/HTMLEditor.vue';
 
 const props = defineProps({
@@ -39,13 +40,15 @@ const appName = computed(() => (page.props as any).appName || 'HSCStack');
 
 const showConfirmModal = ref(false);
 const showPreviewModal = ref(false);
+const isImportDropdownOpen = ref(false);
+const isImporting = ref(false);
 
+const importDropdownRef = ref<HTMLElement | null>(null);
 const imagePreview = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
-    recipient_type: 'all' as 'all' | 'students' | 'staff' | 'single',
-    recipient_email: '',
+    recipients: '',
     subject: '',
     body: '',
     image: null as File | null,
@@ -59,6 +62,69 @@ const formattedCurrentDate = computed(() => {
         hour: '2-digit',
         minute: '2-digit',
     });
+});
+
+// Click outside handler for import dropdown
+const handleClickOutside = (event: MouseEvent) => {
+    if (
+        importDropdownRef.value &&
+        !importDropdownRef.value.contains(event.target as Node)
+    ) {
+        isImportDropdownOpen.value = false;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
+
+// Parse and analyze recipient emails in real-time
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const recipientStats = computed(() => {
+    const raw = form.recipients.trim();
+    if (!raw) {
+        return {
+            validEmails: [] as string[],
+            invalidItems: [] as string[],
+            totalLines: 0,
+            duplicateCount: 0,
+        };
+    }
+
+    const tokens = raw
+        .split(/[\r\n,;]+/)
+        .map((t) => t.trim())
+        .filter(Boolean);
+    const seen = new Set<string>();
+    const validEmails: string[] = [];
+    const invalidItems: string[] = [];
+    let duplicateCount = 0;
+
+    for (const token of tokens) {
+        const lower = token.toLowerCase();
+        if (emailRegex.test(lower)) {
+            if (seen.has(lower)) {
+                duplicateCount++;
+            } else {
+                seen.add(lower);
+                validEmails.push(lower);
+            }
+        } else {
+            invalidItems.push(token);
+        }
+    }
+
+    return {
+        validEmails,
+        invalidItems,
+        totalLines: tokens.length,
+        duplicateCount,
+    };
 });
 
 const handleImageSelect = (event: Event) => {
@@ -80,19 +146,56 @@ const handleRemoveImage = () => {
     }
 };
 
-const handleSendClick = () => {
-    if (form.recipient_type === 'single' && !form.recipient_email.trim()) {
-        form.setError(
-            'recipient_email',
-            'Please provide a valid recipient email.',
-        );
+// Import helper
+const importSubscribers = async (type: 'all' | 'students' | 'staff') => {
+    if (isImporting.value) return;
+    isImporting.value = true;
+    isImportDropdownOpen.value = false;
 
+    try {
+        const response = await fetch(`/admin/emails/recipients?type=${type}`, {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const importedList: string[] = data.emails || [];
+
+            // Merge with existing emails avoiding duplicates
+            const currentTokens = form.recipients
+                .split(/[\r\n,;]+/)
+                .map((t) => t.trim().toLowerCase())
+                .filter(Boolean);
+
+            const mergedSet = new Set([...currentTokens, ...importedList]);
+            form.recipients = Array.from(mergedSet).join('\n');
+        }
+    } catch (e) {
+        console.error('Failed to import recipients:', e);
+    } finally {
+        isImporting.value = false;
+    }
+};
+
+const cleanAndFormatRecipients = () => {
+    const valid = recipientStats.value.validEmails;
+    form.recipients = valid.join('\n');
+};
+
+const handleSendClick = () => {
+    if (recipientStats.value.validEmails.length === 0) {
+        form.setError(
+            'recipients',
+            'Please provide at least one valid recipient email.',
+        );
         return;
     }
 
     if (!form.subject.trim() || !form.body.trim()) {
         form.validate();
-
         return;
     }
 
@@ -130,8 +233,8 @@ const submitForm = () => {
                     </h1>
                 </div>
                 <p class="mt-2 text-sm text-slate-500 dark:text-gray-400">
-                    Compose and dispatch email announcements to subscribed users
-                    or individual accounts.
+                    Compose and dispatch email announcements to custom recipient
+                    lists or imported platform subscribers.
                 </p>
             </div>
 
@@ -157,12 +260,12 @@ const submitForm = () => {
                         <span
                             class="font-semibold text-slate-500 dark:text-gray-400"
                         >
-                            Subscribers:
+                            Total Subscribers:
                         </span>
                         <span
                             class="ml-1 font-bold text-slate-900 dark:text-gray-100"
                         >
-                            {{ recipientCount }} users
+                            {{ recipientCount }}
                         </span>
                     </div>
                 </div>
@@ -170,211 +273,200 @@ const submitForm = () => {
         </div>
 
         <form @submit.prevent="handleSendClick" class="space-y-6">
-            <!-- Recipient Target Selection -->
-            <div>
-                <label
-                    class="mb-2 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                >
-                    Recipient Target
-                </label>
-
+            <!-- Recipients Box with Import Dropdown Toolbar -->
+            <div
+                class="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs sm:p-6 dark:border-gray-800 dark:bg-gray-950"
+            >
                 <div
-                    class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+                    class="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"
                 >
-                    <!-- Bulk to all subscribed -->
-                    <button
-                        type="button"
-                        @click="form.recipient_type = 'all'"
-                        class="flex items-center gap-3 rounded-2xl border p-4 text-left transition"
-                        :class="
-                            form.recipient_type === 'all'
-                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/10 dark:border-indigo-500 dark:bg-indigo-500/10'
-                                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-gray-700 dark:bg-gray-950/40 dark:hover:border-gray-600'
-                        "
-                    >
-                        <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                            :class="
-                                form.recipient_type === 'all'
-                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                                    : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
-                            "
+                    <div>
+                        <label
+                            for="recipients"
+                            class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
                         >
-                            <Users class="h-4.5 w-4.5" />
-                        </div>
-                        <div>
-                            <p
-                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                All Subscribed
-                            </p>
-                            <p
-                                class="text-xs text-slate-500 dark:text-gray-400"
-                            >
-                                {{ recipientCount }} recipients
-                            </p>
-                        </div>
-                    </button>
-
-                    <!-- Students (Non-Staff) -->
-                    <button
-                        type="button"
-                        @click="form.recipient_type = 'students'"
-                        class="flex items-center gap-3 rounded-2xl border p-4 text-left transition"
-                        :class="
-                            form.recipient_type === 'students'
-                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/10 dark:border-indigo-500 dark:bg-indigo-500/10'
-                                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-gray-700 dark:bg-gray-950/40 dark:hover:border-gray-600'
-                        "
-                    >
-                        <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                            :class="
-                                form.recipient_type === 'students'
-                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                                    : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
-                            "
+                            Recipients (One email per line)
+                        </label>
+                        <p
+                            class="mt-0.5 text-xs text-slate-400 dark:text-gray-500"
                         >
-                            <GraduationCap class="h-4.5 w-4.5" />
-                        </div>
-                        <div>
-                            <p
-                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                Students (Non-Staff)
-                            </p>
-                            <p
-                                class="text-xs text-slate-500 dark:text-gray-400"
-                            >
-                                {{ studentsCount }} public accounts
-                            </p>
-                        </div>
-                    </button>
-
-                    <!-- Staff Only -->
-                    <button
-                        type="button"
-                        @click="form.recipient_type = 'staff'"
-                        class="flex items-center gap-3 rounded-2xl border p-4 text-left transition"
-                        :class="
-                            form.recipient_type === 'staff'
-                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/10 dark:border-indigo-500 dark:bg-indigo-500/10'
-                                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-gray-700 dark:bg-gray-950/40 dark:hover:border-gray-600'
-                        "
-                    >
-                        <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                            :class="
-                                form.recipient_type === 'staff'
-                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                                    : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
-                            "
-                        >
-                            <ShieldCheck class="h-4.5 w-4.5" />
-                        </div>
-                        <div>
-                            <p
-                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                Staff Only
-                            </p>
-                            <p
-                                class="text-xs text-slate-500 dark:text-gray-400"
-                            >
-                                {{ staffCount }} staff accounts
-                            </p>
-                        </div>
-                    </button>
-
-                    <!-- Single User -->
-                    <button
-                        type="button"
-                        @click="form.recipient_type = 'single'"
-                        class="flex items-center gap-3 rounded-2xl border p-4 text-left transition"
-                        :class="
-                            form.recipient_type === 'single'
-                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/10 dark:border-indigo-500 dark:bg-indigo-500/10'
-                                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-gray-700 dark:bg-gray-950/40 dark:hover:border-gray-600'
-                        "
-                    >
-                        <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                            :class="
-                                form.recipient_type === 'single'
-                                    ? 'bg-indigo-600 text-white dark:bg-indigo-500'
-                                    : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
-                            "
-                        >
-                            <User class="h-4.5 w-4.5" />
-                        </div>
-                        <div>
-                            <p
-                                class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                Single User
-                            </p>
-                            <p
-                                class="text-xs text-slate-500 dark:text-gray-400"
-                            >
-                                Specific email address
-                            </p>
-                        </div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Single Recipient Email Field -->
-            <div v-if="form.recipient_type === 'single'">
-                <label
-                    for="recipient_email"
-                    class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
-                >
-                    Recipient Email Address
-                </label>
-                <div class="relative">
-                    <div
-                        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400"
-                    >
-                        <AtSign class="h-4 w-4" />
+                            Paste any third-party list, single email, or import
+                            registered platform subscribers.
+                        </p>
                     </div>
-                    <input
-                        v-model="form.recipient_email"
-                        type="email"
-                        id="recipient_email"
-                        required
-                        placeholder="user@example.com"
-                        :disabled="form.processing"
-                        class="w-full rounded-xl border bg-white py-3 pr-4 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
-                        :class="
-                            form.errors.recipient_email
-                                ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
-                                : 'border-slate-200 focus:border-indigo-600 focus:ring-indigo-600/10 dark:border-gray-700'
-                        "
-                    />
+
+                    <!-- Actions Toolbar: Import Dropdown & Clear -->
+                    <div class="flex items-center gap-2">
+                        <!-- Import Dropdown -->
+                        <div ref="importDropdownRef" class="relative">
+                            <button
+                                type="button"
+                                :disabled="isImporting"
+                                @click="
+                                    isImportDropdownOpen = !isImportDropdownOpen
+                                "
+                                class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                            >
+                                <Loader2
+                                    v-if="isImporting"
+                                    class="h-3.5 w-3.5 animate-spin"
+                                />
+                                <Download v-else class="h-3.5 w-3.5" />
+                                <span>Import Subscribers</span>
+                                <ChevronDown
+                                    class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200"
+                                    :class="{
+                                        'rotate-180': isImportDropdownOpen,
+                                    }"
+                                />
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div
+                                v-if="isImportDropdownOpen"
+                                class="absolute right-0 z-30 mt-1.5 w-60 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-gray-800 dark:bg-gray-900"
+                            >
+                                <button
+                                    type="button"
+                                    :disabled="recipientCount === 0"
+                                    @click="importSubscribers('all')"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <Users class="h-4 w-4 text-indigo-500" />
+                                        <span>All Subscribed</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                    >
+                                        {{ recipientCount }}
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    :disabled="studentsCount === 0"
+                                    @click="importSubscribers('students')"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <GraduationCap
+                                            class="h-4 w-4 text-indigo-500"
+                                        />
+                                        <span>Students (Non-Staff)</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                    >
+                                        {{ studentsCount }}
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    :disabled="staffCount === 0"
+                                    @click="importSubscribers('staff')"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <ShieldCheck
+                                            class="h-4 w-4 text-indigo-500"
+                                        />
+                                        <span>Staff Members</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                    >
+                                        {{ staffCount }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Clear Button -->
+                        <button
+                            v-if="form.recipients.trim()"
+                            type="button"
+                            @click="form.recipients = ''"
+                            class="inline-flex items-center gap-1 rounded-xl p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                            title="Clear all recipients"
+                        >
+                            <Trash2 class="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Textarea for raw emails -->
+                <textarea
+                    id="recipients"
+                    v-model="form.recipients"
+                    rows="6"
+                    placeholder="user1@example.com&#10;user2@gmail.com&#10;custom-lead@domain.com"
+                    :disabled="form.processing || isImporting"
+                    class="w-full rounded-2xl border bg-slate-50/70 p-4 font-mono text-xs leading-relaxed text-slate-900 transition outline-none placeholder:text-slate-400 focus:bg-white focus:ring-4 dark:bg-gray-900/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:bg-gray-950"
+                    :class="
+                        form.errors.recipients
+                            ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
+                            : 'border-slate-200 focus:border-indigo-600 focus:ring-indigo-600/10 dark:border-gray-700'
+                    "
+                ></textarea>
+
                 <p
-                    v-if="form.errors.recipient_email"
+                    v-if="form.errors.recipients"
                     class="mt-1.5 text-xs font-medium text-rose-600"
                 >
-                    {{ form.errors.recipient_email }}
+                    {{ form.errors.recipients }}
                 </p>
-            </div>
 
-            <!-- Zero Subscribers Warning for Bulk mode -->
-            <div
-                v-if="
-                    (form.recipient_type === 'all' && recipientCount === 0) ||
-                    (form.recipient_type === 'students' &&
-                        studentsCount === 0) ||
-                    (form.recipient_type === 'staff' && staffCount === 0)
-                "
-                class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-xs font-medium text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300"
-            >
-                <AlertCircle class="mt-0.5 h-4 w-4 shrink-0" />
-                <p>
-                    There are currently no active users with email notifications
-                    enabled in the selected recipient target.
-                </p>
+                <!-- Live Parsing Status Bar -->
+                <div
+                    class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-xs dark:border-gray-800"
+                >
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span
+                            class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                        >
+                            <CheckCircle2 class="h-3.5 w-3.5" />
+                            <span
+                                >{{ recipientStats.validEmails.length }} valid
+                                unique</span
+                            >
+                        </span>
+
+                        <span
+                            v-if="recipientStats.duplicateCount > 0"
+                            class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-400"
+                        >
+                            {{ recipientStats.duplicateCount }} duplicate{{
+                                recipientStats.duplicateCount > 1 ? 's' : ''
+                            }}
+                            auto-merged
+                        </span>
+
+                        <span
+                            v-if="recipientStats.invalidItems.length > 0"
+                            class="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                        >
+                            <AlertCircle class="h-3.5 w-3.5" />
+                            <span
+                                >{{ recipientStats.invalidItems.length }}
+                                invalid ignored</span
+                            >
+                        </span>
+                    </div>
+
+                    <button
+                        v-if="
+                            recipientStats.duplicateCount > 0 ||
+                            recipientStats.invalidItems.length > 0
+                        "
+                        type="button"
+                        @click="cleanAndFormatRecipients"
+                        class="text-xs font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
+                    >
+                        Format & Clean List
+                    </button>
+                </div>
             </div>
 
             <!-- Subject -->
@@ -392,7 +484,7 @@ const submitForm = () => {
                     required
                     placeholder="e.g. Important Announcement: New Resources & Learning Updates"
                     :disabled="form.processing"
-                    class="w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
+                    class="w-full rounded-2xl border bg-white px-4 py-3 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
                     :class="
                         form.errors.subject
                             ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
@@ -529,8 +621,8 @@ const submitForm = () => {
                 class="flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
             >
                 <p class="text-xs text-slate-400 dark:text-gray-500">
-                    Emails and image assets are stored and delivered
-                    asynchronously in the background.
+                    Emails are queued and delivered asynchronously. Duplicates
+                    and invalid addresses are automatically stripped.
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -547,12 +639,7 @@ const submitForm = () => {
                         type="submit"
                         :disabled="
                             form.processing ||
-                            (form.recipient_type === 'all' &&
-                                recipientCount === 0) ||
-                            (form.recipient_type === 'students' &&
-                                studentsCount === 0) ||
-                            (form.recipient_type === 'staff' &&
-                                staffCount === 0)
+                            recipientStats.validEmails.length === 0
                         "
                         class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                     >
@@ -562,10 +649,11 @@ const submitForm = () => {
                         />
                         <Send v-else class="h-4 w-4" />
                         <span>
+                            Send to {{ recipientStats.validEmails.length }}
                             {{
-                                form.recipient_type === 'single'
-                                    ? 'Send Email'
-                                    : 'Send Broadcast'
+                                recipientStats.validEmails.length === 1
+                                    ? 'Recipient'
+                                    : 'Recipients'
                             }}
                         </span>
                     </button>
@@ -646,15 +734,11 @@ const submitForm = () => {
                             <span
                                 class="font-medium text-slate-800 dark:text-gray-200"
                             >
-                                {{
-                                    form.recipient_type === 'single'
-                                        ? form.recipient_email ||
-                                          '(Recipient Email)'
-                                        : form.recipient_type === 'students'
-                                          ? `Students (Non-Staff) (${props.studentsCount} recipients)`
-                                          : form.recipient_type === 'staff'
-                                            ? `Staff Members Only (${props.staffCount} recipients)`
-                                            : `All Subscribed Users (${props.recipientCount} recipients)`
+                                {{ recipientStats.validEmails.length }} unique
+                                recipient{{
+                                    recipientStats.validEmails.length === 1
+                                        ? ''
+                                        : 's'
                                 }}
                             </span>
                         </div>
@@ -704,8 +788,8 @@ const submitForm = () => {
                             >
                                 Hello
                                 {{
-                                    form.recipient_type === 'single'
-                                        ? 'User'
+                                    recipientStats.validEmails.length === 1
+                                        ? recipientStats.validEmails[0]
                                         : '[Recipient Name]'
                                 }},
                             </p>
@@ -754,19 +838,18 @@ const submitForm = () => {
                             </div>
 
                             <p
-                                class="mt-3 mb-1 text-[11px] text-slate-400 dark:text-gray-500"
+                                class="mt-3 text-[11px] text-slate-400 dark:text-gray-500"
                             >
-                                You are receiving this email because you have an
-                                active account on HSCStack.
-                            </p>
-                            <p
-                                class="text-[11px] text-slate-400 dark:text-gray-500"
-                            >
-                                Manage your email preferences anytime in your
+                                Manage email preferences in your
                                 <span
                                     class="text-indigo-600 underline dark:text-indigo-400"
                                     >Account Settings</span
-                                >.
+                                >, or visit our
+                                <span
+                                    class="text-indigo-600 underline dark:text-indigo-400"
+                                    >Support Center</span
+                                >
+                                if you need assistance or don't have an account.
                             </p>
                         </div>
                     </div>
@@ -807,25 +890,15 @@ const submitForm = () => {
                         <h3
                             class="text-base font-bold text-slate-900 dark:text-gray-100"
                         >
-                            {{
-                                form.recipient_type === 'single'
-                                    ? 'Confirm Single Email'
-                                    : form.recipient_type === 'students'
-                                      ? 'Confirm Students Broadcast'
-                                      : form.recipient_type === 'staff'
-                                        ? 'Confirm Staff Broadcast'
-                                        : 'Confirm Email Broadcast'
-                            }}
+                            Confirm Email Queue
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            {{
-                                form.recipient_type === 'single'
-                                    ? `Direct email to ${form.recipient_email}`
-                                    : form.recipient_type === 'students'
-                                      ? `Queue broadcast to ${props.studentsCount} students (non-staff)`
-                                      : form.recipient_type === 'staff'
-                                        ? `Queue broadcast to ${props.staffCount} staff members`
-                                        : `Queue broadcast to ${props.recipientCount} subscribed users`
+                            Dispatching to
+                            {{ recipientStats.validEmails.length }} unique
+                            recipient{{
+                                recipientStats.validEmails.length === 1
+                                    ? ''
+                                    : 's'
                             }}
                         </p>
                     </div>
@@ -834,28 +907,14 @@ const submitForm = () => {
                 <p
                     class="mb-5 text-xs leading-relaxed text-slate-600 dark:text-gray-300"
                 >
-                    <span v-if="form.recipient_type === 'single'">
-                        Are you sure you want to send this email to
-                        <strong>{{ form.recipient_email }}</strong
-                        >?
-                    </span>
-                    <span v-else-if="form.recipient_type === 'students'">
-                        Are you sure you want to send this broadcast? The emails
-                        will be dispatched to
-                        <strong>{{ props.studentsCount }}</strong> students
-                        (public non-staff users) who have enabled email updates.
-                    </span>
-                    <span v-else-if="form.recipient_type === 'staff'">
-                        Are you sure you want to send this broadcast? The emails
-                        will be dispatched to
-                        <strong>{{ props.staffCount }}</strong> staff members
-                        who have enabled email updates.
-                    </span>
-                    <span v-else>
-                        Are you sure you want to send this broadcast? The emails
-                        will be dispatched to all
-                        <strong>{{ props.recipientCount }}</strong> users who
-                        have enabled email updates.
+                    Are you sure you want to send this broadcast? The emails
+                    will be queued asynchronously.
+                    <span
+                        v-if="recipientStats.duplicateCount > 0"
+                        class="mt-1 block font-medium text-slate-400"
+                    >
+                        ({{ recipientStats.duplicateCount }} duplicates were
+                        detected and will only receive 1 email).
                     </span>
                 </p>
 
