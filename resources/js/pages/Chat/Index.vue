@@ -1494,7 +1494,7 @@ onUnmounted(() => {
 
         <!-- Main Messenger Shell -->
         <div
-            class="flex h-[calc(100dvh-13.5rem)] max-h-[760px] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs sm:h-[calc(100dvh-15rem)] dark:border-zinc-800 dark:bg-zinc-900"
+            class="flex h-[calc(100dvh-13.5rem)] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs sm:h-[calc(100dvh-8.5rem)] dark:border-zinc-800 dark:bg-zinc-900"
         >
             <!-- Scrollable Message Stream -->
             <div
