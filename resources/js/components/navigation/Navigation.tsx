@@ -548,32 +548,6 @@ export const SiteRail = defineComponent({
                                         </Link>
                                     </div>
                                 </div>
-
-                                {/* Legal Links */}
-                                <div class="mt-3 border-t border-slate-100 px-3 pt-3 dark:border-slate-800/60">
-                                    <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                                        <Link
-                                            href="/privacy-policy"
-                                            class="transition hover:text-slate-700 dark:hover:text-slate-300"
-                                        >
-                                            Privacy
-                                        </Link>
-                                        <span>•</span>
-                                        <Link
-                                            href="/terms-service"
-                                            class="transition hover:text-slate-700 dark:hover:text-slate-300"
-                                        >
-                                            Terms
-                                        </Link>
-                                        <span>•</span>
-                                        <Link
-                                            href="/content-policy"
-                                            class="transition hover:text-slate-700 dark:hover:text-slate-300"
-                                        >
-                                            Content Policy
-                                        </Link>
-                                    </div>
-                                </div>
                             </nav>
                         )}
                     </div>
