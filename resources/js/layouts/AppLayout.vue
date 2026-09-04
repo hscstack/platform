@@ -88,18 +88,11 @@ const drawerOpen = ref(false);
                     <slot />
                 </main>
 
-                <!-- Footer: hidden on Chat/Index; hidden on mobile for Profile, User/Show, Resource, Forum/Show, Login -->
+                <!-- Footer: shown on desktop across pages (except Chat/Index); on mobile/portrait shown ONLY on Home/SSC landing pages -->
                 <div
                     v-if="
                         $page.component !== 'Chat/Index' &&
-                        !(
-                            showBottomNav &&
-                            ($page.component === 'Profile' ||
-                                $page.component === 'User/Show' ||
-                                $page.component === 'Resource' ||
-                                $page.component === 'Forum/Show' ||
-                                $page.component === 'auth/Login')
-                        )
+                        (!showBottomNav || $page.component === 'Home')
                     "
                     :class="
                         showBottomNav
