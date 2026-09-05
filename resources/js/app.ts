@@ -20,6 +20,22 @@ router.on('navigate', () => {
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
+    // Dual-extension page resolver: `.vue` SFCs first, `.tsx`
+    // `defineComponent` pages (e.g. admin TSX proof-of-concept) as fallback.
+    resolve: (name) => {
+        const pages = import.meta.glob('./pages/**/*.{vue,tsx}') as Record<
+            string,
+            () => Promise<{ default: unknown }>
+        >;
+        const loader =
+            pages[`./pages/${name}.vue`] ?? pages[`./pages/${name}.tsx`];
+
+        if (!loader) {
+            throw new Error(`Page not found: ${name}`);
+        }
+
+        return loader().then((module) => module.default ?? module);
+    },
     layout: (name) => {
         switch (true) {
             case name.startsWith('admin/'):
