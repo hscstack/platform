@@ -179,13 +179,14 @@ const handleScroll = (e: Event) => {
         return;
     }
 
-    // Ignore scroll events originating from inside the dropdown itself (e.g. scrolling the notification items)
-    if (
-        dropdownRef.value &&
-        e.target instanceof Node &&
-        dropdownRef.value.contains(e.target)
-    ) {
-        return;
+    // Ignore scroll events originating from inside the dropdown or panel itself (e.g. scrolling the notification items)
+    if (e.target instanceof Node) {
+        if (
+            (dropdownRef.value && dropdownRef.value.contains(e.target)) ||
+            (panelRef.value && panelRef.value.contains(e.target))
+        ) {
+            return;
+        }
     }
 
     closeDropdown();
