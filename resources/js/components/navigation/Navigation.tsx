@@ -285,10 +285,7 @@ export const SiteRail = defineComponent({
                                 type="button"
                                 onClick={() => emit('toggle')}
                                 class={[
-                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800',
-                                    props.collapsed
-                                        ? 'cursor-e-resize'
-                                        : 'cursor-w-resize',
+                                    'flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                 ]}
                                 aria-label={
                                     props.collapsed
@@ -1004,7 +1001,7 @@ export const SiteDrawer = defineComponent({
                     <button
                         type="button"
                         onClick={() => emit('update:open', true)}
-                        class="flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                        class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                         aria-label="Open navigation menu"
                     >
                         <MaterialIcon name="menu" size={24} />
@@ -1487,10 +1484,7 @@ export const AdminRail = defineComponent({
                                 type="button"
                                 onClick={() => emit('toggle')}
                                 class={[
-                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800',
-                                    props.collapsed
-                                        ? 'cursor-e-resize'
-                                        : 'cursor-w-resize',
+                                    'flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                 ]}
                                 aria-label={
                                     props.collapsed
