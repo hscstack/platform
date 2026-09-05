@@ -17,6 +17,7 @@ class CacheHelper
         Cache::forget('home_page_subjects_hsc');
         Cache::forget('home_page_subjects_ssc');
         Cache::forget('home_page_featured_blogs');
+        Cache::forget('home_page_trending_posts');
         Cache::forget('home_page_notice');
         Cache::forget('forum_filter_subjects');
     }
