@@ -24,5 +24,7 @@ When asked to push:
    ```bash
    git push -u origin <new-branch>
    ```
+7. Create a Pull Request (PR) with a clear, respective title and description linking relevant issues.
+
 
 
