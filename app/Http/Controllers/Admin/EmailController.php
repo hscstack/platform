@@ -85,7 +85,7 @@ class EmailController extends Controller
 
         foreach ($rawLines as $line) {
             $email = strtolower(trim($line));
-            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if (! empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $cleanedEmails[$email] = true;
             }
         }

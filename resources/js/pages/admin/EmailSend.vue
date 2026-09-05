@@ -20,7 +20,7 @@ import {
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import HTMLEditor from '@/components/HTMLEditor.vue';
 
-const props = defineProps({
+defineProps({
     recipientCount: {
         type: Number,
         default: 0,
@@ -87,6 +87,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const recipientStats = computed(() => {
     const raw = form.recipients.trim();
+
     if (!raw) {
         return {
             validEmails: [] as string[],
@@ -107,6 +108,7 @@ const recipientStats = computed(() => {
 
     for (const token of tokens) {
         const lower = token.toLowerCase();
+
         if (emailRegex.test(lower)) {
             if (seen.has(lower)) {
                 duplicateCount++;
@@ -148,7 +150,10 @@ const handleRemoveImage = () => {
 
 // Import helper
 const importSubscribers = async (type: 'all' | 'students' | 'staff') => {
-    if (isImporting.value) return;
+    if (isImporting.value) {
+        return;
+    }
+
     isImporting.value = true;
     isImportDropdownOpen.value = false;
 
@@ -191,11 +196,13 @@ const handleSendClick = () => {
             'recipients',
             'Please provide at least one valid recipient email.',
         );
+
         return;
     }
 
     if (!form.subject.trim() || !form.body.trim()) {
         form.validate();
+
         return;
     }
 
@@ -333,7 +340,9 @@ const submitForm = () => {
                                     class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
                                 >
                                     <div class="flex items-center gap-2">
-                                        <Users class="h-4 w-4 text-indigo-500" />
+                                        <Users
+                                            class="h-4 w-4 text-indigo-500"
+                                        />
                                         <span>All Subscribed</span>
                                     </div>
                                     <span
@@ -449,7 +458,9 @@ const submitForm = () => {
                         >
                             <AlertCircle class="h-3.5 w-3.5" />
                             <span
-                                >{{ recipientStats.invalidItems.length }}
+                                >{{
+                                    recipientStats.invalidItems.length
+                                }}
                                 invalid ignored</span
                             >
                         </span>
