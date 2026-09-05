@@ -15,9 +15,14 @@ When asked to push:
    ```
 2. Switch to that branch.
 3. Use atomic commits where applicable.
-4. Never force push (`--force` or `-f`).
-5. Push the branch to the remote:
+4. Run formatting and linting checks before committing:
+   ```bash
+   npm run format && composer lint && npm run lint
+   ```
+5. Never force push (`--force` or `-f`).
+6. Push the branch to the remote repository:
    ```bash
    git push -u origin <new-branch>
    ```
+
 
