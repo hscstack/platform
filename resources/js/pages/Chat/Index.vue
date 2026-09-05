@@ -476,20 +476,6 @@ const scrollToBottom = (smooth = true) => {
     });
 };
 
-const handleInputFocus = () => {
-    scrollToBottom(true);
-
-    if (typeof window !== 'undefined' && window.visualViewport) {
-        setTimeout(() => {
-            messageInputRef.value?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-            });
-            scrollToBottom(true);
-        }, 150);
-    }
-};
-
 let lastFetchTimestamp = 0;
 const fetchLatestMessages = async (force = false) => {
     const now = Date.now();
@@ -2144,7 +2130,6 @@ onUnmounted(() => {
                             "
                             :maxlength="maxLengthLimit"
                             @input="handleInput"
-                            @focus="handleInputFocus"
                             @click="checkMentionTrigger"
                             @keyup="checkMentionTrigger"
                             @keydown="handleInputKeydown"

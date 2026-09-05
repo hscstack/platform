@@ -23,7 +23,6 @@ import {
     defineComponent,
     nextTick,
     onBeforeUnmount,
-    onMounted,
     ref,
     toRef,
     watch,
@@ -861,104 +860,49 @@ export const SiteBottomNav = defineComponent({
         const resolvedHref = (item: { href: string }) =>
             item.href === '/' ? homeHref.value : item.href;
 
-        const isKeyboardOpen = ref(false);
-
-        const checkFocus = () => {
-            const activeEl = document.activeElement;
-            const isInputFocused =
-                activeEl instanceof HTMLInputElement ||
-                activeEl instanceof HTMLTextAreaElement ||
-                activeEl?.getAttribute('contenteditable') === 'true';
-
-            let isViewportShrunk = false;
-
-            if (typeof window !== 'undefined' && window.visualViewport) {
-                isViewportShrunk =
-                    window.innerHeight - window.visualViewport.height > 150;
-            }
-
-            isKeyboardOpen.value = isInputFocused || isViewportShrunk;
-        };
-
-        onMounted(() => {
-            if (typeof window === 'undefined') {
-                return;
-            }
-
-            window.addEventListener('focusin', checkFocus);
-            window.addEventListener('focusout', () => {
-                setTimeout(checkFocus, 100);
-            });
-
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', checkFocus);
-                window.visualViewport.addEventListener('scroll', checkFocus);
-            }
-        });
-
-        onBeforeUnmount(() => {
-            if (typeof window === 'undefined') {
-                return;
-            }
-
-            window.removeEventListener('focusin', checkFocus);
-            window.removeEventListener('focusout', checkFocus);
-
-            if (window.visualViewport) {
-                window.visualViewport.removeEventListener('resize', checkFocus);
-                window.visualViewport.removeEventListener('scroll', checkFocus);
-            }
-        });
-
-        return () => {
-            if (isKeyboardOpen.value) {
-                return null;
-            }
-
-            return (
-                <nav
-                    class="fixed inset-x-0 bottom-0 z-40 w-full border-t border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95"
-                    aria-label="Bottom navigation"
-                >
-                    <div class="mx-auto flex w-full max-w-md items-center justify-around px-1 py-2">
-                        {bottomNavItems.value.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={resolvedHref(item)}
-                                class={[
-                                    'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150 ease-out',
+        return () => (
+            <nav
+                class="fixed inset-x-0 bottom-0 z-40 w-full border-t border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95"
+                aria-label="Bottom navigation"
+            >
+                <div class="mx-auto flex w-full max-w-md items-center justify-around px-1 py-2">
+                    {bottomNavItems.value.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={resolvedHref(item)}
+                            class={[
+                                'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150 ease-out',
+                                isActive(item.href, item.match)
+                                    ? 'text-slate-900 dark:text-white'
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
+                            ]}
+                        >
+                            <MaterialIcon
+                                name={item.icon}
+                                size={26}
+                                filled={isActive(item.href, item.match)}
+                                weight={400}
+                                class={`shrink-0 transition-transform duration-150 ${
                                     isActive(item.href, item.match)
-                                        ? 'text-slate-900 dark:text-white'
-                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
+                                        ? 'scale-[1.02] text-slate-900 dark:text-white'
+                                        : 'text-slate-500 dark:text-slate-400'
+                                }`}
+                            />
+                            <span
+                                class={[
+                                    'text-[10px] leading-none tracking-wide antialiased',
+                                    isActive(item.href, item.match)
+                                        ? 'font-bold'
+                                        : 'font-medium',
                                 ]}
                             >
-                                <MaterialIcon
-                                    name={item.icon}
-                                    size={26}
-                                    filled={isActive(item.href, item.match)}
-                                    weight={400}
-                                    class={`shrink-0 transition-transform duration-150 ${
-                                        isActive(item.href, item.match)
-                                            ? 'scale-[1.02] text-slate-900 dark:text-white'
-                                            : 'text-slate-500 dark:text-slate-400'
-                                    }`}
-                                />
-                                <span
-                                    class={[
-                                        'text-[10px] leading-none tracking-wide antialiased',
-                                        isActive(item.href, item.match)
-                                            ? 'font-bold'
-                                            : 'font-medium',
-                                    ]}
-                                >
-                                    {item.label}
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </nav>
-            );
-        };
+                                {item.label}
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            </nav>
+        );
     },
 });
 
