@@ -5,6 +5,7 @@ import { computed } from 'vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import ForumPostCard from '@/components/forum/ForumPostCard.vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -16,6 +17,7 @@ const props = defineProps({
     subjects: Array,
     notice: Object,
     featured_blogs: Array,
+    trending_posts: Array,
 });
 
 const subjects = props.subjects as Array<{
@@ -92,6 +94,59 @@ const filteredSubjects = computed(() => {
                 Show all subjects
             </button>
         </EmptyState>
+
+        <div
+            v-if="trending_posts?.length"
+            class="mt-10 border-t border-slate-100 pt-8 sm:mt-12 sm:pt-10 dark:border-gray-800"
+        >
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h2
+                        class="text-2xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                    >
+                        Trending Discussions
+                    </h2>
+                    <p class="text-sm text-slate-500 dark:text-gray-400">
+                        ফোরামের সাম্প্রতিক প্রশ্ন ও উত্তরগুলো দেখুন
+                    </p>
+                </div>
+                <!-- Desktop Link -->
+                <Link
+                    href="/forum"
+                    class="group hidden items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700 sm:inline-flex dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                    <span>Visit Forum</span>
+                    <span
+                        class="transition-transform duration-200 group-hover:translate-x-1"
+                    >
+                        →
+                    </span>
+                </Link>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                <ForumPostCard
+                    v-for="post in trending_posts"
+                    :key="post.id"
+                    :post="post"
+                />
+            </div>
+
+            <!-- Mobile Bottom Link -->
+            <div class="mt-4 text-center sm:hidden">
+                <Link
+                    href="/forum"
+                    class="group inline-flex items-center gap-1.5 py-1 text-xs font-bold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                    <span>Visit Forum</span>
+                    <span
+                        class="transition-transform duration-200 group-hover:translate-x-1"
+                    >
+                        →
+                    </span>
+                </Link>
+            </div>
+        </div>
 
         <div
             v-if="featured_blogs?.length"
