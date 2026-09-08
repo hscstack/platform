@@ -36,7 +36,7 @@ class UpdateSubjectRequest extends FormRequest
         $subject = $this->route('subject');
 
         return [
-            'name' => ['sometimes', 'string', 'max:100', 'min:3', Rule::unique('subjects', 'name')->ignore($subject->id)],
+            'name' => ['sometimes', 'string', 'max:100', 'min:3'],
             'english_name' => ['nullable', 'string', 'max:100'],
             'tailwind_format' => ['sometimes', 'string', 'max:100'],
             'icon' => ['sometimes', 'string', 'max:50'],

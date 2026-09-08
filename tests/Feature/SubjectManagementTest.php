@@ -152,3 +152,35 @@ test('invalid subject creation is rejected by validation', function () {
         'sort_order',
     ]);
 });
+
+test('admin can create subjects with same name in different courses', function () {
+    $admin = adminUserWithPermissions(['view admin', 'create subjects']);
+
+    Subject::create([
+        'name' => 'Physics',
+        'english_name' => 'Physics',
+        'slug' => 'hsc-physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+    ]);
+
+    $response = $this->actingAs($admin)->post('/admin/subjects', [
+        'name' => 'Physics',
+        'english_name' => 'Physics',
+        'course' => 'ssc',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success', 'Subject created successfully.');
+
+    $this->assertDatabaseHas('subjects', [
+        'name' => 'Physics',
+        'course' => 'ssc',
+        'slug' => 'ssc-physics',
+    ]);
+});
