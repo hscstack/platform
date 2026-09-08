@@ -35,7 +35,7 @@ class StoreSubjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100', 'min:3', 'unique:subjects,name'],
+            'name' => ['required', 'string', 'max:100', 'min:3'],
             'english_name' => ['nullable', 'string', 'max:100'],
             'slug' => ['required', 'string', 'max:100', 'unique:subjects,slug'],
             'tailwind_format' => ['required', 'string', 'max:100'],
