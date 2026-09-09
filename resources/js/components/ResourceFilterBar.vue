@@ -42,7 +42,6 @@ interface Props {
     showBatchFilter?: boolean;
     showCounter?: boolean;
     sticky?: boolean;
-    modelValue?: Array<any>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -56,7 +55,6 @@ const props = withDefaults(defineProps<Props>(), {
     showBatchFilter: false,
     showCounter: true,
     sticky: false,
-    modelValue: () => [],
 });
 
 const emit = defineEmits<{
@@ -181,10 +179,17 @@ const availableSubjects = computed(() => {
                 name: r.subject_name,
                 english_name: r.subject_name,
             });
+        } else if (typeof r.subject === 'string' && r.subject.trim()) {
+            const subjectStr = r.subject.trim();
+            extracted.set(subjectStr, {
+                id: subjectStr,
+                name: subjectStr,
+                english_name: subjectStr,
+            });
         }
     });
 
-    if (extracted.size > 1) {
+    if (extracted.size > 0) {
         return [
             { id: 'all', name: 'All Subjects', english_name: 'All' },
             ...Array.from(extracted.values()),
@@ -319,7 +324,6 @@ const matchesMaterialType = (targetType: string, resource: any): boolean => {
         case 'note':
             return (
                 resType === 'note' ||
-                resType === 'pdf' ||
                 resType === 'handnote' ||
                 resType === 'hand-notes' ||
                 title.includes('নোট') ||
