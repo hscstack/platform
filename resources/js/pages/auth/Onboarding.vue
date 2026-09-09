@@ -10,9 +10,9 @@ import {
     Camera,
     Loader2,
     Heart,
-    BadgeCheck,
 } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
+import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { compressImage } from '@/lib/imageCompression';
 
 interface OnboardingUser {
@@ -609,28 +609,26 @@ const getContributorAvatar = (contributor: Contributor) => {
                                                 ?.toUpperCase() || 'U'
                                         }}
                                     </div>
-                                    <BadgeCheck
-                                        v-if="contributor.is_verified"
-                                        class="absolute -right-0.5 -bottom-0.5 h-4 w-4 fill-sky-500 text-white dark:fill-sky-400"
-                                    />
                                 </div>
 
                                 <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1">
+                                        <p
+                                            class="truncate text-xs font-bold text-slate-800 dark:text-gray-100"
+                                        >
+                                            {{ contributor.name }}
+                                        </p>
+                                        <VerifiedBadge
+                                            v-if="contributor.is_verified"
+                                        />
+                                    </div>
                                     <p
-                                        class="truncate text-xs font-bold text-slate-800 dark:text-gray-100"
+                                        class="truncate text-[11px] font-medium text-slate-500 dark:text-gray-400"
                                     >
-                                        {{ contributor.name }}
-                                    </p>
-                                    <p
-                                        class="truncate text-[11px] font-medium text-slate-400 dark:text-gray-500"
-                                    >
-                                        @{{ contributor.username }}
-                                    </p>
-                                    <p
-                                        v-if="contributor.institution"
-                                        class="mt-0.5 truncate text-[10px] text-slate-500 dark:text-gray-400"
-                                    >
-                                        {{ contributor.institution }}
+                                        {{
+                                            contributor.institution ||
+                                            `@${contributor.username}`
+                                        }}
                                     </p>
                                 </div>
                             </div>
