@@ -114,7 +114,7 @@ class AuthController extends Controller
 
         $top = User::withCount('appreciationsReceived')
             ->orderByDesc('appreciations_received_count')
-            ->take(4)
+            ->take(2)
             ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
 
         $random = User::whereNotIn('id', $top->pluck('id'))

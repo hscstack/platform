@@ -53,7 +53,9 @@ const form = useForm<{
     username: '',
     school: '',
     image: null,
-    appreciations: (props.suggestedContributors || []).map((c) => c.id),
+    appreciations: (props.suggestedContributors || [])
+        .slice(0, 2)
+        .map((c) => c.id),
 });
 
 const previewUrl = ref<string | null>(null);
@@ -571,34 +573,28 @@ const getContributorAvatar = (contributor: Contributor) => {
                     </div>
 
                     <!-- Contributors List -->
-                    <div
-                        class="grid max-h-[380px] grid-cols-1 gap-2.5 overflow-y-auto pr-1"
-                    >
+                    <div class="space-y-2.5">
                         <div
                             v-for="contributor in contributors"
                             :key="contributor.id"
-                            @click="toggleAppreciation(contributor.id)"
-                            class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-2xl border p-3 transition-all select-none"
-                            :class="[
-                                form.appreciations.includes(contributor.id)
-                                    ? 'border-rose-300 bg-rose-50/70 shadow-xs dark:border-rose-500/40 dark:bg-rose-950/20'
-                                    : 'border-slate-200/80 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/30 dark:hover:border-gray-700 dark:hover:bg-gray-800/60',
-                            ]"
+                            class="group relative flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-2xs transition-all hover:border-slate-300 sm:px-3.5 sm:py-3 dark:border-gray-800 dark:bg-gray-900/60 dark:hover:border-gray-700"
                         >
                             <!-- Contributor Info -->
                             <div class="flex min-w-0 items-center gap-3">
-                                <div class="relative shrink-0">
+                                <div
+                                    class="h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-slate-100 sm:h-11 sm:w-11 dark:ring-gray-800"
+                                >
                                     <img
                                         v-if="getContributorAvatar(contributor)"
                                         :src="
                                             getContributorAvatar(contributor)!
                                         "
                                         :alt="contributor.name"
-                                        class="h-11 w-11 rounded-full border border-slate-200 object-cover dark:border-gray-700"
+                                        class="h-full w-full object-cover"
                                     />
                                     <div
                                         v-else
-                                        class="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                                        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-600 text-xs font-bold text-white uppercase sm:text-sm"
                                     >
                                         {{
                                             contributor.name
@@ -609,19 +605,20 @@ const getContributorAvatar = (contributor: Contributor) => {
                                 </div>
 
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-1">
+                                    <div class="flex items-center gap-1.5">
                                         <p
-                                            class="truncate text-xs font-bold text-slate-800 dark:text-gray-100"
+                                            class="truncate text-xs font-bold text-slate-900 sm:text-sm dark:text-gray-100"
                                         >
                                             {{ contributor.name }}
                                         </p>
                                         <VerifiedBadge
                                             v-if="contributor.is_verified"
+                                            class="shrink-0"
                                         />
                                     </div>
                                     <p
                                         v-if="contributor.institution"
-                                        class="truncate text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                                        class="mt-0.5 truncate text-[11px] font-medium text-slate-500 dark:text-gray-400"
                                     >
                                         {{ contributor.institution }}
                                     </p>
@@ -631,22 +628,22 @@ const getContributorAvatar = (contributor: Contributor) => {
                             <!-- Heart Toggle Button (matching /u/profile) -->
                             <button
                                 type="button"
-                                @click.stop="toggleAppreciation(contributor.id)"
+                                @click="toggleAppreciation(contributor.id)"
                                 class="group/btn inline-flex h-8.5 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9 sm:px-3.5"
                                 :class="[
                                     form.appreciations.includes(contributor.id)
-                                        ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
-                                        : 'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
+                                        ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-2xs hover:bg-rose-100/80 dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400 dark:hover:bg-rose-950/90'
+                                        : 'border border-slate-200 bg-white text-slate-700 shadow-2xs hover:border-slate-300 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-700/70',
                                 ]"
                             >
                                 <Heart
-                                    class="h-4 w-4 transition-transform group-hover/btn:scale-110"
+                                    class="h-3.5 w-3.5 transition-transform group-hover/btn:scale-110"
                                     :class="[
                                         form.appreciations.includes(
                                             contributor.id,
                                         )
                                             ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
-                                            : 'stroke-[2.2] text-slate-500 group-hover/btn:text-rose-500 dark:text-gray-400 dark:group-hover/btn:text-rose-400',
+                                            : 'stroke-[2.2] text-slate-400 group-hover/btn:text-rose-500 dark:text-gray-400 dark:group-hover/btn:text-rose-400',
                                     ]"
                                 />
                                 <span>{{
@@ -691,7 +688,9 @@ const getContributorAvatar = (contributor: Contributor) => {
                             <span>{{
                                 form.processing
                                     ? 'Creating Account...'
-                                    : 'Create Account'
+                                    : form.appreciations.length > 0
+                                      ? 'Appreciate & Create Account'
+                                      : 'Create Account'
                             }}</span>
                         </button>
                     </div>
