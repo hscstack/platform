@@ -155,8 +155,8 @@ class AuthController extends Controller
             ],
             'school' => ['required', 'string', 'max:255', new CleanText],
             'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'appreciations' => ['nullable', 'array'],
-            'appreciations.*' => ['integer', 'exists:users,id'],
+            'appreciations' => ['nullable', 'array', 'max:4'],
+            'appreciations.*' => ['integer', 'distinct', 'exists:users,id'],
         ], [
             'school.required' => 'Please enter your school, college, or institution name.',
             'username.regex' => 'Username can only contain letters, numbers, and underscores.',
