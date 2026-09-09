@@ -623,12 +623,10 @@ const getContributorAvatar = (contributor: Contributor) => {
                                         />
                                     </div>
                                     <p
+                                        v-if="contributor.institution"
                                         class="truncate text-[11px] font-medium text-slate-500 dark:text-gray-400"
                                     >
-                                        {{
-                                            contributor.institution ||
-                                            `@${contributor.username}`
-                                        }}
+                                        {{ contributor.institution }}
                                     </p>
                                 </div>
                             </div>
