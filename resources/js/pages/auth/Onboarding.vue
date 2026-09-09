@@ -734,17 +734,6 @@ const getContributorAvatar = (contributor: Contributor) => {
                     </p>
                 </div>
             </div>
-
-            <!-- Cancel and Back link -->
-            <div class="mt-6 text-center">
-                <Link
-                    href="/login"
-                    class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 transition-colors hover:text-slate-900 dark:text-gray-500 dark:hover:text-gray-200"
-                >
-                    <ArrowLeft class="h-3.5 w-3.5" />
-                    <span>Back to Sign In</span>
-                </Link>
-            </div>
         </div>
     </div>
 </template>
