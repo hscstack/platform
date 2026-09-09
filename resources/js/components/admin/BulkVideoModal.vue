@@ -7,6 +7,8 @@ import {
     Info,
     Loader2,
     AlertCircle,
+    ChevronDown,
+    ChevronRight,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
@@ -28,6 +30,7 @@ const namingStrategy = ref<'serial' | 'youtube'>('serial');
 const namingPrefix = ref('video');
 const startNumber = ref(1);
 const isReversed = ref(false);
+const showAdvanced = ref(false);
 const isSaving = ref(false);
 const errorMessage = ref('');
 
@@ -37,6 +40,7 @@ const resetForm = () => {
     namingPrefix.value = 'video';
     startNumber.value = 1;
     isReversed.value = false;
+    showAdvanced.value = false;
     errorMessage.value = '';
     isSaving.value = false;
 };
@@ -239,38 +243,53 @@ const submitForm = () => {
                     </div>
                 </div>
 
-                <!-- Order Settings -->
-                <div
-                    class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-gray-700/80 dark:bg-gray-800/40"
-                >
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="space-y-0.5">
+                <!-- Advanced Settings Toggle -->
+                <div class="pt-1">
+                    <button
+                        type="button"
+                        @click="showAdvanced = !showAdvanced"
+                        class="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                    >
+                        <component
+                            :is="showAdvanced ? ChevronDown : ChevronRight"
+                            class="h-3.5 w-3.5"
+                        />
+                        <span>Advanced Options</span>
+                    </button>
+
+                    <div
+                        v-if="showAdvanced"
+                        class="mt-2.5 space-y-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 dark:border-gray-700/80 dark:bg-gray-800/40"
+                    >
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="space-y-0.5">
+                                <label
+                                    for="modal_video_is_reversed"
+                                    class="cursor-pointer text-xs font-bold text-slate-800 dark:text-gray-200"
+                                >
+                                    Reverse Playlist Order
+                                </label>
+                                <p
+                                    class="text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    Import videos starting from the bottom of
+                                    the playlist to the top.
+                                </p>
+                            </div>
                             <label
-                                for="modal_video_is_reversed"
-                                class="cursor-pointer text-xs font-bold text-slate-800 dark:text-gray-200"
+                                class="relative inline-flex shrink-0 cursor-pointer items-center"
                             >
-                                Reverse Playlist Order
+                                <input
+                                    id="modal_video_is_reversed"
+                                    v-model="isReversed"
+                                    type="checkbox"
+                                    class="peer sr-only"
+                                />
+                                <span
+                                    class="peer h-6 w-11 rounded-full bg-slate-200 shadow-xs transition peer-checked:bg-indigo-600 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5 dark:bg-gray-700 dark:peer-checked:bg-indigo-600"
+                                ></span>
                             </label>
-                            <p
-                                class="text-[11px] text-slate-500 dark:text-gray-400"
-                            >
-                                Import videos starting from the bottom of the
-                                playlist to the top.
-                            </p>
                         </div>
-                        <label
-                            class="relative inline-flex shrink-0 cursor-pointer items-center"
-                        >
-                            <input
-                                id="modal_video_is_reversed"
-                                v-model="isReversed"
-                                type="checkbox"
-                                class="peer sr-only"
-                            />
-                            <span
-                                class="peer h-6 w-11 rounded-full bg-slate-200 shadow-xs transition peer-checked:bg-indigo-600 peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5 dark:bg-gray-700 dark:peer-checked:bg-indigo-600"
-                            ></span>
-                        </label>
                     </div>
                 </div>
 
