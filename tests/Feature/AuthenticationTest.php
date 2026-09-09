@@ -335,3 +335,58 @@ test('google auth redirects to intended url if set for existing user', function 
 
     $response->assertRedirect(route('profile.edit'));
 });
+
+test('onboarding passes suggested contributors to the view', function () {
+    $topUsers = User::factory()->count(4)->create();
+    $randomUsers = User::factory()->count(2)->create();
+
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-suggested',
+            'email' => 'suggested@example.com',
+            'name' => 'Suggested User',
+            'avatar' => null,
+        ],
+    ])->get(route('onboarding'));
+
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('auth/Onboarding')
+        ->has('suggestedContributors')
+    );
+});
+
+test('completing onboarding with appreciations creates UserAppreciation records', function () {
+    $contributor1 = User::factory()->create(['username' => 'mentor_1']);
+    $contributor2 = User::factory()->create(['username' => 'mentor_2']);
+
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-fan',
+            'email' => 'fan@example.com',
+            'name' => 'Fan User',
+            'avatar' => null,
+        ],
+    ])->post(route('onboarding.complete'), [
+        'name' => 'Fan User',
+        'username' => 'fan_user',
+        'school' => 'Notre Dame College',
+        'appreciations' => [$contributor1->id, $contributor2->id],
+    ]);
+
+    $newUser = User::where('email', 'fan@example.com')->first();
+    $this->assertNotNull($newUser);
+
+    $this->assertDatabaseHas('user_appreciations', [
+        'user_id' => $contributor1->id,
+        'appreciator_id' => $newUser->id,
+    ]);
+
+    $this->assertDatabaseHas('user_appreciations', [
+        'user_id' => $contributor2->id,
+        'appreciator_id' => $newUser->id,
+    ]);
+
+    $this->assertAuthenticatedAs($newUser);
+    $response->assertRedirect(route('user.profile', 'fan_user'));
+});
