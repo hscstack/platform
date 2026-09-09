@@ -6,8 +6,11 @@ import {
     GraduationCap,
     AlertCircle,
     ArrowLeft,
+    ArrowRight,
     Camera,
     Loader2,
+    Heart,
+    BadgeCheck,
 } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
 import { compressImage } from '@/lib/imageCompression';
@@ -19,28 +22,46 @@ interface OnboardingUser {
     avatar?: string | null;
 }
 
+interface Contributor {
+    id: number;
+    name: string;
+    username: string;
+    image_path?: string | null;
+    image_url?: string | null;
+    institution?: string | null;
+    is_verified?: boolean;
+}
+
 const props = defineProps<{
     user?: OnboardingUser;
+    suggestedContributors?: Contributor[];
 }>();
 
 const page = usePage();
 const flashError = computed(() => (page.props as any).flash?.error);
+
+const currentStep = ref<1 | 2>(1);
 
 const form = useForm<{
     name: string;
     username: string;
     school: string;
     image: File | null;
+    appreciations: number[];
 }>({
     name: props.user?.name || '',
     username: '',
     school: '',
     image: null,
+    appreciations: [],
 });
 
 const previewUrl = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const isCompressing = ref(false);
+
+const contributors = computed(() => props.suggestedContributors || []);
+const hasContributors = computed(() => contributors.value.length > 0);
 
 const handleImageChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -121,14 +142,97 @@ onUnmounted(() => {
     }
 });
 
+const toggleAppreciation = (userId: number) => {
+    const index = form.appreciations.indexOf(userId);
+
+    if (index > -1) {
+        form.appreciations.splice(index, 1);
+    } else {
+        form.appreciations.push(userId);
+    }
+};
+
+const selectAllContributors = () => {
+    if (form.appreciations.length === contributors.value.length) {
+        form.appreciations = [];
+    } else {
+        form.appreciations = contributors.value.map((c) => c.id);
+    }
+};
+
+const goToStep2 = () => {
+    form.errors.name = '';
+    form.errors.username = '';
+    form.errors.school = '';
+
+    if (!form.name.trim()) {
+        form.errors.name = 'Please enter your full name.';
+
+        return;
+    }
+
+    if (!form.username.trim()) {
+        form.errors.username = 'Please choose a username.';
+
+        return;
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(form.username.trim())) {
+        form.errors.username =
+            'Username must be 3-30 characters (letters, numbers, underscores).';
+
+        return;
+    }
+
+    if (!form.school.trim()) {
+        form.errors.school = 'Please enter your institution name.';
+
+        return;
+    }
+
+    if (!hasContributors.value) {
+        submit();
+
+        return;
+    }
+
+    currentStep.value = 2;
+};
+
 const submit = () => {
     if (isCompressing.value || form.errors.image) {
         return;
     }
 
+    if (hasContributors.value && form.appreciations.length === 0) {
+        return;
+    }
+
     form.post('/onboarding', {
         forceFormData: true,
+        onError: (errors) => {
+            if (
+                errors.name ||
+                errors.username ||
+                errors.school ||
+                errors.image
+            ) {
+                currentStep.value = 1;
+            }
+        },
     });
+};
+
+const getContributorAvatar = (contributor: Contributor) => {
+    if (contributor.image_url) {
+        return contributor.image_url;
+    }
+
+    if (contributor.image_path) {
+        return `/storage/${contributor.image_path}`;
+    }
+
+    return null;
 };
 </script>
 
@@ -137,25 +241,33 @@ const submit = () => {
         <title>Complete Your Profile - HSCStack</title>
         <meta
             name="description"
-            content="Set up your username, name, and school to complete your HSCStack account setup."
+            content="Set up your profile and meet HSCStack community contributors."
         />
     </Head>
 
     <div
         class="relative z-10 flex min-h-[85vh] items-center justify-center px-4 py-8 sm:px-6 sm:py-10"
     >
-        <div class="w-full max-w-md">
+        <div class="w-full max-w-lg">
             <!-- Header -->
             <div class="mb-5 text-center">
                 <h1
                     class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                 >
-                    Almost there!
+                    {{
+                        currentStep === 1
+                            ? 'Almost there!'
+                            : 'Appreciate Others'
+                    }}
                 </h1>
                 <p
                     class="mt-1.5 text-xs font-semibold text-slate-500 dark:text-gray-400"
                 >
-                    অ্যাকাউন্ট তৈরি সম্পন্ন করতে আপনার তথ্যগুলো নিশ্চিত করুন
+                    {{
+                        currentStep === 1
+                            ? 'অ্যাকাউন্ট তৈরি সম্পন্ন করতে আপনার তথ্যগুলো নিশ্চিত করুন'
+                            : 'কমিউনিটিতে অন্যদের সমর্থন ও ফলো করতে অন্তত ১ জনকে Appreciate করুন'
+                    }}
                 </p>
             </div>
 
@@ -170,252 +282,433 @@ const submit = () => {
                 <div class="flex-1">{{ flashError }}</div>
             </div>
 
-            <!-- Deep Shadow Card -->
+            <!-- Main Card -->
             <div
                 class="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(8,11,46,0.08)] backdrop-blur-xl sm:p-8 dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
             >
-                <!-- Connected Google Account Badge & Avatar Upload -->
-                <div
-                    v-if="props.user?.email"
-                    class="mb-6 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-gray-800 dark:bg-gray-800/40"
-                >
-                    <div class="flex items-center gap-3.5">
-                        <!-- Avatar with upload trigger overlay -->
-                        <div class="group relative shrink-0">
-                            <div
-                                v-if="isCompressing"
-                                class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-indigo-400 bg-indigo-50 dark:bg-indigo-950/40"
-                            >
-                                <Loader2
-                                    class="h-5 w-5 animate-spin text-indigo-600 dark:text-indigo-400"
+                <!-- STEP 1: Profile Information -->
+                <div v-show="currentStep === 1">
+                    <!-- Connected Google Account Badge & Avatar Upload -->
+                    <div
+                        v-if="props.user?.email"
+                        class="mb-6 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-gray-800 dark:bg-gray-800/40"
+                    >
+                        <div class="flex items-center gap-3.5">
+                            <!-- Avatar with upload trigger overlay -->
+                            <div class="group relative shrink-0">
+                                <div
+                                    v-if="isCompressing"
+                                    class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-indigo-400 bg-indigo-50 dark:bg-indigo-950/40"
+                                >
+                                    <Loader2
+                                        class="h-5 w-5 animate-spin text-indigo-600 dark:text-indigo-400"
+                                    />
+                                </div>
+                                <img
+                                    v-else-if="previewUrl || props.user.avatar"
+                                    :src="previewUrl || props.user.avatar!"
+                                    :alt="props.user.name"
+                                    class="h-14 w-14 rounded-full border-2 border-indigo-500/20 object-cover shadow-xs dark:border-indigo-400/30"
                                 />
-                            </div>
-                            <img
-                                v-else-if="previewUrl || props.user.avatar"
-                                :src="previewUrl || props.user.avatar!"
-                                :alt="props.user.name"
-                                class="h-14 w-14 rounded-full border-2 border-indigo-500/20 object-cover shadow-xs dark:border-indigo-400/30"
-                            />
-                            <div
-                                v-else
-                                class="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                            >
-                                {{
-                                    props.user.name?.charAt(0)?.toUpperCase() ||
-                                    'U'
-                                }}
-                            </div>
+                                <div
+                                    v-else
+                                    class="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                                >
+                                    {{
+                                        props.user.name
+                                            ?.charAt(0)
+                                            ?.toUpperCase() || 'U'
+                                    }}
+                                </div>
 
-                            <!-- Camera Overlay Button -->
-                            <button
-                                type="button"
-                                @click="triggerFileInput"
-                                :disabled="isCompressing"
-                                class="absolute -right-1 -bottom-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition hover:scale-110 hover:bg-indigo-700 active:scale-95 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                                title="Upload custom photo"
-                            >
-                                <Camera class="h-3.5 w-3.5" />
-                            </button>
-                        </div>
-
-                        <!-- Email & Info -->
-                        <div class="min-w-0 flex-1">
-                            <p
-                                class="truncate text-xs font-bold text-slate-800 dark:text-gray-200"
-                            >
-                                {{ props.user.email }}
-                            </p>
-                            <p
-                                class="text-[11px] text-slate-400 dark:text-gray-500"
-                            >
-                                Connected via Google
-                            </p>
-                            <div class="mt-1.5 flex items-center gap-2">
+                                <!-- Camera Overlay Button -->
                                 <button
                                     type="button"
                                     @click="triggerFileInput"
                                     :disabled="isCompressing"
-                                    class="cursor-pointer text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                    class="absolute -right-1 -bottom-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition hover:scale-110 hover:bg-indigo-700 active:scale-95 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                    title="Upload custom photo"
                                 >
-                                    {{
-                                        isCompressing
-                                            ? 'Optimizing...'
-                                            : previewUrl
-                                              ? 'Change Photo'
-                                              : 'Upload Photo'
-                                    }}
-                                </button>
-                                <span
-                                    v-if="previewUrl"
-                                    class="text-slate-300 dark:text-gray-600"
-                                    >•</span
-                                >
-                                <button
-                                    v-if="previewUrl"
-                                    type="button"
-                                    @click="removeCustomImage"
-                                    :disabled="isCompressing"
-                                    class="cursor-pointer text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:underline disabled:opacity-50 dark:text-rose-400"
-                                >
-                                    Reset
+                                    <Camera class="h-3.5 w-3.5" />
                                 </button>
                             </div>
+
+                            <!-- Email & Info -->
+                            <div class="min-w-0 flex-1">
+                                <p
+                                    class="truncate text-xs font-bold text-slate-800 dark:text-gray-200"
+                                >
+                                    {{ props.user.email }}
+                                </p>
+                                <p
+                                    class="text-[11px] text-slate-400 dark:text-gray-500"
+                                >
+                                    Connected via Google
+                                </p>
+                                <div class="mt-1.5 flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        @click="triggerFileInput"
+                                        :disabled="isCompressing"
+                                        class="cursor-pointer text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline disabled:opacity-50 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                    >
+                                        {{
+                                            isCompressing
+                                                ? 'Optimizing...'
+                                                : previewUrl
+                                                  ? 'Change Photo'
+                                                  : 'Upload Photo'
+                                        }}
+                                    </button>
+                                    <span
+                                        v-if="previewUrl"
+                                        class="text-slate-300 dark:text-gray-600"
+                                        >•</span
+                                    >
+                                    <button
+                                        v-if="previewUrl"
+                                        type="button"
+                                        @click="removeCustomImage"
+                                        :disabled="isCompressing"
+                                        class="cursor-pointer text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:underline disabled:opacity-50 dark:text-rose-400"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Hidden File Input -->
+                            <input
+                                ref="fileInputRef"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                class="hidden"
+                                @change="handleImageChange"
+                            />
                         </div>
 
-                        <!-- Hidden File Input -->
-                        <input
-                            ref="fileInputRef"
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            class="hidden"
-                            @change="handleImageChange"
-                        />
+                        <p
+                            v-if="form.errors.image"
+                            class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400"
+                        >
+                            {{ form.errors.image }}
+                        </p>
                     </div>
 
-                    <p
-                        v-if="form.errors.image"
-                        class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400"
+                    <!-- Onboarding Form Inputs -->
+                    <form
+                        @submit.prevent="
+                            hasContributors ? goToStep2() : submit()
+                        "
+                        class="space-y-4"
                     >
-                        {{ form.errors.image }}
-                    </p>
+                        <!-- Full Name -->
+                        <div>
+                            <label
+                                for="name"
+                                class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                Full Name <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
+                                >
+                                    <User class="h-4 w-4" />
+                                </div>
+                                <input
+                                    v-model="form.name"
+                                    type="text"
+                                    id="name"
+                                    required
+                                    placeholder="Your full name"
+                                    :disabled="form.processing"
+                                    class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
+                                    :class="{
+                                        'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
+                                            form.errors.name,
+                                    }"
+                                />
+                            </div>
+                            <p
+                                v-if="form.errors.name"
+                                class="mt-1 text-xs text-rose-600 dark:text-rose-400"
+                            >
+                                {{ form.errors.name }}
+                            </p>
+                        </div>
+
+                        <!-- Username -->
+                        <div>
+                            <label
+                                for="username"
+                                class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                Username <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
+                                >
+                                    <AtSign class="h-4 w-4" />
+                                </div>
+                                <input
+                                    v-model="form.username"
+                                    type="text"
+                                    id="username"
+                                    required
+                                    placeholder="your_username"
+                                    :disabled="form.processing"
+                                    class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
+                                    :class="{
+                                        'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
+                                            form.errors.username,
+                                    }"
+                                />
+                            </div>
+                            <p
+                                v-if="form.errors.username"
+                                class="mt-1 text-xs text-rose-600 dark:text-rose-400"
+                            >
+                                {{ form.errors.username }}
+                            </p>
+                            <p
+                                v-else
+                                class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                Letters, numbers, and underscores (3–30 chars).
+                            </p>
+                        </div>
+
+                        <!-- School / Institution -->
+                        <div>
+                            <label
+                                for="school"
+                                class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                School / College / Institution
+                                <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
+                                >
+                                    <GraduationCap class="h-4 w-4" />
+                                </div>
+                                <input
+                                    v-model="form.school"
+                                    type="text"
+                                    id="school"
+                                    required
+                                    placeholder="e.g., Notre Dame College, Dhaka College, BUET"
+                                    :disabled="form.processing"
+                                    class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
+                                    :class="{
+                                        'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
+                                            form.errors.school,
+                                    }"
+                                />
+                            </div>
+                            <p
+                                v-if="form.errors.school"
+                                class="mt-1 text-xs text-rose-600 dark:text-rose-400"
+                            >
+                                {{ form.errors.school }}
+                            </p>
+                        </div>
+
+                        <!-- Next / Submit Button -->
+                        <div class="pt-2">
+                            <button
+                                type="submit"
+                                :disabled="form.processing || isCompressing"
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                            >
+                                <Loader2
+                                    v-if="form.processing"
+                                    class="h-4 w-4 animate-spin"
+                                />
+                                <span>
+                                    {{
+                                        form.processing
+                                            ? 'Please wait...'
+                                            : 'Continue'
+                                    }}
+                                </span>
+                                <ArrowRight
+                                    v-if="!form.processing"
+                                    class="h-4 w-4"
+                                />
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Onboarding Form -->
-                <form @submit.prevent="submit" class="space-y-4">
-                    <!-- Full Name -->
-                    <div>
-                        <label
-                            for="name"
-                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                <!-- STEP 2: Appreciate Contributors -->
+                <div v-show="currentStep === 2" class="space-y-4">
+                    <!-- Top control row: Count & Select All -->
+                    <div
+                        class="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-gray-800"
+                    >
+                        <div
+                            class="text-xs font-semibold text-slate-600 dark:text-gray-300"
                         >
-                            Full Name <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <div
-                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
+                            <span
+                                class="font-bold text-indigo-600 dark:text-indigo-400"
+                                >{{ form.appreciations.length }}</span
                             >
-                                <User class="h-4 w-4" />
-                            </div>
-                            <input
-                                v-model="form.name"
-                                type="text"
-                                id="name"
-                                required
-                                placeholder="Your full name"
-                                :disabled="form.processing"
-                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
-                                :class="{
-                                    'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
-                                        form.errors.name,
-                                }"
-                            />
+                            of {{ contributors.length }} appreciated
                         </div>
-                        <p
-                            v-if="form.errors.name"
-                            class="mt-1 text-xs text-rose-600 dark:text-rose-400"
-                        >
-                            {{ form.errors.name }}
-                        </p>
-                    </div>
-
-                    <!-- Username -->
-                    <div>
-                        <label
-                            for="username"
-                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            Username <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <div
-                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
-                            >
-                                <AtSign class="h-4 w-4" />
-                            </div>
-                            <input
-                                v-model="form.username"
-                                type="text"
-                                id="username"
-                                required
-                                placeholder="your_username"
-                                :disabled="form.processing"
-                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
-                                :class="{
-                                    'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
-                                        form.errors.username,
-                                }"
-                            />
-                        </div>
-                        <p
-                            v-if="form.errors.username"
-                            class="mt-1 text-xs text-rose-600 dark:text-rose-400"
-                        >
-                            {{ form.errors.username }}
-                        </p>
-                        <p
-                            v-else
-                            class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
-                        >
-                            Letters, numbers, and underscores (3–30 chars).
-                        </p>
-                    </div>
-
-                    <!-- School / Institution -->
-                    <div>
-                        <label
-                            for="school"
-                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            School / College / Institution
-                            <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <div
-                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-gray-500"
-                            >
-                                <GraduationCap class="h-4 w-4" />
-                            </div>
-                            <input
-                                v-model="form.school"
-                                type="text"
-                                id="school"
-                                required
-                                placeholder="e.g., Notre Dame College, Dhaka College, BUET"
-                                :disabled="form.processing"
-                                class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
-                                :class="{
-                                    'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
-                                        form.errors.school,
-                                }"
-                            />
-                        </div>
-                        <p
-                            v-if="form.errors.school"
-                            class="mt-1 text-xs text-rose-600 dark:text-rose-400"
-                        >
-                            {{ form.errors.school }}
-                        </p>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="pt-2">
                         <button
-                            type="submit"
-                            :disabled="form.processing || isCompressing"
-                            class="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                            type="button"
+                            @click="selectAllContributors"
+                            class="cursor-pointer text-xs font-bold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        >
+                            {{
+                                form.appreciations.length ===
+                                contributors.length
+                                    ? 'Deselect All'
+                                    : 'Appreciate All'
+                            }}
+                        </button>
+                    </div>
+
+                    <!-- Contributors List -->
+                    <div
+                        class="grid max-h-[380px] grid-cols-1 gap-2.5 overflow-y-auto pr-1"
+                    >
+                        <div
+                            v-for="contributor in contributors"
+                            :key="contributor.id"
+                            @click="toggleAppreciation(contributor.id)"
+                            class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-2xl border p-3 transition-all select-none"
+                            :class="[
+                                form.appreciations.includes(contributor.id)
+                                    ? 'border-rose-300 bg-rose-50/70 shadow-xs dark:border-rose-500/40 dark:bg-rose-950/20'
+                                    : 'border-slate-200/80 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/30 dark:hover:border-gray-700 dark:hover:bg-gray-800/60',
+                            ]"
+                        >
+                            <!-- Contributor Info -->
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="relative shrink-0">
+                                    <img
+                                        v-if="getContributorAvatar(contributor)"
+                                        :src="
+                                            getContributorAvatar(contributor)!
+                                        "
+                                        :alt="contributor.name"
+                                        class="h-11 w-11 rounded-full border border-slate-200 object-cover dark:border-gray-700"
+                                    />
+                                    <div
+                                        v-else
+                                        class="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                                    >
+                                        {{
+                                            contributor.name
+                                                ?.charAt(0)
+                                                ?.toUpperCase() || 'U'
+                                        }}
+                                    </div>
+                                    <BadgeCheck
+                                        v-if="contributor.is_verified"
+                                        class="absolute -right-0.5 -bottom-0.5 h-4 w-4 fill-sky-500 text-white dark:fill-sky-400"
+                                    />
+                                </div>
+
+                                <div class="min-w-0 flex-1">
+                                    <p
+                                        class="truncate text-xs font-bold text-slate-800 dark:text-gray-100"
+                                    >
+                                        {{ contributor.name }}
+                                    </p>
+                                    <p
+                                        class="truncate text-[11px] font-medium text-slate-400 dark:text-gray-500"
+                                    >
+                                        @{{ contributor.username }}
+                                    </p>
+                                    <p
+                                        v-if="contributor.institution"
+                                        class="mt-0.5 truncate text-[10px] text-slate-500 dark:text-gray-400"
+                                    >
+                                        {{ contributor.institution }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Heart Toggle Button -->
+                            <button
+                                type="button"
+                                @click.stop="toggleAppreciation(contributor.id)"
+                                class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all active:scale-95"
+                                :class="[
+                                    form.appreciations.includes(contributor.id)
+                                        ? 'bg-rose-500 text-white shadow-xs dark:bg-rose-600'
+                                        : 'border border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:text-rose-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-rose-500/40',
+                                ]"
+                            >
+                                <Heart
+                                    class="h-3.5 w-3.5 transition-transform"
+                                    :class="{
+                                        'scale-110 fill-current':
+                                            form.appreciations.includes(
+                                                contributor.id,
+                                            ),
+                                    }"
+                                />
+                                <span>{{
+                                    form.appreciations.includes(contributor.id)
+                                        ? 'Appreciated'
+                                        : 'Appreciate'
+                                }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Appreciations validation warning -->
+                    <p
+                        v-if="form.errors.appreciations"
+                        class="text-xs font-medium text-rose-600 dark:text-rose-400"
+                    >
+                        {{ form.errors.appreciations }}
+                    </p>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex items-center gap-3 pt-2">
+                        <button
+                            type="button"
+                            @click="currentStep = 1"
+                            :disabled="form.processing"
+                            class="flex items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 active:scale-[0.98] disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700/80"
+                        >
+                            <ArrowLeft class="h-3.5 w-3.5" />
+                            <span>Back</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="submit"
+                            :disabled="
+                                form.processing ||
+                                form.appreciations.length === 0
+                            "
+                            class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                         >
                             <Loader2
                                 v-if="form.processing"
                                 class="h-4 w-4 animate-spin"
                             />
-                            <span>{{
-                                form.processing
-                                    ? 'Creating Account...'
-                                    : 'Create Account & Get Started'
-                            }}</span>
+                            <span>
+                                {{
+                                    form.processing
+                                        ? 'Creating Account...'
+                                        : form.appreciations.length === 0
+                                          ? 'Select at least 1'
+                                          : 'Create Account'
+                                }}
+                            </span>
                         </button>
                     </div>
-                </form>
+                </div>
 
                 <!-- Terms & Privacy subtext -->
                 <div

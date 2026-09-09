@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserAppreciation;
 use App\Notifications\WelcomeNotification;
 use App\Rules\CleanText;
 use App\Services\ChatProfanityFilter;
@@ -111,10 +112,21 @@ class AuthController extends Controller
             return redirect()->route('login')->with('error', 'Please continue with Google to create an account.');
         }
 
-        $onboardingUser = $request->session()->get('onboarding_user');
+        $top = User::withCount('appreciationsReceived')
+            ->orderByDesc('appreciations_received_count')
+            ->take(4)
+            ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
+
+        $random = User::whereNotIn('id', $top->pluck('id'))
+            ->inRandomOrder()
+            ->take(2)
+            ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
+
+        $suggestedContributors = $top->concat($random)->values();
 
         return Inertia::render('auth/Onboarding', [
-            'user' => $onboardingUser,
+            'user' => $request->session()->get('onboarding_user'),
+            'suggestedContributors' => $suggestedContributors,
         ]);
     }
 
@@ -143,6 +155,8 @@ class AuthController extends Controller
             ],
             'school' => ['required', 'string', 'max:255', new CleanText],
             'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'appreciations' => ['nullable', 'array'],
+            'appreciations.*' => ['integer', 'exists:users,id'],
         ], [
             'school.required' => 'Please enter your school, college, or institution name.',
             'username.regex' => 'Username can only contain letters, numbers, and underscores.',
@@ -180,6 +194,17 @@ class AuthController extends Controller
                     Storage::delete($user->image_path);
                 }
                 $user->update(['image_path' => $imagePath]);
+            }
+        }
+
+        if (! empty($validated['appreciations'])) {
+            foreach ($validated['appreciations'] as $targetUserId) {
+                if ((int) $targetUserId !== (int) $user->id) {
+                    UserAppreciation::firstOrCreate([
+                        'user_id' => $targetUserId,
+                        'appreciator_id' => $user->id,
+                    ]);
+                }
             }
         }
 
