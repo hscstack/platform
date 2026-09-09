@@ -53,7 +53,7 @@ const form = useForm<{
     username: '',
     school: '',
     image: null,
-    appreciations: [],
+    appreciations: (props.suggestedContributors || []).map((c) => c.id),
 });
 
 const previewUrl = ref<string | null>(null);
@@ -199,13 +199,9 @@ const goToStep2 = () => {
     currentStep.value = 2;
 };
 
-const submit = (skipAppreciations = false) => {
+const submit = () => {
     if (isCompressing.value || form.errors.image) {
         return;
-    }
-
-    if (skipAppreciations) {
-        form.appreciations = [];
     }
 
     form.post('/onboarding', {
@@ -684,7 +680,7 @@ const getContributorAvatar = (contributor: Contributor) => {
 
                         <button
                             type="button"
-                            @click="submit(false)"
+                            @click="submit"
                             :disabled="form.processing"
                             class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                         >
@@ -697,18 +693,6 @@ const getContributorAvatar = (contributor: Contributor) => {
                                     ? 'Creating Account...'
                                     : 'Create Account'
                             }}</span>
-                        </button>
-                    </div>
-
-                    <!-- Skip for now link -->
-                    <div class="pt-1 text-center">
-                        <button
-                            type="button"
-                            @click="submit(true)"
-                            :disabled="form.processing"
-                            class="cursor-pointer text-xs font-semibold text-slate-400 transition hover:text-slate-700 hover:underline dark:text-gray-500 dark:hover:text-gray-300"
-                        >
-                            Skip for now
                         </button>
                     </div>
                 </div>
