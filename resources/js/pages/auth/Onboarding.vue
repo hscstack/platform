@@ -266,7 +266,7 @@ const getContributorAvatar = (contributor: Contributor) => {
                     {{
                         currentStep === 1
                             ? 'অ্যাকাউন্ট তৈরি সম্পন্ন করতে আপনার তথ্যগুলো নিশ্চিত করুন'
-                            : "আমাদের কমিউনিটিতে 'Appreciate' হলো ফলো করার সমতুল্য — অন্যদের সাথে যুক্ত হতে অন্তত ১ জনকে Appreciate করুন"
+                            : "আমাদের কমিউনিটিতে 'Appreciate' হলো ফলোর বিকল্প"
                     }}
                 </p>
             </div>
