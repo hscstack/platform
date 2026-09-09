@@ -631,25 +631,26 @@ const getContributorAvatar = (contributor: Contributor) => {
                                 </div>
                             </div>
 
-                            <!-- Heart Toggle Button -->
+                            <!-- Heart Toggle Button (matching /u/profile) -->
                             <button
                                 type="button"
                                 @click.stop="toggleAppreciation(contributor.id)"
-                                class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all active:scale-95"
+                                class="group/btn inline-flex h-8.5 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9 sm:px-3.5"
                                 :class="[
                                     form.appreciations.includes(contributor.id)
-                                        ? 'bg-rose-500 text-white shadow-xs dark:bg-rose-600'
-                                        : 'border border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:text-rose-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-rose-500/40',
+                                        ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
+                                        : 'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
                                 ]"
                             >
                                 <Heart
-                                    class="h-3.5 w-3.5 transition-transform"
-                                    :class="{
-                                        'scale-110 fill-current':
-                                            form.appreciations.includes(
-                                                contributor.id,
-                                            ),
-                                    }"
+                                    class="h-4 w-4 transition-transform group-hover/btn:scale-110"
+                                    :class="[
+                                        form.appreciations.includes(
+                                            contributor.id,
+                                        )
+                                            ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
+                                            : 'stroke-[2.2] text-slate-500 group-hover/btn:text-rose-500 dark:text-gray-400 dark:group-hover/btn:text-rose-400',
+                                    ]"
                                 />
                                 <span>{{
                                     form.appreciations.includes(contributor.id)
