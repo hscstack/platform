@@ -4,12 +4,14 @@ use App\Models\Node;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
     Permission::findOrCreate('edit resources', 'web');
+    Permission::findOrCreate('create resources', 'web');
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->syncPermissions(Permission::all());
 });
@@ -130,4 +132,66 @@ test('bulk rename respects custom starting number', function () {
 
     expect($res1->fresh()->title)->toBe('Lecture - 05');
     expect($res2->fresh()->title)->toBe('Lecture - 06');
+});
+
+test('admin can import youtube playlist videos in normal and reversed order', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $subject = Subject::create([
+        'name' => 'ICT',
+        'slug' => 'ict',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'laptop',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Networking',
+        'slug' => 'networking',
+    ]);
+
+    Http::fake([
+        'https://www.googleapis.com/youtube/v3/playlistItems*' => Http::response([
+            'items' => [
+                [
+                    'snippet' => [
+                        'title' => 'First Video',
+                        'position' => 0,
+                        'resourceId' => ['videoId' => 'vid11111111'],
+                    ],
+                ],
+                [
+                    'snippet' => [
+                        'title' => 'Second Video',
+                        'position' => 1,
+                        'resourceId' => ['videoId' => 'vid22222222'],
+                    ],
+                ],
+            ],
+            'nextPageToken' => null,
+        ], 200),
+    ]);
+
+    // Test reversed order with serial naming
+    $this->actingAs($admin)
+        ->post('/admin/resources/bulk/videos', [
+            'node_id' => $node->id,
+            'playlist_url' => 'https://www.youtube.com/playlist?list=PL123456789',
+            'naming_strategy' => 'serial',
+            'naming_prefix' => 'Video',
+            'start_number' => 1,
+            'is_reversed' => true,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $resources = Resource::where('node_id', $node->id)->orderBy('id')->get();
+    expect($resources)->toHaveCount(2);
+    // In reversed order, Second Video comes first and gets serial number 01
+    expect($resources[0]->title)->toBe('Video - 01');
+    expect($resources[0]->external_url)->toBe('https://www.youtube.com/watch?v=vid22222222');
+    expect($resources[1]->title)->toBe('Video - 02');
+    expect($resources[1]->external_url)->toBe('https://www.youtube.com/watch?v=vid11111111');
 });
