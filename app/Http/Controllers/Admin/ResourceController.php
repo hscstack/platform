@@ -127,6 +127,10 @@ class ResourceController extends Controller
             $pageToken = $data['nextPageToken'] ?? null;
         } while ($pageToken);
 
+        if (! empty($validated['is_reversed'])) {
+            $videos = array_reverse($videos);
+        }
+
         // Apply naming strategy
         foreach ($videos as $index => &$video) {
             if ($validated['naming_strategy'] === 'youtube') {
