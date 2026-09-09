@@ -10,8 +10,10 @@ import {
     Camera,
     Loader2,
     Heart,
+    MoreVertical,
+    SkipForward,
 } from 'lucide-vue-next';
-import { computed, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { compressImage } from '@/lib/imageCompression';
 
@@ -41,6 +43,7 @@ const page = usePage();
 const flashError = computed(() => (page.props as any).flash?.error);
 
 const currentStep = ref<1 | 2>(1);
+const showMoreMenu = ref(false);
 
 const form = useForm<{
     name: string;
@@ -222,6 +225,43 @@ const submit = () => {
         },
     });
 };
+
+const skipAndSubmit = () => {
+    if (isCompressing.value || form.errors.image) {
+        return;
+    }
+
+    form.appreciations = [];
+    showMoreMenu.value = false;
+
+    form.post('/onboarding', {
+        forceFormData: true,
+        onError: (errors) => {
+            if (
+                errors.name ||
+                errors.username ||
+                errors.school ||
+                errors.image
+            ) {
+                currentStep.value = 1;
+            }
+        },
+    });
+};
+
+const handleWindowClick = () => {
+    if (showMoreMenu.value) {
+        showMoreMenu.value = false;
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('click', handleWindowClick);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('click', handleWindowClick);
+});
 
 const getContributorAvatar = (contributor: Contributor) => {
     if (contributor.image_url) {
@@ -559,18 +599,52 @@ const getContributorAvatar = (contributor: Contributor) => {
                             >
                             of {{ contributors.length }} appreciated
                         </div>
-                        <button
-                            type="button"
-                            @click="selectAllContributors"
-                            class="cursor-pointer text-xs font-bold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        >
-                            {{
-                                form.appreciations.length ===
-                                contributors.length
-                                    ? 'Deselect All'
-                                    : 'Appreciate All'
-                            }}
-                        </button>
+
+                        <div class="flex items-center gap-2">
+                            <button
+                                type="button"
+                                @click="selectAllContributors"
+                                class="cursor-pointer text-xs font-bold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            >
+                                {{
+                                    form.appreciations.length ===
+                                    contributors.length
+                                        ? 'Deselect All'
+                                        : 'Appreciate All'
+                                }}
+                            </button>
+
+                            <!-- Subtle Options Menu (Dark UX Skip) -->
+                            <div class="relative">
+                                <button
+                                    type="button"
+                                    @click.stop="showMoreMenu = !showMoreMenu"
+                                    class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                    title="More options"
+                                    aria-label="More options"
+                                >
+                                    <MoreVertical class="h-3.5 w-3.5" />
+                                </button>
+
+                                <div
+                                    v-if="showMoreMenu"
+                                    @click.stop
+                                    class="absolute top-full right-0 z-20 mt-1 w-40 overflow-hidden rounded-xl border border-slate-200/90 bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
+                                >
+                                    <button
+                                        type="button"
+                                        @click="skipAndSubmit"
+                                        :disabled="form.processing"
+                                        class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                    >
+                                        <SkipForward
+                                            class="h-3.5 w-3.5 opacity-60"
+                                        />
+                                        <span>Skip for now</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Contributors List -->
