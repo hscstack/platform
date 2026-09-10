@@ -54,7 +54,7 @@ const form = useForm<{
     school: '',
     image: null,
     appreciations: (props.suggestedContributors || [])
-        .slice(0, 2)
+        .filter((_, index) => index === 0 || index === 2)
         .map((c) => c.id),
 });
 

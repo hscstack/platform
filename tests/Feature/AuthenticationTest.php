@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\UserAppreciation;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -336,9 +337,16 @@ test('google auth redirects to intended url if set for existing user', function 
     $response->assertRedirect(route('profile.edit'));
 });
 
-test('onboarding passes suggested contributors to the view', function () {
-    $topUsers = User::factory()->count(4)->create();
-    $randomUsers = User::factory()->count(2)->create();
+test('onboarding passes suggested contributors to the view according to algorithm', function () {
+    $topUser = User::factory()->create(['name' => 'Top Appreciator']);
+    $admirer = User::factory()->create();
+    UserAppreciation::create([
+        'user_id' => $topUser->id,
+        'appreciator_id' => $admirer->id,
+    ]);
+
+    $verifiedUser = User::factory()->create(['name' => 'Verified User', 'is_verified' => true]);
+    $randomUsers = User::factory()->count(5)->create(['is_verified' => false]);
 
     $response = $this->withSession([
         'onboarding_user' => [
@@ -352,7 +360,9 @@ test('onboarding passes suggested contributors to the view', function () {
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('auth/Onboarding')
-        ->has('suggestedContributors')
+        ->has('suggestedContributors', 4)
+        ->where('suggestedContributors.0.id', $topUser->id)
+        ->where('suggestedContributors.1.id', $verifiedUser->id)
     );
 });
 
