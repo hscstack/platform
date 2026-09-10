@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserAppreciation;
+use App\Notifications\UserAppreciationNotification;
 use App\Notifications\WelcomeNotification;
 use App\Rules\CleanText;
 use App\Services\ChatProfanityFilter;
@@ -208,10 +209,17 @@ class AuthController extends Controller
         if (! empty($validated['appreciations'])) {
             foreach ($validated['appreciations'] as $targetUserId) {
                 if ((int) $targetUserId !== (int) $user->id) {
-                    UserAppreciation::firstOrCreate([
-                        'user_id' => $targetUserId,
-                        'appreciator_id' => $user->id,
-                    ]);
+                    $targetUser = User::find($targetUserId);
+
+                    if ($targetUser) {
+                        UserAppreciation::create([
+                            'user_id' => $targetUser->id,
+                            'appreciator_id' => $user->id,
+                        ]);
+
+                        $totalAppreciations = $targetUser->appreciationsReceived()->count();
+                        $targetUser->notify(new UserAppreciationNotification($user, $totalAppreciations));
+                    }
                 }
             }
         }
