@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserAppreciation;
+use App\Notifications\UserAppreciationNotification;
 use App\Notifications\WelcomeNotification;
 use App\Rules\CleanText;
 use App\Services\ChatProfanityFilter;
@@ -114,15 +115,23 @@ class AuthController extends Controller
 
         $top = User::withCount('appreciationsReceived')
             ->orderByDesc('appreciations_received_count')
-            ->take(2)
+            ->take(1)
             ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
 
-        $random = User::whereNotIn('id', $top->pluck('id'))
+        $verified = User::where('is_verified', true)
+            ->whereNotIn('id', $top->pluck('id'))
+            ->inRandomOrder()
+            ->take(1)
+            ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
+
+        $excludedIds = $top->pluck('id')->merge($verified->pluck('id'));
+
+        $random = User::whereNotIn('id', $excludedIds)
             ->inRandomOrder()
             ->take(2)
             ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
 
-        $suggestedContributors = $top->concat($random)->values();
+        $suggestedContributors = $top->concat($verified)->concat($random)->values();
 
         return Inertia::render('auth/Onboarding', [
             'user' => $request->session()->get('onboarding_user'),
@@ -200,10 +209,17 @@ class AuthController extends Controller
         if (! empty($validated['appreciations'])) {
             foreach ($validated['appreciations'] as $targetUserId) {
                 if ((int) $targetUserId !== (int) $user->id) {
-                    UserAppreciation::firstOrCreate([
-                        'user_id' => $targetUserId,
-                        'appreciator_id' => $user->id,
-                    ]);
+                    $targetUser = User::find($targetUserId);
+
+                    if ($targetUser) {
+                        UserAppreciation::create([
+                            'user_id' => $targetUser->id,
+                            'appreciator_id' => $user->id,
+                        ]);
+
+                        $totalAppreciations = $targetUser->appreciationsReceived()->count();
+                        $targetUser->notify(new UserAppreciationNotification($user, $totalAppreciations));
+                    }
                 }
             }
         }
