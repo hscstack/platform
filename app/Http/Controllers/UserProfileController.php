@@ -20,6 +20,20 @@ class UserProfileController extends Controller
         $user = User::where('username', $username)
             ->firstOrFail();
 
+        $profileUser = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+            'about' => $user->about,
+            'institution' => $user->institution,
+            'image_url' => $user->image_url,
+            'facebook' => $user->facebook,
+            'instagram' => $user->instagram,
+            'github' => $user->github,
+            'created_at' => $user->created_at?->format('M Y') ?? '2026',
+            'is_verified' => $user->is_verified,
+        ];
+
         // Appreciations (Received & Given)
         $appreciationsCount = $user->appreciationsReceived()->count();
         $appreciatingCount = $user->appreciationsGiven()->count();
@@ -27,6 +41,28 @@ class UserProfileController extends Controller
             ? $user->appreciationsReceived()->where('appreciator_id', auth()->id())->exists()
             : false;
 
+        // Suggested / Discover community members: 2 contributors + 2 general users
+        $contributorUsers = User::where('id', '!=', $user->id)
+            ->whereNotNull('username')
+            ->where('is_verified', true)
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
+            ->inRandomOrder()
+            ->take(2)
+            ->get();
+
+        $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
+        $remainingNeeded = 4 - $contributorUsers->count();
+
+        $randomUsers = User::whereNotIn('id', $excludedIds)
+            ->whereNotNull('username')
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
+            ->inRandomOrder()
+            ->take($remainingNeeded)
+            ->get();
+
+        $suggestedUsers = $contributorUsers->concat($randomUsers)->shuffle()->values();
+
+        // Privacy & Lock Evaluation
         $currentUser = auth()->user();
         $isOwner = $currentUser && $currentUser->id === $user->id;
         $isAdmin = $currentUser && (
@@ -48,24 +84,10 @@ class UserProfileController extends Controller
             }
         }
 
-        $profileUserData = [
-            'id' => $user->id,
-            'name' => $user->name,
-            'username' => $user->username,
-            'about' => $user->about,
-            'institution' => $user->institution,
-            'image_url' => $user->image_url,
-            'facebook' => $user->facebook,
-            'instagram' => $user->instagram,
-            'github' => $user->github,
-            'created_at' => $user->created_at?->format('M Y') ?? '2026',
-            'is_verified' => $user->is_verified,
-        ];
-
         // Early return if activity is locked for this visitor
         if ($isLocked) {
             return Inertia::render('User/Show', [
-                'profileUser' => $profileUserData,
+                'profileUser' => $profileUser,
                 'stats' => [
                     'questionsCount' => 0,
                     'answersCount' => 0,
@@ -79,7 +101,7 @@ class UserProfileController extends Controller
                 'isLocked' => true,
                 'lockReason' => $lockReason,
                 'activityPrivacy' => $activityPrivacy,
-                'suggestedUsers' => $this->getSuggestedUsers($user->id),
+                'suggestedUsers' => $suggestedUsers,
             ]);
         }
 
@@ -234,7 +256,7 @@ class UserProfileController extends Controller
             ->values();
 
         return Inertia::render('User/Show', [
-            'profileUser' => $profileUserData,
+            'profileUser' => $profileUser,
             'stats' => [
                 'questionsCount' => $questionsCount,
                 'answersCount' => $answersCount,
@@ -262,31 +284,8 @@ class UserProfileController extends Controller
                 'comments' => $recentComments->values(),
                 'appreciations' => $recentAppreciations->values(),
             ],
-            'suggestedUsers' => $this->getSuggestedUsers($user->id),
+            'suggestedUsers' => $suggestedUsers,
         ]);
-    }
-
-    private function getSuggestedUsers(int $excludeUserId)
-    {
-        $contributorUsers = User::where('id', '!=', $excludeUserId)
-            ->whereNotNull('username')
-            ->where('is_verified', true)
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
-            ->inRandomOrder()
-            ->take(2)
-            ->get();
-
-        $excludedIds = $contributorUsers->pluck('id')->push($excludeUserId)->all();
-        $remainingNeeded = 4 - $contributorUsers->count();
-
-        $randomUsers = User::whereNotIn('id', $excludedIds)
-            ->whereNotNull('username')
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
-            ->inRandomOrder()
-            ->take($remainingNeeded)
-            ->get();
-
-        return $contributorUsers->concat($randomUsers)->shuffle()->values();
     }
 
     public function toggleAppreciate(User $user)
