@@ -236,6 +236,34 @@ test('redirects to custom redirect url after onboarding for new user', function 
     $onboardResponse->assertRedirect(url('/ai'));
 });
 
+test('redirects to trusted subdomain after onboarding for new user', function () {
+    config(['app.url' => 'https://hscstack.site']);
+    $subdomainUrl = 'https://ssc2026.hscstack.site';
+
+    $this->get('/auth/google?redirect='.urlencode($subdomainUrl));
+
+    $abstractUser = Mockery::mock(Laravel\Socialite\Two\User::class);
+    $abstractUser->shouldReceive('getId')->andReturn('google-id-new-subdomain');
+    $abstractUser->shouldReceive('getEmail')->andReturn('new-subdomain@example.com');
+    $abstractUser->shouldReceive('getName')->andReturn('New Subdomain User');
+    $abstractUser->shouldReceive('getNickname')->andReturn('newsubdomain');
+    $abstractUser->shouldReceive('getAvatar')->andReturn(null);
+
+    Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+    $callbackResponse = $this->get(route('auth.google.callback'));
+    $callbackResponse->assertRedirect(route('onboarding'));
+
+    $onboardResponse = $this->withHeaders(['X-Inertia' => 'true'])->post(route('onboarding.complete'), [
+        'name' => 'New Subdomain User',
+        'username' => 'new_subdomain_user',
+        'school' => 'Rajshahi College',
+    ]);
+
+    $onboardResponse->assertStatus(409);
+    $onboardResponse->assertHeader('X-Inertia-Location', $subdomainUrl);
+});
+
 test('redirects to custom redirect url after authentication for existing user', function () {
     $user = User::factory()->create([
         'email' => 'redirect-test@example.com',

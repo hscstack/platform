@@ -233,7 +233,16 @@ class AuthController extends Controller
             ? route('user.profile', $user->username)
             : route('profile.edit');
 
-        return redirect()->intended($defaultUrl)->with('success', 'Account created successfully! Welcome to HSCStack.');
+        $targetUrl = $request->session()->pull('url.intended', $defaultUrl);
+
+        $targetHost = parse_url($targetUrl, PHP_URL_HOST);
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+
+        if ($targetHost && $appHost && $targetHost !== $appHost) {
+            return Inertia::location($targetUrl);
+        }
+
+        return redirect()->to($targetUrl)->with('success', 'Account created successfully! Welcome to HSCStack.');
     }
 
     private function downloadGoogleAvatar(?string $avatarUrl): ?string
