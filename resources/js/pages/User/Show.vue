@@ -1739,7 +1739,6 @@ const timeAgo = formatTimeAgo;
         </div>
     </Teleport>
 
-    <!-- Poke Modal -->
     <BaseModal
         :is-open="showPokeModal"
         title="Send a Poke"

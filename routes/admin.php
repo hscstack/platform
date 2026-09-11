@@ -149,7 +149,6 @@ Route::middleware('permission:manage forums')->group(function () {
     Route::post('/forums/settings', [AdminForumController::class, 'updateSettings'])->name('forums.settings.update');
 });
 
-// Peer & Study Poke Settings
 Route::middleware('permission:manage peers')->group(function () {
     Route::get('/peers/settings', [PeerSettingsController::class, 'edit'])->name('peers.settings.edit');
     Route::post('/peers/settings', [PeerSettingsController::class, 'update'])->name('peers.settings.update');

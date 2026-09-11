@@ -762,7 +762,6 @@ const submitForm = () => {
                     </label>
                 </div>
 
-                <!-- Study Poke Preference Sub-Section -->
                 <div
                     class="mt-6 border-t border-slate-100 pt-6 dark:border-gray-800"
                 >

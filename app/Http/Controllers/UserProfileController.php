@@ -95,7 +95,6 @@ class UserProfileController extends Controller
             ->take(30)
             ->get();
 
-        // Poke evaluation
         $pokeEnabled = (bool) AppSetting::get('peer_poke_enabled', true);
         $canPoke = $pokeEnabled && ! $isOwner && ($user->allow_pokes ?? true);
         $isPokeOnCooldown = $canPoke && auth()->check() && Cache::has('study_poke:'.auth()->id().":{$user->id}");
