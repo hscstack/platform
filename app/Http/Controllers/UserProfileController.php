@@ -54,13 +54,13 @@ class UserProfileController extends Controller
 
         $appreciators = $user->appreciators()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
-            ->inRandomOrder()
+            ->latest('user_appreciations.id')
             ->take(30)
             ->get();
 
         $appreciating = $user->appreciatingUsers()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
-            ->inRandomOrder()
+            ->latest('user_appreciations.id')
             ->take(30)
             ->get();
 
