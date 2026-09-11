@@ -312,28 +312,36 @@ class UserProfileController extends Controller
             return back()->with('error', 'This user has disabled pokes.');
         }
 
-        $cooldownKey = "study_poke:{$currentAuthUser->id}:{$user->id}";
-        if (Cache::has($cooldownKey)) {
-            return back()->with('error', 'You are on cooldown for poking this peer.');
-        }
-
         $validated = $request->validate([
             'preset_id' => 'required|string',
         ]);
 
         $presets = PeerSettingsController::getPresets();
-        $selectedPreset = collect($presets)->firstWhere('id', $validated['preset_id']) ?? $presets[0];
+        $selectedPreset = collect($presets)->firstWhere('id', $validated['preset_id']);
 
-        $user->notify(new StudyPokeNotification(
-            sender: $currentAuthUser,
-            message: $selectedPreset['message'],
-            icon: $selectedPreset['icon'] ?? '⚡',
-            presetId: $selectedPreset['id'],
-        ));
+        if (! $selectedPreset) {
+            return back()->with('error', 'The selected poke message is invalid.');
+        }
 
+        $cooldownKey = "study_poke:{$currentAuthUser->id}:{$user->id}";
         $cooldownMinutes = (int) AppSetting::get('peer_poke_cooldown_minutes', 360);
         $cooldownSeconds = max(30, $cooldownMinutes * 60);
-        Cache::put($cooldownKey, true, $cooldownSeconds);
+
+        if (! Cache::add($cooldownKey, true, $cooldownSeconds)) {
+            return back()->with('error', 'You are on cooldown for poking this peer.');
+        }
+
+        try {
+            $user->notify(new StudyPokeNotification(
+                sender: $currentAuthUser,
+                message: $selectedPreset['message'],
+                icon: $selectedPreset['icon'] ?? '⚡',
+                presetId: $selectedPreset['id'],
+            ));
+        } catch (\Throwable $e) {
+            Cache::forget($cooldownKey);
+            throw $e;
+        }
 
         return back()->with('success', "You poked {$user->name}! ⚡");
     }

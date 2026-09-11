@@ -194,6 +194,7 @@ const submit = () => {
                                 <input
                                     type="checkbox"
                                     v-model="form.enabled"
+                                    aria-label="Toggle Poke feature"
                                     class="peer sr-only"
                                 />
                                 <div

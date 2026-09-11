@@ -32,6 +32,15 @@ test('users cannot poke their own profile', function () {
         ->assertSessionHas('error');
 });
 
+test('poke with invalid preset_id is rejected', function () {
+    $userA = User::factory()->create(['username' => 'alice']);
+    $userB = User::factory()->create(['username' => 'bob']);
+
+    $this->actingAs($userA)
+        ->post("/u/{$userB->id}/poke", ['preset_id' => 'invalid_preset_123'])
+        ->assertSessionHas('error');
+});
+
 test('authenticated user can poke another user and dispatch notification', function () {
     Notification::fake();
     Cache::flush();

@@ -790,6 +790,7 @@ const submitForm = () => {
                             :disabled="form.processing"
                             class="relative inline-flex shrink-0 cursor-pointer items-center focus:outline-none"
                             :aria-checked="form.allow_pokes"
+                            aria-label="Receive pokes"
                             role="switch"
                         >
                             <div

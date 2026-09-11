@@ -303,9 +303,11 @@ const handleSendPoke = () => {
         },
         {
             preserveScroll: true,
-            onSuccess: () => {
-                showPokeModal.value = false;
-                localPokeCooldown.value = true;
+            onSuccess: (page) => {
+                if ((page.props as any).flash?.success) {
+                    showPokeModal.value = false;
+                    localPokeCooldown.value = true;
+                }
             },
             onFinish: () => {
                 isSubmittingPoke.value = false;
