@@ -1,28 +1,26 @@
 <script setup lang="ts">
-import { Download, Minimize2, RotateCcw } from 'lucide-vue-next';
+import { Minimize2, RotateCcw } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const modelValue = defineModel<boolean>({ default: false });
 
-const props = withDefaults(
+withDefaults(
     defineProps<{
         src: string;
         alt?: string;
         title?: string;
-        showDownload?: boolean;
     }>(),
     {
         alt: 'Attached Image',
         title: '',
-        showDownload: true,
     },
 );
 
 const emit = defineEmits<{
-    (e: 'download'): void;
     (e: 'close'): void;
 }>();
 
+const backdropRef = ref<HTMLElement | null>(null);
 const scale = ref(1);
 const translateX = ref(0);
 const translateY = ref(0);
@@ -30,6 +28,9 @@ const isDragging = ref(false);
 
 let startX = 0;
 let startY = 0;
+let pointerDownScreenX = 0;
+let pointerDownScreenY = 0;
+let hasMoved = false;
 let initialScale = 1;
 let startTouchDistance = 0;
 
@@ -62,8 +63,12 @@ const handlePointerDown = (e: MouseEvent | TouchEvent) => {
     }
 
     isDragging.value = true;
+    hasMoved = false;
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    pointerDownScreenX = clientX;
+    pointerDownScreenY = clientY;
 
     startX = clientX - translateX.value;
     startY = clientY - translateY.value;
@@ -83,14 +88,25 @@ const handlePointerMove = (e: MouseEvent | TouchEvent) => {
         return;
     }
 
-    if (!isDragging.value || scale.value === 1) {
+    if (!isDragging.value) {
+        return;
+    }
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    if (
+        Math.hypot(clientX - pointerDownScreenX, clientY - pointerDownScreenY) >
+        5
+    ) {
+        hasMoved = true;
+    }
+
+    if (scale.value === 1) {
         return;
     }
 
     e.preventDefault();
-
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
     translateX.value = clientX - startX;
     translateY.value = clientY - startY;
@@ -104,6 +120,16 @@ const handlePointerUp = () => {
     }
 };
 
+const handleBackdropClick = (e: MouseEvent) => {
+    if (hasMoved) {
+        return;
+    }
+
+    if (e.target === backdropRef.value) {
+        close();
+    }
+};
+
 const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
     const zoomIntensity = 0.1;
@@ -113,24 +139,6 @@ const handleWheel = (e: WheelEvent) => {
 
     if (scale.value === 1) {
         resetZoom();
-    }
-};
-
-const handleDownload = () => {
-    emit('download');
-
-    if (props.src) {
-        const downloadUrl = props.src.includes('?')
-            ? `${props.src}&download=1`
-            : `${props.src}?download=1`;
-
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = props.title || props.alt || 'download';
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     }
 };
 
@@ -181,7 +189,9 @@ onBeforeUnmount(() => {
         >
             <div
                 v-if="modelValue"
-                class="fixed inset-0 z-[120] flex touch-none items-center justify-center bg-slate-950/95 backdrop-blur-sm select-none"
+                ref="backdropRef"
+                class="fixed inset-0 z-[120] flex cursor-zoom-out touch-none items-center justify-center bg-slate-950/95 backdrop-blur-sm select-none"
+                @click="handleBackdropClick"
                 @wheel="handleWheel"
                 @mousedown="handlePointerDown"
                 @mousemove="handlePointerMove"
@@ -203,18 +213,6 @@ onBeforeUnmount(() => {
                         <span class="text-slate-500">•</span>
                         <span>Drag to Pan</span>
                     </div>
-
-                    <!-- Download Button -->
-                    <button
-                        v-if="showDownload && src"
-                        @click.stop="handleDownload"
-                        type="button"
-                        class="cursor-pointer rounded-full bg-white/10 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-900/10 dark:hover:bg-gray-900/20"
-                        title="Download Image"
-                        aria-label="Download Image"
-                    >
-                        <Download class="h-5 w-5" />
-                    </button>
 
                     <!-- Reset Zoom Button -->
                     <button
@@ -244,10 +242,12 @@ onBeforeUnmount(() => {
                 <img
                     :src="src"
                     :alt="alt || title"
-                    class="pointer-events-none max-h-[90vh] max-w-[90vw] rounded object-contain shadow-2xl transition-transform duration-75 ease-out"
+                    class="pointer-events-auto max-h-[90vh] max-w-[90vw] cursor-default rounded object-contain shadow-2xl transition-transform duration-75 ease-out"
+                    :class="{ 'cursor-grab active:cursor-grabbing': scale > 1 }"
                     :style="{
                         transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
                     }"
+                    @click.stop
                 />
             </div>
         </Transition>

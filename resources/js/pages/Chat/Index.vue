@@ -76,9 +76,10 @@ interface ChatMessageItem {
 }
 
 interface MessageSegment {
-    type: 'text' | 'mention';
+    type: 'text' | 'mention' | 'link';
     text: string;
     username?: string;
+    url?: string;
 }
 
 const props = defineProps<{
@@ -1190,17 +1191,61 @@ const submitReport = async () => {
     }
 };
 
+const isPlatformUrl = (urlString: string): boolean => {
+    if (urlString.startsWith('/')) {
+        return true;
+    }
+
+    try {
+        const parsed = new URL(urlString);
+        const validHosts = new Set<string>();
+
+        if (typeof window !== 'undefined') {
+            if (window.location.hostname) {
+                validHosts.add(window.location.hostname.toLowerCase());
+            }
+
+            if (window.location.host) {
+                validHosts.add(window.location.host.toLowerCase());
+            }
+        }
+
+        const envAppUrl = import.meta.env.VITE_APP_URL;
+
+        if (envAppUrl) {
+            try {
+                const appParsed = new URL(envAppUrl);
+                validHosts.add(appParsed.hostname.toLowerCase());
+                validHosts.add(appParsed.host.toLowerCase());
+            } catch {
+                // ignore
+            }
+        }
+
+        validHosts.add('hscstack.com');
+        validHosts.add('www.hscstack.com');
+
+        return (
+            validHosts.has(parsed.hostname.toLowerCase()) ||
+            validHosts.has(parsed.host.toLowerCase())
+        );
+    } catch {
+        return false;
+    }
+};
+
 const parseMessageSegments = (content: string): MessageSegment[] => {
     if (!content) {
         return [];
     }
 
-    const mentionRegex = /(?<=^|\s)@([a-zA-Z0-9_.-]+)/g;
+    const tokenRegex =
+        /(https?:\/\/[^\s<>"'()]+|(?<=^|\s)\/(?:forum|u|resource|peers|chat|blogs|p|feed|about|terms|privacy|guidelines|contact)(?:\/[^\s<>"'()]*)?|(?<=^|\s)@([a-zA-Z0-9_.-]+))/gi;
     const segments: MessageSegment[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
-    while ((match = mentionRegex.exec(content)) !== null) {
+    while ((match = tokenRegex.exec(content)) !== null) {
         const matchStart = match.index;
 
         if (matchStart > lastIndex) {
@@ -1210,28 +1255,41 @@ const parseMessageSegments = (content: string): MessageSegment[] => {
             });
         }
 
-        let username = match[1];
-        let mentionText = match[0];
+        let rawText = match[0];
         let trailingPunctuation = '';
 
-        const trailingMatch = username.match(/[.,!?;:]+$/);
+        const trailingMatch = rawText.match(/[.,!?;:]+$/);
 
         if (trailingMatch) {
             trailingPunctuation = trailingMatch[0];
-            username = username.slice(0, -trailingPunctuation.length);
-            mentionText = mentionText.slice(0, -trailingPunctuation.length);
+            rawText = rawText.slice(0, -trailingPunctuation.length);
         }
 
-        if (username) {
+        if (rawText.startsWith('@')) {
+            const username = rawText.slice(1);
+
+            if (username) {
+                segments.push({
+                    type: 'mention',
+                    text: rawText,
+                    username,
+                });
+            } else {
+                segments.push({
+                    type: 'text',
+                    text: rawText,
+                });
+            }
+        } else if (rawText && isPlatformUrl(rawText)) {
             segments.push({
-                type: 'mention',
-                text: mentionText,
-                username,
+                type: 'link',
+                text: rawText,
+                url: rawText,
             });
-        } else {
+        } else if (rawText) {
             segments.push({
                 type: 'text',
-                text: match[0],
+                text: rawText,
             });
         }
 
@@ -1680,6 +1738,18 @@ onUnmounted(() => {
                                     >
                                         {{ seg.text }}
                                     </Link>
+                                    <a
+                                        v-else-if="
+                                            seg.type === 'link' && seg.url
+                                        "
+                                        :href="seg.url"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="font-medium break-all text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                        @click.stop
+                                    >
+                                        {{ seg.text }}
+                                    </a>
                                     <span v-else>{{ seg.text }}</span>
                                 </template>
                             </p>
