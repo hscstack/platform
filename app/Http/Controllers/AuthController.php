@@ -72,13 +72,6 @@ class AuthController extends Controller
                 'email_verified_at' => $user->email_verified_at ?? now(),
             ]);
 
-            // If existing user has no profile photo, download and store their Google avatar
-            if (! $user->image_path && $googleUser->getAvatar()) {
-                $downloadedPath = $this->downloadGoogleAvatar($googleUser->getAvatar());
-                if ($downloadedPath) {
-                    $user->update(['image_path' => $downloadedPath]);
-                }
-            }
 
             Auth::login($user, remember: true);
             $request->session()->regenerate();
