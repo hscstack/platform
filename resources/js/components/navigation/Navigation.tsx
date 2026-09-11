@@ -1010,6 +1010,14 @@ export const SiteDrawer = defineComponent({
                         <AppLogo />
                     </div>
                     <div class="ml-auto flex items-center gap-1.5">
+                        <Link
+                            href="/peers"
+                            class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                            aria-label="Find Peers"
+                            title="Find Peers"
+                        >
+                            <MaterialIcon name="search" size={24} />
+                        </Link>
                         {user.value ? (
                             <NotificationDropdown />
                         ) : (
