@@ -18,6 +18,10 @@ class AdminSeeder extends Seeder
             ]
         );
 
+        if (! $admin->username) {
+            $admin->updateQuietly(['username' => "student_{$admin->id}"]);
+        }
+
         $admin->assignRole('admin');
 
     }
