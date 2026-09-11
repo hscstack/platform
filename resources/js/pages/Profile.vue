@@ -11,10 +11,12 @@ import {
     AlertTriangle,
     ChevronDown,
     LifeBuoy,
+    Shield,
+    Users,
+    Lock,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import { BottomNavCustomizer } from '@/components/navigation/Navigation';
 import { compressImage } from '@/lib/imageCompression';
 
 const props = defineProps({
@@ -29,7 +31,6 @@ const isUnverified = computed(() => {
 });
 
 const showAdvancedSettings = ref(false);
-const showBottomNavSettings = ref(false);
 const showConfirmModal = ref(false);
 const isCompressingAvatar = ref(false);
 
@@ -40,6 +41,7 @@ const form = useForm({
     file: null as File | null,
     about: user.value?.about || '',
     institution: user.value?.institution || '',
+    activity_privacy: user.value?.activity_privacy || 'public',
     facebook: user.value?.facebook || '',
     github: user.value?.github || '',
     instagram: user.value?.instagram || '',
@@ -541,6 +543,169 @@ const submitForm = () => {
                 </div>
             </div>
 
+            <!-- Activity Privacy Settings Card -->
+            <div
+                class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs sm:p-8 dark:border-gray-700 dark:bg-gray-900"
+            >
+                <div
+                    class="mb-6 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-gray-800"
+                >
+                    <div
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                    >
+                        <Shield class="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h2
+                            class="text-base font-semibold text-slate-900 dark:text-gray-100"
+                        >
+                            Activity & Profile Privacy
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">
+                            আপনার পড়ালেখার অগ্রগতি, ফোরাম প্রশ্ন, উত্তর এবং
+                            আর্টিকেল কারা দেখতে পারবে তা নির্ধারণ করুন।
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <!-- Public Option -->
+                    <label
+                        class="relative flex cursor-pointer flex-col rounded-xl border p-4 transition"
+                        :class="
+                            form.activity_privacy === 'public'
+                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/20 dark:border-indigo-500 dark:bg-indigo-950/30'
+                                : 'border-slate-200 hover:border-slate-300 dark:border-gray-800 dark:hover:border-gray-700'
+                        "
+                    >
+                        <input
+                            type="radio"
+                            v-model="form.activity_privacy"
+                            value="public"
+                            class="sr-only"
+                        />
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <Globe
+                                    class="h-4 w-4"
+                                    :class="
+                                        form.activity_privacy === 'public'
+                                            ? 'text-indigo-600 dark:text-indigo-400'
+                                            : 'text-slate-400 dark:text-gray-500'
+                                    "
+                                />
+                                <span
+                                    class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                >
+                                    Public
+                                </span>
+                            </div>
+                            <span
+                                v-if="form.activity_privacy === 'public'"
+                                class="h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            />
+                        </div>
+                        <p
+                            class="mt-2 text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            যে কেউ আপনার অ্যাক্টিভিটি দেখতে পারবেন।
+                        </p>
+                    </label>
+
+                    <!-- Appreciators Only Option -->
+                    <label
+                        class="relative flex cursor-pointer flex-col rounded-xl border p-4 transition"
+                        :class="
+                            form.activity_privacy === 'appreciators_only'
+                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/20 dark:border-indigo-500 dark:bg-indigo-950/30'
+                                : 'border-slate-200 hover:border-slate-300 dark:border-gray-800 dark:hover:border-gray-700'
+                        "
+                    >
+                        <input
+                            type="radio"
+                            v-model="form.activity_privacy"
+                            value="appreciators_only"
+                            class="sr-only"
+                        />
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <Users
+                                    class="h-4 w-4"
+                                    :class="
+                                        form.activity_privacy ===
+                                        'appreciators_only'
+                                            ? 'text-indigo-600 dark:text-indigo-400'
+                                            : 'text-slate-400 dark:text-gray-500'
+                                    "
+                                />
+                                <span
+                                    class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                >
+                                    Appreciators Only
+                                </span>
+                            </div>
+                            <span
+                                v-if="
+                                    form.activity_privacy ===
+                                    'appreciators_only'
+                                "
+                                class="h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            />
+                        </div>
+                        <p
+                            class="mt-2 text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            শুধুমাত্র যারা আপনার প্রোফাইল অ্যাপ্রিশিয়েট করেছেন
+                            তারা দেখতে পারবেন।
+                        </p>
+                    </label>
+
+                    <!-- Private Option -->
+                    <label
+                        class="relative flex cursor-pointer flex-col rounded-xl border p-4 transition"
+                        :class="
+                            form.activity_privacy === 'private'
+                                ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/20 dark:border-indigo-500 dark:bg-indigo-950/30'
+                                : 'border-slate-200 hover:border-slate-300 dark:border-gray-800 dark:hover:border-gray-700'
+                        "
+                    >
+                        <input
+                            type="radio"
+                            v-model="form.activity_privacy"
+                            value="private"
+                            class="sr-only"
+                        />
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <Lock
+                                    class="h-4 w-4"
+                                    :class="
+                                        form.activity_privacy === 'private'
+                                            ? 'text-indigo-600 dark:text-indigo-400'
+                                            : 'text-slate-400 dark:text-gray-500'
+                                    "
+                                />
+                                <span
+                                    class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                >
+                                    Private
+                                </span>
+                            </div>
+                            <span
+                                v-if="form.activity_privacy === 'private'"
+                                class="h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            />
+                        </div>
+                        <p
+                            class="mt-2 text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            আপনার অ্যাক্টিভিটি ও অগ্রগতি শুধুমাত্র আপনি নিজে
+                            দেখতে পারবেন।
+                        </p>
+                    </label>
+                </div>
+            </div>
+
             <!-- Advanced Notification Preferences (Collapsible Dropdown) -->
             <div
                 class="rounded-xl border border-slate-200/60 bg-slate-50/40 p-3 sm:p-4 dark:border-gray-800 dark:bg-gray-900/30"
@@ -640,41 +805,6 @@ const submitForm = () => {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </transition>
-            </div>
-
-            <!-- Edit Bottom Navigation (Collapsible Dropdown - Mobile only) -->
-            <div
-                class="rounded-xl border border-slate-200/60 bg-slate-50/40 p-3 sm:p-4 lg:hidden dark:border-gray-800 dark:bg-gray-900/30"
-            >
-                <button
-                    type="button"
-                    @click="showBottomNavSettings = !showBottomNavSettings"
-                    class="flex w-full items-center justify-between text-left text-xs font-medium text-slate-500 transition hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                    <div class="flex items-center gap-2">
-                        <span>Edit Bottom Navigation</span>
-                    </div>
-                    <ChevronDown
-                        class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 dark:text-gray-500"
-                        :class="{ 'rotate-180': showBottomNavSettings }"
-                    />
-                </button>
-
-                <transition
-                    enter-active-class="transition duration-200 ease-out"
-                    enter-from-class="opacity-0 -translate-y-1"
-                    enter-to-class="opacity-100 translate-y-0"
-                    leave-active-class="transition duration-150 ease-in"
-                    leave-from-class="opacity-100 translate-y-0"
-                    leave-to-class="opacity-0 -translate-y-1"
-                >
-                    <div
-                        v-if="showBottomNavSettings"
-                        class="mt-3 border-t border-slate-200/50 pt-3 dark:border-gray-800/60"
-                    >
-                        <BottomNavCustomizer />
                     </div>
                 </transition>
             </div>

@@ -20,6 +20,78 @@ class UserProfileController extends Controller
         $user = User::where('username', $username)
             ->firstOrFail();
 
+        $profileUser = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+            'about' => $user->about,
+            'institution' => $user->institution,
+            'image_url' => $user->image_url,
+            'facebook' => $user->facebook,
+            'instagram' => $user->instagram,
+            'github' => $user->github,
+            'created_at' => $user->created_at?->format('M Y') ?? '2026',
+            'is_verified' => $user->is_verified,
+        ];
+
+        // Appreciations (Received & Given)
+        $appreciationsCount = $user->appreciationsReceived()->count();
+        $appreciatingCount = $user->appreciationsGiven()->count();
+        $isAppreciated = auth()->check()
+            ? $user->appreciationsReceived()->where('appreciator_id', auth()->id())->exists()
+            : false;
+
+        // Suggested / Discover community members: 2 contributors + 2 general users
+        $contributorUsers = User::where('id', '!=', $user->id)
+            ->whereNotNull('username')
+            ->where('is_verified', true)
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
+            ->inRandomOrder()
+            ->take(2)
+            ->get();
+
+        $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
+        $remainingNeeded = 4 - $contributorUsers->count();
+
+        $randomUsers = User::whereNotIn('id', $excludedIds)
+            ->whereNotNull('username')
+            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
+            ->inRandomOrder()
+            ->take($remainingNeeded)
+            ->get();
+
+        $suggestedUsers = $contributorUsers->concat($randomUsers)->shuffle()->values();
+
+        // Privacy & Lock Evaluation
+        $isOwner = auth()->id() === $user->id;
+        $activityPrivacy = $user->activity_privacy ?? 'public';
+        $isLocked = false;
+        $lockReason = null;
+
+        if (! $isOwner) {
+            if ($activityPrivacy === 'private') {
+                $isLocked = true;
+                $lockReason = 'private';
+            } elseif ($activityPrivacy === 'appreciators_only' && ! $isAppreciated) {
+                $isLocked = true;
+                $lockReason = 'appreciators_only';
+            }
+        }
+
+        // Early return if activity is locked for this visitor
+        if ($isLocked) {
+            return Inertia::render('User/Show', [
+                'profileUser' => $profileUser,
+                'appreciationsCount' => $appreciationsCount,
+                'appreciatingCount' => $appreciatingCount,
+                'isAppreciated' => $isAppreciated,
+                'isLocked' => true,
+                'lockReason' => $lockReason,
+                'activityPrivacy' => $activityPrivacy,
+                'suggestedUsers' => $suggestedUsers,
+            ]);
+        }
+
         // Forum Contributions
         $questionsCount = ForumPost::where('user_id', $user->id)->count();
         $answersCount = ForumAnswer::where('user_id', $user->id)->count();
@@ -44,13 +116,6 @@ class UserProfileController extends Controller
         $blogsCount = $user->blogs()->where('is_published', true)->count();
         $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
         $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
-
-        // Appreciations (Received & Given)
-        $appreciationsCount = $user->appreciationsReceived()->count();
-        $appreciatingCount = $user->appreciationsGiven()->count();
-        $isAppreciated = auth()->check()
-            ? $user->appreciationsReceived()->where('appreciator_id', auth()->id())->exists()
-            : false;
 
         $appreciators = $user->appreciators()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
@@ -177,41 +242,8 @@ class UserProfileController extends Controller
             ->filter(fn ($item) => $item['title'] !== null)
             ->values();
 
-        // Suggested / Discover community members: 2 contributors + 2 general users
-        $contributorUsers = User::where('id', '!=', $user->id)
-            ->whereNotNull('username')
-            ->where('is_verified', true)
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
-            ->inRandomOrder()
-            ->take(2)
-            ->get();
-
-        $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
-        $remainingNeeded = 4 - $contributorUsers->count();
-
-        $randomUsers = User::whereNotIn('id', $excludedIds)
-            ->whereNotNull('username')
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
-            ->inRandomOrder()
-            ->take($remainingNeeded)
-            ->get();
-
-        $suggestedUsers = $contributorUsers->concat($randomUsers)->shuffle()->values();
-
         return Inertia::render('User/Show', [
-            'profileUser' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'about' => $user->about,
-                'institution' => $user->institution,
-                'image_url' => $user->image_url,
-                'facebook' => $user->facebook,
-                'instagram' => $user->instagram,
-                'github' => $user->github,
-                'created_at' => $user->created_at?->format('M Y') ?? '2026',
-                'is_verified' => $user->is_verified,
-            ],
+            'profileUser' => $profileUser,
             'stats' => [
                 'questionsCount' => $questionsCount,
                 'answersCount' => $answersCount,
@@ -222,6 +254,9 @@ class UserProfileController extends Controller
             'appreciationsCount' => $appreciationsCount,
             'appreciatingCount' => $appreciatingCount,
             'isAppreciated' => $isAppreciated,
+            'isLocked' => false,
+            'lockReason' => null,
+            'activityPrivacy' => $activityPrivacy,
             'appreciators' => $appreciators,
             'appreciating' => $appreciating,
             'forumPosts' => $forumPosts,
