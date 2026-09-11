@@ -437,7 +437,7 @@ const timeAgo = formatTimeAgo;
                             ]"
                             :title="
                                 localIsAppreciated
-                                    ? 'Appreciated (click to remove)'
+                                    ? 'Appreciating (click to remove)'
                                     : 'Appreciate this member'
                             "
                         >
@@ -451,7 +451,7 @@ const timeAgo = formatTimeAgo;
                             />
                             <span>{{
                                 localIsAppreciated
-                                    ? 'Appreciated'
+                                    ? 'Appreciating'
                                     : 'Appreciate'
                             }}</span>
                         </button>

@@ -54,6 +54,12 @@ export const primaryNavItems: NavItem[] = [
 
 export const overflowNavItems: NavItem[] = [
     {
+        label: 'Find Peers',
+        href: '/peers',
+        icon: 'group',
+        match: (url) => url.startsWith('/peers'),
+    },
+    {
         label: 'Support Center',
         href: '/support',
         icon: 'help',

@@ -86,6 +86,17 @@ import AppLogo from './AppLogo.vue';
                             </li>
                             <li>
                                 <Link
+                                    href="/peers"
+                                    class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                >
+                                    <Users
+                                        class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
+                                    />
+                                    <span>Find Peers</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
                                     href="/about-us"
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >

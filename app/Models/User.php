@@ -161,4 +161,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(SupportTicket::class);
     }
+
+    public function forumPosts(): HasMany
+    {
+        return $this->hasMany(ForumPost::class);
+    }
+
+    public function forumAnswers(): HasMany
+    {
+        return $this->hasMany(ForumAnswer::class);
+    }
 }
