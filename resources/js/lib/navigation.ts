@@ -21,7 +21,7 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
-        label: 'Find Peers',
+        label: 'People',
         href: '/peers',
         icon: 'group',
         match: (url) => url.startsWith('/peers'),

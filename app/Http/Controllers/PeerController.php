@@ -49,10 +49,18 @@ class PeerController extends Controller
         if ($sort === 'appreciated') {
             $query->orderByDesc('appreciations_received_count')->latest('users.id');
         } else {
-            $institution = $currentUser?->institution ? trim($currentUser->institution) : '';
+            $targetLocation = $currentUser?->institution ? trim($currentUser->institution) : '';
 
-            if ($institution !== '') {
-                preg_match_all('/[\p{L}\p{N}]{3,}/u', mb_strtolower($institution), $matches);
+            // For guests or users without institution, infer location from Cloudflare headers
+            if ($targetLocation === '') {
+                $cfCity = trim((string) $request->header('CF-IPCity', ''));
+                if ($cfCity !== '' && strcasecmp($cfCity, 'xx') !== 0) {
+                    $targetLocation = $cfCity;
+                }
+            }
+
+            if ($targetLocation !== '') {
+                preg_match_all('/[\p{L}\p{N}]{3,}/u', mb_strtolower($targetLocation), $matches);
                 $words = array_values(array_unique($matches[0] ?? []));
 
                 $scoreSql = [];

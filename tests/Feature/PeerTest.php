@@ -103,3 +103,24 @@ test('peers in You May Know matches Bengali institution keywords', function () {
             ->where('peers.data.0.name', 'Bengali School Mate')
         );
 });
+
+test('guest users receive peer recommendations based on Cloudflare CF-IPCity header', function () {
+    $localStudent = User::factory()->create([
+        'name' => 'Rangpur Student',
+        'institution' => 'Rangpur Government College, Rangpur',
+    ]);
+
+    $otherStudent = User::factory()->create([
+        'name' => 'Barishal Student',
+        'institution' => 'Brojomohun College, Barishal',
+    ]);
+
+    $response = $this->withHeaders(['CF-IPCity' => 'Rangpur'])
+        ->get(route('peers.index', ['sort' => 'relevant']));
+
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Peers/Index')
+            ->where('peers.data.0.name', 'Rangpur Student')
+        );
+});
