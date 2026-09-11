@@ -1022,11 +1022,12 @@ export const SiteDrawer = defineComponent({
                         {isHome.value && (
                             <Link
                                 href="/peers"
-                                class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                                class="relative flex h-9 items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50 px-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                                 aria-label="Find Peers"
                                 title="Find Peers"
                             >
-                                <Search class="h-4 w-4" />
+                                <Search class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
+                                <span>Find Peers</span>
                             </Link>
                         )}
                         {user.value ? (
