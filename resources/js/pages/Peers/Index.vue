@@ -182,6 +182,7 @@ const togglePeerAppreciation = (peer: Peer) => {
             {
                 preserveScroll: true,
                 preserveState: true,
+                only: ['auth', 'flash'],
                 onError: rollback,
                 onCancel: rollback,
             },
