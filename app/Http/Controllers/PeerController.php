@@ -49,7 +49,6 @@ class PeerController extends Controller
         if ($sort === 'appreciated') {
             $query->orderByDesc('appreciations_received_count')->latest('users.id');
         } else {
-            // "You May Know" (Relevant): Score by matching institution keywords
             $institution = $currentUser?->institution ? trim($currentUser->institution) : '';
 
             if ($institution !== '') {
