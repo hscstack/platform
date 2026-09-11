@@ -36,6 +36,7 @@ class UpdateProfileRequest extends FormRequest
                 new CleanText,
             ],
             'file' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'clear_image' => ['sometimes', 'boolean'],
             'about' => ['sometimes', 'nullable', 'string', 'max:1000', new CleanText],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'activity_privacy' => ['sometimes', 'string', Rule::in(['public', 'appreciators_only', 'private'])],

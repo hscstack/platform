@@ -33,12 +33,15 @@ const isUnverified = computed(() => {
 const showAdvancedSettings = ref(false);
 const showConfirmModal = ref(false);
 const isCompressingAvatar = ref(false);
+const avatarPreview = ref<string | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
     _method: 'PUT',
     name: user.value?.name || '',
     username: user.value?.username || '',
     file: null as File | null,
+    clear_image: false,
     about: user.value?.about || '',
     institution: user.value?.institution || '',
     activity_privacy: user.value?.activity_privacy || 'public',
@@ -85,9 +88,34 @@ const handleAvatarSelect = async (event: Event) => {
             }
 
             form.file = resultFile;
+            form.clear_image = false;
+
+            if (avatarPreview.value) {
+                URL.revokeObjectURL(avatarPreview.value);
+            }
+
+            avatarPreview.value = URL.createObjectURL(resultFile);
         } finally {
             isCompressingAvatar.value = false;
         }
+    }
+};
+
+const handleRemoveAvatar = () => {
+    form.file = null;
+    form.errors.file = '';
+
+    if (avatarPreview.value) {
+        URL.revokeObjectURL(avatarPreview.value);
+        avatarPreview.value = null;
+    }
+
+    if (fileInputRef.value) {
+        fileInputRef.value.value = '';
+    }
+
+    if (user.value?.image_url) {
+        form.clear_image = true;
     }
 };
 
@@ -376,8 +404,12 @@ const submitForm = () => {
                 <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
                     <div class="relative shrink-0">
                         <img
-                            v-if="user?.image_url && !isCompressingAvatar"
-                            :src="user.image_url"
+                            v-if="
+                                (avatarPreview ||
+                                    (user?.image_url && !form.clear_image)) &&
+                                !isCompressingAvatar
+                            "
+                            :src="avatarPreview || user.image_url"
                             :alt="user.name"
                             class="h-20 w-20 rounded-full border-2 border-slate-200 object-cover shadow-xs dark:border-gray-700"
                         />
@@ -398,13 +430,34 @@ const submitForm = () => {
                     </div>
 
                     <div class="flex-1">
-                        <label
-                            for="file"
-                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            Upload New Photo
-                        </label>
+                        <div class="mb-1.5 flex items-center justify-between">
+                            <label
+                                for="file"
+                                class="block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                Upload New Photo
+                            </label>
+                            <button
+                                v-if="
+                                    (user?.image_url && !form.clear_image) ||
+                                    form.file
+                                "
+                                type="button"
+                                @click="handleRemoveAvatar"
+                                :disabled="
+                                    form.processing || isCompressingAvatar
+                                "
+                                class="cursor-pointer text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline disabled:opacity-50 dark:text-rose-400 dark:hover:text-rose-300"
+                            >
+                                {{
+                                    form.file && !user?.image_url
+                                        ? 'Clear Selected'
+                                        : 'Remove Photo'
+                                }}
+                            </button>
+                        </div>
                         <input
+                            ref="fileInputRef"
                             type="file"
                             id="file"
                             accept="image/jpeg,image/png,image/webp"
@@ -422,7 +475,9 @@ const submitForm = () => {
                             {{
                                 isCompressingAvatar
                                     ? 'Optimizing avatar...'
-                                    : 'Supports PNG, JPG, or WEBP up to 5MB (auto-optimized).'
+                                    : form.clear_image
+                                      ? 'Photo will be removed upon saving.'
+                                      : 'Supports PNG, JPG, or WEBP up to 5MB (auto-optimized).'
                             }}
                         </p>
                         <p
