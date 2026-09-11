@@ -61,7 +61,7 @@ class PeerController extends Controller
 
             // For guests or users without institution, infer location from Cloudflare headers
             if ($targetLocation === '') {
-                $cfCity = trim((string) $request->header('CF-IPCity', ''));
+                $cfCity = trim((string) ($request->header('X-Visitor-City') ?? $request->header('CF-IPCity') ?? ''));
                 if ($cfCity !== '' && strcasecmp($cfCity, 'xx') !== 0) {
                     $targetLocation = $cfCity;
                 }
