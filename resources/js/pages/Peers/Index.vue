@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Search, X, Users, Heart } from 'lucide-vue-next';
+import { Search, X, Users, Heart, Loader2 } from 'lucide-vue-next';
 import { onUnmounted, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
-import Pagination from '@/components/Pagination.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
-import type { PaginationLink } from '@/types';
 
 interface Peer {
     id: number;
@@ -22,12 +20,12 @@ interface Peer {
 interface Props {
     peers: {
         data: Peer[];
-        links: PaginationLink[];
-        from: number | null;
-        to: number | null;
-        total: number;
+        next_page_url: string | null;
+        prev_page_url: string | null;
         current_page: number;
-        last_page: number;
+        per_page?: number;
+        from?: number | null;
+        to?: number | null;
     };
     filters: {
         search?: string | null;
@@ -36,6 +34,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const peerList = ref<Peer[]>([]);
+const nextPageUrl = ref<string | null>(null);
+const isLoadingMore = ref(false);
 
 const searchQuery = ref(props.filters.search || '');
 const currentSort = ref(props.filters.sort || 'relevant');
@@ -85,6 +87,35 @@ const setSort = (sortValue: string) => {
     applyFilters();
 };
 
+const loadMore = () => {
+    if (!nextPageUrl.value || isLoadingMore.value) {
+        return;
+    }
+
+    isLoadingMore.value = true;
+    router.get(
+        nextPageUrl.value,
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['peers'],
+            onSuccess: (page) => {
+                const newPeers =
+                    (page.props.peers as Props['peers'])?.data || [];
+                const existingIds = new Set(peerList.value.map((p) => p.id));
+                const uniqueNew = newPeers.filter(
+                    (p) => !existingIds.has(p.id),
+                );
+                peerList.value.push(...uniqueNew);
+            },
+            onFinish: () => {
+                isLoadingMore.value = false;
+            },
+        },
+    );
+};
+
 onUnmounted(() => {
     if (searchTimeout) {
         clearTimeout(searchTimeout);
@@ -128,6 +159,18 @@ const togglePeerAppreciation = (peer: Peer) => {
         );
     });
 };
+
+watch(
+    () => props.peers,
+    (newPeers) => {
+        if (newPeers.current_page === 1) {
+            peerList.value = [...newPeers.data];
+        }
+
+        nextPageUrl.value = newPeers.next_page_url;
+    },
+    { immediate: true },
+);
 
 watch(
     () => props.filters,
@@ -219,11 +262,11 @@ watch(
 
         <!-- Social Rows List Container -->
         <div
-            v-if="peers.data.length > 0"
+            v-if="peerList.length > 0"
             class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs dark:divide-gray-800/80 dark:border-gray-800 dark:bg-gray-900"
         >
             <Link
-                v-for="peer in peers.data"
+                v-for="peer in peerList"
                 :key="peer.id"
                 :href="`/u/${peer.username}`"
                 class="group flex items-center justify-between gap-3.5 p-3.5 transition hover:bg-slate-50/70 sm:p-4 dark:hover:bg-gray-800/40"
@@ -356,17 +399,22 @@ watch(
             </template>
         </EmptyState>
 
-        <!-- Pagination -->
-        <div class="mt-6" v-if="peers.last_page > 1">
-            <Pagination
-                :links="peers.links"
-                :from="peers.from"
-                :to="peers.to"
-                :total="peers.total"
-                :current-page="peers.current_page"
-                :last-page="peers.last_page"
-                show-summary
-            />
+        <!-- Load More Button -->
+        <div v-if="nextPageUrl" class="mt-6 flex justify-center">
+            <button
+                @click="loadMore"
+                :disabled="isLoadingMore"
+                type="button"
+                class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-95 disabled:pointer-events-none disabled:opacity-60 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+                <Loader2
+                    v-if="isLoadingMore"
+                    class="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400"
+                />
+                <span>{{
+                    isLoadingMore ? 'Loading more...' : 'Load More Peers'
+                }}</span>
+            </button>
         </div>
     </div>
 </template>

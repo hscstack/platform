@@ -33,7 +33,7 @@ test('peers can be filtered by search keyword', function () {
     $response->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('Peers/Index')
-            ->where('peers.total', 1)
+            ->has('peers.data', 1)
             ->where('peers.data.0.name', 'Alice Rahman')
         );
 });

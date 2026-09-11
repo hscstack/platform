@@ -73,7 +73,7 @@ class PeerController extends Controller
             $query->latest('users.id');
         }
 
-        $peers = $query->paginate(20)->withQueryString();
+        $peers = $query->simplePaginate(20)->withQueryString();
 
         return Inertia::render('Peers/Index', [
             'peers' => $peers,
