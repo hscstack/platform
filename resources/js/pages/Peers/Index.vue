@@ -35,8 +35,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const peerList = ref<Peer[]>([]);
-const nextPageUrl = ref<string | null>(null);
+const peerList = ref<Peer[]>([...props.peers.data]);
+const nextPageUrl = ref<string | null>(props.peers.next_page_url);
 const isLoadingMore = ref(false);
 
 const searchQuery = ref(props.filters.search || '');
@@ -99,15 +99,18 @@ const loadMore = () => {
         {
             preserveState: true,
             preserveScroll: true,
+            preserveUrl: true,
             only: ['peers'],
             onSuccess: (page) => {
-                const newPeers =
+                const newPeersData =
                     (page.props.peers as Props['peers'])?.data || [];
                 const existingIds = new Set(peerList.value.map((p) => p.id));
-                const uniqueNew = newPeers.filter(
+                const uniqueNew = newPeersData.filter(
                     (p) => !existingIds.has(p.id),
                 );
                 peerList.value.push(...uniqueNew);
+                nextPageUrl.value =
+                    (page.props.peers as Props['peers'])?.next_page_url || null;
             },
             onFinish: () => {
                 isLoadingMore.value = false;
@@ -163,11 +166,10 @@ const togglePeerAppreciation = (peer: Peer) => {
 watch(
     () => props.peers,
     (newPeers) => {
-        if (newPeers.current_page === 1) {
+        if (!isLoadingMore.value) {
             peerList.value = [...newPeers.data];
+            nextPageUrl.value = newPeers.next_page_url;
         }
-
-        nextPageUrl.value = newPeers.next_page_url;
     },
     { immediate: true },
 );
