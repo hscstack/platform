@@ -95,6 +95,11 @@ class RolePermissionSeeder extends Seeder
          */
         Permission::findOrCreate('manage forums');
 
+        /*
+         * Peer & Poke management
+         */
+        Permission::findOrCreate('manage peers');
+
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
 

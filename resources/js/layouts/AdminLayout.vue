@@ -76,6 +76,12 @@ const allNavigation: AdminNavItem[] = [
         permission: 'view users',
     },
     {
+        name: 'Peer & Pokes',
+        to: '/admin/peers/settings',
+        icon: 'bolt',
+        permission: 'manage peers',
+    },
+    {
         name: 'Send Emails',
         to: '/admin/emails/send',
         icon: 'mail',
