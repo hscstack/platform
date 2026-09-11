@@ -45,7 +45,7 @@ test('private profile hides activity and returns isLocked=true for visitors', fu
             ->component('User/Show')
             ->where('isLocked', true)
             ->where('lockReason', 'private')
-            ->where('stats.questionsCount', 0)
+            ->missing('stats')
             ->missing('forumPosts')
         );
 });
@@ -92,7 +92,7 @@ test('appreciators_only profile is locked for non-appreciators', function () {
             ->component('User/Show')
             ->where('isLocked', true)
             ->where('lockReason', 'appreciators_only')
-            ->where('stats.questionsCount', 0)
+            ->missing('stats')
             ->missing('forumPosts')
         );
 });

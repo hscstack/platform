@@ -46,7 +46,7 @@ const props = defineProps<{
         created_at: string;
         is_verified?: boolean;
     };
-    stats: {
+    stats?: {
         questionsCount: number;
         answersCount: number;
         blogsCount: number;
@@ -573,7 +573,7 @@ const timeAgo = formatTimeAgo;
                                 <p
                                     class="text-sm font-black text-slate-900 dark:text-gray-100"
                                 >
-                                    {{ stats.questionsCount }}
+                                    {{ stats?.questionsCount ?? 0 }}
                                 </p>
                                 <p
                                     class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
@@ -600,7 +600,7 @@ const timeAgo = formatTimeAgo;
                                 <p
                                     class="text-sm font-black text-slate-900 dark:text-gray-100"
                                 >
-                                    {{ stats.answersCount }}
+                                    {{ stats?.answersCount ?? 0 }}
                                 </p>
                                 <p
                                     class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
@@ -625,7 +625,7 @@ const timeAgo = formatTimeAgo;
                                 <p
                                     class="text-sm font-black text-slate-900 dark:text-gray-100"
                                 >
-                                    {{ stats.blogsCount }}
+                                    {{ stats?.blogsCount ?? 0 }}
                                 </p>
                                 <p
                                     class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
@@ -650,7 +650,7 @@ const timeAgo = formatTimeAgo;
                                 <p
                                     class="text-sm font-black text-slate-900 dark:text-gray-100"
                                 >
-                                    {{ stats.sharedResourcesCount }}
+                                    {{ stats?.sharedResourcesCount ?? 0 }}
                                 </p>
                                 <p
                                     class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
@@ -865,7 +865,7 @@ const timeAgo = formatTimeAgo;
 
                                 <div
                                     v-if="
-                                        stats.questionsCount >
+                                        (stats?.questionsCount ?? 0) >
                                         (forumPosts?.length || 0)
                                     "
                                     class="pt-1 text-center"
@@ -876,8 +876,8 @@ const timeAgo = formatTimeAgo;
                                     >
                                         <span
                                             >View all
-                                            {{ stats.questionsCount }} questions
-                                            in Forum &rarr;</span
+                                            {{ stats?.questionsCount }}
+                                            questions in Forum &rarr;</span
                                         >
                                     </Link>
                                 </div>
@@ -949,7 +949,7 @@ const timeAgo = formatTimeAgo;
 
                                 <div
                                     v-if="
-                                        stats.answersCount >
+                                        (stats?.answersCount ?? 0) >
                                         (forumAnswers?.length || 0)
                                     "
                                     class="pt-1 text-center"
@@ -1058,7 +1058,8 @@ const timeAgo = formatTimeAgo;
 
                                 <div
                                     v-if="
-                                        stats.blogsCount > (blogs?.length || 0)
+                                        (stats?.blogsCount ?? 0) >
+                                        (blogs?.length || 0)
                                     "
                                     class="pt-1 text-center"
                                 >
@@ -1068,7 +1069,7 @@ const timeAgo = formatTimeAgo;
                                     >
                                         <span
                                             >View all
-                                            {{ stats.blogsCount }} articles
+                                            {{ stats?.blogsCount }} articles
                                             &rarr;</span
                                         >
                                     </Link>

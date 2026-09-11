@@ -63,18 +63,12 @@ class UserProfileController extends Controller
         $suggestedUsers = $contributorUsers->concat($randomUsers)->shuffle()->values();
 
         // Privacy & Lock Evaluation
-        $currentUser = auth()->user();
-        $isOwner = $currentUser && $currentUser->id === $user->id;
-        $isAdmin = $currentUser && (
-            (method_exists($currentUser, 'hasRole') && $currentUser->hasRole('admin')) ||
-            (isset($currentUser->can_access_admin) && $currentUser->can_access_admin)
-        );
-
+        $isOwner = auth()->id() === $user->id;
         $activityPrivacy = $user->activity_privacy ?? 'public';
         $isLocked = false;
         $lockReason = null;
 
-        if (! $isOwner && ! $isAdmin) {
+        if (! $isOwner) {
             if ($activityPrivacy === 'private') {
                 $isLocked = true;
                 $lockReason = 'private';
@@ -88,13 +82,6 @@ class UserProfileController extends Controller
         if ($isLocked) {
             return Inertia::render('User/Show', [
                 'profileUser' => $profileUser,
-                'stats' => [
-                    'questionsCount' => 0,
-                    'answersCount' => 0,
-                    'blogsCount' => 0,
-                    'sharedResourcesCount' => 0,
-                    'totalBlogViews' => 0,
-                ],
                 'appreciationsCount' => $appreciationsCount,
                 'appreciatingCount' => $appreciatingCount,
                 'isAppreciated' => $isAppreciated,
