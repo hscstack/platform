@@ -72,9 +72,35 @@ const handleSearchInput = () => {
         clearTimeout(searchTimeout);
     }
 
+    const query = searchQuery.value.trim();
+
+    // If query is cleared, immediately reset the list
+    if (query.length === 0) {
+        applyFilters();
+
+        return;
+    }
+
+    // Require at least 3 characters before sending the search request
+    if (query.length < 3) {
+        return;
+    }
+
     searchTimeout = setTimeout(() => {
         applyFilters();
     }, 350);
+};
+
+const handleSearchEnter = () => {
+    const query = searchQuery.value.trim();
+
+    if (query.length === 0 || query.length >= 3) {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        applyFilters();
+    }
 };
 
 const clearSearch = () => {
@@ -226,7 +252,7 @@ watch(
                     <input
                         v-model="searchQuery"
                         @input="handleSearchInput"
-                        @keyup.enter="applyFilters"
+                        @keyup.enter="handleSearchEnter"
                         type="text"
                         placeholder="Search by name, @username, or college..."
                         class="h-10 w-full rounded-2xl border border-slate-200 bg-white pr-9 pl-10 text-xs font-medium text-slate-900 placeholder-slate-400 shadow-2xs transition focus:border-indigo-500 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500"

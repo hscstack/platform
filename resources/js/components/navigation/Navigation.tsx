@@ -929,6 +929,9 @@ export const SiteDrawer = defineComponent({
         );
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
+        const drawerNavItems = computed(() =>
+            allNavItems.filter((item) => !item.showInBottom),
+        );
 
         const showLogoutModal = ref(false);
         const panelRef = ref<HTMLElement | null>(null);
@@ -1078,53 +1081,56 @@ export const SiteDrawer = defineComponent({
                                     <div class="flex-1 overflow-y-auto py-3.5">
                                         {/* Navigation items */}
                                         <p class="mb-2 px-4 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                            Menu
+                                            Tools & More
                                         </p>
                                         <nav class="space-y-0.5 px-2.5">
-                                            {allNavItems.map((item) => (
-                                                <Link
-                                                    key={item.href}
-                                                    href={
-                                                        item.href === '/'
-                                                            ? homeHref.value
-                                                            : item.href
-                                                    }
-                                                    onClick={close}
-                                                    class={[
-                                                        'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
-                                                        isActive(
-                                                            item.href,
-                                                            item.match,
-                                                        )
-                                                            ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
-                                                            : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
-                                                    ]}
-                                                >
-                                                    <MaterialIcon
-                                                        name={item.icon}
-                                                        size={22}
-                                                        class={`shrink-0 transition-colors duration-150 ${
+                                            {drawerNavItems.value.map(
+                                                (item) => (
+                                                    <Link
+                                                        key={item.href}
+                                                        href={
+                                                            item.href === '/'
+                                                                ? homeHref.value
+                                                                : item.href
+                                                        }
+                                                        onClick={close}
+                                                        class={[
+                                                            'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
                                                             isActive(
                                                                 item.href,
                                                                 item.match,
                                                             )
-                                                                ? 'text-indigo-600 dark:text-indigo-300'
-                                                                : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                                        }`}
-                                                    />
-                                                    <span class="truncate">
-                                                        {item.href === '/chat'
-                                                            ? 'Global Chat'
-                                                            : item.label}
-                                                    </span>
-                                                    {isActive(
-                                                        item.href,
-                                                        item.match,
-                                                    ) && (
-                                                        <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                                                    )}
-                                                </Link>
-                                            ))}
+                                                                ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                                                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                                        ]}
+                                                    >
+                                                        <MaterialIcon
+                                                            name={item.icon}
+                                                            size={22}
+                                                            class={`shrink-0 transition-colors duration-150 ${
+                                                                isActive(
+                                                                    item.href,
+                                                                    item.match,
+                                                                )
+                                                                    ? 'text-indigo-600 dark:text-indigo-300'
+                                                                    : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                            }`}
+                                                        />
+                                                        <span class="truncate">
+                                                            {item.href ===
+                                                            '/chat'
+                                                                ? 'Global Chat'
+                                                                : item.label}
+                                                        </span>
+                                                        {isActive(
+                                                            item.href,
+                                                            item.match,
+                                                        ) && (
+                                                            <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                                        )}
+                                                    </Link>
+                                                ),
+                                            )}
                                             {canAccessAdmin.value && (
                                                 <Link
                                                     href="/admin"

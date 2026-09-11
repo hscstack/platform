@@ -12,6 +12,9 @@ class PeerController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
+        if (mb_strlen($search) < 3) {
+            $search = '';
+        }
         $sort = $request->input('sort', 'relevant');
         if (! in_array($sort, ['relevant', 'appreciated'], true)) {
             $sort = 'relevant';
@@ -36,6 +39,11 @@ class PeerController extends Controller
                 ->withExists([
                     'appreciationsReceived as is_appreciated' => fn ($q) => $q->where('appreciator_id', $currentUser->id),
                 ]);
+
+            // Exclude already appreciated peers in "You May Know" discovery when not searching
+            if ($sort === 'relevant' && $search === '') {
+                $query->whereDoesntHave('appreciationsReceived', fn ($q) => $q->where('appreciator_id', $currentUser->id));
+            }
         }
 
         if ($search !== '') {

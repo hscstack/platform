@@ -55,7 +55,7 @@ export const primaryNavItems: NavItem[] = [
         href: '/ai',
         icon: 'smart_toy',
         match: (url) => url.startsWith('/ai'),
-        showInBottom: true,
+        showInBottom: false,
     },
 ];
 
