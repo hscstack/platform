@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Send,
     Trash2,
@@ -1191,8 +1191,6 @@ const submitReport = async () => {
     }
 };
 
-const page = usePage();
-
 const isPlatformUrl = (urlString: string): boolean => {
     if (urlString.startsWith('/')) {
         return true;
@@ -1212,11 +1210,11 @@ const isPlatformUrl = (urlString: string): boolean => {
             }
         }
 
-        const appUrl = (page?.props as Record<string, any>)?.app_url;
+        const envAppUrl = import.meta.env.VITE_APP_URL;
 
-        if (appUrl) {
+        if (envAppUrl) {
             try {
-                const appParsed = new URL(appUrl);
+                const appParsed = new URL(envAppUrl);
                 validHosts.add(appParsed.hostname.toLowerCase());
                 validHosts.add(appParsed.host.toLowerCase());
             } catch {
