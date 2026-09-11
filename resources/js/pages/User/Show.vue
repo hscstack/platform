@@ -429,7 +429,7 @@ const timeAgo = formatTimeAgo;
                             v-else
                             @click="handleAppreciate"
                             type="button"
-                            class="group inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9 sm:px-3.5"
+                            class="group inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-xl px-3.5 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9"
                             :class="[
                                 localIsAppreciated
                                     ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
@@ -454,17 +454,6 @@ const timeAgo = formatTimeAgo;
                                     ? 'Appreciated'
                                     : 'Appreciate'
                             }}</span>
-                            <span
-                                v-if="localAppreciationsCount > 0"
-                                class="ml-0.5 rounded-lg px-1.5 py-0.5 text-[11px] font-bold"
-                                :class="[
-                                    localIsAppreciated
-                                        ? 'bg-rose-200/70 text-rose-700 dark:bg-rose-900/70 dark:text-rose-300'
-                                        : 'bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-gray-300',
-                                ]"
-                            >
-                                {{ localAppreciationsCount }}
-                            </span>
                         </button>
                     </div>
                 </div>
@@ -477,47 +466,40 @@ const timeAgo = formatTimeAgo;
                     <p class="whitespace-pre-line">{{ profileUser.about }}</p>
                 </div>
 
-                <!-- Appreciations Summary Pill Row (Always single horizontal row) -->
+                <!-- Appreciators & Appreciating Minimal Row -->
                 <div
-                    v-if="localAppreciationsCount > 0 || appreciatingCount > 0"
-                    class="mt-3.5 flex items-center gap-2 overflow-x-auto"
+                    class="mt-3.5 flex items-center gap-2.5 text-xs text-slate-500 dark:text-gray-400"
                 >
                     <button
-                        v-if="localAppreciationsCount > 0"
                         type="button"
                         @click="showAppreciatorsModal = true"
-                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-rose-100 bg-rose-50/70 px-2.5 py-1 text-xs font-bold text-rose-700 transition select-none hover:bg-rose-100 active:scale-95 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
-                        title="View members who appreciated this profile"
+                        class="inline-flex cursor-pointer items-center gap-1 transition hover:text-slate-900 hover:underline dark:hover:text-gray-200"
                     >
-                        <Heart
-                            class="h-3.5 w-3.5 fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400"
-                        />
-                        <span class="whitespace-nowrap"
-                            >{{ localAppreciationsCount }}
-                            {{
-                                localAppreciationsCount === 1
-                                    ? 'Appreciator'
-                                    : 'Appreciators'
-                            }}</span
+                        <span
+                            class="font-bold text-slate-900 dark:text-gray-100"
+                            >{{ localAppreciationsCount }}</span
                         >
+                        <span>{{
+                            localAppreciationsCount === 1
+                                ? 'Appreciator'
+                                : 'Appreciators'
+                        }}</span>
                     </button>
 
+                    <span class="text-slate-300 select-none dark:text-gray-600"
+                        >·</span
+                    >
+
                     <button
-                        v-if="appreciatingCount > 0"
                         type="button"
                         @click="showAppreciatingModal = true"
-                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200/80 bg-slate-50/80 px-2.5 py-1 text-xs font-semibold text-slate-600 transition select-none hover:bg-slate-100 active:scale-95 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
-                        title="View members this user appreciates"
+                        class="inline-flex cursor-pointer items-center gap-1 transition hover:text-slate-900 hover:underline dark:hover:text-gray-200"
                     >
-                        <Heart
-                            class="h-3.5 w-3.5 stroke-[2] text-slate-400 dark:text-gray-500"
-                        />
-                        <span class="whitespace-nowrap"
-                            >Appreciating {{ appreciatingCount }}
-                            {{
-                                appreciatingCount === 1 ? 'user' : 'users'
-                            }}</span
+                        <span
+                            class="font-bold text-slate-900 dark:text-gray-100"
+                            >{{ appreciatingCount }}</span
                         >
+                        <span>Appreciating</span>
                     </button>
                 </div>
 
