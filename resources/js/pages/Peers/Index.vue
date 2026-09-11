@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useRemember } from '@inertiajs/vue3';
 import { Search, X, Users, Heart, Loader2 } from 'lucide-vue-next';
 import { onUnmounted, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -35,8 +35,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const peerList = ref<Peer[]>([...props.peers.data]);
-const nextPageUrl = ref<string | null>(props.peers.next_page_url);
+const peerList = useRemember<Peer[]>([...props.peers.data], 'Peers/peerList');
+const nextPageUrl = useRemember<string | null>(
+    props.peers.next_page_url,
+    'Peers/nextPageUrl',
+);
 const isLoadingMore = ref(false);
 
 const searchQuery = ref(props.filters.search || '');
@@ -198,7 +201,6 @@ watch(
             nextPageUrl.value = newPeers.next_page_url;
         }
     },
-    { immediate: true },
 );
 
 watch(
