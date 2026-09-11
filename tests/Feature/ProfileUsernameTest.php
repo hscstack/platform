@@ -57,3 +57,37 @@ test('user can submit profile without changing their existing username', functio
     expect($user->fresh()->name)->toBe('Updated Name');
     expect($user->fresh()->username)->toBe('my_handle');
 });
+
+test('username update shows clear validation message when format is invalid (e.g. dots)', function () {
+    $user = User::factory()->create([
+        'username' => 'valid_user',
+    ]);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => $user->name,
+        'username' => 'invalid.user',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'username' => "Username can only contain letters, numbers, and underscores. Dots aren't allowed.",
+    ]);
+});
+
+test('username update shows clear validation message when username is already taken', function () {
+    User::factory()->create([
+        'username' => 'taken_user',
+    ]);
+
+    $user = User::factory()->create([
+        'username' => 'valid_user',
+    ]);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => $user->name,
+        'username' => 'taken_user',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'username' => 'This username is already taken. Please choose another one.',
+    ]);
+});
