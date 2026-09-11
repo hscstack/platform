@@ -12,6 +12,9 @@ class PeerController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
+        if (mb_strlen($search) < 3) {
+            $search = '';
+        }
         $sort = $request->input('sort', 'relevant');
         if (! in_array($sort, ['relevant', 'appreciated'], true)) {
             $sort = 'relevant';
@@ -36,6 +39,11 @@ class PeerController extends Controller
                 ->withExists([
                     'appreciationsReceived as is_appreciated' => fn ($q) => $q->where('appreciator_id', $currentUser->id),
                 ]);
+
+            // Exclude already appreciated peers in "You May Know" discovery when not searching
+            if ($sort === 'relevant' && $search === '') {
+                $query->whereDoesntHave('appreciationsReceived', fn ($q) => $q->where('appreciator_id', $currentUser->id));
+            }
         }
 
         if ($search !== '') {
@@ -49,10 +57,18 @@ class PeerController extends Controller
         if ($sort === 'appreciated') {
             $query->orderByDesc('appreciations_received_count')->latest('users.id');
         } else {
-            $institution = $currentUser?->institution ? trim($currentUser->institution) : '';
+            $targetLocation = $currentUser?->institution ? trim($currentUser->institution) : '';
 
-            if ($institution !== '') {
-                preg_match_all('/[\p{L}\p{N}]{3,}/u', mb_strtolower($institution), $matches);
+            // For guests or users without institution, infer location from Cloudflare headers
+            if ($targetLocation === '') {
+                $cfCity = trim((string) $request->header('CF-IPCity', ''));
+                if ($cfCity !== '' && strcasecmp($cfCity, 'xx') !== 0) {
+                    $targetLocation = $cfCity;
+                }
+            }
+
+            if ($targetLocation !== '') {
+                preg_match_all('/[\p{L}\p{N}]{3,}/u', mb_strtolower($targetLocation), $matches);
                 $words = array_values(array_unique($matches[0] ?? []));
 
                 $scoreSql = [];

@@ -35,8 +35,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const peerList = ref<Peer[]>([]);
-const nextPageUrl = ref<string | null>(null);
+const peerList = ref<Peer[]>([...props.peers.data]);
+const nextPageUrl = ref<string | null>(props.peers.next_page_url);
 const isLoadingMore = ref(false);
 
 const searchQuery = ref(props.filters.search || '');
@@ -72,9 +72,35 @@ const handleSearchInput = () => {
         clearTimeout(searchTimeout);
     }
 
+    const query = searchQuery.value.trim();
+
+    // If query is cleared, immediately reset the list
+    if (query.length === 0) {
+        applyFilters();
+
+        return;
+    }
+
+    // Require at least 3 characters before sending the search request
+    if (query.length < 3) {
+        return;
+    }
+
     searchTimeout = setTimeout(() => {
         applyFilters();
     }, 350);
+};
+
+const handleSearchEnter = () => {
+    const query = searchQuery.value.trim();
+
+    if (query.length === 0 || query.length >= 3) {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        applyFilters();
+    }
 };
 
 const clearSearch = () => {
@@ -99,15 +125,18 @@ const loadMore = () => {
         {
             preserveState: true,
             preserveScroll: true,
+            preserveUrl: true,
             only: ['peers'],
             onSuccess: (page) => {
-                const newPeers =
+                const newPeersData =
                     (page.props.peers as Props['peers'])?.data || [];
                 const existingIds = new Set(peerList.value.map((p) => p.id));
-                const uniqueNew = newPeers.filter(
+                const uniqueNew = newPeersData.filter(
                     (p) => !existingIds.has(p.id),
                 );
                 peerList.value.push(...uniqueNew);
+                nextPageUrl.value =
+                    (page.props.peers as Props['peers'])?.next_page_url || null;
             },
             onFinish: () => {
                 isLoadingMore.value = false;
@@ -153,6 +182,7 @@ const togglePeerAppreciation = (peer: Peer) => {
             {
                 preserveScroll: true,
                 preserveState: true,
+                only: ['auth', 'flash'],
                 onError: rollback,
                 onCancel: rollback,
             },
@@ -163,11 +193,10 @@ const togglePeerAppreciation = (peer: Peer) => {
 watch(
     () => props.peers,
     (newPeers) => {
-        if (newPeers.current_page === 1) {
+        if (!isLoadingMore.value) {
             peerList.value = [...newPeers.data];
+            nextPageUrl.value = newPeers.next_page_url;
         }
-
-        nextPageUrl.value = newPeers.next_page_url;
     },
     { immediate: true },
 );
@@ -224,7 +253,7 @@ watch(
                     <input
                         v-model="searchQuery"
                         @input="handleSearchInput"
-                        @keyup.enter="applyFilters"
+                        @keyup.enter="handleSearchEnter"
                         type="text"
                         placeholder="Search by name, @username, or college..."
                         class="h-10 w-full rounded-2xl border border-slate-200 bg-white pr-9 pl-10 text-xs font-medium text-slate-900 placeholder-slate-400 shadow-2xs transition focus:border-indigo-500 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500"
