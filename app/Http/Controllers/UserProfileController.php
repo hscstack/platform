@@ -78,6 +78,20 @@ class UserProfileController extends Controller
             }
         }
 
+        $appreciators = $user->appreciators()
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
+            ->latest('user_appreciations.id')
+            ->take(30)
+            ->get();
+
+        $appreciating = $user->appreciatingUsers()
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
+            ->latest('user_appreciations.id')
+            ->take(30)
+            ->get();
+
+            
+
         // Early return if activity is locked for this visitor
         if ($isLocked) {
             return Inertia::render('User/Show', [
@@ -89,6 +103,8 @@ class UserProfileController extends Controller
                 'lockReason' => $lockReason,
                 'activityPrivacy' => $activityPrivacy,
                 'suggestedUsers' => $suggestedUsers,
+                'appreciators' => $appreciators,
+                'appreciating' => $appreciating,
             ]);
         }
 
@@ -117,17 +133,6 @@ class UserProfileController extends Controller
         $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
         $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
 
-        $appreciators = $user->appreciators()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
-            ->latest('user_appreciations.id')
-            ->take(30)
-            ->get();
-
-        $appreciating = $user->appreciatingUsers()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
-            ->latest('user_appreciations.id')
-            ->take(30)
-            ->get();
 
         // Recent Community Activities
         $recentForumPosts = ForumPost::where('user_id', $user->id)
