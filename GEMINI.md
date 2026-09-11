@@ -1,7 +1,7 @@
 # Project Guidelines & Automated Checks
 
 ## Formatting and Linting
-When asked to fix or check formatting/linting issues, or right before the final commit prior to pushing, run the automated fix commands directly instead of manually inspecting and fixing errors one by one:
+When asked to fix or check formatting/linting issues, or before committing changes, run the automated fix commands directly instead of manually inspecting and fixing errors one by one:
 
 ```bash
 npm run format && composer lint && npm run lint
@@ -16,7 +16,7 @@ npm run format && composer lint && npm run lint
      ```
   2. Switch to that branch.
   3. Use atomic commits where applicable.
-  4. Run formatting and linting checks only before the last commit:
+  4. Always run formatting and linting checks before committing:
      ```bash
      npm run format && composer lint && npm run lint
      ```
@@ -26,6 +26,3 @@ npm run format && composer lint && npm run lint
      git push -u origin <new-branch>
      ```
   7. Create a Pull Request (PR) with a clear, respective title and description linking relevant issues.
-
-
-
