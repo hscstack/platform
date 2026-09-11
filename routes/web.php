@@ -36,6 +36,7 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
     Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
+    Route::post('/u/{user}/poke', [UserProfileController::class, 'poke'])->name('user.poke');
     Route::get('/support/my-tickets', [SupportTicketController::class, 'myTickets'])->name('support.my-tickets');
     Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('support.tickets.store');
 

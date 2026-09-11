@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\PeerSettingsController;
+use App\Models\AppSetting;
 use App\Models\BlogComment;
 use App\Models\BlogReaction;
 use App\Models\ForumAnswer;
@@ -10,7 +12,10 @@ use App\Models\Node;
 use App\Models\Resource;
 use App\Models\User;
 use App\Models\UserAppreciation;
+use App\Notifications\StudyPokeNotification;
 use App\Notifications\UserAppreciationNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class UserProfileController extends Controller
@@ -90,7 +95,17 @@ class UserProfileController extends Controller
             ->take(30)
             ->get();
 
-            
+        // Study Poke evaluation
+        $pokeEnabled = (bool) AppSetting::get('peer_poke_enabled', true);
+        $canPoke = $pokeEnabled && auth()->check() && ! $isOwner && ($user->allow_pokes ?? true);
+        $isPokeOnCooldown = $canPoke && Cache::has('study_poke:'.auth()->id().":{$user->id}");
+        $pokePresets = $pokeEnabled ? PeerSettingsController::getPresets() : [];
+        $pokeData = [
+            'enabled' => $pokeEnabled,
+            'canPoke' => $canPoke,
+            'isCooldown' => $isPokeOnCooldown,
+            'presets' => $pokePresets,
+        ];
 
         // Early return if activity is locked for this visitor
         if ($isLocked) {
@@ -105,6 +120,7 @@ class UserProfileController extends Controller
                 'suggestedUsers' => $suggestedUsers,
                 'appreciators' => $appreciators,
                 'appreciating' => $appreciating,
+                'pokeData' => $pokeData,
             ]);
         }
 
@@ -132,7 +148,6 @@ class UserProfileController extends Controller
         $blogsCount = $user->blogs()->where('is_published', true)->count();
         $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
         $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
-
 
         // Recent Community Activities
         $recentForumPosts = ForumPost::where('user_id', $user->id)
@@ -277,7 +292,56 @@ class UserProfileController extends Controller
                 'appreciations' => $recentAppreciations->values(),
             ],
             'suggestedUsers' => $suggestedUsers,
+            'pokeData' => $pokeData,
         ]);
+    }
+
+    public function poke(Request $request, User $user)
+    {
+        $currentAuthUser = auth()->user();
+
+        // Cannot poke own profile
+        if ($currentAuthUser->id === $user->id) {
+            return back()->with('error', 'You cannot poke yourself.');
+        }
+
+        $enabled = (bool) AppSetting::get('peer_poke_enabled', true);
+        if (! $enabled) {
+            return back()->with('error', 'Study pokes are currently disabled.');
+        }
+
+        // Check receiver permission
+        if (! ($user->allow_pokes ?? true)) {
+            return back()->with('error', 'This user has disabled study pokes.');
+        }
+
+        // Cooldown check
+        $cooldownKey = "study_poke:{$currentAuthUser->id}:{$user->id}";
+        if (Cache::has($cooldownKey)) {
+            return back()->with('error', 'You are on cooldown for poking this peer.');
+        }
+
+        $validated = $request->validate([
+            'preset_id' => 'required|string',
+        ]);
+
+        $presets = PeerSettingsController::getPresets();
+        $selectedPreset = collect($presets)->firstWhere('id', $validated['preset_id']) ?? $presets[0];
+
+        // Send notification
+        $user->notify(new StudyPokeNotification(
+            sender: $currentAuthUser,
+            message: $selectedPreset['message'],
+            icon: $selectedPreset['icon'] ?? '⚡',
+            presetId: $selectedPreset['id'],
+        ));
+
+        // Set cooldown
+        $cooldownHours = (int) AppSetting::get('peer_poke_cooldown_hours', 6);
+        $cooldownSeconds = max(60, $cooldownHours * 3600);
+        Cache::put($cooldownKey, true, $cooldownSeconds);
+
+        return back()->with('success', "You poked {$user->name} to study! ⚡");
     }
 
     public function toggleAppreciate(User $user)

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\EmailController as AdminEmailController;
 use App\Http\Controllers\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
+use App\Http\Controllers\Admin\PeerSettingsController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -146,4 +147,10 @@ Route::middleware('permission:manage forums')->group(function () {
 
     Route::get('/forums/settings', [AdminForumController::class, 'settings'])->name('forums.settings.edit');
     Route::post('/forums/settings', [AdminForumController::class, 'updateSettings'])->name('forums.settings.update');
+});
+
+// Peer & Study Poke Settings
+Route::middleware('permission:manage peers')->group(function () {
+    Route::get('/peers/settings', [PeerSettingsController::class, 'edit'])->name('peers.settings.edit');
+    Route::post('/peers/settings', [PeerSettingsController::class, 'update'])->name('peers.settings.update');
 });
