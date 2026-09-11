@@ -72,7 +72,7 @@ test('subsequent pokes during cooldown are blocked', function () {
 
     // Second poke fails due to cooldown
     $this->actingAs($userA)
-        ->post("/u/{$userB->id}/poke", ['preset_id' => 'coffee'])
+        ->post("/u/{$userB->id}/poke", ['preset_id' => 'phone_down'])
         ->assertSessionHas('error');
 
     Notification::assertSentTimes(StudyPokeNotification::class, 1);
@@ -144,12 +144,12 @@ test('admin can update peer and poke settings with manage peers permission', fun
     $updateResponse = $this->actingAs($adminUser)
         ->post('/admin/peers/settings', [
             'enabled' => true,
-            'cooldown_hours' => 12,
+            'cooldown_minutes' => 720,
             'presets' => $newPresets,
         ]);
 
     $updateResponse->assertRedirect();
 
-    expect(AppSetting::get('peer_poke_cooldown_hours'))->toBe(12);
+    expect(AppSetting::get('peer_poke_cooldown_minutes'))->toBe(720);
     expect(AppSetting::get('peer_poke_presets'))->toBe($newPresets);
 });

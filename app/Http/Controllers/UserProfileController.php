@@ -337,8 +337,8 @@ class UserProfileController extends Controller
         ));
 
         // Set cooldown
-        $cooldownHours = (int) AppSetting::get('peer_poke_cooldown_hours', 6);
-        $cooldownSeconds = max(60, $cooldownHours * 3600);
+        $cooldownMinutes = (int) AppSetting::get('peer_poke_cooldown_minutes', 360);
+        $cooldownSeconds = max(30, $cooldownMinutes * 60);
         Cache::put($cooldownKey, true, $cooldownSeconds);
 
         return back()->with('success', "You poked {$user->name} to study! ⚡");

@@ -22,7 +22,7 @@ interface PokePreset {
 interface PeerSettingsProps {
     settings: {
         enabled: boolean;
-        cooldown_hours: number;
+        cooldown_minutes: number;
         presets: PokePreset[];
     };
 }
@@ -40,33 +40,11 @@ const defaultPresets: PokePreset[] = [
         icon: '📱',
         message: 'Close the tabs, put the phone on DND, and start studying.',
     },
-    {
-        id: 'lock_in',
-        icon: '🔒',
-        message: "Time to lock in. Let's crush today's study goals!",
-    },
-    {
-        id: 'coffee',
-        icon: '☕',
-        message:
-            'Grab a hot cup of tea/coffee and head over to your study desk.',
-    },
-    {
-        id: 'exam_panic',
-        icon: '💀',
-        message:
-            'Future you in the exam hall will thank you for studying right now.',
-    },
-    {
-        id: 'study_buddy',
-        icon: '🤝',
-        message: 'I am studying right now, join the grind with me!',
-    },
 ];
 
 const form = useForm({
     enabled: props.settings.enabled,
-    cooldown_hours: props.settings.cooldown_hours,
+    cooldown_minutes: props.settings.cooldown_minutes,
     presets: JSON.parse(
         JSON.stringify(props.settings.presets || defaultPresets),
     ) as PokePreset[],
@@ -231,7 +209,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <!-- Cooldown Hours -->
+                    <!-- Cooldown Minutes -->
                     <div
                         class="flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-gray-800/80 dark:bg-gray-800/30"
                     >
@@ -243,7 +221,7 @@ const submit = () => {
                                 <span
                                     class="text-xs font-bold text-slate-900 dark:text-gray-100"
                                 >
-                                    Cooldown Duration (Hours)
+                                    Cooldown Duration (Minutes)
                                 </span>
                             </div>
                             <p
@@ -256,15 +234,15 @@ const submit = () => {
                         <div class="mt-4 flex items-center gap-3">
                             <input
                                 type="number"
-                                v-model.number="form.cooldown_hours"
+                                v-model.number="form.cooldown_minutes"
                                 min="1"
-                                max="72"
+                                max="10080"
                                 required
                                 class="w-24 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                             />
                             <span
                                 class="text-xs text-slate-500 dark:text-gray-400"
-                                >hours</span
+                                >minutes</span
                             >
                         </div>
                     </div>
