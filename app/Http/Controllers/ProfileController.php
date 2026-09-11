@@ -21,7 +21,13 @@ class ProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
-        if ($request->hasFile('file')) {
+        if ($request->boolean('clear_image')) {
+            if ($user->image_path) {
+                Storage::delete($user->image_path);
+            }
+
+            $validated['image_path'] = null;
+        } elseif ($request->hasFile('file')) {
             $path = $request->file('file')->store('users/profile-images');
 
             if ($user->image_path) {
