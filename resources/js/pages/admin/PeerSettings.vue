@@ -62,7 +62,7 @@ const addPreset = () => {
 
 const removePreset = (index: number) => {
     if (form.presets.length <= 1) {
-        alert('You must have at least one study poke preset.');
+        alert('You must have at least one poke preset.');
 
         return;
     }
@@ -90,7 +90,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Peer & Study Poke Settings - Admin" />
+    <Head title="Peer & Poke Settings - Admin" />
 
     <div class="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
         <!-- Header -->
@@ -108,11 +108,11 @@ const submit = () => {
                         <h1
                             class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
                         >
-                            Peer & Study Poke Settings
+                            Peer & Poke Settings
                         </h1>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Configure 1-to-1 peer study nudges, anti-spam
-                            cooldowns, and motivational presets.
+                            Configure peer pokes, anti-spam cooldowns, and
+                            message presets.
                         </p>
                     </div>
                 </div>
@@ -164,7 +164,7 @@ const submit = () => {
                             General Controls & Anti-Spam
                         </h2>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Enable or pause study pokes globally and set
+                            Enable or pause peer pokes globally and set
                             cooling-off limits.
                         </p>
                     </div>
@@ -179,13 +179,12 @@ const submit = () => {
                             <span
                                 class="text-xs font-bold text-slate-900 dark:text-gray-100"
                             >
-                                Study Poke Feature
+                                Poke Feature
                             </span>
                             <p
                                 class="mt-1 text-[11px] text-slate-500 dark:text-gray-400"
                             >
-                                Allow students to send lightweight study nudges
-                                and reminders to peers.
+                                Allow users to send pokes to peers.
                             </p>
                         </div>
                         <div class="mt-4 flex items-center gap-3">
@@ -227,7 +226,7 @@ const submit = () => {
                             <p
                                 class="mt-1 text-[11px] text-slate-500 dark:text-gray-400"
                             >
-                                Time a student must wait before poking the exact
+                                Time a user must wait before poking the exact
                                 same peer again.
                             </p>
                         </div>
@@ -266,13 +265,13 @@ const submit = () => {
                             <h2
                                 class="text-sm font-bold text-slate-900 dark:text-gray-100"
                             >
-                                Motivational Presets & Copy
+                                Message Presets
                             </h2>
                             <p
                                 class="text-xs text-slate-500 dark:text-gray-400"
                             >
-                                Customize the presets students see when they
-                                click the "Study Poke" button.
+                                Customize the presets shown when clicking the
+                                "Poke" button.
                             </p>
                         </div>
                     </div>

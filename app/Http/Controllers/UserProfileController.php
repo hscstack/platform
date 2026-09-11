@@ -95,10 +95,10 @@ class UserProfileController extends Controller
             ->take(30)
             ->get();
 
-        // Study Poke evaluation
+        // Poke evaluation
         $pokeEnabled = (bool) AppSetting::get('peer_poke_enabled', true);
-        $canPoke = $pokeEnabled && auth()->check() && ! $isOwner && ($user->allow_pokes ?? true);
-        $isPokeOnCooldown = $canPoke && Cache::has('study_poke:'.auth()->id().":{$user->id}");
+        $canPoke = $pokeEnabled && ! $isOwner && ($user->allow_pokes ?? true);
+        $isPokeOnCooldown = $canPoke && auth()->check() && Cache::has('study_poke:'.auth()->id().":{$user->id}");
         $pokePresets = $pokeEnabled ? PeerSettingsController::getPresets() : [];
         $pokeData = [
             'enabled' => $pokeEnabled,
@@ -300,22 +300,19 @@ class UserProfileController extends Controller
     {
         $currentAuthUser = auth()->user();
 
-        // Cannot poke own profile
         if ($currentAuthUser->id === $user->id) {
             return back()->with('error', 'You cannot poke yourself.');
         }
 
         $enabled = (bool) AppSetting::get('peer_poke_enabled', true);
         if (! $enabled) {
-            return back()->with('error', 'Study pokes are currently disabled.');
+            return back()->with('error', 'Pokes are currently disabled.');
         }
 
-        // Check receiver permission
         if (! ($user->allow_pokes ?? true)) {
-            return back()->with('error', 'This user has disabled study pokes.');
+            return back()->with('error', 'This user has disabled pokes.');
         }
 
-        // Cooldown check
         $cooldownKey = "study_poke:{$currentAuthUser->id}:{$user->id}";
         if (Cache::has($cooldownKey)) {
             return back()->with('error', 'You are on cooldown for poking this peer.');
@@ -328,7 +325,6 @@ class UserProfileController extends Controller
         $presets = PeerSettingsController::getPresets();
         $selectedPreset = collect($presets)->firstWhere('id', $validated['preset_id']) ?? $presets[0];
 
-        // Send notification
         $user->notify(new StudyPokeNotification(
             sender: $currentAuthUser,
             message: $selectedPreset['message'],
@@ -336,12 +332,11 @@ class UserProfileController extends Controller
             presetId: $selectedPreset['id'],
         ));
 
-        // Set cooldown
         $cooldownMinutes = (int) AppSetting::get('peer_poke_cooldown_minutes', 360);
         $cooldownSeconds = max(30, $cooldownMinutes * 60);
         Cache::put($cooldownKey, true, $cooldownSeconds);
 
-        return back()->with('success', "You poked {$user->name} to study! ⚡");
+        return back()->with('success', "You poked {$user->name}! ⚡");
     }
 
     public function toggleAppreciate(User $user)

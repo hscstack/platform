@@ -114,6 +114,23 @@ test('user profile passes pokeData with active presets and cooldown status', fun
         );
 });
 
+test('guest viewing user profile sees pokeData with canPoke true', function () {
+    Cache::flush();
+
+    $user = User::factory()->create(['username' => 'bob']);
+
+    $response = $this->get("/u/{$user->username}");
+
+    $response->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('User/Show')
+            ->has('pokeData')
+            ->where('pokeData.enabled', true)
+            ->where('pokeData.canPoke', true)
+            ->where('pokeData.isCooldown', false)
+        );
+});
+
 test('admin can update peer and poke settings with manage peers permission', function () {
     $permission = Permission::findOrCreate('manage peers');
     $adminRole = Role::findOrCreate('admin');

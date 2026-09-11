@@ -26,9 +26,9 @@ import {
     Users,
     X,
     Zap,
-    Send,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
@@ -245,6 +245,7 @@ const localAppreciationsCount = ref(props.appreciationsCount);
 const showAppreciatorsModal = ref(false);
 const showAppreciatingModal = ref(false);
 const showGuestModal = ref(false);
+const guestModalAction = ref<'appreciate' | 'poke'>('appreciate');
 
 watch(
     () => props.isAppreciated,
@@ -274,6 +275,7 @@ watch(
 
 const handleOpenPokeModal = () => {
     if (!currentUser.value) {
+        guestModalAction.value = 'poke';
         showGuestModal.value = true;
 
         return;
@@ -314,6 +316,7 @@ const handleSendPoke = () => {
 
 const handleAppreciate = () => {
     if (!currentUser.value) {
+        guestModalAction.value = 'appreciate';
         showGuestModal.value = true;
 
         return;
@@ -509,15 +512,14 @@ const timeAgo = formatTimeAgo;
                                 :title="
                                     localPokeCooldown
                                         ? 'Poked recently (Cooldown active)'
-                                        : 'Send a Study Poke to ' +
-                                          profileUser.name
+                                        : 'Send a Poke to ' + profileUser.name
                                 "
                             >
                                 <Zap
                                     class="h-3.5 w-3.5 fill-amber-500/30 text-amber-500"
                                 />
                                 <span>{{
-                                    localPokeCooldown ? 'Poked' : 'Study Poke'
+                                    localPokeCooldown ? 'Poked' : 'Poke'
                                 }}</span>
                             </button>
 
@@ -1686,19 +1688,35 @@ const timeAgo = formatTimeAgo;
                 </button>
 
                 <div
-                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"
+                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl"
+                    :class="
+                        guestModalAction === 'poke'
+                            ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400'
+                            : 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
+                    "
                 >
-                    <Heart class="h-6 w-6 fill-rose-500" />
+                    <Zap
+                        v-if="guestModalAction === 'poke'"
+                        class="h-6 w-6 fill-amber-500 text-amber-500"
+                    />
+                    <Heart v-else class="h-6 w-6 fill-rose-500" />
                 </div>
 
                 <h3
                     class="mt-3.5 text-base font-bold text-slate-900 dark:text-gray-100"
                 >
-                    Sign in to Appreciate
+                    {{
+                        guestModalAction === 'poke'
+                            ? 'Sign in to Poke'
+                            : 'Sign in to Appreciate'
+                    }}
                 </h3>
                 <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
-                    You need to be logged in to send appreciation and support
-                    fellow students and contributors.
+                    {{
+                        guestModalAction === 'poke'
+                            ? 'You need to be logged in to send pokes to fellow peers.'
+                            : 'You need to be logged in to send appreciation and support fellow students and contributors.'
+                    }}
                 </p>
 
                 <div class="mt-5 flex gap-2.5">
@@ -1721,100 +1739,66 @@ const timeAgo = formatTimeAgo;
         </div>
     </Teleport>
 
-    <!-- Study Poke Modal -->
-    <Teleport to="body">
-        <div
-            v-if="showPokeModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
+    <!-- Poke Modal -->
+    <BaseModal
+        :is-open="showPokeModal"
+        title="Send a Poke"
+        :description="`Choose a message to poke @${profileUser.username}`"
+        max-width="md"
+        position="responsive"
+        @close="showPokeModal = false"
+    >
+        <template #icon>
             <div
-                @click="showPokeModal = false"
-                class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
-            ></div>
-
-            <div
-                class="relative w-full max-w-md overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
             >
-                <button
-                    @click="showPokeModal = false"
-                    class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
-                >
-                    <X class="h-4 w-4" />
-                </button>
-
-                <div class="mb-4 flex items-center gap-2.5">
-                    <div
-                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                    >
-                        <Zap class="h-5 w-5 fill-amber-500" />
-                    </div>
-                    <div>
-                        <h3
-                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            Send a Study Poke 👉
-                        </h3>
-                        <p
-                            class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
-                        >
-                            Give @{{ profileUser.username }} a friendly study
-                            reminder
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Presets Grid / Selector -->
-                <div class="max-h-72 space-y-2.5 overflow-y-auto pr-1">
-                    <button
-                        v-for="preset in pokeData?.presets || []"
-                        :key="preset.id"
-                        type="button"
-                        @click="selectedPresetId = preset.id"
-                        class="flex w-full cursor-pointer items-start gap-3 rounded-2xl border p-3 text-left transition"
-                        :class="
-                            selectedPresetId === preset.id
-                                ? 'border-amber-500 bg-amber-50/50 ring-2 ring-amber-500/20 dark:border-amber-500 dark:bg-amber-950/30'
-                                : 'border-slate-200/80 hover:border-slate-300 dark:border-gray-800 dark:hover:border-gray-700'
-                        "
-                    >
-                        <span class="mt-0.5 shrink-0 text-xl">{{
-                            preset.icon
-                        }}</span>
-                        <div class="min-w-0 flex-1">
-                            <p
-                                class="text-xs leading-relaxed font-medium text-slate-700 dark:text-gray-300"
-                            >
-                                “{{ preset.message }}”
-                            </p>
-                        </div>
-                    </button>
-                </div>
-
-                <!-- Modal Actions -->
-                <div
-                    class="mt-5 flex items-center justify-end gap-2.5 border-t border-slate-100 pt-4 dark:border-gray-800"
-                >
-                    <button
-                        type="button"
-                        @click="showPokeModal = false"
-                        class="cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="button"
-                        @click="handleSendPoke"
-                        :disabled="!selectedPresetId || isSubmittingPoke"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-amber-600 active:scale-95 disabled:opacity-50 dark:bg-amber-500 dark:hover:bg-amber-600"
-                    >
-                        <Send class="h-3.5 w-3.5" />
-                        <span>{{
-                            isSubmittingPoke ? 'Sending...' : 'Send Poke 🚀'
-                        }}</span>
-                    </button>
-                </div>
+                <Zap class="h-4 w-4 fill-amber-500 text-amber-500" />
             </div>
+        </template>
+
+        <div class="space-y-2 p-4 sm:p-5">
+            <button
+                v-for="preset in pokeData?.presets || []"
+                :key="preset.id"
+                type="button"
+                @click="selectedPresetId = preset.id"
+                class="flex w-full cursor-pointer items-center gap-3 rounded-xl border bg-white p-3 text-left transition select-none active:scale-[0.99] dark:bg-gray-900"
+                :class="
+                    selectedPresetId === preset.id
+                        ? 'border-amber-500 ring-1 ring-amber-500 dark:border-amber-500 dark:ring-amber-500'
+                        : 'border-slate-200/80 hover:border-slate-300 dark:border-gray-800 dark:hover:border-gray-700'
+                "
+            >
+                <span class="shrink-0 text-xl">{{ preset.icon }}</span>
+                <span
+                    class="flex-1 text-xs leading-relaxed font-medium text-slate-700 dark:text-gray-300"
+                >
+                    {{ preset.message }}
+                </span>
+            </button>
         </div>
-    </Teleport>
+
+        <template #footer>
+            <div class="flex items-center justify-end gap-2">
+                <button
+                    type="button"
+                    @click="showPokeModal = false"
+                    class="cursor-pointer rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    @click="handleSendPoke"
+                    :disabled="!selectedPresetId || isSubmittingPoke"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-amber-600 active:scale-95 disabled:opacity-50 dark:bg-amber-500 dark:hover:bg-amber-600"
+                >
+                    <Zap class="h-3.5 w-3.5 fill-current" />
+                    <span>{{
+                        isSubmittingPoke ? 'Sending...' : 'Send Poke'
+                    }}</span>
+                </button>
+            </div>
+        </template>
+    </BaseModal>
 </template>

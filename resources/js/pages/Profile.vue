@@ -781,8 +781,7 @@ const submitForm = () => {
                             <p
                                 class="text-[11px] text-slate-500 dark:text-gray-400"
                             >
-                                সহপাঠীদের থেকে Study Poke বা তাড়া পেতে এই অপশনটি
-                                অন রাখুন।
+                                সহপাঠীদের থেকে Poke পেতে এই অপশনটি অন রাখুন।
                             </p>
                         </div>
 
