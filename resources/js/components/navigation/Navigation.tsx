@@ -3,15 +3,14 @@
  * surface in the app:
  *
  * - SiteRail            desktop side rail (collapsible 72px <-> 280px)
- * - SiteBottomNav       mobile bottom bar (customizable 3-5 items, YT style)
+ * - SiteBottomNav       mobile bottom bar
  * - SiteDrawer          mobile top hamburger bar + slide-over drawer
  * - AdminRail           staff side rail (same rail language, admin items)
  * - AdminDrawer         staff mobile drawer (teleported, same slide motion)
- * - BottomNavCustomizer Profile settings UI for the mobile bottom bar
  *
  * Pure state/logic stays in the existing TypeScript modules under
- * resources/js/lib (navigation, useBottomNavCustomization, useDarkMode,
- * useOrientation, useBreakpoint, usePwa, usePermissions). Shared visuals
+ * resources/js/lib (navigation, useDarkMode, useOrientation,
+ * useBreakpoint, usePwa, usePermissions). Shared visuals
  * (MaterialIcon, AppLogo, NotificationDropdown, LogoutConfirmModal) are
  * imported — only the navigation chrome itself is unified here.
  */
@@ -34,8 +33,7 @@ import AppLogo from '@/components/AppLogo.vue';
 import LogoutConfirmModal from '@/components/LogoutConfirmModal.vue';
 import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import MaterialIcon from '@/components/ui/MaterialIcon.vue';
-import { allNavItems } from '@/lib/navigation';
-import { useBottomNavCustomization } from '@/lib/useBottomNavCustomization';
+import { allNavItems, primaryNavItems } from '@/lib/navigation';
 import { useDarkMode } from '@/lib/useDarkMode';
 import { usePermissions } from '@/lib/usePermissions';
 import { usePwa } from '@/lib/usePwa';
@@ -835,7 +833,7 @@ export const SiteRail = defineComponent({
 });
 
 /* ------------------------------------------------------------------ */
-/* SiteBottomNav — mobile bottom bar (YT style)                         */
+/* SiteBottomNav — mobile bottom bar                                    */
 /* ------------------------------------------------------------------ */
 
 export const SiteBottomNav = defineComponent({
@@ -843,7 +841,9 @@ export const SiteBottomNav = defineComponent({
     setup() {
         const page = usePage();
         const currentUrl = computed(() => String(page.url));
-        const { bottomNavItems } = useBottomNavCustomization();
+        const bottomNavItems = computed(() =>
+            primaryNavItems.filter((i) => i.showInBottom !== false),
+        );
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
 
@@ -927,7 +927,8 @@ export const SiteDrawer = defineComponent({
         const canInstallApp = computed(
             () => !isInstalled.value && Boolean(deferredPrompt.value),
         );
-        const { availableItems } = useBottomNavCustomization();
+
+        const homeHref = computed(() => preferredHomeHref(currentUrl.value));
 
         const showLogoutModal = ref(false);
         const panelRef = ref<HTMLElement | null>(null);
@@ -1030,17 +1031,7 @@ export const SiteDrawer = defineComponent({
                                 <span>Find</span>
                             </Link>
                         )}
-                        {user.value ? (
-                            <NotificationDropdown />
-                        ) : (
-                            <Link
-                                href="/login"
-                                class="flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-                            >
-                                <MaterialIcon name="login" size={18} />
-                                Login
-                            </Link>
-                        )}
+                        <NotificationDropdown plain />
                     </div>
                 </div>
 
@@ -1072,8 +1063,9 @@ export const SiteDrawer = defineComponent({
                                         <AppLogo />
                                         <button
                                             ref={closeButtonRef}
+                                            type="button"
                                             onClick={close}
-                                            class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                                            class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                                             aria-label="Close menu"
                                         >
                                             <MaterialIcon
@@ -1084,59 +1076,55 @@ export const SiteDrawer = defineComponent({
                                     </div>
 
                                     <div class="flex-1 overflow-y-auto py-3.5">
-                                        {/* Overflow items */}
+                                        {/* Navigation items */}
                                         <p class="mb-2 px-4 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                            More
+                                            Menu
                                         </p>
                                         <nav class="space-y-0.5 px-2.5">
-                                            {availableItems.value.map(
-                                                (item) => (
-                                                    <Link
-                                                        key={item.href}
-                                                        href={item.href}
-                                                        onClick={close}
-                                                        class={[
-                                                            'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
+                                            {allNavItems.map((item) => (
+                                                <Link
+                                                    key={item.href}
+                                                    href={
+                                                        item.href === '/'
+                                                            ? homeHref.value
+                                                            : item.href
+                                                    }
+                                                    onClick={close}
+                                                    class={[
+                                                        'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
+                                                        isActive(
+                                                            item.href,
+                                                            item.match,
+                                                        )
+                                                            ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                                            : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                                    ]}
+                                                >
+                                                    <MaterialIcon
+                                                        name={item.icon}
+                                                        size={22}
+                                                        class={`shrink-0 transition-colors duration-150 ${
                                                             isActive(
                                                                 item.href,
                                                                 item.match,
                                                             )
-                                                                ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
-                                                                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
-                                                        ]}
-                                                    >
-                                                        <MaterialIcon
-                                                            name={item.icon}
-                                                            size={22}
-                                                            class={`shrink-0 transition-colors duration-150 ${
-                                                                isActive(
-                                                                    item.href,
-                                                                    item.match,
-                                                                )
-                                                                    ? 'text-indigo-600 dark:text-indigo-300'
-                                                                    : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                                            }`}
-                                                        />
-                                                        <span class="truncate">
-                                                            {item.label}
-                                                        </span>
-                                                        {isActive(
-                                                            item.href,
-                                                            item.match,
-                                                        ) && (
-                                                            <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                                                        )}
-                                                    </Link>
-                                                ),
-                                            )}
-                                            {availableItems.value.length ===
-                                                0 && (
-                                                <p class="px-3 py-2 text-xs text-slate-500 dark:text-gray-400">
-                                                    All items are in your bottom
-                                                    bar. Customize in Profile →
-                                                    Bottom navigation.
-                                                </p>
-                                            )}
+                                                                ? 'text-indigo-600 dark:text-indigo-300'
+                                                                : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                        }`}
+                                                    />
+                                                    <span class="truncate">
+                                                        {item.href === '/chat'
+                                                            ? 'Global Chat'
+                                                            : item.label}
+                                                    </span>
+                                                    {isActive(
+                                                        item.href,
+                                                        item.match,
+                                                    ) && (
+                                                        <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                                    )}
+                                                </Link>
+                                            ))}
                                             {canAccessAdmin.value && (
                                                 <Link
                                                     href="/admin"
@@ -2024,281 +2012,6 @@ export const AdminDrawer = defineComponent({
 
                 <LogoutConfirmModal {...bindOpen(showLogoutModal)} />
             </>
-        );
-    },
-});
-
-/* ------------------------------------------------------------------ */
-/* BottomNavCustomizer — Profile settings UI                            */
-/* ------------------------------------------------------------------ */
-
-export const BottomNavCustomizer = defineComponent({
-    name: 'BottomNavCustomizer',
-    setup() {
-        const {
-            bottomNavItems,
-            availableItems,
-            homeItem,
-            accountItem,
-            middleItems,
-            canAdd,
-            canRemove,
-            addItem,
-            removeItem,
-            reorder,
-            reset,
-            MIN_TOTAL,
-            MAX_TOTAL,
-        } = useBottomNavCustomization();
-
-        const dragIndex = ref<number | null>(null);
-
-        const onDragStart = (index: number, e: DragEvent) => {
-            dragIndex.value = index;
-
-            if (e.dataTransfer) {
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', String(index));
-            }
-        };
-
-        const onDragOver = (e: DragEvent) => {
-            e.preventDefault();
-
-            if (e.dataTransfer) {
-                e.dataTransfer.dropEffect = 'move';
-            }
-        };
-
-        const onDrop = (targetIndex: number, e: DragEvent) => {
-            e.preventDefault();
-            const from = dragIndex.value;
-
-            if (from === null || from === targetIndex) {
-                dragIndex.value = null;
-
-                return;
-            }
-
-            reorder(from, targetIndex);
-            dragIndex.value = null;
-        };
-
-        const onDragEnd = () => {
-            dragIndex.value = null;
-        };
-
-        const handleAdd = (href: string) => {
-            if (!canAdd.value) {
-                return;
-            }
-
-            addItem(href);
-        };
-
-        const handleRemove = (href: string) => {
-            if (!canRemove.value) {
-                return;
-            }
-
-            removeItem(href);
-        };
-
-        return () => (
-            <div class="space-y-5 pt-1">
-                <div>
-                    <p class="text-xs text-slate-500 dark:text-gray-400">
-                        Customize your mobile bottom bar (3–5 items). Home and
-                        Account are pinned — drag the middle items to reorder.
-                        Changes save automatically to this device.
-                    </p>
-                    <p class="mt-2 text-xs font-medium">
-                        <span
-                            class={
-                                bottomNavItems.value.length < MIN_TOTAL ||
-                                bottomNavItems.value.length > MAX_TOTAL
-                                    ? 'text-amber-600'
-                                    : 'text-slate-500 dark:text-gray-400'
-                            }
-                        >
-                            {bottomNavItems.value.length} / {MAX_TOTAL} items
-                        </span>
-                        <span class="mx-2 text-slate-300">·</span>
-                        <button
-                            type="button"
-                            onClick={reset}
-                            class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-                        >
-                            <MaterialIcon name="restart_alt" size={14} /> Reset
-                        </button>
-                    </p>
-                </div>
-
-                {/* Current bottom bar (pinned + draggable middle) */}
-                <div>
-                    <p class="mb-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-gray-500">
-                        Bottom bar — drag middle to reorder
-                    </p>
-                    <ul class="space-y-2">
-                        {/* Home pinned */}
-                        <li class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800/60">
-                            <MaterialIcon
-                                name="lock"
-                                size={16}
-                                class="shrink-0 text-slate-400"
-                            />
-                            <MaterialIcon
-                                name={homeItem.value.icon}
-                                size={22}
-                                class="shrink-0 text-slate-700 dark:text-gray-300"
-                            />
-                            <span class="flex-1 text-sm font-semibold text-slate-900 dark:text-gray-100">
-                                {homeItem.value.label}
-                            </span>
-                            <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
-                                Pinned first
-                            </span>
-                        </li>
-
-                        {/* Middle draggable (resolved items keep icon/label/remove aligned) */}
-                        {middleItems.value.map((item, idx) => (
-                            <li
-                                key={item.href}
-                                draggable={true}
-                                onDragstart={(e: DragEvent) =>
-                                    onDragStart(idx, e)
-                                }
-                                onDragover={(e: DragEvent) => onDragOver(e)}
-                                onDrop={(e: DragEvent) => onDrop(idx, e)}
-                                onDragend={onDragEnd}
-                                class={[
-                                    'flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm transition dark:bg-gray-800',
-                                    dragIndex.value === idx
-                                        ? 'border-indigo-300 ring-2 ring-indigo-200 dark:border-indigo-700'
-                                        : 'border-slate-200 dark:border-gray-700',
-                                ]}
-                            >
-                                <MaterialIcon
-                                    name="drag_indicator"
-                                    size={16}
-                                    class="shrink-0 cursor-grab text-slate-400 active:cursor-grabbing"
-                                />
-                                <MaterialIcon
-                                    name={item.icon}
-                                    size={22}
-                                    class="shrink-0 text-slate-600 dark:text-gray-300"
-                                />
-                                <span class="flex-1 text-sm font-medium text-slate-800 dark:text-gray-200">
-                                    {item.label}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => reorder(idx, idx - 1)}
-                                    disabled={idx === 0}
-                                    class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700/60"
-                                    aria-label={`Move ${item.label} earlier`}
-                                >
-                                    <MaterialIcon
-                                        name="keyboard_arrow_up"
-                                        size={16}
-                                    />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => reorder(idx, idx + 1)}
-                                    disabled={
-                                        idx === middleItems.value.length - 1
-                                    }
-                                    class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700/60"
-                                    aria-label={`Move ${item.label} later`}
-                                >
-                                    <MaterialIcon
-                                        name="keyboard_arrow_down"
-                                        size={16}
-                                    />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemove(item.href)}
-                                    disabled={!canRemove.value}
-                                    class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-30 dark:hover:bg-rose-950/40"
-                                    aria-label="Remove from bottom bar"
-                                >
-                                    <MaterialIcon name="close" size={16} />
-                                </button>
-                            </li>
-                        ))}
-
-                        {/* Account pinned last */}
-                        <li class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800/60">
-                            <MaterialIcon
-                                name="lock"
-                                size={16}
-                                class="shrink-0 text-slate-400"
-                            />
-                            <MaterialIcon
-                                name={accountItem.value.icon}
-                                size={22}
-                                class="shrink-0 text-slate-700 dark:text-gray-300"
-                            />
-                            <span class="flex-1 text-sm font-semibold text-slate-900 dark:text-gray-100">
-                                {accountItem.value.label}
-                            </span>
-                            <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
-                                Pinned last
-                            </span>
-                        </li>
-                    </ul>
-                    {!canRemove.value && (
-                        <p class="mt-2 text-[11px] text-amber-600 dark:text-amber-400">
-                            Minimum {MIN_TOTAL} items — remove disabled.
-                        </p>
-                    )}
-                    {!canAdd.value && (
-                        <p class="mt-2 text-[11px] text-amber-600 dark:text-amber-400">
-                            Maximum {MAX_TOTAL} items — add disabled.
-                        </p>
-                    )}
-                </div>
-
-                {/* Available pool */}
-                <div class="mt-6">
-                    <p class="mb-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase dark:text-gray-500">
-                        More items — tap to add to bottom bar
-                    </p>
-                    {availableItems.value.length === 0 ? (
-                        <div class="rounded-xl border border-dashed border-slate-200 p-4 text-center text-xs text-slate-500 dark:border-gray-700 dark:text-gray-400">
-                            All items are already in your bottom bar.
-                        </div>
-                    ) : (
-                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            {availableItems.value.map((item) => (
-                                <button
-                                    key={item.href}
-                                    type="button"
-                                    onClick={() => handleAdd(item.href)}
-                                    disabled={!canAdd.value}
-                                    class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-medium transition hover:bg-slate-50 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/60"
-                                >
-                                    <MaterialIcon
-                                        name={item.icon}
-                                        size={22}
-                                        class="shrink-0 text-slate-500"
-                                    />
-                                    <span class="flex-1 text-slate-700 dark:text-gray-300">
-                                        {item.label}
-                                    </span>
-                                    <MaterialIcon
-                                        name="add"
-                                        size={16}
-                                        class="shrink-0 text-indigo-600 dark:text-indigo-400"
-                                    />
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
         );
     },
 });

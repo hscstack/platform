@@ -50,6 +50,7 @@ class User extends Authenticatable
         'about',
         'title',
         'institution',
+        'activity_privacy',
         'facebook',
         'instagram',
         'github',

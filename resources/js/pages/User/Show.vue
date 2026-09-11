@@ -18,6 +18,7 @@ import {
     Heart,
     HelpCircle,
     Instagram,
+    Lock,
     LogIn,
     MessageSquare,
     MessageSquareCheck,
@@ -55,6 +56,9 @@ const props = defineProps<{
     appreciationsCount: number;
     appreciatingCount: number;
     isAppreciated: boolean;
+    isLocked?: boolean;
+    lockReason?: 'private' | 'appreciators_only' | null;
+    activityPrivacy?: string;
     appreciators?: Array<{
         id: number;
         name: string;
@@ -271,7 +275,7 @@ const handleAppreciate = () => {
         {},
         {
             preserveScroll: true,
-            preserveState: true,
+            preserveState: !props.isLocked,
             onError: () => {
                 localIsAppreciated.value = props.isAppreciated;
                 localAppreciationsCount.value = props.appreciationsCount;
@@ -551,711 +555,788 @@ const timeAgo = formatTimeAgo;
                 </div>
             </div>
 
-            <!-- Stats Metrics Row (4 Cards Grid: Questions, Answers, Articles, Shared Files) -->
-            <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-                <!-- Questions Asked -->
-                <div
-                    class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div class="flex items-center gap-2.5">
-                        <div
-                            class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                        >
-                            <HelpCircle class="h-4 w-4 stroke-[2.2]" />
-                        </div>
-                        <div class="min-w-0">
-                            <p
-                                class="text-sm font-black text-slate-900 dark:text-gray-100"
-                            >
-                                {{ stats.questionsCount }}
-                            </p>
-                            <p
-                                class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                Questions
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Answers Given -->
-                <div
-                    class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div class="flex items-center gap-2.5">
-                        <div
-                            class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                        >
-                            <MessageSquareCheck class="h-4 w-4 stroke-[2.2]" />
-                        </div>
-                        <div class="min-w-0">
-                            <p
-                                class="text-sm font-black text-slate-900 dark:text-gray-100"
-                            >
-                                {{ stats.answersCount }}
-                            </p>
-                            <p
-                                class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                Answers
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Articles Published -->
-                <div
-                    class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div class="flex items-center gap-2.5">
-                        <div
-                            class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
-                        >
-                            <FileText class="h-4 w-4 stroke-[2.2]" />
-                        </div>
-                        <div class="min-w-0">
-                            <p
-                                class="text-sm font-black text-slate-900 dark:text-gray-100"
-                            >
-                                {{ stats.blogsCount }}
-                            </p>
-                            <p
-                                class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                Articles
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shared Files -->
-                <div
-                    class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <div class="flex items-center gap-2.5">
-                        <div
-                            class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
-                        >
-                            <UploadCloud class="h-4 w-4 stroke-[2.2]" />
-                        </div>
-                        <div class="min-w-0">
-                            <p
-                                class="text-sm font-black text-slate-900 dark:text-gray-100"
-                            >
-                                {{ stats.sharedResourcesCount }}
-                            </p>
-                            <p
-                                class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                            >
-                                Shared Files
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabbed Content Section (3 Tabs: Forum, Articles, Activity) -->
-            <div class="space-y-3.5">
-                <!-- Navigation Tabs Bar -->
-                <div
-                    class="flex items-center gap-1 rounded-xl border border-slate-200/80 bg-white p-1 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                >
-                    <button
-                        @click="activeTab = 'forum'"
-                        type="button"
-                        class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
-                        :class="
-                            activeTab === 'forum'
-                                ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
-                                : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                        "
+            <!-- Unlocked Activity & Stats Section -->
+            <template v-if="!isLocked">
+                <!-- Stats Metrics Row (4 Cards Grid: Questions, Answers, Articles, Shared Files) -->
+                <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+                    <!-- Questions Asked -->
+                    <div
+                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <MessageSquare class="h-3.5 w-3.5 shrink-0" />
-                        <span>Forum</span>
-                    </button>
-
-                    <button
-                        @click="activeTab = 'blogs'"
-                        type="button"
-                        class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
-                        :class="
-                            activeTab === 'blogs'
-                                ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
-                                : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                        "
-                    >
-                        <FileText class="h-3.5 w-3.5 shrink-0" />
-                        <span>Articles</span>
-                    </button>
-
-                    <button
-                        @click="activeTab = 'activity'"
-                        type="button"
-                        class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
-                        :class="
-                            activeTab === 'activity'
-                                ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
-                                : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                        "
-                    >
-                        <Activity class="h-3.5 w-3.5 shrink-0" />
-                        <span>Activity</span>
-                    </button>
-                </div>
-
-                <!-- Tab 1: Forum Questions & Answers -->
-                <div v-if="activeTab === 'forum'" class="space-y-3">
-                    <!-- Sub-navigation: Questions vs Answers -->
-                    <div class="flex items-center justify-between gap-2 px-1">
-                        <div class="flex items-center gap-1.5">
-                            <button
-                                type="button"
-                                @click="forumSubTab = 'questions'"
-                                class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-bold transition"
-                                :class="[
-                                    forumSubTab === 'questions'
-                                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'
-                                        : 'text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800',
-                                ]"
-                            >
-                                Questions ({{ forumPosts?.length || 0 }})
-                            </button>
-                            <button
-                                type="button"
-                                @click="forumSubTab = 'answers'"
-                                class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-bold transition"
-                                :class="[
-                                    forumSubTab === 'answers'
-                                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'
-                                        : 'text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800',
-                                ]"
-                            >
-                                Answers ({{ forumAnswers?.length || 0 }})
-                            </button>
-                        </div>
-
-                        <Link
-                            href="/forum"
-                            class="group inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400"
-                        >
-                            <span>Visit Forum</span>
-                            <ArrowRight
-                                class="h-3 w-3 transition-transform group-hover:translate-x-0.5"
-                            />
-                        </Link>
-                    </div>
-
-                    <!-- Questions Sub-panel -->
-                    <div v-if="forumSubTab === 'questions'">
-                        <EmptyState
-                            v-if="!forumPosts || forumPosts.length === 0"
-                            :icon="HelpCircle"
-                            variant="dashed"
-                            title="No questions asked yet"
-                            description="Questions posted to the academic forum will appear here."
-                        />
-
-                        <div v-else class="space-y-2">
-                            <Link
-                                v-for="post in forumPosts"
-                                :key="post.id"
-                                :href="`/forum/questions/${post.slug}`"
-                                class="group block rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs transition hover:border-indigo-300 hover:shadow-xs sm:rounded-2xl sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/50"
-                            >
-                                <div
-                                    class="flex items-start justify-between gap-2"
-                                >
-                                    <div class="min-w-0 flex-1 space-y-1">
-                                        <div
-                                            class="flex flex-wrap items-center gap-1.5"
-                                        >
-                                            <span
-                                                class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 uppercase dark:bg-gray-800 dark:text-gray-300"
-                                            >
-                                                {{ post.curriculum }}
-                                            </span>
-                                            <span
-                                                v-if="post.subject?.name"
-                                                class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
-                                            >
-                                                {{ post.subject.name }}
-                                            </span>
-                                            <span
-                                                v-if="post.node?.name"
-                                                class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-gray-800 dark:text-gray-400"
-                                            >
-                                                {{ post.node.name }}
-                                            </span>
-                                            <span
-                                                v-if="post.is_answered"
-                                                class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                                            >
-                                                <CheckCircle2
-                                                    class="h-2.5 w-2.5"
-                                                />
-                                                Answered
-                                            </span>
-                                        </div>
-
-                                        <h4
-                                            class="text-xs font-bold text-slate-900 transition group-hover:text-indigo-600 sm:text-sm dark:text-gray-100 dark:group-hover:text-indigo-400"
-                                        >
-                                            {{ post.title }}
-                                        </h4>
-                                    </div>
-
-                                    <ArrowUpRight
-                                        class="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
-                                    />
-                                </div>
-
-                                <div
-                                    class="mt-2 flex items-center gap-3 text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                >
-                                    <span
-                                        class="flex items-center gap-0.5"
-                                        :class="{
-                                            'text-rose-500 dark:text-rose-400':
-                                                post.vote_score < 0,
-                                            'text-indigo-600 dark:text-indigo-400':
-                                                post.vote_score > 0,
-                                        }"
-                                    >
-                                        <ArrowBigDown
-                                            v-if="post.vote_score < 0"
-                                            class="h-3.5 w-3.5 fill-current"
-                                        />
-                                        <ArrowBigUp
-                                            v-else
-                                            class="h-3.5 w-3.5"
-                                            :class="
-                                                post.vote_score > 0
-                                                    ? 'fill-current'
-                                                    : 'fill-slate-400 dark:fill-gray-500'
-                                            "
-                                        />
-                                        <span>{{
-                                            Math.abs(post.vote_score)
-                                        }}</span>
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        <MessageSquare class="h-3 w-3" />
-                                        {{ post.answers_count || 0 }}
-                                        {{
-                                            post.answers_count === 1
-                                                ? 'answer'
-                                                : 'answers'
-                                        }}
-                                    </span>
-                                    <span>{{ timeAgo(post.created_at) }}</span>
-                                </div>
-                            </Link>
-
+                        <div class="flex items-center gap-2.5">
                             <div
-                                v-if="
-                                    stats.questionsCount >
-                                    (forumPosts?.length || 0)
-                                "
-                                class="pt-1 text-center"
+                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                             >
-                                <Link
-                                    href="/forum"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                <HelpCircle class="h-4 w-4 stroke-[2.2]" />
+                            </div>
+                            <div class="min-w-0">
+                                <p
+                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
                                 >
-                                    <span
-                                        >View all
-                                        {{ stats.questionsCount }} questions in
-                                        Forum &rarr;</span
-                                    >
-                                </Link>
+                                    {{ stats.questionsCount }}
+                                </p>
+                                <p
+                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                >
+                                    Questions
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Answers Sub-panel -->
-                    <div v-else-if="forumSubTab === 'answers'">
-                        <EmptyState
-                            v-if="!forumAnswers || forumAnswers.length === 0"
-                            :icon="MessageSquareCheck"
-                            variant="dashed"
-                            title="No answers contributed yet"
-                            description="Solutions provided to questions will appear here."
-                        />
-
-                        <div v-else class="space-y-2">
-                            <Link
-                                v-for="ans in forumAnswers"
-                                :key="ans.id"
-                                :href="
-                                    ans.post
-                                        ? `/forum/questions/${ans.post.slug}`
-                                        : '#'
-                                "
-                                class="group block rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs transition hover:border-indigo-300 hover:shadow-xs sm:rounded-2xl sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/50"
-                            >
-                                <div
-                                    class="flex items-start justify-between gap-2"
-                                >
-                                    <div class="min-w-0 flex-1 space-y-1">
-                                        <div
-                                            class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-gray-400"
-                                        >
-                                            <MessageSquareCheck
-                                                class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
-                                            />
-                                            <span class="truncate"
-                                                >Answer on:
-                                                {{
-                                                    ans.post?.title ||
-                                                    'Question'
-                                                }}</span
-                                            >
-                                        </div>
-
-                                        <p
-                                            class="line-clamp-2 text-xs text-slate-700 dark:text-gray-300"
-                                        >
-                                            {{ ans.body }}
-                                        </p>
-                                    </div>
-
-                                    <ArrowUpRight
-                                        class="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
-                                    />
-                                </div>
-
-                                <div
-                                    class="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                >
-                                    <span>{{ timeAgo(ans.created_at) }}</span>
-                                </div>
-                            </Link>
-
+                    <!-- Answers Given -->
+                    <div
+                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div class="flex items-center gap-2.5">
                             <div
-                                v-if="
-                                    stats.answersCount >
-                                    (forumAnswers?.length || 0)
-                                "
-                                class="pt-1 text-center"
+                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
                             >
-                                <Link
-                                    href="/forum"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                <MessageSquareCheck
+                                    class="h-4 w-4 stroke-[2.2]"
+                                />
+                            </div>
+                            <div class="min-w-0">
+                                <p
+                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
                                 >
-                                    <span
-                                        >Explore discussions in Forum
-                                        &rarr;</span
-                                    >
-                                </Link>
+                                    {{ stats.answersCount }}
+                                </p>
+                                <p
+                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                >
+                                    Answers
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Articles Published -->
+                    <div
+                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <div
+                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
+                            >
+                                <FileText class="h-4 w-4 stroke-[2.2]" />
+                            </div>
+                            <div class="min-w-0">
+                                <p
+                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
+                                >
+                                    {{ stats.blogsCount }}
+                                </p>
+                                <p
+                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                >
+                                    Articles
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shared Files -->
+                    <div
+                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <div
+                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                            >
+                                <UploadCloud class="h-4 w-4 stroke-[2.2]" />
+                            </div>
+                            <div class="min-w-0">
+                                <p
+                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
+                                >
+                                    {{ stats.sharedResourcesCount }}
+                                </p>
+                                <p
+                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                >
+                                    Shared Files
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab 2: Compact Authored Articles -->
-                <div v-else-if="activeTab === 'blogs'">
-                    <div class="space-y-2.5">
-                        <div class="flex items-center justify-between px-1">
-                            <span
-                                class="text-xs font-bold text-slate-700 dark:text-gray-300"
-                            >
-                                Published Guides & Notes
-                            </span>
+                <!-- Tabbed Content Section (3 Tabs: Forum, Articles, Activity) -->
+                <div class="space-y-3.5">
+                    <!-- Navigation Tabs Bar -->
+                    <div
+                        class="flex items-center gap-1 rounded-xl border border-slate-200/80 bg-white p-1 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <button
+                            @click="activeTab = 'forum'"
+                            type="button"
+                            class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
+                            :class="
+                                activeTab === 'forum'
+                                    ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
+                                    : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                            "
+                        >
+                            <MessageSquare class="h-3.5 w-3.5 shrink-0" />
+                            <span>Forum</span>
+                        </button>
+
+                        <button
+                            @click="activeTab = 'blogs'"
+                            type="button"
+                            class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
+                            :class="
+                                activeTab === 'blogs'
+                                    ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
+                                    : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                            "
+                        >
+                            <FileText class="h-3.5 w-3.5 shrink-0" />
+                            <span>Articles</span>
+                        </button>
+
+                        <button
+                            @click="activeTab = 'activity'"
+                            type="button"
+                            class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
+                            :class="
+                                activeTab === 'activity'
+                                    ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
+                                    : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                            "
+                        >
+                            <Activity class="h-3.5 w-3.5 shrink-0" />
+                            <span>Activity</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab 1: Forum Questions & Answers -->
+                    <div v-if="activeTab === 'forum'" class="space-y-3">
+                        <!-- Sub-navigation: Questions vs Answers -->
+                        <div
+                            class="flex items-center justify-between gap-2 px-1"
+                        >
+                            <div class="flex items-center gap-1.5">
+                                <button
+                                    type="button"
+                                    @click="forumSubTab = 'questions'"
+                                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-bold transition"
+                                    :class="[
+                                        forumSubTab === 'questions'
+                                            ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'
+                                            : 'text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800',
+                                    ]"
+                                >
+                                    Questions ({{ forumPosts?.length || 0 }})
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="forumSubTab = 'answers'"
+                                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-bold transition"
+                                    :class="[
+                                        forumSubTab === 'answers'
+                                            ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'
+                                            : 'text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800',
+                                    ]"
+                                >
+                                    Answers ({{ forumAnswers?.length || 0 }})
+                                </button>
+                            </div>
+
                             <Link
-                                :href="`/blogs?q=${encodeURIComponent(profileUser.name)}`"
+                                href="/forum"
                                 class="group inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400"
                             >
-                                <span>See all blogs</span>
+                                <span>Visit Forum</span>
                                 <ArrowRight
                                     class="h-3 w-3 transition-transform group-hover:translate-x-0.5"
                                 />
                             </Link>
                         </div>
 
-                        <EmptyState
-                            v-if="blogs.length === 0"
-                            :icon="FileText"
-                            variant="dashed"
-                            title="No published articles yet"
-                            description="Educational blogs written by this author will appear here."
-                        />
+                        <!-- Questions Sub-panel -->
+                        <div v-if="forumSubTab === 'questions'">
+                            <EmptyState
+                                v-if="!forumPosts || forumPosts.length === 0"
+                                :icon="HelpCircle"
+                                variant="dashed"
+                                title="No questions asked yet"
+                                description="Questions posted to the academic forum will appear here."
+                            />
 
-                        <div v-else class="space-y-2">
-                            <Link
-                                v-for="blog in blogs"
-                                :key="blog.id"
-                                :href="`/blogs/${blog.slug}`"
-                                class="group flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-xs transition hover:border-indigo-300 hover:shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/50"
-                            >
-                                <!-- Compact Thumbnail -->
-                                <div
-                                    class="h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-16 sm:w-24 sm:rounded-xl dark:bg-gray-800"
+                            <div v-else class="space-y-2">
+                                <Link
+                                    v-for="post in forumPosts"
+                                    :key="post.id"
+                                    :href="`/forum/questions/${post.slug}`"
+                                    class="group block rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs transition hover:border-indigo-300 hover:shadow-xs sm:rounded-2xl sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/50"
                                 >
-                                    <img
-                                        :src="
-                                            blog.featured_image ||
-                                            'https://placehold.co/400x250'
-                                        "
-                                        :alt="blog.title"
-                                        class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                                        loading="lazy"
-                                    />
-                                </div>
-
-                                <!-- Info -->
-                                <div
-                                    class="min-w-0 flex-1 space-y-0.5 sm:space-y-1"
-                                >
-                                    <h3
-                                        class="line-clamp-1 text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
-                                    >
-                                        {{ blog.title }}
-                                    </h3>
-                                    <p
-                                        v-if="blog.excerpt"
-                                        class="line-clamp-1 text-[11px] text-slate-500 dark:text-gray-400"
-                                    >
-                                        {{ blog.excerpt }}
-                                    </p>
                                     <div
-                                        class="flex items-center gap-2.5 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                        class="flex items-start justify-between gap-2"
                                     >
-                                        <span class="flex items-center gap-1">
-                                            <Eye class="h-3 w-3" />
-                                            {{ blog.views }}
-                                        </span>
-                                        <span class="flex items-center gap-1">
-                                            <Heart class="h-3 w-3" />
-                                            {{ blog.reactions_count }}
-                                        </span>
+                                        <div class="min-w-0 flex-1 space-y-1">
+                                            <div
+                                                class="flex flex-wrap items-center gap-1.5"
+                                            >
+                                                <span
+                                                    class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 uppercase dark:bg-gray-800 dark:text-gray-300"
+                                                >
+                                                    {{ post.curriculum }}
+                                                </span>
+                                                <span
+                                                    v-if="post.subject?.name"
+                                                    class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                                                >
+                                                    {{ post.subject.name }}
+                                                </span>
+                                                <span
+                                                    v-if="post.node?.name"
+                                                    class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-gray-800 dark:text-gray-400"
+                                                >
+                                                    {{ post.node.name }}
+                                                </span>
+                                                <span
+                                                    v-if="post.is_answered"
+                                                    class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                                                >
+                                                    <CheckCircle2
+                                                        class="h-2.5 w-2.5"
+                                                    />
+                                                    Answered
+                                                </span>
+                                            </div>
+
+                                            <h4
+                                                class="text-xs font-bold text-slate-900 transition group-hover:text-indigo-600 sm:text-sm dark:text-gray-100 dark:group-hover:text-indigo-400"
+                                            >
+                                                {{ post.title }}
+                                            </h4>
+                                        </div>
+
+                                        <ArrowUpRight
+                                            class="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
+                                        />
                                     </div>
+
+                                    <div
+                                        class="mt-2 flex items-center gap-3 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                    >
+                                        <span
+                                            class="flex items-center gap-0.5"
+                                            :class="{
+                                                'text-rose-500 dark:text-rose-400':
+                                                    post.vote_score < 0,
+                                                'text-indigo-600 dark:text-indigo-400':
+                                                    post.vote_score > 0,
+                                            }"
+                                        >
+                                            <ArrowBigDown
+                                                v-if="post.vote_score < 0"
+                                                class="h-3.5 w-3.5 fill-current"
+                                            />
+                                            <ArrowBigUp
+                                                v-else
+                                                class="h-3.5 w-3.5"
+                                                :class="
+                                                    post.vote_score > 0
+                                                        ? 'fill-current'
+                                                        : 'fill-slate-400 dark:fill-gray-500'
+                                                "
+                                            />
+                                            <span>{{
+                                                Math.abs(post.vote_score)
+                                            }}</span>
+                                        </span>
+                                        <span class="flex items-center gap-1">
+                                            <MessageSquare class="h-3 w-3" />
+                                            {{ post.answers_count || 0 }}
+                                            {{
+                                                post.answers_count === 1
+                                                    ? 'answer'
+                                                    : 'answers'
+                                            }}
+                                        </span>
+                                        <span>{{
+                                            timeAgo(post.created_at)
+                                        }}</span>
+                                    </div>
+                                </Link>
+
+                                <div
+                                    v-if="
+                                        stats.questionsCount >
+                                        (forumPosts?.length || 0)
+                                    "
+                                    class="pt-1 text-center"
+                                >
+                                    <Link
+                                        href="/forum"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                    >
+                                        <span
+                                            >View all
+                                            {{ stats.questionsCount }} questions
+                                            in Forum &rarr;</span
+                                        >
+                                    </Link>
                                 </div>
+                            </div>
+                        </div>
 
-                                <ArrowUpRight
-                                    class="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
-                                />
-                            </Link>
+                        <!-- Answers Sub-panel -->
+                        <div v-else-if="forumSubTab === 'answers'">
+                            <EmptyState
+                                v-if="
+                                    !forumAnswers || forumAnswers.length === 0
+                                "
+                                :icon="MessageSquareCheck"
+                                variant="dashed"
+                                title="No answers contributed yet"
+                                description="Solutions provided to questions will appear here."
+                            />
 
-                            <div
-                                v-if="stats.blogsCount > (blogs?.length || 0)"
-                                class="pt-1 text-center"
-                            >
+                            <div v-else class="space-y-2">
+                                <Link
+                                    v-for="ans in forumAnswers"
+                                    :key="ans.id"
+                                    :href="
+                                        ans.post
+                                            ? `/forum/questions/${ans.post.slug}`
+                                            : '#'
+                                    "
+                                    class="group block rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs transition hover:border-indigo-300 hover:shadow-xs sm:rounded-2xl sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/50"
+                                >
+                                    <div
+                                        class="flex items-start justify-between gap-2"
+                                    >
+                                        <div class="min-w-0 flex-1 space-y-1">
+                                            <div
+                                                class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-gray-400"
+                                            >
+                                                <MessageSquareCheck
+                                                    class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
+                                                />
+                                                <span class="truncate"
+                                                    >Answer on:
+                                                    {{
+                                                        ans.post?.title ||
+                                                        'Question'
+                                                    }}</span
+                                                >
+                                            </div>
+
+                                            <p
+                                                class="line-clamp-2 text-xs text-slate-700 dark:text-gray-300"
+                                            >
+                                                {{ ans.body }}
+                                            </p>
+                                        </div>
+
+                                        <ArrowUpRight
+                                            class="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
+                                        />
+                                    </div>
+
+                                    <div
+                                        class="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                    >
+                                        <span>{{
+                                            timeAgo(ans.created_at)
+                                        }}</span>
+                                    </div>
+                                </Link>
+
+                                <div
+                                    v-if="
+                                        stats.answersCount >
+                                        (forumAnswers?.length || 0)
+                                    "
+                                    class="pt-1 text-center"
+                                >
+                                    <Link
+                                        href="/forum"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                    >
+                                        <span
+                                            >Explore discussions in Forum
+                                            &rarr;</span
+                                        >
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Compact Authored Articles -->
+                    <div v-else-if="activeTab === 'blogs'">
+                        <div class="space-y-2.5">
+                            <div class="flex items-center justify-between px-1">
+                                <span
+                                    class="text-xs font-bold text-slate-700 dark:text-gray-300"
+                                >
+                                    Published Guides & Notes
+                                </span>
                                 <Link
                                     :href="`/blogs?q=${encodeURIComponent(profileUser.name)}`"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                    class="group inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400"
                                 >
-                                    <span
-                                        >View all
-                                        {{ stats.blogsCount }} articles
-                                        &rarr;</span
-                                    >
+                                    <span>See all blogs</span>
+                                    <ArrowRight
+                                        class="h-3 w-3 transition-transform group-hover:translate-x-0.5"
+                                    />
                                 </Link>
+                            </div>
+
+                            <EmptyState
+                                v-if="blogs.length === 0"
+                                :icon="FileText"
+                                variant="dashed"
+                                title="No published articles yet"
+                                description="Educational blogs written by this author will appear here."
+                            />
+
+                            <div v-else class="space-y-2">
+                                <Link
+                                    v-for="blog in blogs"
+                                    :key="blog.id"
+                                    :href="`/blogs/${blog.slug}`"
+                                    class="group flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-xs transition hover:border-indigo-300 hover:shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-900/50"
+                                >
+                                    <!-- Compact Thumbnail -->
+                                    <div
+                                        class="h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-16 sm:w-24 sm:rounded-xl dark:bg-gray-800"
+                                    >
+                                        <img
+                                            :src="
+                                                blog.featured_image ||
+                                                'https://placehold.co/400x250'
+                                            "
+                                            :alt="blog.title"
+                                            class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                                            loading="lazy"
+                                        />
+                                    </div>
+
+                                    <!-- Info -->
+                                    <div
+                                        class="min-w-0 flex-1 space-y-0.5 sm:space-y-1"
+                                    >
+                                        <h3
+                                            class="line-clamp-1 text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                                        >
+                                            {{ blog.title }}
+                                        </h3>
+                                        <p
+                                            v-if="blog.excerpt"
+                                            class="line-clamp-1 text-[11px] text-slate-500 dark:text-gray-400"
+                                        >
+                                            {{ blog.excerpt }}
+                                        </p>
+                                        <div
+                                            class="flex items-center gap-2.5 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                        >
+                                            <span
+                                                class="flex items-center gap-1"
+                                            >
+                                                <Eye class="h-3 w-3" />
+                                                {{ blog.views }}
+                                            </span>
+                                            <span
+                                                class="flex items-center gap-1"
+                                            >
+                                                <Heart class="h-3 w-3" />
+                                                {{ blog.reactions_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <ArrowUpRight
+                                        class="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
+                                    />
+                                </Link>
+
+                                <div
+                                    v-if="
+                                        stats.blogsCount > (blogs?.length || 0)
+                                    "
+                                    class="pt-1 text-center"
+                                >
+                                    <Link
+                                        :href="`/blogs?q=${encodeURIComponent(profileUser.name)}`"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                    >
+                                        <span
+                                            >View all
+                                            {{ stats.blogsCount }} articles
+                                            &rarr;</span
+                                        >
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Recent Activity -->
+                    <div v-else-if="activeTab === 'activity'">
+                        <div
+                            v-if="totalActivitiesCount === 0"
+                            class="rounded-2xl border border-dashed border-slate-200 bg-white p-7 text-center sm:rounded-3xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+                        >
+                            <div
+                                class="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:bg-indigo-950/60 dark:text-indigo-400"
+                            >
+                                <Activity class="h-5 w-5 stroke-[1.8]" />
+                            </div>
+                            <h3
+                                class="mt-2 text-xs font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                No recent activity yet
+                            </h3>
+                            <p
+                                class="mx-auto mt-1 max-w-xs text-[11px] text-slate-500 dark:text-gray-400"
+                            >
+                                Forum questions, answers, and study notes will
+                                show up here.
+                            </p>
+                        </div>
+
+                        <div v-else class="space-y-2">
+                            <div
+                                v-for="(item, idx) in sortedActivities"
+                                :key="item.type + '-' + idx"
+                                class="flex flex-col gap-1 rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex min-w-0 items-center gap-2"
+                                    >
+                                        <!-- Forum Post -->
+                                        <div
+                                            v-if="item.type === 'forum_post'"
+                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                                        >
+                                            <HelpCircle
+                                                class="h-3.5 w-3.5 stroke-[2.2]"
+                                            />
+                                        </div>
+
+                                        <!-- Forum Answer -->
+                                        <div
+                                            v-else-if="
+                                                item.type === 'forum_answer'
+                                            "
+                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                                        >
+                                            <MessageSquareCheck
+                                                class="h-3.5 w-3.5 stroke-[2.2]"
+                                            />
+                                        </div>
+
+                                        <!-- Folder -->
+                                        <div
+                                            v-else-if="item.type === 'folder'"
+                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                                        >
+                                            <Folder
+                                                class="h-3.5 w-3.5 stroke-[2.2]"
+                                            />
+                                        </div>
+
+                                        <!-- Upload -->
+                                        <div
+                                            v-else-if="item.type === 'upload'"
+                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                                        >
+                                            <UploadCloud class="h-3.5 w-3.5" />
+                                        </div>
+
+                                        <!-- Reaction / Like -->
+                                        <div
+                                            v-else-if="item.type === 'reaction'"
+                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
+                                        >
+                                            <Heart
+                                                class="h-3.5 w-3.5 fill-rose-500"
+                                            />
+                                        </div>
+
+                                        <!-- Comment -->
+                                        <div
+                                            v-else-if="item.type === 'comment'"
+                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                                        >
+                                            <MessageSquare
+                                                class="h-3.5 w-3.5"
+                                            />
+                                        </div>
+
+                                        <!-- Appreciation -->
+                                        <div
+                                            v-else-if="
+                                                item.type === 'appreciation'
+                                            "
+                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
+                                        >
+                                            <Heart
+                                                class="h-3.5 w-3.5 fill-rose-500"
+                                            />
+                                        </div>
+
+                                        <div class="min-w-0 flex-1 truncate">
+                                            <span
+                                                class="text-xs text-slate-500 dark:text-gray-400"
+                                            >
+                                                <template
+                                                    v-if="
+                                                        item.type ===
+                                                        'forum_post'
+                                                    "
+                                                    >Asked in Forum
+                                                </template>
+                                                <template
+                                                    v-else-if="
+                                                        item.type ===
+                                                        'forum_answer'
+                                                    "
+                                                    >Answered
+                                                </template>
+                                                <template
+                                                    v-else-if="
+                                                        item.type === 'folder'
+                                                    "
+                                                    >Created folder
+                                                </template>
+                                                <template
+                                                    v-else-if="
+                                                        item.type === 'upload'
+                                                    "
+                                                    >Uploaded
+                                                </template>
+                                                <template
+                                                    v-else-if="
+                                                        item.type === 'reaction'
+                                                    "
+                                                    >Liked
+                                                </template>
+                                                <template
+                                                    v-else-if="
+                                                        item.type === 'comment'
+                                                    "
+                                                    >Commented on
+                                                </template>
+                                                <template
+                                                    v-else-if="
+                                                        item.type ===
+                                                        'appreciation'
+                                                    "
+                                                    >Appreciated
+                                                </template>
+                                            </span>
+
+                                            <Link
+                                                v-if="item.url"
+                                                :href="item.url"
+                                                class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                                            >
+                                                {{ item.title }}
+                                            </Link>
+                                            <span
+                                                v-else
+                                                class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                            >
+                                                {{ item.title }}
+                                            </span>
+
+                                            <span
+                                                v-if="item.subtitle"
+                                                class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                                            >
+                                                ({{ item.subtitle }})
+                                            </span>
+                                            <span
+                                                v-else-if="item.username"
+                                                class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                                            >
+                                                (@{{ item.username }})
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <span
+                                        class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                                    >
+                                        {{ item.created_at }}
+                                    </span>
+                                </div>
+
+                                <!-- Answer text preview for forum answer items -->
+                                <p
+                                    v-if="
+                                        item.type === 'forum_answer' &&
+                                        item.content
+                                    "
+                                    class="line-clamp-2 pl-8.5 text-[11px] text-slate-600 dark:text-gray-400"
+                                >
+                                    {{ item.content }}
+                                </p>
+
+                                <!-- Comment quote -->
+                                <p
+                                    v-if="
+                                        item.type === 'comment' && item.content
+                                    "
+                                    class="line-clamp-1 pl-8.5 text-xs text-slate-600 italic dark:text-gray-300"
+                                >
+                                    "{{ item.content }}"
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </template>
 
-                <!-- Tab 3: Recent Activity -->
-                <div v-else-if="activeTab === 'activity'">
-                    <div
-                        v-if="totalActivitiesCount === 0"
-                        class="rounded-2xl border border-dashed border-slate-200 bg-white p-7 text-center sm:rounded-3xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+            <!-- Locked State Screen -->
+            <div
+                v-else
+                class="flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-2xs ring-4 ring-indigo-50/50 dark:bg-indigo-950/60 dark:text-indigo-400 dark:ring-indigo-950/30"
+                >
+                    <Lock class="h-7 w-7 stroke-[2]" />
+                </div>
+
+                <h3
+                    class="mt-4 text-base font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                >
+                    Activity & Contributions Locked
+                </h3>
+
+                <p
+                    class="mt-1.5 max-w-md text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                >
+                    <template v-if="lockReason === 'private'">
+                        {{ profileUser.name }} has set their study progress,
+                        questions, and articles to private.
+                    </template>
+                    <template v-else>
+                        {{ profileUser.name }} has locked their activity.
+                        Appreciate this member to view their questions, answers,
+                        and study progress.
+                    </template>
+                </p>
+
+                <!-- Unlock button if lockReason is 'appreciators_only' -->
+                <div v-if="lockReason === 'appreciators_only'" class="mt-5">
+                    <button
+                        @click="handleAppreciate"
+                        type="button"
+                        class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                     >
-                        <div
-                            class="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:bg-indigo-950/60 dark:text-indigo-400"
-                        >
-                            <Activity class="h-5 w-5 stroke-[1.8]" />
-                        </div>
-                        <h3
-                            class="mt-2 text-xs font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            No recent activity yet
-                        </h3>
-                        <p
-                            class="mx-auto mt-1 max-w-xs text-[11px] text-slate-500 dark:text-gray-400"
-                        >
-                            Forum questions, answers, and study notes will show
-                            up here.
-                        </p>
-                    </div>
-
-                    <div v-else class="space-y-2">
-                        <div
-                            v-for="(item, idx) in sortedActivities"
-                            :key="item.type + '-' + idx"
-                            class="flex flex-col gap-1 rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div class="flex items-center justify-between">
-                                <div class="flex min-w-0 items-center gap-2">
-                                    <!-- Forum Post -->
-                                    <div
-                                        v-if="item.type === 'forum_post'"
-                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                                    >
-                                        <HelpCircle
-                                            class="h-3.5 w-3.5 stroke-[2.2]"
-                                        />
-                                    </div>
-
-                                    <!-- Forum Answer -->
-                                    <div
-                                        v-else-if="item.type === 'forum_answer'"
-                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                                    >
-                                        <MessageSquareCheck
-                                            class="h-3.5 w-3.5 stroke-[2.2]"
-                                        />
-                                    </div>
-
-                                    <!-- Folder -->
-                                    <div
-                                        v-else-if="item.type === 'folder'"
-                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                                    >
-                                        <Folder
-                                            class="h-3.5 w-3.5 stroke-[2.2]"
-                                        />
-                                    </div>
-
-                                    <!-- Upload -->
-                                    <div
-                                        v-else-if="item.type === 'upload'"
-                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
-                                    >
-                                        <UploadCloud class="h-3.5 w-3.5" />
-                                    </div>
-
-                                    <!-- Reaction / Like -->
-                                    <div
-                                        v-else-if="item.type === 'reaction'"
-                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
-                                    >
-                                        <Heart
-                                            class="h-3.5 w-3.5 fill-rose-500"
-                                        />
-                                    </div>
-
-                                    <!-- Comment -->
-                                    <div
-                                        v-else-if="item.type === 'comment'"
-                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                                    >
-                                        <MessageSquare class="h-3.5 w-3.5" />
-                                    </div>
-
-                                    <!-- Appreciation -->
-                                    <div
-                                        v-else-if="item.type === 'appreciation'"
-                                        class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
-                                    >
-                                        <Heart
-                                            class="h-3.5 w-3.5 fill-rose-500"
-                                        />
-                                    </div>
-
-                                    <div class="min-w-0 flex-1 truncate">
-                                        <span
-                                            class="text-xs text-slate-500 dark:text-gray-400"
-                                        >
-                                            <template
-                                                v-if="
-                                                    item.type === 'forum_post'
-                                                "
-                                                >Asked in Forum
-                                            </template>
-                                            <template
-                                                v-else-if="
-                                                    item.type === 'forum_answer'
-                                                "
-                                                >Answered
-                                            </template>
-                                            <template
-                                                v-else-if="
-                                                    item.type === 'folder'
-                                                "
-                                                >Created folder
-                                            </template>
-                                            <template
-                                                v-else-if="
-                                                    item.type === 'upload'
-                                                "
-                                                >Uploaded
-                                            </template>
-                                            <template
-                                                v-else-if="
-                                                    item.type === 'reaction'
-                                                "
-                                                >Liked
-                                            </template>
-                                            <template
-                                                v-else-if="
-                                                    item.type === 'comment'
-                                                "
-                                                >Commented on
-                                            </template>
-                                            <template
-                                                v-else-if="
-                                                    item.type === 'appreciation'
-                                                "
-                                                >Appreciated
-                                            </template>
-                                        </span>
-
-                                        <Link
-                                            v-if="item.url"
-                                            :href="item.url"
-                                            class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                        >
-                                            {{ item.title }}
-                                        </Link>
-                                        <span
-                                            v-else
-                                            class="text-xs font-bold text-slate-900 dark:text-gray-100"
-                                        >
-                                            {{ item.title }}
-                                        </span>
-
-                                        <span
-                                            v-if="item.subtitle"
-                                            class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
-                                        >
-                                            ({{ item.subtitle }})
-                                        </span>
-                                        <span
-                                            v-else-if="item.username"
-                                            class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
-                                        >
-                                            (@{{ item.username }})
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <span
-                                    class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                >
-                                    {{ item.created_at }}
-                                </span>
-                            </div>
-
-                            <!-- Answer text preview for forum answer items -->
-                            <p
-                                v-if="
-                                    item.type === 'forum_answer' && item.content
-                                "
-                                class="line-clamp-2 pl-8.5 text-[11px] text-slate-600 dark:text-gray-400"
-                            >
-                                {{ item.content }}
-                            </p>
-
-                            <!-- Comment quote -->
-                            <p
-                                v-if="item.type === 'comment' && item.content"
-                                class="line-clamp-1 pl-8.5 text-xs text-slate-600 italic dark:text-gray-300"
-                            >
-                                "{{ item.content }}"
-                            </p>
-                        </div>
-                    </div>
+                        <Heart class="h-4 w-4 fill-white" />
+                        <span>Appreciate to Unlock</span>
+                    </button>
                 </div>
             </div>
 

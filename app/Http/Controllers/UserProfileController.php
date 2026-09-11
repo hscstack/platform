@@ -20,31 +20,6 @@ class UserProfileController extends Controller
         $user = User::where('username', $username)
             ->firstOrFail();
 
-        // Forum Contributions
-        $questionsCount = ForumPost::where('user_id', $user->id)->count();
-        $answersCount = ForumAnswer::where('user_id', $user->id)->count();
-        $forumPosts = ForumPost::where('user_id', $user->id)
-            ->with(['subject:id,name,course,slug', 'node:id,name,slug'])
-            ->latest()
-            ->take(5)
-            ->get();
-        $forumAnswers = ForumAnswer::where('user_id', $user->id)
-            ->with(['post:id,title,slug,curriculum,is_answered'])
-            ->latest()
-            ->take(5)
-            ->get();
-
-        // Contributor Stats & Blogs
-        $publishedBlogs = $user->blogs()
-            ->where('is_published', true)
-            ->withCount(['reactions', 'comments'])
-            ->latest()
-            ->take(5)
-            ->get();
-        $blogsCount = $user->blogs()->where('is_published', true)->count();
-        $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
-        $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
-
         // Appreciations (Received & Given)
         $appreciationsCount = $user->appreciationsReceived()->count();
         $appreciatingCount = $user->appreciationsGiven()->count();
@@ -52,130 +27,198 @@ class UserProfileController extends Controller
             ? $user->appreciationsReceived()->where('appreciator_id', auth()->id())->exists()
             : false;
 
-        $appreciators = $user->appreciators()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
-            ->latest('user_appreciations.id')
-            ->take(30)
-            ->get();
+        $currentUser = auth()->user();
+        $isOwner = $currentUser && $currentUser->id === $user->id;
+        $isAdmin = $currentUser && (
+            (method_exists($currentUser, 'hasRole') && $currentUser->hasRole('admin')) ||
+            (isset($currentUser->can_access_admin) && $currentUser->can_access_admin)
+        );
 
-        $appreciating = $user->appreciatingUsers()
-            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
-            ->latest('user_appreciations.id')
-            ->take(30)
-            ->get();
+        $activityPrivacy = $user->activity_privacy ?? 'public';
+        $isLocked = false;
+        $lockReason = null;
 
-        // Recent Community Activities
-        $recentForumPosts = ForumPost::where('user_id', $user->id)
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(fn ($post) => [
-                'type' => 'forum_post',
-                'title' => $post->title,
-                'subtitle' => strtoupper($post->curriculum).' Forum Question',
-                'url' => "/forum/questions/{$post->slug}",
-                'created_at' => $post->created_at?->diffForHumans(),
-                'timestamp' => $post->created_at?->timestamp ?? 0,
-            ]);
+        if (! $isOwner && ! $isAdmin) {
+            if ($activityPrivacy === 'private') {
+                $isLocked = true;
+                $lockReason = 'private';
+            } elseif ($activityPrivacy === 'appreciators_only') {
+                if (! $isAppreciated) {
+                    $isLocked = true;
+                    $lockReason = 'appreciators_only';
+                }
+            }
+        }
 
-        $recentForumAnswers = ForumAnswer::where('user_id', $user->id)
-            ->with('post:id,title,slug')
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(fn ($ans) => [
-                'type' => 'forum_answer',
-                'title' => $ans->post?->title ?? 'Forum Question',
-                'content' => $ans->body,
-                'url' => $ans->post ? "/forum/questions/{$ans->post->slug}" : null,
-                'created_at' => $ans->created_at?->diffForHumans(),
-                'timestamp' => $ans->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['url'] !== null);
+        if ($isLocked) {
+            $questionsCount = 0;
+            $answersCount = 0;
+            $forumPosts = collect();
+            $forumAnswers = collect();
+            $publishedBlogs = collect();
+            $blogsCount = 0;
+            $totalBlogViews = 0;
+            $sharedResourcesCount = 0;
+            $appreciators = collect();
+            $appreciating = collect();
+            $recentForumPosts = collect();
+            $recentForumAnswers = collect();
+            $recentFolders = collect();
+            $recentUploads = collect();
+            $recentReactions = collect();
+            $recentComments = collect();
+            $recentAppreciations = collect();
+        } else {
+            // Forum Contributions
+            $questionsCount = ForumPost::where('user_id', $user->id)->count();
+            $answersCount = ForumAnswer::where('user_id', $user->id)->count();
+            $forumPosts = ForumPost::where('user_id', $user->id)
+                ->with(['subject:id,name,course,slug', 'node:id,name,slug'])
+                ->latest()
+                ->take(5)
+                ->get();
+            $forumAnswers = ForumAnswer::where('user_id', $user->id)
+                ->with(['post:id,title,slug,curriculum,is_answered'])
+                ->latest()
+                ->take(5)
+                ->get();
 
-        $recentFolders = Node::where('user_id', $user->id)
-            ->with([
-                'subject:id,name,slug',
-                'parent:id,name,slug',
-                'parent.parent:id,name,slug',
-            ])
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(function ($node) {
-                $url = $this->buildNodeUrl($node);
+            // Contributor Stats & Blogs
+            $publishedBlogs = $user->blogs()
+                ->where('is_published', true)
+                ->withCount(['reactions', 'comments'])
+                ->latest()
+                ->take(5)
+                ->get();
+            $blogsCount = $user->blogs()->where('is_published', true)->count();
+            $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
+            $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
 
-                return [
-                    'type' => 'folder',
-                    'title' => $node->name,
-                    'subtitle' => $node->subject?->name.($node->parent ? ' · '.$node->parent->name : ''),
-                    'url' => $url,
-                    'created_at' => $node->created_at?->diffForHumans(),
-                    'timestamp' => $node->created_at?->timestamp ?? 0,
-                ];
-            })
-            ->filter()
-            ->values();
+            $appreciators = $user->appreciators()
+                ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
+                ->latest('user_appreciations.id')
+                ->take(30)
+                ->get();
 
-        $recentUploads = Resource::where('user_id', $user->id)
-            ->with(['node:id,name,subject_id', 'node.subject:id,name'])
-            ->latest()
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'upload',
-                'title' => $item->title,
-                'subtitle' => $item->node?->subject?->name.' · '.$item->node?->name,
-                'resource_type' => $item->resource_type,
-                'url' => "/resources/{$item->id}",
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ]);
+            $appreciating = $user->appreciatingUsers()
+                ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
+                ->latest('user_appreciations.id')
+                ->take(30)
+                ->get();
 
-        $recentReactions = BlogReaction::where('user_id', $user->id)
-            ->with('blog:id,title,slug')
-            ->latest()
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'reaction',
-                'title' => $item->blog?->title,
-                'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['title'] !== null);
+            // Recent Community Activities
+            $recentForumPosts = ForumPost::where('user_id', $user->id)
+                ->latest('id')
+                ->take(3)
+                ->get()
+                ->map(fn ($post) => [
+                    'type' => 'forum_post',
+                    'title' => $post->title,
+                    'subtitle' => strtoupper($post->curriculum).' Forum Question',
+                    'url' => "/forum/questions/{$post->slug}",
+                    'created_at' => $post->created_at?->diffForHumans(),
+                    'timestamp' => $post->created_at?->timestamp ?? 0,
+                ]);
 
-        $recentComments = BlogComment::where('user_id', $user->id)
-            ->with('blog:id,title,slug')
-            ->latest()
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'comment',
-                'title' => $item->blog?->title,
-                'content' => $item->content,
-                'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['title'] !== null);
+            $recentForumAnswers = ForumAnswer::where('user_id', $user->id)
+                ->with('post:id,title,slug')
+                ->latest('id')
+                ->take(3)
+                ->get()
+                ->map(fn ($ans) => [
+                    'type' => 'forum_answer',
+                    'title' => $ans->post?->title ?? 'Forum Question',
+                    'content' => $ans->body,
+                    'url' => $ans->post ? "/forum/questions/{$ans->post->slug}" : null,
+                    'created_at' => $ans->created_at?->diffForHumans(),
+                    'timestamp' => $ans->created_at?->timestamp ?? 0,
+                ])
+                ->filter(fn ($item) => $item['url'] !== null);
 
-        $recentAppreciations = UserAppreciation::where('appreciator_id', $user->id)
-            ->with('user:id,name,username')
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'appreciation',
-                'title' => $item->user?->name,
-                'username' => $item->user?->username,
-                'url' => $item->user ? "/u/{$item->user->username}" : null,
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['title'] !== null)
-            ->values();
+            $recentFolders = Node::where('user_id', $user->id)
+                ->with([
+                    'subject:id,name,slug',
+                    'parent:id,name,slug',
+                    'parent.parent:id,name,slug',
+                ])
+                ->latest('id')
+                ->take(3)
+                ->get()
+                ->map(function ($node) {
+                    $url = $this->buildNodeUrl($node);
+
+                    return [
+                        'type' => 'folder',
+                        'title' => $node->name,
+                        'subtitle' => $node->subject?->name.($node->parent ? ' · '.$node->parent->name : ''),
+                        'url' => $url,
+                        'created_at' => $node->created_at?->diffForHumans(),
+                        'timestamp' => $node->created_at?->timestamp ?? 0,
+                    ];
+                })
+                ->filter()
+                ->values();
+
+            $recentUploads = Resource::where('user_id', $user->id)
+                ->with(['node:id,name,subject_id', 'node.subject:id,name'])
+                ->latest()
+                ->take(3)
+                ->get()
+                ->map(fn ($item) => [
+                    'type' => 'upload',
+                    'title' => $item->title,
+                    'subtitle' => $item->node?->subject?->name.' · '.$item->node?->name,
+                    'resource_type' => $item->resource_type,
+                    'url' => "/resources/{$item->id}",
+                    'created_at' => $item->created_at?->diffForHumans(),
+                    'timestamp' => $item->created_at?->timestamp ?? 0,
+                ]);
+
+            $recentReactions = BlogReaction::where('user_id', $user->id)
+                ->with('blog:id,title,slug')
+                ->latest()
+                ->take(3)
+                ->get()
+                ->map(fn ($item) => [
+                    'type' => 'reaction',
+                    'title' => $item->blog?->title,
+                    'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
+                    'created_at' => $item->created_at?->diffForHumans(),
+                    'timestamp' => $item->created_at?->timestamp ?? 0,
+                ])
+                ->filter(fn ($item) => $item['title'] !== null);
+
+            $recentComments = BlogComment::where('user_id', $user->id)
+                ->with('blog:id,title,slug')
+                ->latest()
+                ->take(3)
+                ->get()
+                ->map(fn ($item) => [
+                    'type' => 'comment',
+                    'title' => $item->blog?->title,
+                    'content' => $item->content,
+                    'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
+                    'created_at' => $item->created_at?->diffForHumans(),
+                    'timestamp' => $item->created_at?->timestamp ?? 0,
+                ])
+                ->filter(fn ($item) => $item['title'] !== null);
+
+            $recentAppreciations = UserAppreciation::where('appreciator_id', $user->id)
+                ->with('user:id,name,username')
+                ->latest('id')
+                ->take(3)
+                ->get()
+                ->map(fn ($item) => [
+                    'type' => 'appreciation',
+                    'title' => $item->user?->name,
+                    'username' => $item->user?->username,
+                    'url' => $item->user ? "/u/{$item->user->username}" : null,
+                    'created_at' => $item->created_at?->diffForHumans(),
+                    'timestamp' => $item->created_at?->timestamp ?? 0,
+                ])
+                ->filter(fn ($item) => $item['title'] !== null)
+                ->values();
+        }
 
         // Suggested / Discover community members: 2 contributors + 2 general users
         $contributorUsers = User::where('id', '!=', $user->id)
@@ -222,6 +265,9 @@ class UserProfileController extends Controller
             'appreciationsCount' => $appreciationsCount,
             'appreciatingCount' => $appreciatingCount,
             'isAppreciated' => $isAppreciated,
+            'isLocked' => $isLocked,
+            'lockReason' => $lockReason,
+            'activityPrivacy' => $activityPrivacy,
             'appreciators' => $appreciators,
             'appreciating' => $appreciating,
             'forumPosts' => $forumPosts,
