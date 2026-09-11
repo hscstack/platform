@@ -696,8 +696,8 @@ const submitForm = () => {
                             Need Help or Account Support?
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Have an issue with your account, notes, or features?
-                            Open a support ticket.
+                            Need help with your account or deletion? Open a
+                            support ticket.
                         </p>
                     </div>
                 </div>

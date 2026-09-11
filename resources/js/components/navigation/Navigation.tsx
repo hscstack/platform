@@ -16,6 +16,7 @@
  * imported — only the navigation chrome itself is unified here.
  */
 import { Link, router, usePage } from '@inertiajs/vue3';
+import { Search } from 'lucide-vue-next';
 import {
     Teleport,
     Transition,
@@ -962,6 +963,14 @@ export const SiteDrawer = defineComponent({
             return currentUrl.value.startsWith(href);
         };
 
+        const isHome = computed(
+            () =>
+                currentUrl.value === '/' ||
+                currentUrl.value.startsWith('/?') ||
+                currentUrl.value === '/ssc' ||
+                currentUrl.value.startsWith('/ssc?'),
+        );
+
         let previousOverflow: string | null = null;
 
         watch(
@@ -1010,6 +1019,17 @@ export const SiteDrawer = defineComponent({
                         <AppLogo />
                     </div>
                     <div class="ml-auto flex items-center gap-1.5">
+                        {isHome.value && (
+                            <Link
+                                href="/peers"
+                                class="relative flex h-9 items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50 px-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                                aria-label="Find"
+                                title="Find"
+                            >
+                                <Search class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
+                                <span>Find</span>
+                            </Link>
+                        )}
                         {user.value ? (
                             <NotificationDropdown />
                         ) : (

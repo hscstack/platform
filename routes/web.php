@@ -9,6 +9,7 @@ use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumVoteController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PeerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
@@ -106,6 +107,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
     Route::get('/forum/questions/{post:slug}', [ForumController::class, 'show'])->name('forum.show');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/peers', [PeerController::class, 'index'])->name('peers.index');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
     Route::get('/', [SubjectController::class, 'index'])

@@ -437,7 +437,7 @@ const timeAgo = formatTimeAgo;
                             ]"
                             :title="
                                 localIsAppreciated
-                                    ? 'Appreciated (click to remove)'
+                                    ? 'Appreciating (click to remove)'
                                     : 'Appreciate this member'
                             "
                         >
@@ -451,7 +451,7 @@ const timeAgo = formatTimeAgo;
                             />
                             <span>{{
                                 localIsAppreciated
-                                    ? 'Appreciated'
+                                    ? 'Appreciating'
                                     : 'Appreciate'
                             }}</span>
                         </button>
@@ -1274,10 +1274,10 @@ const timeAgo = formatTimeAgo;
                         <span>Discover People</span>
                     </div>
                     <Link
-                        href="/about-us"
+                        href="/peers"
                         class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
                     >
-                        Meet team →
+                        Find more →
                     </Link>
                 </div>
 

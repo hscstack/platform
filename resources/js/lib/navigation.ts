@@ -21,6 +21,13 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Find Peers',
+        href: '/peers',
+        icon: 'group',
+        match: (url) => url.startsWith('/peers'),
+        showInBottom: true,
+    },
+    {
         label: 'Blogs',
         href: '/blogs',
         icon: 'menu_book',
