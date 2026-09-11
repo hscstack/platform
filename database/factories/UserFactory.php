@@ -29,6 +29,19 @@ class UserFactory extends Factory
     }
 
     /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            if (! $user->username) {
+                $user->updateQuietly(['username' => "student_{$user->id}"]);
+                $user->username = "student_{$user->id}";
+            }
+        });
+    }
+
+    /**
      * Indicate that the user is verified.
      */
     public function verified(): static
