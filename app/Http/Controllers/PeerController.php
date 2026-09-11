@@ -52,7 +52,7 @@ class PeerController extends Controller
             $institution = $currentUser?->institution ? trim($currentUser->institution) : '';
 
             if ($institution !== '') {
-                preg_match_all('/\b\w{3,}\b/u', mb_strtolower($institution), $matches);
+                preg_match_all('/[\p{L}\p{N}]{3,}/u', mb_strtolower($institution), $matches);
                 $words = array_values(array_unique($matches[0] ?? []));
 
                 $scoreSql = [];

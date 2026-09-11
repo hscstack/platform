@@ -78,3 +78,28 @@ test('peers in You May Know prioritizes matching institution keywords', function
             ->where('peers.data.0.name', 'School Mate')
         );
 });
+
+test('peers in You May Know matches Bengali institution keywords', function () {
+    $viewer = User::factory()->create([
+        'name' => 'Current Viewer',
+        'institution' => 'নটর ডেম কলেজ, ঢাকা',
+    ]);
+
+    $schoolmate = User::factory()->create([
+        'name' => 'Bengali School Mate',
+        'institution' => 'নটর ডেম কলেজ',
+    ]);
+
+    $otherStudent = User::factory()->create([
+        'name' => 'Other Student',
+        'institution' => 'রাজশাহী কলেজ',
+    ]);
+
+    $response = $this->actingAs($viewer)->get(route('peers.index', ['sort' => 'relevant']));
+
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Peers/Index')
+            ->where('peers.data.0.name', 'Bengali School Mate')
+        );
+});

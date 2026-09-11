@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Search, X, Users, Heart } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
+import type { PaginationLink } from '@/types';
 
 interface Peer {
     id: number;
@@ -84,10 +85,19 @@ const setSort = (sortValue: string) => {
     applyFilters();
 };
 
+onUnmounted(() => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+});
+
 const { requireAuth } = useAuth();
 
 const togglePeerAppreciation = (peer: Peer) => {
     requireAuth('Please sign in to appreciate members.', () => {
+        const prevIsAppreciated = peer.is_appreciated;
+        const prevCount = peer.appreciations_received_count;
+
         // Optimistic UI update
         if (peer.is_appreciated) {
             peer.is_appreciated = false;
@@ -101,12 +111,19 @@ const togglePeerAppreciation = (peer: Peer) => {
                 (peer.appreciations_received_count || 0) + 1;
         }
 
+        const rollback = () => {
+            peer.is_appreciated = prevIsAppreciated;
+            peer.appreciations_received_count = prevCount;
+        };
+
         router.post(
             `/u/${peer.id}/appreciate`,
             {},
             {
                 preserveScroll: true,
                 preserveState: true,
+                onError: rollback,
+                onCancel: rollback,
             },
         );
     });
