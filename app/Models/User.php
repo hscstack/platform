@@ -51,6 +51,7 @@ class User extends Authenticatable
         'title',
         'institution',
         'activity_privacy',
+        'allow_pokes',
         'facebook',
         'instagram',
         'github',
@@ -105,6 +106,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'receive_emails' => 'boolean',
             'is_verified' => 'boolean',
+            'allow_pokes' => 'boolean',
         ];
     }
 

@@ -40,6 +40,7 @@ class UpdateProfileRequest extends FormRequest
             'about' => ['sometimes', 'nullable', 'string', 'max:1000', new CleanText],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'activity_privacy' => ['sometimes', 'string', Rule::in(['public', 'appreciators_only', 'private'])],
+            'allow_pokes' => ['sometimes', 'boolean'],
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
             'github' => ['sometimes', 'nullable', 'string', 'max:255'],
