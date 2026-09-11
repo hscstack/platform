@@ -168,7 +168,7 @@ class AuthController extends Controller
             'appreciations.*' => ['integer', 'distinct', 'exists:users,id'],
         ], [
             'school.required' => 'Please enter your school, college, or institution name.',
-            'username.regex' => 'Username can only contain letters, numbers, and underscores.',
+            'username.regex' => "Username can only contain letters, numbers, and underscores. Dots aren't allowed.",
             'username.unique' => 'This username is already taken. Please choose another one.',
             'image.image' => 'The uploaded file must be an image (PNG, JPG, JPEG, WEBP).',
             'image.max' => 'The profile image may not be greater than 5MB.',

@@ -46,4 +46,17 @@ class UpdateProfileRequest extends FormRequest
             'receive_emails' => ['sometimes', 'boolean'],
         ];
     }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'username.regex' => "Username can only contain letters, numbers, and underscores. Dots aren't allowed.",
+            'username.unique' => 'This username is already taken. Please choose another one.',
+        ];
+    }
 }
