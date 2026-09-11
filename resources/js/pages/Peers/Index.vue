@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useRemember } from '@inertiajs/vue3';
 import { Search, X, Users, Heart, Loader2 } from 'lucide-vue-next';
 import { onUnmounted, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -35,8 +35,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const peerList = ref<Peer[]>([...props.peers.data]);
-const nextPageUrl = ref<string | null>(props.peers.next_page_url);
+const peerList = useRemember<Peer[]>([...props.peers.data], 'Peers/peerList');
+const nextPageUrl = useRemember<string | null>(
+    props.peers.next_page_url,
+    'Peers/nextPageUrl',
+);
 const isLoadingMore = ref(false);
 
 const searchQuery = ref(props.filters.search || '');
@@ -47,7 +50,7 @@ const sortOptions = [
     { value: 'appreciated', label: 'Most Appreciated' },
 ];
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+const searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const applyFilters = () => {
     router.get(
@@ -67,40 +70,8 @@ const applyFilters = () => {
     );
 };
 
-const handleSearchInput = () => {
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
-
-    const query = searchQuery.value.trim();
-
-    // If query is cleared, immediately reset the list
-    if (query.length === 0) {
-        applyFilters();
-
-        return;
-    }
-
-    // Require at least 3 characters before sending the search request
-    if (query.length < 3) {
-        return;
-    }
-
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 350);
-};
-
-const handleSearchEnter = () => {
-    const query = searchQuery.value.trim();
-
-    if (query.length === 0 || query.length >= 3) {
-        if (searchTimeout) {
-            clearTimeout(searchTimeout);
-        }
-
-        applyFilters();
-    }
+const handleSearch = () => {
+    applyFilters();
 };
 
 const clearSearch = () => {
@@ -198,7 +169,6 @@ watch(
             nextPageUrl.value = newPeers.next_page_url;
         }
     },
-    { immediate: true },
 );
 
 watch(
@@ -252,21 +222,31 @@ watch(
                     />
                     <input
                         v-model="searchQuery"
-                        @input="handleSearchInput"
-                        @keyup.enter="handleSearchEnter"
+                        @keyup.enter="handleSearch"
                         type="text"
                         placeholder="Search by name, @username, or college..."
-                        class="h-10 w-full rounded-2xl border border-slate-200 bg-white pr-9 pl-10 text-xs font-medium text-slate-900 placeholder-slate-400 shadow-2xs transition focus:border-indigo-500 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500"
+                        class="h-10 w-full rounded-2xl border border-slate-200 bg-white pr-24 pl-10 text-xs font-medium text-slate-900 placeholder-slate-400 shadow-2xs transition focus:border-indigo-500 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500"
                     />
-                    <button
-                        v-if="searchQuery"
-                        @click="clearSearch"
-                        type="button"
-                        class="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-                        aria-label="Clear search"
+                    <div
+                        class="absolute top-1/2 right-1.5 flex -translate-y-1/2 items-center gap-1"
                     >
-                        <X class="h-3.5 w-3.5" />
-                    </button>
+                        <button
+                            v-if="searchQuery"
+                            @click="clearSearch"
+                            type="button"
+                            class="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                            aria-label="Clear search"
+                        >
+                            <X class="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                            @click="handleSearch"
+                            type="button"
+                            class="inline-flex cursor-pointer items-center rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition hover:bg-slate-800 active:scale-95 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                        >
+                            Search
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Sort Pills -->

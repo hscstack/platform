@@ -117,7 +117,7 @@ test('peers in You May Know matches Bengali institution keywords', function () {
         );
 });
 
-test('guest users receive peer recommendations based on Cloudflare CF-IPCity header', function () {
+test('guest users receive peer recommendations based on Cloudflare location headers', function () {
     $localStudent = User::factory()->create([
         'name' => 'Rangpur Student',
         'institution' => 'Rangpur Government College, Rangpur',
@@ -128,7 +128,7 @@ test('guest users receive peer recommendations based on Cloudflare CF-IPCity hea
         'institution' => 'Brojomohun College, Barishal',
     ]);
 
-    $response = $this->withHeaders(['CF-IPCity' => 'Rangpur'])
+    $response = $this->withHeaders(['X-Visitor-City' => 'Rangpur'])
         ->get(route('peers.index', ['sort' => 'relevant']));
 
     $response->assertOk()
