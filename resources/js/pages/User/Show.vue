@@ -403,12 +403,12 @@ const timeAgo = formatTimeAgo;
                             <!-- Academic / Institution Info -->
                             <div
                                 v-if="profileUser.institution"
-                                class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-gray-300"
+                                class="flex items-start gap-1.5 pt-0.5 text-xs font-medium text-slate-600 dark:text-gray-300"
                             >
                                 <GraduationCap
-                                    class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-gray-500"
+                                    class="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-gray-500"
                                 />
-                                <span class="truncate">{{
+                                <span class="leading-snug break-words">{{
                                     profileUser.institution
                                 }}</span>
                             </div>
