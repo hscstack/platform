@@ -25,6 +25,8 @@ import {
     UploadCloud,
     Users,
     X,
+    Zap,
+    Send,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -59,6 +61,17 @@ const props = defineProps<{
     isLocked?: boolean;
     lockReason?: 'private' | 'appreciators_only' | null;
     activityPrivacy?: string;
+    pokeData?: {
+        enabled: boolean;
+        canPoke: boolean;
+        isCooldown: boolean;
+        cooldownUntil: number | null;
+        presets: Array<{
+            id: string;
+            icon: string;
+            message: string;
+        }>;
+    };
     appreciators?: Array<{
         id: number;
         name: string;
@@ -247,6 +260,58 @@ watch(
     },
 );
 
+const showPokeModal = ref(false);
+const selectedPresetId = ref<string>('');
+const isSubmittingPoke = ref(false);
+const localPokeCooldown = ref(props.pokeData?.isCooldown ?? false);
+
+watch(
+    () => props.pokeData?.isCooldown,
+    (val) => {
+        localPokeCooldown.value = val ?? false;
+    },
+);
+
+const handleOpenPokeModal = () => {
+    if (!currentUser.value) {
+        showGuestModal.value = true;
+
+        return;
+    }
+
+    if (props.pokeData?.presets && props.pokeData.presets.length > 0) {
+        if (!selectedPresetId.value) {
+            selectedPresetId.value = props.pokeData.presets[0].id;
+        }
+    }
+
+    showPokeModal.value = true;
+};
+
+const handleSendPoke = () => {
+    if (!selectedPresetId.value) {
+        return;
+    }
+
+    isSubmittingPoke.value = true;
+    router.post(
+        `/u/${props.profileUser.id}/poke`,
+        {
+            preset_id: selectedPresetId.value,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showPokeModal.value = false;
+                localPokeCooldown.value = true;
+            },
+            onFinish: () => {
+                isSubmittingPoke.value = false;
+            },
+        },
+    );
+};
+
 const handleAppreciate = () => {
     if (!currentUser.value) {
         showGuestModal.value = true;
@@ -429,36 +494,63 @@ const timeAgo = formatTimeAgo;
                             </Link>
                         </template>
 
-                        <button
-                            v-else
-                            @click="handleAppreciate"
-                            type="button"
-                            class="group inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-xl px-3.5 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9"
-                            :class="[
-                                localIsAppreciated
-                                    ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
-                                    : 'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
-                            ]"
-                            :title="
-                                localIsAppreciated
-                                    ? 'Appreciating (click to remove)'
-                                    : 'Appreciate this member'
-                            "
-                        >
-                            <Heart
-                                class="h-4 w-4 transition-transform group-hover:scale-110"
+                        <template v-else>
+                            <button
+                                v-if="pokeData?.enabled && pokeData?.canPoke"
+                                @click="handleOpenPokeModal"
+                                type="button"
+                                :disabled="localPokeCooldown"
+                                class="group inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-all duration-150 select-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9"
+                                :class="[
+                                    localPokeCooldown
+                                        ? 'border border-slate-200 bg-slate-100 text-slate-400 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-500'
+                                        : 'border border-amber-200 bg-amber-50/70 text-amber-700 shadow-xs hover:border-amber-300 hover:bg-amber-100/80 hover:text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70',
+                                ]"
+                                :title="
+                                    localPokeCooldown
+                                        ? 'Poked recently (Cooldown active)'
+                                        : 'Send a Study Poke to ' +
+                                          profileUser.name
+                                "
+                            >
+                                <Zap
+                                    class="h-3.5 w-3.5 fill-amber-500/30 text-amber-500"
+                                />
+                                <span>{{
+                                    localPokeCooldown ? 'Poked' : 'Study Poke'
+                                }}</span>
+                            </button>
+
+                            <button
+                                @click="handleAppreciate"
+                                type="button"
+                                class="group inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-xl px-3.5 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:h-9"
                                 :class="[
                                     localIsAppreciated
-                                        ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
-                                        : 'stroke-[2.2] text-slate-500 group-hover:text-rose-500 dark:text-gray-400 dark:group-hover:text-rose-400',
+                                        ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
+                                        : 'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
                                 ]"
-                            />
-                            <span>{{
-                                localIsAppreciated
-                                    ? 'Appreciating'
-                                    : 'Appreciate'
-                            }}</span>
-                        </button>
+                                :title="
+                                    localIsAppreciated
+                                        ? 'Appreciating (click to remove)'
+                                        : 'Appreciate this member'
+                                "
+                            >
+                                <Heart
+                                    class="h-4 w-4 transition-transform group-hover:scale-110"
+                                    :class="[
+                                        localIsAppreciated
+                                            ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
+                                            : 'stroke-[2.2] text-slate-500 group-hover:text-rose-500 dark:text-gray-400 dark:group-hover:text-rose-400',
+                                    ]"
+                                />
+                                <span>{{
+                                    localIsAppreciated
+                                        ? 'Appreciating'
+                                        : 'Appreciate'
+                                }}</span>
+                            </button>
+                        </template>
                     </div>
                 </div>
 
@@ -1624,6 +1716,103 @@ const timeAgo = formatTimeAgo;
                         <LogIn class="h-3.5 w-3.5" />
                         <span>Sign In</span>
                     </Link>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
+    <!-- Study Poke Modal -->
+    <Teleport to="body">
+        <div
+            v-if="showPokeModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <div
+                @click="showPokeModal = false"
+                class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+            ></div>
+
+            <div
+                class="relative w-full max-w-md overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl transition-all sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <button
+                    @click="showPokeModal = false"
+                    class="absolute top-3.5 right-3.5 cursor-pointer rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                >
+                    <X class="h-4 w-4" />
+                </button>
+
+                <div class="mb-4 flex items-center gap-2.5">
+                    <div
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                    >
+                        <Zap class="h-5 w-5 fill-amber-500" />
+                    </div>
+                    <div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            Send a Study Poke 👉
+                        </h3>
+                        <p
+                            class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                        >
+                            Give @{{ profileUser.username }} a friendly study
+                            reminder
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Presets Grid / Selector -->
+                <div class="max-h-72 space-y-2.5 overflow-y-auto pr-1">
+                    <button
+                        v-for="preset in pokeData?.presets || []"
+                        :key="preset.id"
+                        type="button"
+                        @click="selectedPresetId = preset.id"
+                        class="flex w-full cursor-pointer items-start gap-3 rounded-2xl border p-3 text-left transition"
+                        :class="
+                            selectedPresetId === preset.id
+                                ? 'border-amber-500 bg-amber-50/50 ring-2 ring-amber-500/20 dark:border-amber-500 dark:bg-amber-950/30'
+                                : 'border-slate-200/80 hover:border-slate-300 dark:border-gray-800 dark:hover:border-gray-700'
+                        "
+                    >
+                        <span class="mt-0.5 shrink-0 text-xl">{{
+                            preset.icon
+                        }}</span>
+                        <div class="min-w-0 flex-1">
+                            <p
+                                class="text-xs leading-relaxed font-medium text-slate-700 dark:text-gray-300"
+                            >
+                                “{{ preset.message }}”
+                            </p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Modal Actions -->
+                <div
+                    class="mt-5 flex items-center justify-end gap-2.5 border-t border-slate-100 pt-4 dark:border-gray-800"
+                >
+                    <button
+                        type="button"
+                        @click="showPokeModal = false"
+                        class="cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="handleSendPoke"
+                        :disabled="!selectedPresetId || isSubmittingPoke"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-amber-600 active:scale-95 disabled:opacity-50 dark:bg-amber-500 dark:hover:bg-amber-600"
+                    >
+                        <Send class="h-3.5 w-3.5" />
+                        <span>{{
+                            isSubmittingPoke ? 'Sending...' : 'Send Poke 🚀'
+                        }}</span>
+                    </button>
                 </div>
             </div>
         </div>

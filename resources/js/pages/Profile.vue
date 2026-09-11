@@ -14,6 +14,7 @@ import {
     Shield,
     Users,
     Lock,
+    Zap,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -45,6 +46,7 @@ const form = useForm({
     about: user.value?.about || '',
     institution: user.value?.institution || '',
     activity_privacy: user.value?.activity_privacy || 'public',
+    allow_pokes: (user.value as any)?.allow_pokes ?? true,
     facebook: user.value?.facebook || '',
     github: user.value?.github || '',
     instagram: user.value?.instagram || '',
@@ -758,6 +760,50 @@ const submitForm = () => {
                             দেখতে পারবেন।
                         </p>
                     </label>
+                </div>
+
+                <!-- Study Poke Preference Sub-Section -->
+                <div
+                    class="mt-6 border-t border-slate-100 pt-6 dark:border-gray-800"
+                >
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="space-y-0.5">
+                            <div class="flex items-center gap-2">
+                                <Zap
+                                    class="h-4 w-4 text-amber-500 dark:text-amber-400"
+                                />
+                                <span
+                                    class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                >
+                                    Receive Pokes
+                                </span>
+                            </div>
+                            <p
+                                class="text-[11px] text-slate-500 dark:text-gray-400"
+                            >
+                                সহপাঠীদের থেকে Study Poke বা তাড়া পেতে এই অপশনটি
+                                অন রাখুন।
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            @click="form.allow_pokes = !form.allow_pokes"
+                            :disabled="form.processing"
+                            class="relative inline-flex shrink-0 cursor-pointer items-center focus:outline-none"
+                            :aria-checked="form.allow_pokes"
+                            role="switch"
+                        >
+                            <div
+                                class="h-5 w-9 rounded-full transition-colors after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow-sm after:transition-all after:content-[''] dark:after:bg-gray-200"
+                                :class="
+                                    form.allow_pokes
+                                        ? 'bg-amber-500 after:translate-x-4 dark:bg-amber-600'
+                                        : 'bg-slate-300 dark:bg-gray-700'
+                                "
+                            ></div>
+                        </button>
+                    </div>
                 </div>
             </div>
 

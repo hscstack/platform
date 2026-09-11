@@ -15,6 +15,7 @@ import {
     ArrowBigUp,
     Clock,
     LifeBuoy,
+    Zap,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { getCsrfToken } from '@/lib/useCsrf';
@@ -575,6 +576,12 @@ onBeforeUnmount(() => {
                                             item.data?.type === 'support_ticket'
                                         "
                                         class="h-4 w-4 text-indigo-500"
+                                    />
+                                    <Zap
+                                        v-else-if="
+                                            item.data?.type === 'study_poke'
+                                        "
+                                        class="h-4 w-4 fill-amber-500/20 text-amber-500"
                                     />
                                     <Clock
                                         v-else-if="
