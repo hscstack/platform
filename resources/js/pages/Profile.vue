@@ -139,9 +139,7 @@ const submitForm = () => {
         return;
     }
 
-    form.post('/profile', {
-        preserveScroll: true,
-    });
+    form.post('/profile');
 };
 </script>
 
