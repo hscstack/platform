@@ -53,7 +53,7 @@ watch(
 
         if (errorKeys.length > 0) {
             addToast(
-                'Validation failed. Please check the form for errors.',
+                'Please fix the errors below to continue.',
                 'error',
             );
         }
