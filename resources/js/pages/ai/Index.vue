@@ -164,16 +164,16 @@ const handleMockSubmit = (question?: string) => {
                         <h3
                             class="text-sm font-bold text-slate-900 sm:text-base dark:text-gray-100"
                         >
-                            এই সার্ভিসটি সম্পূর্ণ ফ্রি রাখতে আমাদের ফান্ডিং
-                            প্রয়োজন!
+                            AI সার্ভিসটিকে সচল ও সবার জন্য সহজলভ্য রাখতে সহায়তা
+                            করুন
                         </h3>
 
                         <p
                             class="mt-0.5 text-xs leading-relaxed font-medium text-slate-600 dark:text-gray-400"
                         >
-                            HSCStack একটি অলাভজনক উদ্যোগ। AI সার্ভিস সম্পূর্ণ
-                            ফ্রিতে দিতে এবং সার্ভার ও API কস্ট বহন করতে আমাদের
-                            ফান্ডিং প্রয়োজন।
+                            HSCStack একটি কমিউনিটি-চালিত উদ্যোগ। স্মার্ট এআই
+                            সার্ভিস, দ্রুতগতির সার্ভার ও এপিআই খরচ বহন করতে
+                            আপনাদের ফান্ডিং ও সমর্থন প্রয়োজন।
                         </p>
                     </div>
                 </div>

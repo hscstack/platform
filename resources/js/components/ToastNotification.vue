@@ -52,10 +52,7 @@ watch(
         const errorKeys = Object.keys(errors || {});
 
         if (errorKeys.length > 0) {
-            addToast(
-                'Failed: Please fix the errors to continue.',
-                'error',
-            );
+            addToast('Failed: Please fix the errors to continue.', 'error');
         }
     },
     { deep: true },

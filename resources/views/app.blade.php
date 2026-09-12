@@ -274,7 +274,7 @@
     } elseif ($pageComponent === 'Donate') {
         $metaTitle = 'Support & Donate - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Support & Donate - HSCStack';
-        $metaDescription = 'Support HSCStack to keep the platform free, ad-free, and accessible to every student in Bangladesh.';
+        $metaDescription = 'Support HSCStack to keep educational resources accessible and continuously running for every student in Bangladesh.';
     } elseif ($pageComponent === 'Support' || $pageComponent === 'SupportMyTickets') {
         $metaTitle = 'Support Center - ' . config('app.name', 'HSCStack');
         $ogTitle = 'Support Center - HSCStack';

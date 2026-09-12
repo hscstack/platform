@@ -5,7 +5,7 @@
 
 > A curated resource platform for HSC & SSC students of Bangladesh — built by members, for everyone.
 
-HSCStack is a structured platform where verified members share academic resources — notes, questions, PDFs, images, and videos — organized by subject and chapter, so every SSC & HSC student can find what they need in one place. On top of that, we've got a real-time community chat, an educational blog, study progress tracking, and an AI learning assistant — all completely free and ad-free.
+HSCStack is a structured platform where verified members share academic resources — notes, questions, PDFs, images, and videos — organized by subject and chapter, so every SSC & HSC student can find what they need in one place. On top of that, we've got a real-time community chat, an educational blog, study progress tracking, and an AI learning assistant — all designed for an open, distraction-free study experience.
 
 ---
 
@@ -26,7 +26,7 @@ Browsing is open to everyone. But to **contribute**, you need to be an HSCStack 
 - 📄 **5 Resource Types** — Notes, questions, PDFs, images, and videos. Direct uploads to S3/R2 or external links.
 - ⬆️ **Community Voting** — Upvote/downvote folders. Best content rises to the top.
 - ✅ **Progress Tracking** — Mark resources as "Completed." See completion counts and who's been studying.
-- 🎥 **Custom YouTube Player** — Watch classes without YouTube ads or distracting recommendations. Custom controls with variable speed (0.75x–2x), 5-second skip, and fullscreen.
+- 🎥 **Custom YouTube Player** — Watch classes in a distraction-free player without distracting recommendations. Custom controls with variable speed (0.75x–2x), 5-second skip, and fullscreen.
 - 💬 **Live Chat** — Real-time global chat with message replies, @mentions, emoji reactions, and a smart profanity filter. Community reporting with auto-ban for repeat offenders.
 - 👤 **Public Profiles** — Vanity URLs (`/u/{username}`) with bio, institution, avatar, social links, and a unified activity stream.
 - ❤️ **Peer Appreciations** — Appreciate members with milestone email notifications.

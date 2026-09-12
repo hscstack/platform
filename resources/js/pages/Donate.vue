@@ -18,12 +18,12 @@ const supportUrl = 'https://supportkori.com/hscstack';
         <title>Support & Donate</title>
         <meta
             name="description"
-            content="Support HSCStack to keep the platform free, ad-free, and accessible to every student in Bangladesh."
+            content="Support HSCStack to keep educational resources accessible and continuously running for every student in Bangladesh."
         />
         <meta property="og:title" content="Support & Donate - HSCStack" />
         <meta
             property="og:description"
-            content="Support HSCStack to keep the platform free, ad-free, and accessible to every student in Bangladesh."
+            content="Support HSCStack to keep educational resources accessible and continuously running for every student in Bangladesh."
         />
     </Head>
 
@@ -37,7 +37,7 @@ const supportUrl = 'https://supportkori.com/hscstack';
         <p
             class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
         >
-            ফ্রি শিক্ষামূলক প্ল্যাটফর্মটিকে সচল রাখতে সাহায্য করুন
+            উন্মুক্ত শিক্ষা প্ল্যাটফর্মটিকে সচল রাখতে সাহায্য করুন
         </p>
     </header>
 
@@ -58,16 +58,16 @@ const supportUrl = 'https://supportkori.com/hscstack';
                     <h2
                         class="text-xl font-bold text-slate-900 sm:text-2xl dark:text-gray-100"
                     >
-                        আমাদের প্ল্যাটফর্মটি ১০০% ফ্রি এবং বিজ্ঞাপনমুক্ত
+                        HSCStack-কে সচল ও সমৃদ্ধ রাখতে সহায়তা করুন
                     </h2>
                     <p
                         class="mt-2 max-w-xl text-sm leading-relaxed font-medium text-slate-600 dark:text-gray-400"
                     >
-                        HSCStack শিক্ষার্থীদের দ্বারা নির্মিত একটি অলাভজনক
-                        উদ্যোগ। HSC ও SSC শিক্ষার্থীদের পড়াশোনা সহজ করতে আমরা
-                        কোনো সাবস্ক্রিপশন ফি বা বিরক্তিকর পপ-আপ অ্যাড রাখি না।
-                        আপনার সহযোগিতা আমাদের সার্ভার ও ডোমেইন খরচ চালাতে
-                        সাহায্য করবে।
+                        HSCStack শিক্ষার্থীদের স্বতঃস্ফূর্ত অংশগ্রহণে নির্মিত
+                        একটি শিক্ষা প্ল্যাটফর্ম। HSC ও SSC শিক্ষার্থীদের পড়াশোনা
+                        সহজ ও কার্যকর রাখতে আমরা প্রতিনিয়ত কাজ করছি। দ্রুতগতির
+                        ক্লাউড সার্ভার, ডেটাবেস ও প্ল্যাটফর্মটি সচল ও উন্নত
+                        রাখতে আপনাদের সহায়তা ও সহযোগিতা প্রয়োজন।
                     </p>
 
                     <a
@@ -150,15 +150,14 @@ const supportUrl = 'https://supportkori.com/hscstack';
                         <h4
                             class="text-base font-bold text-slate-900 dark:text-gray-100"
                         >
-                            ৩. ১০০% ক্লিন ও ডিসট্র্যাকশন-ফ্রি অভিজ্ঞতা
+                            ৩. পরিচ্ছন্ন ও ডিসট্র্যাকশন-ফ্রি অভিজ্ঞতা
                         </h4>
                         <p
                             class="mt-1.5 text-sm leading-relaxed font-medium text-slate-500 dark:text-gray-400"
                         >
-                            আমরা ওয়েবসাইটে কোনো গুগল অ্যাড বা থার্ড-পার্টি
-                            বিজ্ঞাপন দেখাই না, যাতে পড়ালেখার সময়ে শিক্ষার্থীদের
-                            মনোযোগ নষ্ট না হয়। আপনাদের সহায়তাই আমাদের স্বাবলম্বী
-                            রাখে।
+                            শিক্ষার্থীদের পড়াশোনার মনোযোগ অটুট রাখতে আমরা একটি
+                            পরিচ্ছন্ন, আধুনিক এবং সুশৃঙ্খল স্টাডি এনভায়রনমেন্ট
+                            বজায় রাখছি।
                         </p>
                     </div>
                 </div>
