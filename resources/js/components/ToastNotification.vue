@@ -44,6 +44,22 @@ watch(
     },
     { deep: true, immediate: true },
 );
+
+// Watch Inertia page errors for validation failures
+watch(
+    () => page.props.errors,
+    (errors: any) => {
+        const errorKeys = Object.keys(errors || {});
+
+        if (errorKeys.length > 0) {
+            addToast(
+                'Validation failed. Please check the form for errors.',
+                'error',
+            );
+        }
+    },
+    { deep: true },
+);
 </script>
 
 <template>
