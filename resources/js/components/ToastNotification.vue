@@ -53,7 +53,7 @@ watch(
 
         if (errorKeys.length > 0) {
             addToast(
-                'Please fix the errors below to continue.',
+                'Failed: Please fix the errors to continue.',
                 'error',
             );
         }
