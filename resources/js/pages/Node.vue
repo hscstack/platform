@@ -7,6 +7,7 @@ import AuthModal from '@/components/AuthModal.vue';
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import NodeRow from '@/components/NodeRow.vue';
+import ResourceFilterBar from '@/components/ResourceFilterBar.vue';
 import ResourceRow from '@/components/ResourceRow.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import { useAuth } from '@/lib/useAuth';
@@ -66,6 +67,17 @@ const parentTitle = computed(
 );
 const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
+);
+
+// Filtered Resources State (controlled by ResourceFilterBar)
+const filteredResources = ref<any[]>([...(props.resources || [])]);
+
+watch(
+    () => props.resources,
+    (newRes) => {
+        filteredResources.value = [...(newRes || [])];
+    },
+    { immediate: true },
 );
 
 // Modals
@@ -382,6 +394,15 @@ const handleVote = (type: 'up' | 'down') => {
             </div>
         </header>
 
+        <!-- Real-Time Quick Search & Filter Bar -->
+        <ResourceFilterBar
+            v-if="resources && resources.length > 0"
+            :resources="resources"
+            :current-subject="subject?.name"
+            class="mb-4"
+            v-model:filtered="filteredResources"
+        />
+
         <div
             class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
         >
@@ -400,10 +421,23 @@ const handleVote = (type: 'up' | 'down') => {
                         :node="node"
                     />
                     <ResourceRow
-                        v-for="resource in resources"
+                        v-for="resource in filteredResources"
                         :key="`resource-${resource.id}`"
                         :resource="resource"
                     />
+                    <div
+                        v-if="
+                            resources.length > 0 &&
+                            filteredResources.length === 0
+                        "
+                        class="p-6"
+                    >
+                        <EmptyState
+                            variant="dashed"
+                            title="কোনো রিসোর্স খুঁজে পাওয়া যায়নি"
+                            description="আপনার ফিল্টার বা সার্চ কিওয়ার্ডের সাথে কোনো রিসোর্স মিলেনি।"
+                        />
+                    </div>
                 </template>
                 <EmptyState
                     v-else
