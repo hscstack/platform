@@ -112,9 +112,7 @@ class BlogController extends Controller
 
         // Check if user is suspended
         if ($user && $user->isBanned()) {
-            $bannedUntilFormatted = $user->banned_until->diffForHumans();
-
-            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+            return back()->with('error', 'You are temporarily suspended from community participation.');
         }
 
         $userId = $user->id;

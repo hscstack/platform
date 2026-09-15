@@ -156,7 +156,7 @@ class AuthController extends Controller
             ],
             'school' => ['required', 'string', 'max:255', new CleanText],
             'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'receive_emails' => ['sometimes', 'boolean'],
+            'receive_emails' => ['required', 'boolean'],
             'appreciations' => ['nullable', 'array', 'max:4'],
             'appreciations.*' => ['integer', 'distinct', 'exists:users,id'],
         ], [
@@ -179,10 +179,6 @@ class AuthController extends Controller
             ->first();
 
         if (! $user) {
-            $receiveEmails = $request->has('receive_emails')
-                ? $request->boolean('receive_emails')
-                : true;
-
             $user = User::create([
                 'name' => $validated['name'],
                 'username' => $validated['username'],
@@ -190,12 +186,15 @@ class AuthController extends Controller
                 'google_id' => $onboardingData['google_id'],
                 'institution' => $validated['school'],
                 'image_path' => $imagePath,
-                'receive_emails' => $receiveEmails,
+                'receive_emails' => $validated['receive_emails'],
                 'email_verified_at' => now(),
             ]);
 
             $user->notify(new WelcomeNotification);
         } else {
+            $user->receive_emails = $validated['receive_emails'];
+            $user->save();
+
             if ($imagePath) {
                 if ($user->image_path) {
                     Storage::delete($user->image_path);
