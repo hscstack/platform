@@ -115,6 +115,26 @@ test('completing onboarding creates user, sends welcome notification, and logs i
     Notification::assertSentTo($user, WelcomeNotification::class);
 });
 
+test('completing onboarding with receive_emails false disables email notifications', function () {
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-no-email',
+            'email' => 'noemail@example.com',
+            'name' => 'No Email User',
+            'avatar' => null,
+        ],
+    ])->post(route('onboarding.complete'), [
+        'name' => 'No Email User',
+        'username' => 'no_email_user',
+        'school' => 'Dhaka College',
+        'receive_emails' => false,
+    ]);
+
+    $user = User::where('email', 'noemail@example.com')->first();
+    $this->assertNotNull($user);
+    $this->assertFalse($user->receive_emails);
+});
+
 test('completing onboarding with avatar image upload stores image', function () {
     Storage::fake();
 

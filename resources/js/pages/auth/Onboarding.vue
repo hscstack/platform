@@ -47,12 +47,14 @@ const form = useForm<{
     username: string;
     school: string;
     image: File | null;
+    receive_emails: boolean;
     appreciations: number[];
 }>({
     name: props.user?.name || '',
     username: '',
     school: '',
     image: null,
+    receive_emails: true,
     appreciations: (props.suggestedContributors || [])
         .filter((_, index) => index === 0 || index === 2)
         .map((c) => c.id),
@@ -514,6 +516,25 @@ const getContributorAvatar = (contributor: Contributor) => {
                                 {{ form.errors.school }}
                             </p>
                         </div>
+
+                        <!-- Compact Email Opt-in -->
+                        <label
+                            for="receive_emails"
+                            class="flex cursor-pointer items-center gap-2.5 px-0.5 select-none"
+                        >
+                            <input
+                                v-model="form.receive_emails"
+                                type="checkbox"
+                                id="receive_emails"
+                                class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-indigo-400/20"
+                            />
+                            <span
+                                class="text-xs font-medium text-slate-600 dark:text-gray-300"
+                            >
+                                Send me important announcements through email
+                                (recommended)
+                            </span>
+                        </label>
 
                         <!-- Next / Submit Button -->
                         <div class="pt-2">
