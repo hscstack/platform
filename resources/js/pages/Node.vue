@@ -240,7 +240,7 @@ const handleVote = (type: 'up' | 'down') => {
                         class="mt-1.5 text-sm font-semibold text-slate-400 dark:text-gray-500"
                     >
                         <span v-if="crumbs.length">{{ parentTitle }} · </span>
-                        {{ totalItemsCount }} Folders Total
+                        {{ totalItemsCount }} Items Total
                     </p>
                 </div>
 
