@@ -140,3 +140,18 @@ test('blog show page returns live reactive reaction counts and comments', functi
         ->has('comments', 1)
     );
 });
+
+test('suspended user cannot comment on a blog', function () {
+    $user = User::factory()->create([
+        'banned_until' => now()->addDays(3),
+    ]);
+    $blog = Blog::factory()->create(['is_published' => true]);
+
+    $response = $this->actingAs($user)
+        ->post("/blogs/{$blog->slug}/comments", [
+            'content' => 'Trying to comment while banned',
+        ]);
+
+    $response->assertSessionHas('error');
+    expect($blog->comments()->count())->toBe(0);
+});
