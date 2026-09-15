@@ -45,9 +45,8 @@ const roles: Role[] = [
         description:
             'হাই-কোয়ালিটি পড়ার ম্যাটেরিয়াল, চ্যাপ্টার-ওয়াইজ নোটস ও প্রশ্নব্যাংক গুছিয়ে রাখা আপনার কাজ।',
         responsibilities: [
-            'নিখুঁত বোর্ড প্রশ্ন, মডেল টেস্ট ও সেরা হ্যান্ডনোট সংগ্রহ করা',
+            'নিখুঁত বোর্ড প্রশ্ন, প্রাক্টিক্যাল ও সেরা হ্যান্ডনোট সংগ্রহ করা',
             'চ্যাপ্টার ও বিষয় অনুযায়ী রিসোর্স নিখুঁতভাবে সাজানো ও রিচেক করা',
-            'প্র্যাক্টিক্যাল রেকর্ডস ও টেস্ট পেপার ডেটা গুছিয়ে রাখা',
         ],
         icon: FolderHeart,
         badgeStyle:
@@ -64,7 +63,6 @@ const roles: Role[] = [
         responsibilities: [
             'HSC/SSC শিক্ষার্থীদের পড়াশোনার কার্যকরী টিপস ও গাইডলাইন লেখা',
             'সহজ ও প্রাঞ্জল ভাষায় গুরুত্বপূর্ণ বিষয় বিশ্লেষণ করা',
-            'অফিশিয়াল ব্লগ সেকশনে নিয়মিত কোয়ালিটি কন্টেন্ট প্রকাশ করা',
         ],
         icon: PenTool,
         badgeStyle:
@@ -80,7 +78,6 @@ const roles: Role[] = [
             'স্টুডেন্ট সাপোর্ট টিকেট পরিচালনা, সমস্যার দ্রুত সমাধান ও অভ্যন্তরীণ প্ল্যাটফর্ম সহায়তা দেওয়া।',
         responsibilities: [
             'শিক্ষার্থীদের জমা দেওয়া সাপোর্ট টিকেট ও ইস্যু রিভিউ করে সমাধান দেওয়া',
-            'কোনো রিসোর্স বা লিংকে সমস্যা থাকলে তা দ্রুত রিপোর্ট ও ফিক্স নিশ্চিত করা',
             'ইউজার এক্সপেরিয়েন্স নিরবচ্ছিন্ন রাখতে কোর টিমের সাথে সরাসরি কাজ করা',
         ],
         icon: LifeBuoy,
@@ -96,7 +93,6 @@ const roles: Role[] = [
         description:
             'লাইভ গ্লোবাল চ্যাটে স্টুডেন্টদের সহায়তা করা, স্প্যামিং রোধ ও ফ্রেন্ডলি পরিবেশ রক্ষা করা।',
         responsibilities: [
-            'গ্লোবাল চ্যাটে শিক্ষার্থীদের প্রশ্ন ও আলোচনায় আন্তরিক সহায়তা দেওয়া',
             'স্প্যামিং বা আচরণবিধি বিরোধী মেসেজ দ্রুত মডারেট করা',
             'ইতিবাচক, প্রাণবন্ত ও শিক্ষার্থীবান্ধব আলোচনা বজায় রাখা',
         ],
@@ -115,7 +111,6 @@ const roles: Role[] = [
         responsibilities: [
             'ফোরামের প্রশ্ন ও উত্তর পর্যালোচনা করে সঠিক ও মানসম্মত একাডেমিক আলোচনা নিশ্চিত করা',
             'অপ্রাসঙ্গিক, ক্ষতিকর বা স্প্যাম পোস্ট ও কমেন্ট দ্রুত মডারেট এবং রিপোর্ট রিভিউ করা',
-            'কঠিন প্রশ্নের সমাধানে শিক্ষার্থীদের সহায়তা ও সক্রিয় অংশগ্রহণ উৎসাহিত করা',
         ],
         icon: MessageSquareText,
         badgeStyle:
@@ -132,7 +127,6 @@ const roles: Role[] = [
         responsibilities: [
             'ফেসবুক গ্রুপ ও পেজের মেসেজ এবং কমেন্টে দ্রুত সহায়তা দেওয়া',
             'কমিউনিটিতে তথ্যবহুল পোস্ট ও গুরুত্বপূর্ণ নোটিশ প্রচার করা',
-            'গ্রুপের পোস্ট মডারেশন ও স্প্যামিং রোধে সক্রিয় থাকা',
         ],
         icon: Share2,
         badgeStyle:
@@ -147,8 +141,7 @@ const roles: Role[] = [
         description:
             'আমাদের এই উন্মুক্ত শিক্ষা প্ল্যাটফর্মকে একদম তৃণমূল পর্যায়ের শিক্ষার্থীদের কাছে পৌঁছে দিতে সাহায্য করুন।',
         responsibilities: [
-            'বিভিন্ন college ও স্টুডেন্ট গ্রুপে প্ল্যাটফর্মের ফ্রি রিসোর্স ও আপডেট শেয়ার করা',
-            'নিজের কলেজে HSCStack-এর প্রতিনিধি হিসেবে শিক্ষার্থীদের গাইড করা',
+            'নিজের স্কুল কিংবা কলেজে HSCStack-এর প্রতিনিধি হিসেবে ফ্রি রিসোর্স ও আপডেট শেয়ার করা',
             'স্টুডেন্টদের প্রয়োজনীয় স্টাডি মেটেরিয়ালের চাহিদা টিমে জানানো',
         ],
         icon: Megaphone,
@@ -164,9 +157,8 @@ const roles: Role[] = [
         description:
             'আমাদের ওপেন সোর্স প্ল্যাটফর্ম আর্কিটেকচার, পারফরম্যান্স ও UI কম্পোনেন্ট উন্নত করতে কাজ করবেন।',
         responsibilities: [
-            'সুপার-ফাস্ট Vue / Inertia / Tailwind ফ্রন্টএন্ড ফিচার তৈরি করা',
-            'মোবাইল ফ্রেন্ডলিনেস ও রেস্পনসিভ এক্সপেরিয়েন্স সর্বোচ্চ মানে রাখা',
-            'নতুন ফিচার ও ডেটাবেজ অপ্টিমাইজেশনে সরাসরি অবদান রাখা',
+            'Vue3 & Laravel এ নতুন ফিচার ডেভেলপ করা',
+            'বাগ ফিক্সিং, পারফরমেন্স ইম্প্রুভ করা & সিকিউরিটি অডিট করা',
         ],
         icon: Code2,
         badgeStyle:
@@ -506,31 +498,20 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
             </div>
         </div>
 
-        <!-- General Pitch / Contact Footer Card -->
+        <!-- Voluntary Policy Alert -->
         <div
-            class="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center sm:flex-row sm:p-7 sm:text-left dark:border-gray-800 dark:bg-gray-900/40"
+            class="mt-8 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 text-center sm:p-5 dark:border-gray-800 dark:bg-gray-900/40"
         >
-            <div>
-                <h3 class="text-sm font-bold text-slate-900 dark:text-gray-100">
-                    Applying for multiple roles or have an idea?
-                </h3>
-                <p
-                    class="mt-1 max-w-md text-xs leading-relaxed font-medium text-slate-500 dark:text-gray-400"
-                >
-                    একসাথে একাধিক রোলে কাজ করতে চাইলে বা অন্য কোনো স্পেশাল
-                    আইডিয়া নিয়ে অবদান রাখতে সরাসরি আবেদন করুন।
-                </p>
-            </div>
-
-            <button
-                type="button"
-                @click="openApplyModal()"
-                class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-2xs transition-all hover:bg-indigo-700 active:scale-95"
+            <p
+                class="text-xs leading-relaxed font-medium text-slate-500 dark:text-gray-400"
             >
-                <Send class="h-4 w-4" />
-                <span>Apply for Roles</span>
-                <ArrowRight class="h-3.5 w-3.5" />
-            </button>
+                💡
+                <strong class="text-slate-700 dark:text-gray-300">নোট:</strong>
+                HSCStack-এর সকল টিম রোল (অ্যাম্বাসেডর, মডারেটর, কিউরেটর ও
+                ডেভেলপার) সম্পূর্ণ অবৈতনিক এবং ১০০% স্বেচ্ছাসেবী (100%
+                voluntary)। এর সাথে কোনো আর্থিক পারিশ্রমিক বা অন্য কোনো দাবি
+                অন্তর্ভুক্ত নয়।
+            </p>
         </div>
     </main>
 
@@ -671,6 +652,27 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
                             placeholder="কেন এই রোলে কাজ করতে চান বা আপনার কোনো পূর্ব অভিজ্ঞতা ও পরিকল্পনা থাকলে সংক্ষেপে লিখুন..."
                             class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-medium text-slate-900 transition focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-100 dark:focus:border-indigo-500 dark:focus:bg-gray-900"
                         ></textarea>
+                    </div>
+
+                    <!-- Agreement / Consent Notice -->
+                    <div
+                        class="mb-4 text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                    >
+                        আবেদন জমা দেওয়ার মাধ্যমে আপনি নিশ্চিত করছেন যে এটি
+                        সম্পূর্ণ অবৈতনিক ও স্বেচ্ছাসেবী ভূমিকা এবং আপনি আমাদের
+                        <Link
+                            href="/terms-service"
+                            target="_blank"
+                            class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            >Terms of Service</Link
+                        >
+                        ও
+                        <Link
+                            href="/content-policy"
+                            target="_blank"
+                            class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            >Content Policy</Link
+                        >-তে সম্মত।
                     </div>
 
                     <!-- Modal Action Buttons -->
