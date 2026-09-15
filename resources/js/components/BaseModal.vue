@@ -137,13 +137,11 @@ onBeforeUnmount(() => {
                         : 'items-center p-4',
                 ]"
             >
-                <!-- Backdrop -->
                 <div
                     class="fixed inset-0 bg-slate-950/40 backdrop-blur-xs transition-opacity dark:bg-black/60"
                     @click="handleBackdropClick"
                 />
 
-                <!-- Dialog Surface -->
                 <div
                     class="relative flex max-h-[92vh] w-full flex-col border border-slate-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900"
                     :class="[

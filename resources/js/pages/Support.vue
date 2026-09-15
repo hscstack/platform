@@ -302,7 +302,7 @@ const submitTicket = () => {
                             id="subject"
                             v-model="form.subject"
                             type="text"
-                            placeholder="সংক্ষেপে সমস্যার মূল কথা লিখুন (যেমন: পদার্থবিজ্ঞান অধ্যায় ২ নোট ওপেন হচ্ছে না)"
+                            placeholder="সংক্ষেপে সমস্যার মূল কথা লিখুন (যেমন: অ্যাকাউন্টে লগইন হচ্ছে না )"
                             required
                             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 focus:outline-none dark:border-gray-800 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
                         />

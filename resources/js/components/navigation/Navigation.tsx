@@ -491,7 +491,7 @@ export const SiteRail = defineComponent({
                                                 }`}
                                             />
                                             <span class="truncate">
-                                                About Us
+                                                Our Contributors
                                             </span>
                                             {isActive('/about-us') && (
                                                 <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
@@ -1198,7 +1198,7 @@ export const SiteDrawer = defineComponent({
                                                         }`}
                                                     />
                                                     <span class="truncate">
-                                                        About Us
+                                                        Our Contributors
                                                     </span>
                                                     {isActive('/about-us') && (
                                                         <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />

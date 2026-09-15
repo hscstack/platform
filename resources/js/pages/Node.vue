@@ -68,10 +68,8 @@ const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
 );
 
-// Modals
 const showUpvotersModal = ref(false);
 
-// Optimistic Vote State
 const localUserVote = ref(props.userVote);
 const localUpvotesCount = ref(props.upvotesCount);
 const localDownvotesCount = ref(props.downvotesCount);
@@ -242,7 +240,7 @@ const handleVote = (type: 'up' | 'down') => {
                         class="mt-1.5 text-sm font-semibold text-slate-400 dark:text-gray-500"
                     >
                         <span v-if="crumbs.length">{{ parentTitle }} · </span>
-                        {{ totalItemsCount }} Items Total
+                        {{ totalItemsCount }} Folders Total
                     </p>
                 </div>
 

@@ -19,7 +19,6 @@ import {
     MoreHorizontal,
     Radio,
     AtSign,
-    LifeBuoy,
     Users,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
@@ -1529,8 +1528,7 @@ onUnmounted(() => {
                 <p
                     class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-zinc-400"
                 >
-                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন ও প্রশ্ন শেয়ার
-                    করুন।
+                    অন্যান্য শিক্ষার্থীদের সাথে সরাসরি কথা বলুন
                 </p>
             </div>
 
@@ -2691,8 +2689,8 @@ onUnmounted(() => {
                                 <p
                                     class="text-xs text-slate-500 dark:text-zinc-400"
                                 >
-                                    সবার জন্য চ্যাট নিরাপদ ও ফ্রেন্ডলি রাখতে
-                                    নিচের নিয়মগুলো মেনে চলুন।
+                                    সবার জন্য চ্যাট নিরাপদ রাখতে নিচের নিয়মগুলো
+                                    মেনে চলুন।
                                 </p>
                             </div>
                         </div>
@@ -2748,7 +2746,6 @@ onUnmounted(() => {
                                 >
                                     বাংলা, ইংরেজি বা বাংলিশ কোনো ভাষাতেই
                                     গালাগালি বা অশালীন শব্দ ব্যবহার করা যাবে না।
-                                    এমন মেসেজ অটোমেটিক ব্লক হবে।
                                 </p>
                             </div>
                         </div>
@@ -2809,44 +2806,14 @@ onUnmounted(() => {
                             <span>অটো-ব্যান ও এনফোর্সমেন্ট পলিসি:</span>
                         </div>
                         <p class="mt-1 leading-relaxed">
-                            একটি মেসেজে ৫ জন শিক্ষার্থীর রিপোর্ট (৫ Reports)
+                            একটি মেসেজে নির্দিষ্ট সংখ্যক শিক্ষার্থীর রিপোর্ট
                             পড়লে সংশ্লিষ্ট ব্যবহারকারী
                             <strong
-                                >স্বয়ংক্রিয়ভাবে ১ দিনের জন্য চ্যাট
-                                ব্যান</strong
+                                >স্বয়ংক্রিয়ভাবে কিছু সময়ের জন্য ব্যান</strong
                             >
                             হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী
                             ব্যান দিতে পারেন।
                         </p>
-                    </div>
-
-                    <!-- Support Notice in Chat Modal -->
-                    <div
-                        class="mt-3 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-2.5 text-[11px] text-slate-600 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400"
-                    >
-                        <div class="flex items-center gap-2">
-                            <LifeBuoy
-                                class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                            />
-                            <span>কোনো টেকনিক্যাল সমস্যা বা সহায়তার জন্য?</span>
-                        </div>
-                        <Link
-                            href="/support"
-                            class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
-                        >
-                            সাপোর্ট সেন্টার &rarr;
-                        </Link>
-                    </div>
-
-                    <!-- Footer Close Button -->
-                    <div class="mt-4 flex justify-end">
-                        <button
-                            type="button"
-                            @click="showRulesModal = false"
-                            class="cursor-pointer rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                        >
-                            বুঝেছি (Close)
-                        </button>
                     </div>
                 </div>
             </div>

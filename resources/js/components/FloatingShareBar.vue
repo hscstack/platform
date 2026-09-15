@@ -72,9 +72,7 @@ const handleCopyLink = async () => {
         return;
     }
 
-    if (
-        !requireAuth('Please sign in to generate and copy short share links.')
-    ) {
+    if (!requireAuth('Please sign in to generate and copy short links.')) {
         closeMenu();
 
         return;

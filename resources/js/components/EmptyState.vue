@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
     description: null,
     variant: 'simple',
     showCta: false,
-    ctaPrompt: 'তোমার নিজের নোট বা লেকচার শেয়ার করতে চাও?',
+    ctaPrompt: 'তোমার নিজের নোট শেয়ার করতে চাও?',
     ctaText: 'কন্ট্রিবিউটর হও',
     ctaLink: '/join',
 });

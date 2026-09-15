@@ -735,7 +735,7 @@ const submitForm = () => {
                             <span
                                 class="font-medium text-slate-800 dark:text-gray-200"
                             >
-                                {{ appName }} &lt;team@hscstack.com&gt;
+                                {{ appName }} &lt;team@example.com&gt;
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
