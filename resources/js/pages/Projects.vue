@@ -64,7 +64,7 @@ import { ExternalLink, ArrowRight, Users } from 'lucide-vue-next';
                             class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
                         >
                             <Users class="h-3.5 w-3.5" />
-                            1000+ Users
+                            640+ Users
                         </span>
                     </div>
 
@@ -109,13 +109,13 @@ import { ExternalLink, ArrowRight, Users } from 'lucide-vue-next';
                         <h2
                             class="text-xl font-bold text-slate-900 dark:text-gray-100"
                         >
-                            ResultRank
+                            ResultStack
                         </h2>
                         <span
                             class="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
                         >
                             <Users class="h-3.5 w-3.5" />
-                            2500+ Users
+                            6600+ Users
                         </span>
                     </div>
 
@@ -132,12 +132,12 @@ import { ExternalLink, ArrowRight, Users } from 'lucide-vue-next';
                     class="mt-6 border-t border-slate-100 pt-4 dark:border-gray-800"
                 >
                     <a
-                        href="https://resultrank.hscstack.site"
+                        href="https://resultstack.hscstack.site"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-98"
                     >
-                        <span>Visit ResultRank</span>
+                        <span>Visit ResultStack</span>
                         <ExternalLink class="h-4 w-4" />
                     </a>
                 </div>

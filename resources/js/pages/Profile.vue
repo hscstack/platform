@@ -326,13 +326,13 @@ const submitForm = () => {
                             for="institution"
                             class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
                         >
-                            Institution / Organization
+                            Institution
                         </label>
                         <input
                             v-model="form.institution"
                             type="text"
                             id="institution"
-                            placeholder="e.g., Dhaka College, BUET"
+                            placeholder="e.g., Rangpur Zilla School"
                             :disabled="form.processing"
                             class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
                             :class="{
@@ -617,8 +617,9 @@ const submitForm = () => {
                             Activity & Profile Privacy
                         </h2>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            আপনার পড়ালেখার অগ্রগতি, ফোরাম প্রশ্ন, উত্তর এবং
-                            আর্টিকেল কারা দেখতে পারবে তা নির্ধারণ করুন।
+                            আপনার প্রোফাইলে ফোরাম প্রশ্ন, উত্তর, পড়ালেখার
+                            অগ্রগতি এবং আর্টিকেল কারা দেখতে পারবে তা নির্ধারণ
+                            করুন।
                         </p>
                     </div>
                 </div>
@@ -921,11 +922,11 @@ const submitForm = () => {
                         <h3
                             class="text-sm font-semibold text-slate-900 dark:text-gray-100"
                         >
-                            Need Help or Account Support?
+                            Account Deletion & Support.
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Need help with your account or deletion? Open a
-                            support ticket.
+                            অ্যাকাউন্ট ডিলেট করতে চান কিংবা অন্য কোনো সমস্যা?
+                            সরাসরি সাপোর্টে কথা বলুন !
                         </p>
                     </div>
                 </div>

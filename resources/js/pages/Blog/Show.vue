@@ -455,7 +455,7 @@ const formatTimeAgo = (dateStr: string) => {
                     <PenLine class="h-3.5 w-3.5" />
                 </span>
                 <span class="font-medium text-slate-700 dark:text-gray-300">
-                    Want to write study guides or articles on HSCStack?
+                    Want to write articles on HSCStack?
                 </span>
             </div>
 
@@ -699,7 +699,7 @@ const formatTimeAgo = (dateStr: string) => {
                                 ? `/u/${blog.user.username}`
                                 : '#'
                         "
-                        class="text-lg font-semibold text-slate-900 underline transition dark:text-gray-100"
+                        class="text-lg font-semibold text-slate-900 transition dark:text-gray-100"
                     >
                         {{ blog.user?.name }}
                     </Link>

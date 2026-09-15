@@ -39,20 +39,19 @@ class UserProfileController extends Controller
             'is_verified' => $user->is_verified,
         ];
 
-        // Appreciations (Received & Given)
         $appreciationsCount = $user->appreciationsReceived()->count();
         $appreciatingCount = $user->appreciationsGiven()->count();
         $isAppreciated = auth()->check()
             ? $user->appreciationsReceived()->where('appreciator_id', auth()->id())->exists()
             : false;
 
-        // Suggested / Discover community members: 2 contributors + 2 general users
+        // Suggested members: 1 contributors + 3 general users
         $contributorUsers = User::where('id', '!=', $user->id)
             ->whereNotNull('username')
             ->where('is_verified', true)
             ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
             ->inRandomOrder()
-            ->take(2)
+            ->take(1)
             ->get();
 
         $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
@@ -67,7 +66,6 @@ class UserProfileController extends Controller
 
         $suggestedUsers = $contributorUsers->concat($randomUsers)->shuffle()->values();
 
-        // Privacy & Lock Evaluation
         $isOwner = auth()->id() === $user->id;
         $activityPrivacy = $user->activity_privacy ?? 'public';
         $isLocked = false;
@@ -123,21 +121,23 @@ class UserProfileController extends Controller
             ]);
         }
 
-        // Forum Contributions
-        $questionsCount = ForumPost::where('user_id', $user->id)->count();
-        $answersCount = ForumAnswer::where('user_id', $user->id)->count();
+        $questionsCount = ForumPost::where('user_id', $user->id)->approved()->count();
+        $answersCount = ForumAnswer::where('user_id', $user->id)
+            ->whereHas('post', fn ($q) => $q->approved())
+            ->count();
         $forumPosts = ForumPost::where('user_id', $user->id)
+            ->approved()
             ->with(['subject:id,name,course,slug', 'node:id,name,slug'])
             ->latest()
             ->take(5)
             ->get();
         $forumAnswers = ForumAnswer::where('user_id', $user->id)
+            ->whereHas('post', fn ($q) => $q->approved())
             ->with(['post:id,title,slug,curriculum,is_answered'])
             ->latest()
             ->take(5)
             ->get();
 
-        // Contributor Stats & Blogs
         $publishedBlogs = $user->blogs()
             ->where('is_published', true)
             ->withCount(['reactions', 'comments'])
@@ -150,6 +150,7 @@ class UserProfileController extends Controller
 
         // Recent Community Activities
         $recentForumPosts = ForumPost::where('user_id', $user->id)
+            ->approved()
             ->latest('id')
             ->take(3)
             ->get()
@@ -163,6 +164,7 @@ class UserProfileController extends Controller
             ]);
 
         $recentForumAnswers = ForumAnswer::where('user_id', $user->id)
+            ->whereHas('post', fn ($q) => $q->approved())
             ->with('post:id,title,slug')
             ->latest('id')
             ->take(3)

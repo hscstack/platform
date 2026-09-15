@@ -18,7 +18,7 @@ class SupportTicket extends Model
 
     public const CATEGORY_BUG_REPORT = 'bug_report';
 
-    public const CATEGORY_MISSING_RESOURCE = 'missing_resource';
+    public const CATEGORY_REQUEST_RESOURCE = 'request_resource';
 
     public const CATEGORY_ACCOUNT_ISSUE = 'account_issue';
 
@@ -40,7 +40,7 @@ class SupportTicket extends Model
             self::CATEGORY_GENERAL => 'General Inquiry',
             self::CATEGORY_APPLY_ROLE => 'Apply for Contributor Role',
             self::CATEGORY_BUG_REPORT => 'Bug Report',
-            self::CATEGORY_MISSING_RESOURCE => 'Missing / Broken Resource',
+            self::CATEGORY_REQUEST_RESOURCE => 'Request Resource',
             self::CATEGORY_ACCOUNT_ISSUE => 'Account Issue',
             self::CATEGORY_SUGGESTION => 'Suggestion / Feedback',
             self::CATEGORY_OTHER => 'Other',

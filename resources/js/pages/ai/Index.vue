@@ -27,13 +27,7 @@ const mockSubjects = [
         id: 'physics',
         name: 'Physics',
         icon: Atom,
-        topics: [
-            'Vector',
-            'Dynamics',
-            'Work, Energy & Power',
-            'Gravitation',
-            'Thermodynamics',
-        ],
+        topics: ['Vector', 'Work, Energy & Power', 'Gravitation'],
     },
     {
         id: 'chemistry',
@@ -43,19 +37,13 @@ const mockSubjects = [
             'Qualitative Chemistry',
             'Periodic Properties',
             'Chemical Change',
-            'Electrochemistry',
         ],
     },
     {
         id: 'math',
         name: 'Higher Math',
         icon: Sigma,
-        topics: [
-            'Matrices & Determinants',
-            'Straight Lines',
-            'Circles',
-            'Calculus (Differentiation)',
-        ],
+        topics: ['Matrices & Determinants', 'Straight Lines', 'Circles'],
     },
 ];
 

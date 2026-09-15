@@ -91,11 +91,7 @@ watch(
 );
 
 const handleToggleComplete = () => {
-    if (
-        !requireAuth(
-            'Please sign in to mark study materials as completed and track your syllabus progress.',
-        )
-    ) {
+    if (!requireAuth('Please sign in to mark study materials as complete.')) {
         return;
     }
 
@@ -157,11 +153,7 @@ watch(
 );
 
 const handleDownload = () => {
-    if (
-        !requireAuth(
-            'Please sign in to download full-resolution study materials.',
-        )
-    ) {
+    if (!requireAuth('Please sign in to download this resource.')) {
         return;
     }
 

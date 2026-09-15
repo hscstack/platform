@@ -4,7 +4,6 @@ import {
     LogIn,
     ShieldCheck,
     Zap,
-    KeyRound,
     UserCheck,
     AlertCircle,
 } from 'lucide-vue-next';
@@ -135,24 +134,6 @@ const googleAuthUrl = redirectParam
 
                         <div class="flex items-start gap-3">
                             <div
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-                            >
-                                <KeyRound class="h-3.5 w-3.5" />
-                            </div>
-                            <div
-                                class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
-                            >
-                                <span
-                                    class="font-semibold text-slate-900 dark:text-gray-200"
-                                    >Zero Password :</span
-                                >
-                                কোনো পাসওয়ার্ড মনে রাখা বা রিসেট করার ঝামেলা
-                                নেই—সবকিছু Google-এর মাধ্যমে secure।
-                            </div>
-                        </div>
-
-                        <div class="flex items-start gap-3">
-                            <div
                                 class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                             >
                                 <UserCheck class="h-3.5 w-3.5" />
@@ -164,14 +145,14 @@ const googleAuthUrl = redirectParam
                                     class="font-semibold text-slate-900 dark:text-gray-200"
                                     >Be a Contributor:</span
                                 >
-                                একাউন্ট খোলার পর আপনি আমাদের টিমে Contributor বা
-                                Curator হিসেবে
+                                একাউন্ট খোলার পর আপনি আমাদের টিমে Contributor
+                                হিসেবে
                                 <Link
                                     href="/join"
                                     class="font-semibold text-indigo-600 underline decoration-indigo-300 hover:text-indigo-700 dark:text-indigo-400 dark:decoration-indigo-600"
                                 >
-                                    Apply করতে পারবেন </Link
-                                >।
+                                    Apply করতে পারবেন
+                                </Link>
                             </div>
                         </div>
                     </div>

@@ -108,7 +108,14 @@ class BlogController extends Controller
 
     public function storeComment(Request $request, Blog $blog)
     {
-        $userId = auth()->id();
+        $user = auth()->user();
+
+        // Check if user is suspended
+        if ($user && $user->isBanned()) {
+            return back()->with('error', 'You are temporarily suspended from community participation.');
+        }
+
+        $userId = $user->id;
 
         if ($blog->comments()->where('user_id', $userId)->exists()) {
             return back()->with('error', 'You have already posted a comment on this blog.');

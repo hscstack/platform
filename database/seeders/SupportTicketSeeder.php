@@ -41,7 +41,7 @@ class SupportTicketSeeder extends Seeder
                 'replied_at' => now()->subHours(5),
             ],
             [
-                'category' => SupportTicket::CATEGORY_MISSING_RESOURCE,
+                'category' => SupportTicket::CATEGORY_REQUEST_RESOURCE,
                 'subject' => 'Missing PDF solution sheet for 2023 Dhaka Board Physics',
                 'message' => 'The download link for the 2023 board question solution seems to return a 404 error.',
                 'status' => SupportTicket::STATUS_RESOLVED,

@@ -156,6 +156,7 @@ class AuthController extends Controller
             ],
             'school' => ['required', 'string', 'max:255', new CleanText],
             'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'receive_emails' => ['required', 'boolean'],
             'appreciations' => ['nullable', 'array', 'max:4'],
             'appreciations.*' => ['integer', 'distinct', 'exists:users,id'],
         ], [
@@ -173,30 +174,18 @@ class AuthController extends Controller
             $imagePath = $this->downloadGoogleAvatar($onboardingData['avatar']);
         }
 
-        $user = User::where('google_id', $onboardingData['google_id'])
-            ->orWhere('email', $onboardingData['email'])
-            ->first();
+        $user = User::create([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'email' => $onboardingData['email'],
+            'google_id' => $onboardingData['google_id'],
+            'institution' => $validated['school'],
+            'image_path' => $imagePath,
+            'receive_emails' => $validated['receive_emails'],
+            'email_verified_at' => now(),
+        ]);
 
-        if (! $user) {
-            $user = User::create([
-                'name' => $validated['name'],
-                'username' => $validated['username'],
-                'email' => $onboardingData['email'],
-                'google_id' => $onboardingData['google_id'],
-                'institution' => $validated['school'],
-                'image_path' => $imagePath,
-                'email_verified_at' => now(),
-            ]);
-
-            $user->notify(new WelcomeNotification);
-        } else {
-            if ($imagePath) {
-                if ($user->image_path) {
-                    Storage::delete($user->image_path);
-                }
-                $user->update(['image_path' => $imagePath]);
-            }
-        }
+        $user->notify(new WelcomeNotification);
 
         if (! empty($validated['appreciations'])) {
             foreach ($validated['appreciations'] as $targetUserId) {

@@ -68,10 +68,8 @@ const totalItemsCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
 );
 
-// Modals
 const showUpvotersModal = ref(false);
 
-// Optimistic Vote State
 const localUserVote = ref(props.userVote);
 const localUpvotesCount = ref(props.upvotesCount);
 const localDownvotesCount = ref(props.downvotesCount);

@@ -4,7 +4,6 @@ import {
     Youtube,
     FileSpreadsheet,
     Hash,
-    Info,
     Loader2,
     AlertCircle,
     ChevronDown,
@@ -291,21 +290,6 @@ const submitForm = () => {
                             </label>
                         </div>
                     </div>
-                </div>
-
-                <!-- Info Box -->
-                <div
-                    class="flex items-start gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 dark:border-indigo-500/30 dark:bg-indigo-500/10"
-                >
-                    <Info
-                        class="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400"
-                    />
-                    <p
-                        class="text-[11px] leading-relaxed text-indigo-900 dark:text-indigo-300"
-                    >
-                        Playlists with multiple pages will be automatically
-                        fetched and created as sequential video resources.
-                    </p>
                 </div>
             </div>
 

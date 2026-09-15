@@ -97,6 +97,7 @@ test('completing onboarding creates user, sends welcome notification, and logs i
         'name' => 'Custom Name',
         'username' => 'custom_handle',
         'school' => 'Notre Dame College',
+        'receive_emails' => true,
     ]);
 
     $user = User::where('email', 'newuser@example.com')->first();
@@ -105,6 +106,7 @@ test('completing onboarding creates user, sends welcome notification, and logs i
     $this->assertEquals('custom_handle', $user->username);
     $this->assertEquals('Notre Dame College', $user->institution);
     $this->assertEquals('google-id-12345', $user->google_id);
+    $this->assertTrue($user->receive_emails);
     $this->assertNotNull($user->email_verified_at);
 
     $this->assertAuthenticatedAs($user);
@@ -113,6 +115,26 @@ test('completing onboarding creates user, sends welcome notification, and logs i
     $response->assertSessionMissing('onboarding_user');
 
     Notification::assertSentTo($user, WelcomeNotification::class);
+});
+
+test('completing onboarding with receive_emails false disables email notifications', function () {
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-no-email',
+            'email' => 'noemail@example.com',
+            'name' => 'No Email User',
+            'avatar' => null,
+        ],
+    ])->post(route('onboarding.complete'), [
+        'name' => 'No Email User',
+        'username' => 'no_email_user',
+        'school' => 'Dhaka College',
+        'receive_emails' => false,
+    ]);
+
+    $user = User::where('email', 'noemail@example.com')->first();
+    $this->assertNotNull($user);
+    $this->assertFalse($user->receive_emails);
 });
 
 test('completing onboarding with avatar image upload stores image', function () {
@@ -132,6 +154,7 @@ test('completing onboarding with avatar image upload stores image', function () 
         'username' => 'photo_user',
         'school' => 'Dhaka College',
         'image' => $file,
+        'receive_emails' => true,
     ]);
 
     $user = User::where('email', 'photo_user@example.com')->first();
@@ -160,6 +183,7 @@ test('completing onboarding downloads and stores google avatar when available', 
         'name' => 'Google Avatar User',
         'username' => 'google_avatar_user',
         'school' => 'Rajshahi College',
+        'receive_emails' => true,
     ]);
 
     $user = User::where('email', 'google_avatar@example.com')->first();
@@ -231,6 +255,7 @@ test('redirects to custom redirect url after onboarding for new user', function 
         'name' => 'New Redirect User',
         'username' => 'new_redirect_user',
         'school' => 'Dhaka College',
+        'receive_emails' => true,
     ]);
 
     $onboardResponse->assertRedirect(url('/ai'));
@@ -258,6 +283,7 @@ test('redirects to trusted subdomain after onboarding for new user', function ()
         'name' => 'New Subdomain User',
         'username' => 'new_subdomain_user',
         'school' => 'Rajshahi College',
+        'receive_emails' => true,
     ]);
 
     $onboardResponse->assertStatus(409);
@@ -409,6 +435,7 @@ test('completing onboarding with appreciations creates UserAppreciation records'
         'name' => 'Fan User',
         'username' => 'fan_user',
         'school' => 'Notre Dame College',
+        'receive_emails' => true,
         'appreciations' => [$contributor1->id, $contributor2->id],
     ]);
 
@@ -427,4 +454,22 @@ test('completing onboarding with appreciations creates UserAppreciation records'
 
     $this->assertAuthenticatedAs($newUser);
     $response->assertRedirect(route('user.profile', 'fan_user'));
+});
+
+test('completing onboarding requires receive_emails field', function () {
+    $response = $this->withSession([
+        'onboarding_user' => [
+            'google_id' => 'google-id-req-email',
+            'email' => 'reqemail@example.com',
+            'name' => 'Req Email User',
+            'avatar' => null,
+        ],
+    ])->post(route('onboarding.complete'), [
+        'name' => 'Req Email User',
+        'username' => 'req_email_user',
+        'school' => 'Notre Dame College',
+    ]);
+
+    $response->assertSessionHasErrors(['receive_emails']);
+    $this->assertGuest();
 });

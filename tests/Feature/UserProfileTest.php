@@ -110,6 +110,51 @@ test('public profile accurately displays forum questions, answers, and activitie
     );
 });
 
+test('public profile excludes unapproved forum questions and answers', function () {
+    $user = User::factory()->create(['username' => 'pending_user']);
+    $subject = Subject::create([
+        'name' => 'Chemistry',
+        'slug' => 'chemistry',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-green-500',
+        'icon' => 'beaker',
+    ]);
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Organic Chemistry',
+        'slug' => 'organic-chemistry',
+    ]);
+
+    $pendingPost = ForumPost::create([
+        'user_id' => $user->id,
+        'curriculum' => 'hsc',
+        'subject_id' => $subject->id,
+        'node_id' => $node->id,
+        'title' => 'Pending Question Title',
+        'body' => 'Pending post body.',
+        'moderation_status' => 'pending',
+    ]);
+
+    ForumAnswer::create([
+        'forum_post_id' => $pendingPost->id,
+        'user_id' => $user->id,
+        'body' => 'Answer to pending post',
+    ]);
+
+    $response = $this->get('/u/pending_user');
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('User/Show')
+        ->where('stats.questionsCount', 0)
+        ->where('stats.answersCount', 0)
+        ->has('forumPosts', 0)
+        ->has('forumAnswers', 0)
+        ->has('recentActivities.forum_posts', 0)
+        ->has('recentActivities.forum_answers', 0)
+    );
+});
+
 test('public profile includes both contributors and random users in suggestions', function () {
     $mainUser = User::factory()->create(['username' => 'current_user']);
 
