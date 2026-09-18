@@ -183,7 +183,7 @@ function triggerStopwatchSave() {
         return;
     }
 
-    if (elapsedSeconds.value < 10 || isDayMaxReached.value) {
+    if (elapsedSeconds.value <= 0 || isDayMaxReached.value) {
         return;
     }
 
@@ -466,7 +466,7 @@ const todayFormatted = computed(() => {
             </button>
 
             <button
-                v-if="elapsedSeconds >= 10"
+                v-if="elapsedSeconds > 0"
                 type="button"
                 @click="triggerStopwatchSave"
                 class="flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-emerald-600 bg-emerald-50 px-4 text-xs font-bold text-emerald-700 hover:bg-emerald-100 active:scale-95 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/60"

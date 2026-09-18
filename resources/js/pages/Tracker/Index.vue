@@ -24,7 +24,7 @@ const isAuthenticated = computed(() => !!user.value);
 function handleAuthRequired(
     message = 'Please log in to track your study sessions and chapter progress.',
 ) {
-    requireAuth(() => {}, message);
+    requireAuth(message);
 }
 </script>
 

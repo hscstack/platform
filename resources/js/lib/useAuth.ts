@@ -23,9 +23,28 @@ export function useAuth() {
      * Returns true if user is authenticated, false otherwise.
      */
     const requireAuth = (
-        message = 'Please sign in to perform this action.',
-        action?: () => void,
+        messageOrAction:
+            | string
+            | (() => void) = 'Please sign in to perform this action.',
+        actionOrMessage?: string | (() => void),
     ): boolean => {
+        let message = 'Please sign in to perform this action.';
+        let action: (() => void) | undefined;
+
+        if (typeof messageOrAction === 'string') {
+            message = messageOrAction;
+
+            if (typeof actionOrMessage === 'function') {
+                action = actionOrMessage;
+            }
+        } else if (typeof messageOrAction === 'function') {
+            action = messageOrAction;
+
+            if (typeof actionOrMessage === 'string') {
+                message = actionOrMessage;
+            }
+        }
+
         if (!isAuthenticated.value) {
             authModalMessage.value = message;
             showAuthModal.value = true;
