@@ -68,14 +68,6 @@ function toggleExpand(subjectId: number) {
     }
 }
 
-function expandAll() {
-    expandedSubjectIds.value = new Set(props.subjects.map((s) => s.id));
-}
-
-function collapseAll() {
-    expandedSubjectIds.value = new Set();
-}
-
 const showSwitchConfirmModal = ref(false);
 const pendingCurriculum = ref<'hsc' | 'ssc'>('hsc');
 const isSwitching = ref(false);
@@ -277,24 +269,6 @@ function getSubjectProgress(subject: SubjectItem) {
                         :style="{ width: `${overallPercentage}%` }"
                     />
                 </div>
-            </div>
-
-            <!-- Expand / Collapse Controls -->
-            <div class="mt-4 flex items-center justify-end gap-2">
-                <button
-                    type="button"
-                    @click="expandAll"
-                    class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
-                >
-                    Expand All
-                </button>
-                <button
-                    type="button"
-                    @click="collapseAll"
-                    class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
-                >
-                    Collapse All
-                </button>
             </div>
         </div>
 
