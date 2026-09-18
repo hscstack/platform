@@ -6,10 +6,13 @@ use App\Http\Controllers\Admin\PeerSettingsController;
 use App\Models\AppSetting;
 use App\Models\BlogComment;
 use App\Models\BlogReaction;
+use App\Models\DailyStudyLog;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Node;
+use App\Models\NodeCompletion;
 use App\Models\Resource;
+use App\Models\Subject;
 use App\Models\User;
 use App\Models\UserAppreciation;
 use App\Notifications\StudyPokeNotification;
@@ -31,6 +34,7 @@ class UserProfileController extends Controller
             'username' => $user->username,
             'about' => $user->about,
             'institution' => $user->institution,
+            'curriculum' => $user->curriculum ?? 'hsc',
             'image_url' => $user->image_url,
             'facebook' => $user->facebook,
             'instagram' => $user->instagram,
@@ -121,10 +125,6 @@ class UserProfileController extends Controller
             ]);
         }
 
-        $questionsCount = ForumPost::where('user_id', $user->id)->approved()->count();
-        $answersCount = ForumAnswer::where('user_id', $user->id)
-            ->whereHas('post', fn ($q) => $q->approved())
-            ->count();
         $forumPosts = ForumPost::where('user_id', $user->id)
             ->approved()
             ->with(['subject:id,name,course,slug', 'node:id,name,slug'])
@@ -144,9 +144,6 @@ class UserProfileController extends Controller
             ->latest()
             ->take(5)
             ->get();
-        $blogsCount = $user->blogs()->where('is_published', true)->count();
-        $totalBlogViews = (int) $user->blogs()->where('is_published', true)->sum('views');
-        $sharedResourcesCount = Resource::where('user_id', $user->id)->count();
 
         // Recent Community Activities
         $recentForumPosts = ForumPost::where('user_id', $user->id)
@@ -263,15 +260,67 @@ class UserProfileController extends Controller
             ->filter(fn ($item) => $item['title'] !== null)
             ->values();
 
+        $course = $user->curriculum ?: 'hsc';
+        $trackableSubjects = Subject::where('course', $course)
+            ->where('is_trackable', true)
+            ->orderBy('sort_order', 'asc')
+            ->with(['nodes' => function ($query) {
+                $query->where('is_trackable', true)
+                    ->orderBy('sort_order', 'asc')
+                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order');
+            }])
+            ->get(['id', 'name', 'english_name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
+
+        $completedNodeIds = NodeCompletion::where('user_id', $user->id)
+            ->pluck('node_id')
+            ->toArray();
+
+        $completedSet = array_flip($completedNodeIds);
+
+        $subjectBreakdown = [];
+        $totalChapters = 0;
+        $completedChapters = 0;
+
+        foreach ($trackableSubjects as $subj) {
+            $subjTotal = $subj->nodes->count();
+            $subjCompleted = 0;
+            foreach ($subj->nodes as $node) {
+                if (isset($completedSet[$node->id])) {
+                    $subjCompleted++;
+                }
+            }
+
+            $totalChapters += $subjTotal;
+            $completedChapters += $subjCompleted;
+
+            $subjPercent = $subjTotal > 0 ? (int) round(($subjCompleted / $subjTotal) * 100) : 0;
+
+            $subjectBreakdown[] = [
+                'id' => $subj->id,
+                'name' => $subj->name,
+                'english_name' => $subj->english_name,
+                'slug' => $subj->slug,
+                'course' => $subj->course,
+                'tailwind_format' => $subj->tailwind_format,
+                'icon' => $subj->icon,
+                'completed' => $subjCompleted,
+                'total' => $subjTotal,
+                'percent' => $subjPercent,
+            ];
+        }
+
+        $overallPercent = $totalChapters > 0 ? (int) round(($completedChapters / $totalChapters) * 100) : 0;
+
+        $syllabusProgress = [
+            'course' => $course,
+            'overallPercent' => $overallPercent,
+            'completedChapters' => $completedChapters,
+            'totalChapters' => $totalChapters,
+            'subjects' => $subjectBreakdown,
+        ];
+
         return Inertia::render('User/Show', [
             'profileUser' => $profileUser,
-            'stats' => [
-                'questionsCount' => $questionsCount,
-                'answersCount' => $answersCount,
-                'blogsCount' => $blogsCount,
-                'sharedResourcesCount' => $sharedResourcesCount,
-                'totalBlogViews' => (int) $totalBlogViews,
-            ],
             'appreciationsCount' => $appreciationsCount,
             'appreciatingCount' => $appreciatingCount,
             'isAppreciated' => $isAppreciated,
@@ -294,6 +343,8 @@ class UserProfileController extends Controller
             ],
             'suggestedUsers' => $suggestedUsers,
             'pokeData' => $pokeData,
+            'studyHeatmap' => DailyStudyLog::getHeatmapAndStatsForUser($user),
+            'syllabusProgress' => $syllabusProgress,
         ]);
     }
 

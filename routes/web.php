@@ -13,6 +13,7 @@ use App\Http\Controllers\PeerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
+use App\Http\Controllers\StudyTrackerController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
@@ -34,6 +35,11 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
     Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
+    Route::post('/tracker/nodes/{node}/toggle', [StudyTrackerController::class, 'toggleNode'])->name('tracker.nodes.toggle');
+    Route::post('/tracker/log-time', [StudyTrackerController::class, 'logTime'])->name('tracker.log-time');
+    Route::post('/tracker/reset-today', [StudyTrackerController::class, 'resetToday'])->name('tracker.reset-today');
+    Route::post('/tracker/target', [StudyTrackerController::class, 'updateTarget'])->name('tracker.target');
+    Route::post('/tracker/curriculum', [StudyTrackerController::class, 'updateCurriculum'])->name('tracker.curriculum');
     Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
     Route::post('/u/{user}/poke', [UserProfileController::class, 'poke'])->name('user.poke');
@@ -109,6 +115,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/forum/questions/{post:slug}', [ForumController::class, 'show'])->name('forum.show');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/peers', [PeerController::class, 'index'])->name('peers.index');
+    Route::get('/tracker', [StudyTrackerController::class, 'index'])->name('tracker.index');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
     Route::get('/', [SubjectController::class, 'index'])
