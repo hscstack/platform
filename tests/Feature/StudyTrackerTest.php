@@ -237,13 +237,13 @@ test('switching curriculum updates user profile and clears full chapter track', 
 
     $this->actingAs($user)
         ->post('/tracker/curriculum', ['curriculum' => 'ssc'])
-        ->assertRedirect('/tracker?course=ssc');
+        ->assertRedirect('/tracker');
 
     expect($user->fresh()->curriculum)->toBe('ssc');
     expect(NodeCompletion::where('user_id', $user->id)->count())->toBe(0);
 });
 
-test('tracker defaults to user curriculum when query parameter is omitted', function () {
+test('tracker renders user curriculum for authenticated user', function () {
     $user = User::factory()->create(['curriculum' => 'ssc']);
 
     $response = $this->actingAs($user)->get('/tracker');
@@ -251,5 +251,4 @@ test('tracker defaults to user curriculum when query parameter is omitted', func
 
     $page = $response->original->getData()['page'];
     expect($page['props']['course'])->toBe('ssc');
-    expect($page['props']['userCurriculum'])->toBe('ssc');
 });

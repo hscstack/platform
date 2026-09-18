@@ -16,12 +16,7 @@ class StudyTrackerController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $defaultCourse = $user?->curriculum ?: 'hsc';
-
-        $course = $request->query('course', $defaultCourse);
-        if (! in_array($course, ['hsc', 'ssc'])) {
-            $course = $defaultCourse;
-        }
+        $course = $user?->curriculum ?: 'hsc';
 
         $subjects = Subject::where('course', $course)
             ->where('is_trackable', true)
@@ -37,7 +32,6 @@ class StudyTrackerController extends Controller
         if (! $user) {
             return Inertia::render('Tracker/Index', [
                 'course' => $course,
-                'userCurriculum' => 'hsc',
                 'subjects' => $subjects,
                 'completedNodeIds' => [],
                 'todaySeconds' => 0,
@@ -66,7 +60,6 @@ class StudyTrackerController extends Controller
 
         return Inertia::render('Tracker/Index', [
             'course' => $course,
-            'userCurriculum' => $user->curriculum ?: 'hsc',
             'subjects' => $subjects,
             'completedNodeIds' => $completedNodeIds,
             'todaySeconds' => $todaySeconds,
@@ -194,7 +187,7 @@ class StudyTrackerController extends Controller
             ]);
         }
 
-        return redirect()->route('tracker.index', ['course' => $newCurriculum])
+        return redirect()->route('tracker.index')
             ->with('success', 'Curriculum updated to '.strtoupper($newCurriculum).' and chapter track reset.');
     }
 }

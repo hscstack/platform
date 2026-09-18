@@ -32,7 +32,6 @@ export interface SubjectItem {
 
 interface Props {
     course: 'hsc' | 'ssc';
-    userCurriculum?: 'hsc' | 'ssc';
     subjects: SubjectItem[];
     completedNodeIds: number[];
     isAuthenticated: boolean;
@@ -73,22 +72,16 @@ const pendingCurriculum = ref<'hsc' | 'ssc'>('hsc');
 const isSwitching = ref(false);
 
 function switchCourse(newCourse: 'hsc' | 'ssc') {
-    if (
-        props.isAuthenticated &&
-        props.userCurriculum &&
-        props.userCurriculum !== newCourse
-    ) {
-        pendingCurriculum.value = newCourse;
-        showSwitchConfirmModal.value = true;
+    if (!props.isAuthenticated) {
+        emit('require-auth');
 
         return;
     }
 
-    router.get(
-        '/tracker',
-        { course: newCourse },
-        { preserveState: true, preserveScroll: true },
-    );
+    if (props.course !== newCourse) {
+        pendingCurriculum.value = newCourse;
+        showSwitchConfirmModal.value = true;
+    }
 }
 
 function confirmSwitchCurriculum() {
