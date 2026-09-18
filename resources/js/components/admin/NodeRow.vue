@@ -33,12 +33,18 @@ const handleDelete = () => {
                 <Folder class="h-4.5 w-4.5 stroke-[2]" />
             </div>
 
-            <div class="min-w-0 flex-1">
+            <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                 <h3
                     class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                 >
                     {{ node.name }}
                 </h3>
+                <span
+                    v-if="node.is_trackable"
+                    class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
+                >
+                    Chapter
+                </span>
             </div>
         </div>
 

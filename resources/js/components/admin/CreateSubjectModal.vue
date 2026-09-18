@@ -23,6 +23,7 @@ const props = defineProps<{
         tailwind_format: string;
         icon: string;
         sort_order: number;
+        is_trackable?: boolean;
     } | null;
 }>();
 
@@ -56,6 +57,7 @@ const course = ref('hsc');
 const tailwindFormat = ref('bg-indigo-50 text-indigo-600');
 const icon = ref('BookOpen');
 const sortOrder = ref(0);
+const isTrackable = ref(false);
 
 const initForm = () => {
     if (props.subject) {
@@ -67,6 +69,7 @@ const initForm = () => {
             props.subject.tailwind_format || 'bg-indigo-50 text-indigo-600';
         icon.value = props.subject.icon || 'BookOpen';
         sortOrder.value = props.subject.sort_order ?? 0;
+        isTrackable.value = Boolean(props.subject.is_trackable);
     } else {
         name.value = '';
         englishName.value = '';
@@ -75,6 +78,7 @@ const initForm = () => {
         tailwindFormat.value = 'bg-indigo-50 text-indigo-600';
         icon.value = 'BookOpen';
         sortOrder.value = 0;
+        isTrackable.value = false;
     }
 
     errorMessage.value = '';
@@ -114,6 +118,7 @@ const submitForm = () => {
         tailwind_format: tailwindFormat.value,
         icon: icon.value,
         sort_order: sortOrder.value,
+        is_trackable: isTrackable.value,
     };
 
     if (props.subject) {
@@ -393,6 +398,32 @@ const submitForm = () => {
                                 placeholder="Auto-generated if empty"
                                 class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                             />
+                        </div>
+
+                        <!-- Trackable in Study Tracker -->
+                        <div class="pt-1">
+                            <label
+                                class="flex cursor-pointer items-start gap-2.5 select-none"
+                            >
+                                <input
+                                    type="checkbox"
+                                    v-model="isTrackable"
+                                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:focus:ring-offset-gray-900"
+                                />
+                                <div class="text-xs">
+                                    <span
+                                        class="font-semibold text-slate-700 dark:text-gray-200"
+                                    >
+                                        Trackable Subject (Study Tracker)
+                                    </span>
+                                    <p
+                                        class="text-[11px] text-slate-500 dark:text-gray-400"
+                                    >
+                                        Enable this subject to appear in the
+                                        Study Tracker for students.
+                                    </p>
+                                </div>
+                            </label>
                         </div>
                     </div>
                 </div>

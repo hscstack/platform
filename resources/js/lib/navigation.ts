@@ -50,6 +50,14 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Tracker',
+        labelBn: 'স্টাডি ট্র্যাকার',
+        href: '/tracker',
+        icon: 'timer',
+        match: (url) => url.startsWith('/tracker'),
+        showInBottom: false,
+    },
+    {
         label: 'AI',
         labelBn: 'HSCStack AI',
         href: '/ai',
