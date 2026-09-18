@@ -35,7 +35,6 @@ class StudyTrackerController extends Controller
                 'subjects' => $subjects,
                 'completedNodeIds' => [],
                 'todaySeconds' => 0,
-                'dailyTargetMinutes' => 120,
                 'stats' => [
                     'currentStreak' => 0,
                     'longestStreak' => 0,
@@ -63,7 +62,6 @@ class StudyTrackerController extends Controller
             'subjects' => $subjects,
             'completedNodeIds' => $completedNodeIds,
             'todaySeconds' => $todaySeconds,
-            'dailyTargetMinutes' => (int) ($user->daily_target_minutes ?: 120),
             'stats' => $studyData['stats'],
             'heatmapData' => $studyData['heatmapData'],
         ]);
@@ -136,24 +134,6 @@ class StudyTrackerController extends Controller
         DailyStudyLog::where('user_id', $user->id)
             ->where('study_date', $todayStr)
             ->update(['total_seconds' => 0]);
-
-        return back();
-    }
-
-    public function updateTarget(Request $request)
-    {
-        $user = $request->user();
-        if (! $user) {
-            return back()->with('error', 'Authentication required');
-        }
-
-        $validated = $request->validate([
-            'daily_target_minutes' => 'required|integer|min:10|max:1440',
-        ]);
-
-        $user->update([
-            'daily_target_minutes' => $validated['daily_target_minutes'],
-        ]);
 
         return back();
     }

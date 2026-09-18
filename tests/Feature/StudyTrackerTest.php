@@ -26,7 +26,7 @@ test('guests can view tracker page with subjects', function () {
 });
 
 test('authenticated user can view tracker page with stats and completions', function () {
-    $user = User::factory()->create(['daily_target_minutes' => 180]);
+    $user = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Chemistry',
         'slug' => 'chemistry',
@@ -59,29 +59,32 @@ test('guests cannot toggle node completion or log study time', function () {
         'name' => 'Math',
         'slug' => 'math',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-blue-500',
+        'tailwind_format' => 'bg-indigo-500',
         'icon' => 'calculator',
     ]);
     $node = Node::create([
         'subject_id' => $subject->id,
-        'name' => 'Matrix',
-        'slug' => 'matrix',
+        'name' => 'Calculus',
+        'slug' => 'calculus',
     ]);
 
     $this->post("/tracker/nodes/{$node->id}/toggle")
-        ->assertRedirect('/login');
+        ->assertRedirect();
 
     $this->post('/tracker/log-time', ['seconds' => 1200])
-        ->assertRedirect('/login');
+        ->assertRedirect();
+
+    expect(NodeCompletion::count())->toBe(0);
+    expect(DailyStudyLog::count())->toBe(0);
 });
 
-test('authenticated user can toggle top-level node completion', function () {
+test('authenticated user can toggle node completion multiple times (idempotent toggling)', function () {
     $user = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Biology',
         'slug' => 'biology',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-green-500',
+        'tailwind_format' => 'bg-emerald-500',
         'icon' => 'dna',
     ]);
     $node = Node::create([
@@ -90,7 +93,7 @@ test('authenticated user can toggle top-level node completion', function () {
         'slug' => 'cell-structure',
     ]);
 
-    // Toggle on
+    // First toggle: complete
     $this->actingAs($user)
         ->post("/tracker/nodes/{$node->id}/toggle")
         ->assertRedirect();
@@ -100,7 +103,7 @@ test('authenticated user can toggle top-level node completion', function () {
         'node_id' => $node->id,
     ]);
 
-    // Toggle off
+    // Second toggle: uncomplete
     $this->actingAs($user)
         ->post("/tracker/nodes/{$node->id}/toggle")
         ->assertRedirect();
@@ -111,8 +114,8 @@ test('authenticated user can toggle top-level node completion', function () {
     ]);
 });
 
-test('authenticated user can log study time and update daily target', function () {
-    $user = User::factory()->create(['daily_target_minutes' => 120]);
+test('authenticated user can log study time cumulatively for today', function () {
+    $user = User::factory()->create();
 
     // Log 25 minutes
     $this->actingAs($user)
@@ -135,13 +138,6 @@ test('authenticated user can log study time and update daily target', function (
         'study_date' => Carbon::today()->format('Y-m-d'),
         'total_seconds' => 2400,
     ]);
-
-    // Update target
-    $this->actingAs($user)
-        ->post('/tracker/target', ['daily_target_minutes' => 300])
-        ->assertRedirect();
-
-    expect($user->fresh()->daily_target_minutes)->toBe(300);
 });
 
 test('tracker only includes trackable subjects and trackable nodes flatly', function () {

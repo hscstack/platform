@@ -260,64 +260,7 @@ class UserProfileController extends Controller
             ->filter(fn ($item) => $item['title'] !== null)
             ->values();
 
-        $course = $user->curriculum ?: 'hsc';
-        $trackableSubjects = Subject::where('course', $course)
-            ->where('is_trackable', true)
-            ->orderBy('sort_order', 'asc')
-            ->with(['nodes' => function ($query) {
-                $query->where('is_trackable', true)
-                    ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order');
-            }])
-            ->get(['id', 'name', 'english_name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
-
-        $completedNodeIds = NodeCompletion::where('user_id', $user->id)
-            ->pluck('node_id')
-            ->toArray();
-
-        $completedSet = array_flip($completedNodeIds);
-
-        $subjectBreakdown = [];
-        $totalChapters = 0;
-        $completedChapters = 0;
-
-        foreach ($trackableSubjects as $subj) {
-            $subjTotal = $subj->nodes->count();
-            $subjCompleted = 0;
-            foreach ($subj->nodes as $node) {
-                if (isset($completedSet[$node->id])) {
-                    $subjCompleted++;
-                }
-            }
-
-            $totalChapters += $subjTotal;
-            $completedChapters += $subjCompleted;
-
-            $subjPercent = $subjTotal > 0 ? (int) round(($subjCompleted / $subjTotal) * 100) : 0;
-
-            $subjectBreakdown[] = [
-                'id' => $subj->id,
-                'name' => $subj->name,
-                'english_name' => $subj->english_name,
-                'slug' => $subj->slug,
-                'course' => $subj->course,
-                'tailwind_format' => $subj->tailwind_format,
-                'icon' => $subj->icon,
-                'completed' => $subjCompleted,
-                'total' => $subjTotal,
-                'percent' => $subjPercent,
-            ];
-        }
-
-        $overallPercent = $totalChapters > 0 ? (int) round(($completedChapters / $totalChapters) * 100) : 0;
-
-        $syllabusProgress = [
-            'course' => $course,
-            'overallPercent' => $overallPercent,
-            'completedChapters' => $completedChapters,
-            'totalChapters' => $totalChapters,
-            'subjects' => $subjectBreakdown,
-        ];
+        $syllabusProgress = $this->getSyllabusProgress($user);
 
         return Inertia::render('User/Show', [
             'profileUser' => $profileUser,
@@ -441,5 +384,67 @@ class UserProfileController extends Controller
         }
 
         return '/'.$node->subject->slug.'/'.implode('/', $slugs);
+    }
+
+    private function getSyllabusProgress(User $user): array
+    {
+        $course = $user->curriculum ?: 'hsc';
+        $trackableSubjects = Subject::where('course', $course)
+            ->where('is_trackable', true)
+            ->orderBy('sort_order', 'asc')
+            ->with(['nodes' => function ($query) {
+                $query->where('is_trackable', true)
+                    ->orderBy('sort_order', 'asc')
+                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order');
+            }])
+            ->get(['id', 'name', 'english_name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
+
+        $completedNodeIds = NodeCompletion::where('user_id', $user->id)
+            ->pluck('node_id')
+            ->toArray();
+
+        $completedSet = array_flip($completedNodeIds);
+
+        $subjectBreakdown = [];
+        $totalChapters = 0;
+        $completedChapters = 0;
+
+        foreach ($trackableSubjects as $subj) {
+            $subjTotal = $subj->nodes->count();
+            $subjCompleted = 0;
+            foreach ($subj->nodes as $node) {
+                if (isset($completedSet[$node->id])) {
+                    $subjCompleted++;
+                }
+            }
+
+            $totalChapters += $subjTotal;
+            $completedChapters += $subjCompleted;
+
+            $subjPercent = $subjTotal > 0 ? (int) round(($subjCompleted / $subjTotal) * 100) : 0;
+
+            $subjectBreakdown[] = [
+                'id' => $subj->id,
+                'name' => $subj->name,
+                'english_name' => $subj->english_name,
+                'slug' => $subj->slug,
+                'course' => $subj->course,
+                'tailwind_format' => $subj->tailwind_format,
+                'icon' => $subj->icon,
+                'completed' => $subjCompleted,
+                'total' => $subjTotal,
+                'percent' => $subjPercent,
+            ];
+        }
+
+        $overallPercent = $totalChapters > 0 ? (int) round(($completedChapters / $totalChapters) * 100) : 0;
+
+        return [
+            'course' => $course,
+            'overallPercent' => $overallPercent,
+            'completedChapters' => $completedChapters,
+            'totalChapters' => $totalChapters,
+            'subjects' => $subjectBreakdown,
+        ];
     }
 }

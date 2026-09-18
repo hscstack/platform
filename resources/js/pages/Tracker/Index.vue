@@ -80,14 +80,13 @@ function handleAuthRequired(
                 >
                     Log in to save your study sessions & progress
                 </span>
-                <button
-                    type="button"
-                    @click="handleAuthRequired()"
+                <Link
+                    :href="`/login?redirect=${encodeURIComponent($page.url)}`"
                     class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
                 >
                     <span>Log in</span>
                     <ArrowRight class="h-3 w-3" />
-                </button>
+                </Link>
             </div>
         </div>
 
