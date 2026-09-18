@@ -8,6 +8,13 @@ class Subject extends Model
 {
     protected $guarded = [];
 
+    protected function casts(): array
+    {
+        return [
+            'is_trackable' => 'boolean',
+        ];
+    }
+
     public function nodes()
     {
         return $this->hasMany(Node::class);

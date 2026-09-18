@@ -51,6 +51,8 @@ class User extends Authenticatable
         'title',
         'institution',
         'activity_privacy',
+        'daily_target_minutes',
+        'curriculum',
         'allow_pokes',
         'facebook',
         'instagram',
@@ -107,7 +109,23 @@ class User extends Authenticatable
             'receive_emails' => 'boolean',
             'is_verified' => 'boolean',
             'allow_pokes' => 'boolean',
+            'daily_target_minutes' => 'integer',
         ];
+    }
+
+    public function nodeCompletions(): HasMany
+    {
+        return $this->hasMany(NodeCompletion::class);
+    }
+
+    public function completedNodes()
+    {
+        return $this->belongsToMany(Node::class, 'node_completions');
+    }
+
+    public function dailyStudyLogs(): HasMany
+    {
+        return $this->hasMany(DailyStudyLog::class);
     }
 
     public function resources()

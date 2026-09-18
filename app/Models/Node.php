@@ -16,11 +16,13 @@ class Node extends Model
         'name',
         'slug',
         'sort_order',
+        'is_trackable',
     ];
 
     protected function casts(): array
     {
         return [
+            'is_trackable' => 'boolean',
             'children_count' => 'integer',
             'resources_count' => 'integer',
             'upvotes_count' => 'integer',
@@ -66,5 +68,10 @@ class Node extends Model
     public function downvotes()
     {
         return $this->hasMany(NodeVote::class)->where('type', 'down');
+    }
+
+    public function completions()
+    {
+        return $this->hasMany(NodeCompletion::class);
     }
 }
