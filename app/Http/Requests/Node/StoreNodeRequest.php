@@ -27,6 +27,7 @@ class StoreNodeRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:200'],
             'parent_id' => ['nullable', 'integer'],
             'sort_order' => ['sometimes', 'integer'],
+            'is_trackable' => ['sometimes', 'boolean'],
         ];
     }
 }

@@ -37,6 +37,7 @@ const DESKTOP_FOOTER_COMPONENTS = new Set([
     'Forum/Index',
     'Donate',
     'Projects',
+    'Tracker/Index',
     'Support',
     'SupportMyTickets',
     'ContributorGuide',

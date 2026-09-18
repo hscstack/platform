@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import {
     Loader2,
     Save,
@@ -15,8 +15,10 @@ import {
     Users,
     Lock,
     Zap,
+    GraduationCap,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import BaseModal from '@/components/BaseModal.vue';
 
 import { compressImage } from '@/lib/imageCompression';
 
@@ -33,9 +35,14 @@ const isUnverified = computed(() => {
 
 const showAdvancedSettings = ref(false);
 const showConfirmModal = ref(false);
+const showCurriculumConfirmModal = ref(false);
+const pendingCurriculum = ref<'hsc' | 'ssc'>('hsc');
+const isSwitchingCurriculum = ref(false);
 const isCompressingAvatar = ref(false);
 const avatarPreview = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+
+const currentCurriculum = computed(() => user.value?.curriculum || 'hsc');
 
 const form = useForm({
     _method: 'PUT',
@@ -132,6 +139,32 @@ const handleEmailToggle = () => {
 const confirmDisable = () => {
     form.receive_emails = false;
     showConfirmModal.value = false;
+};
+
+const handleSelectCurriculum = (target: 'hsc' | 'ssc') => {
+    if (target === currentCurriculum.value) {
+        return;
+    }
+
+    pendingCurriculum.value = target;
+    showCurriculumConfirmModal.value = true;
+};
+
+const confirmSwitchCurriculum = () => {
+    isSwitchingCurriculum.value = true;
+    router.post(
+        '/tracker/curriculum',
+        { curriculum: pendingCurriculum.value },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showCurriculumConfirmModal.value = false;
+            },
+            onFinish: () => {
+                isSwitchingCurriculum.value = false;
+            },
+        },
+    );
 };
 
 const submitForm = () => {
@@ -375,6 +408,108 @@ const submitForm = () => {
                         </p>
                     </div>
                 </div>
+            </div>
+
+            <!-- Curriculum & Target Syllabus Card -->
+            <div
+                class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs sm:p-8 dark:border-gray-700 dark:bg-gray-900"
+            >
+                <div
+                    class="mb-6 flex flex-col gap-2 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
+                >
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                        >
+                            <GraduationCap class="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h2
+                                class="text-base font-semibold text-slate-900 dark:text-gray-100"
+                            >
+                                Academic Curriculum
+                            </h2>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                আপনার পড়ার কারিকুলাম লেভেল নির্বাচন করুন
+                            </p>
+                        </div>
+                    </div>
+
+                    <span
+                        class="inline-flex items-center self-start rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold tracking-wide text-indigo-700 uppercase sm:self-auto dark:bg-indigo-950/60 dark:text-indigo-300"
+                    >
+                        Active: {{ currentCurriculum }}
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <!-- HSC Option -->
+                    <div
+                        @click="handleSelectCurriculum('hsc')"
+                        class="group relative flex cursor-pointer items-center justify-between rounded-2xl border p-4 transition-all duration-150"
+                        :class="[
+                            currentCurriculum === 'hsc'
+                                ? 'border-indigo-600 bg-indigo-50/40 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/30'
+                                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 dark:hover:bg-gray-800/40',
+                        ]"
+                    >
+                        <div>
+                            <span
+                                class="text-base font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                HSC
+                            </span>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                Class 11–12
+                            </p>
+                        </div>
+                        <span
+                            v-if="currentCurriculum === 'hsc'"
+                            class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white dark:bg-indigo-500"
+                        >
+                            <span class="text-[10px] font-bold">✓</span>
+                        </span>
+                    </div>
+
+                    <!-- SSC Option -->
+                    <div
+                        @click="handleSelectCurriculum('ssc')"
+                        class="group relative flex cursor-pointer items-center justify-between rounded-2xl border p-4 transition-all duration-150"
+                        :class="[
+                            currentCurriculum === 'ssc'
+                                ? 'border-amber-600 bg-amber-50/40 ring-1 ring-amber-600 dark:border-amber-500 dark:bg-amber-950/30'
+                                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 dark:hover:bg-gray-800/40',
+                        ]"
+                    >
+                        <div>
+                            <span
+                                class="text-base font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                SSC
+                            </span>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                Class 9–10
+                            </p>
+                        </div>
+                        <span
+                            v-if="currentCurriculum === 'ssc'"
+                            class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-600 text-white dark:bg-amber-500"
+                        >
+                            <span class="text-[10px] font-bold">✓</span>
+                        </span>
+                    </div>
+                </div>
+
+                <p class="mt-3 text-[11px] text-slate-400 dark:text-gray-500">
+                    * কারিকুলাম পরিবর্তন করলে স্টাডি ট্র্যাকারের অগ্রগতি রিসেট
+                    হবে।
+                </p>
             </div>
 
             <!-- Profile Photo Card -->
@@ -1022,5 +1157,69 @@ const submitForm = () => {
                 </div>
             </transition>
         </Teleport>
+
+        <!-- Switch Curriculum Confirmation Modal -->
+        <BaseModal
+            :is-open="showCurriculumConfirmModal"
+            title="কারিকুলাম পরিবর্তন করবেন?"
+            description="সতর্কতা: আপনার সিলেবাস ট্র্যাকার রিসেট হবে"
+            max-width="md"
+            @close="showCurriculumConfirmModal = false"
+        >
+            <div class="space-y-4 p-5 text-slate-800 dark:text-gray-200">
+                <div
+                    class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
+                >
+                    <AlertTriangle
+                        class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+                    />
+                    <div class="space-y-1">
+                        <p class="font-bold">সতর্কতা</p>
+                        <p class="leading-relaxed">
+                            কারিকুলাম পরিবর্তন করলে স্টাডি ট্র্যাকারের টিক দেওয়া
+                            সকল অধ্যায়ের অগ্রগতি রিসেট হয়ে যাবে।
+                        </p>
+                    </div>
+                </div>
+
+                <p class="text-xs text-slate-500 dark:text-gray-400">
+                    আপনি কি নিশ্চিতভাবে কারিকুলাম
+                    <span
+                        class="font-bold text-slate-800 uppercase dark:text-gray-200"
+                        >{{ pendingCurriculum }}</span
+                    >
+                    এ পরিবর্তন করতে চান?
+                </p>
+            </div>
+
+            <div
+                class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3 dark:border-gray-800 dark:bg-gray-900/60"
+            >
+                <button
+                    type="button"
+                    @click="showCurriculumConfirmModal = false"
+                    :disabled="isSwitchingCurriculum"
+                    class="cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                    বাতিল
+                </button>
+                <button
+                    type="button"
+                    @click="confirmSwitchCurriculum"
+                    :disabled="isSwitchingCurriculum"
+                    class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
+                >
+                    <Loader2
+                        v-if="isSwitchingCurriculum"
+                        class="h-3.5 w-3.5 animate-spin"
+                    />
+                    <span>{{
+                        isSwitchingCurriculum
+                            ? 'পরিবর্তন হচ্ছে...'
+                            : 'হ্যাঁ, পরিবর্তন করুন'
+                    }}</span>
+                </button>
+            </div>
+        </BaseModal>
     </div>
 </template>

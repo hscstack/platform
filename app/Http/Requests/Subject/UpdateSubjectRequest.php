@@ -43,6 +43,7 @@ class UpdateSubjectRequest extends FormRequest
             'sort_order' => ['sometimes', 'integer'],
             'slug' => ['sometimes', 'string', 'max:100', Rule::unique('subjects', 'slug')->ignore($subject->id)],
             'course' => ['sometimes', 'string', 'in:ssc,hsc'],
+            'is_trackable' => ['sometimes', 'boolean'],
         ];
     }
 }

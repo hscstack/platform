@@ -8,6 +8,7 @@ import {
     ArrowUpRight,
     Calendar,
     CheckCircle2,
+    ChevronRight,
     Edit3,
     Eye,
     Facebook,
@@ -30,6 +31,12 @@ import {
 import { computed, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import SubjectIcon from '@/components/SubjectIcon.vue';
+import StudyHeatmap from '@/components/tracker/StudyHeatmap.vue';
+import type {
+    HeatmapItem,
+    TrackerStats,
+} from '@/components/tracker/StudyHeatmap.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { formatTimeAgo } from '@/lib/useDate';
@@ -41,19 +48,13 @@ const props = defineProps<{
         username: string;
         about: string | null;
         institution: string | null;
+        curriculum?: 'hsc' | 'ssc';
         image_url: string | null;
         facebook: string | null;
         instagram: string | null;
         github: string | null;
         created_at: string;
         is_verified?: boolean;
-    };
-    stats?: {
-        questionsCount: number;
-        answersCount: number;
-        blogsCount: number;
-        sharedResourcesCount: number;
-        totalBlogViews: number;
     };
     appreciationsCount: number;
     appreciatingCount: number;
@@ -201,6 +202,28 @@ const props = defineProps<{
         about: string | null;
         is_verified?: boolean;
     }>;
+    studyHeatmap?: {
+        heatmapData: HeatmapItem[];
+        stats: TrackerStats;
+    };
+    syllabusProgress?: {
+        course: string;
+        overallPercent: number;
+        completedChapters: number;
+        totalChapters: number;
+        subjects: Array<{
+            id: number;
+            name: string;
+            english_name?: string | null;
+            slug: string;
+            course: string;
+            tailwind_format: string;
+            icon: string;
+            completed: number;
+            total: number;
+            percent: number;
+        }>;
+    };
 }>();
 
 const page = usePage();
@@ -209,6 +232,7 @@ const isOwnProfile = computed(
     () => currentUser.value?.id === props.profileUser.id,
 );
 
+const showSyllabusModal = ref(false);
 const activeTab = ref<'forum' | 'blogs' | 'activity'>('forum');
 const forumSubTab = ref<'questions' | 'answers'>('questions');
 
@@ -652,111 +676,77 @@ const timeAgo = formatTimeAgo;
                 </div>
             </div>
 
-            <!-- Unlocked Activity & Stats Section -->
+            <!-- Unlocked Activity & Heatmap Section -->
             <template v-if="!isLocked">
-                <!-- Stats Metrics Row (4 Cards Grid: Questions, Answers, Articles, Shared Files) -->
-                <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-                    <!-- Questions Asked -->
-                    <div
-                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                    >
-                        <div class="flex items-center gap-2.5">
-                            <div
-                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                            >
-                                <HelpCircle class="h-4 w-4 stroke-[2.2]" />
-                            </div>
-                            <div class="min-w-0">
-                                <p
-                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
-                                >
-                                    {{ stats?.questionsCount ?? 0 }}
-                                </p>
-                                <p
-                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                >
-                                    Questions
-                                </p>
-                            </div>
-                        </div>
+                <!-- Syllabus Completion Progress Card (Ultra-Minimal) -->
+                <div
+                    v-if="
+                        syllabusProgress && syllabusProgress.totalChapters > 0
+                    "
+                    @click="showSyllabusModal = true"
+                    class="group relative flex cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-2xs transition-all duration-150 hover:border-slate-300 sm:rounded-2xl sm:px-4.5 sm:py-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+                >
+                    <!-- Left: Percentage + Label + Meta -->
+                    <div class="flex min-w-0 items-center gap-2 sm:gap-2.5">
+                        <span
+                            class="text-xs font-black text-indigo-600 sm:text-sm dark:text-indigo-400"
+                        >
+                            {{ syllabusProgress.overallPercent }}%
+                        </span>
+
+                        <span
+                            class="text-slate-300 select-none dark:text-gray-700"
+                            >·</span
+                        >
+
+                        <span
+                            class="truncate text-xs font-semibold text-slate-800 dark:text-gray-200"
+                        >
+                            Syllabus Completed ({{
+                                syllabusProgress.course.toUpperCase()
+                            }})
+                        </span>
+
+                        <span
+                            class="hidden text-xs text-slate-400 sm:inline dark:text-gray-500"
+                        >
+                            ({{ syllabusProgress.completedChapters }}/{{
+                                syllabusProgress.totalChapters
+                            }}
+                            chapters)
+                        </span>
                     </div>
 
-                    <!-- Answers Given -->
-                    <div
-                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                    >
-                        <div class="flex items-center gap-2.5">
+                    <!-- Right: Inline Progress Bar + Chevron -->
+                    <div class="flex shrink-0 items-center gap-2.5">
+                        <div
+                            class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100 sm:w-32 dark:bg-gray-800"
+                        >
                             <div
-                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                            >
-                                <MessageSquareCheck
-                                    class="h-4 w-4 stroke-[2.2]"
-                                />
-                            </div>
-                            <div class="min-w-0">
-                                <p
-                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
-                                >
-                                    {{ stats?.answersCount ?? 0 }}
-                                </p>
-                                <p
-                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                >
-                                    Answers
-                                </p>
-                            </div>
+                                class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-500"
+                                :style="{
+                                    width: `${syllabusProgress.overallPercent}%`,
+                                }"
+                            />
                         </div>
-                    </div>
 
-                    <!-- Articles Published -->
-                    <div
-                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                    >
-                        <div class="flex items-center gap-2.5">
-                            <div
-                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
-                            >
-                                <FileText class="h-4 w-4 stroke-[2.2]" />
-                            </div>
-                            <div class="min-w-0">
-                                <p
-                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
-                                >
-                                    {{ stats?.blogsCount ?? 0 }}
-                                </p>
-                                <p
-                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                >
-                                    Articles
-                                </p>
-                            </div>
-                        </div>
+                        <ChevronRight
+                            class="h-3.5 w-3.5 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                        />
                     </div>
+                </div>
 
-                    <!-- Shared Files -->
-                    <div
-                        class="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
-                    >
-                        <div class="flex items-center gap-2.5">
-                            <div
-                                class="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
-                            >
-                                <UploadCloud class="h-4 w-4 stroke-[2.2]" />
-                            </div>
-                            <div class="min-w-0">
-                                <p
-                                    class="text-sm font-black text-slate-900 dark:text-gray-100"
-                                >
-                                    {{ stats?.sharedResourcesCount ?? 0 }}
-                                </p>
-                                <p
-                                    class="truncate text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                >
-                                    Shared Files
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Study Activity Heatmap Graph (GitHub Style) -->
+                <div
+                    v-if="
+                        studyHeatmap?.heatmapData &&
+                        studyHeatmap.heatmapData.length > 0
+                    "
+                >
+                    <StudyHeatmap
+                        :heatmap-data="studyHeatmap.heatmapData"
+                        :stats="studyHeatmap.stats"
+                    />
                 </div>
 
                 <!-- Tabbed Content Section (3 Tabs: Forum, Articles, Activity) -->
@@ -1799,6 +1789,89 @@ const timeAgo = formatTimeAgo;
                     <span>{{
                         isSubmittingPoke ? 'Sending...' : 'Send Poke'
                     }}</span>
+                </button>
+            </div>
+        </template>
+    </BaseModal>
+
+    <!-- Syllabus Breakdown Modal -->
+    <BaseModal
+        v-if="syllabusProgress"
+        :is-open="showSyllabusModal"
+        :title="`${profileUser.name}'s Syllabus Progress`"
+        :description="`${syllabusProgress.overallPercent}% completed (${syllabusProgress.completedChapters}/${syllabusProgress.totalChapters} chapters in ${syllabusProgress.course.toUpperCase()})`"
+        max-width="lg"
+        @close="showSyllabusModal = false"
+    >
+        <div class="max-h-[70vh] space-y-3 overflow-y-auto p-4 sm:p-6">
+            <div
+                v-for="subj in syllabusProgress.subjects"
+                :key="subj.id"
+                class="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 sm:p-4 dark:border-gray-800/80 dark:bg-gray-800/40"
+            >
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div
+                            :class="[
+                                subj.tailwind_format ||
+                                    'bg-indigo-50 text-indigo-600',
+                                'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-black/5 dark:border-white/10',
+                            ]"
+                        >
+                            <SubjectIcon
+                                :name="subj.icon"
+                                class-name="h-4.5 w-4.5 stroke-[2]"
+                            />
+                        </div>
+                        <div class="min-w-0">
+                            <h4
+                                class="truncate text-xs font-bold text-slate-900 sm:text-sm dark:text-gray-100"
+                            >
+                                {{ subj.name }}
+                            </h4>
+                            <p
+                                v-if="subj.english_name"
+                                class="truncate text-[11px] text-slate-400 dark:text-gray-500"
+                            >
+                                {{ subj.english_name }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="shrink-0 text-right">
+                        <span
+                            class="text-xs font-extrabold text-slate-900 dark:text-gray-100"
+                        >
+                            {{ subj.percent }}%
+                        </span>
+                        <p
+                            class="text-[10px] text-slate-400 dark:text-gray-500"
+                        >
+                            {{ subj.completed }}/{{ subj.total }} Chapters
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div
+                    class="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-gray-700"
+                >
+                    <div
+                        class="h-full rounded-full bg-indigo-600 transition-all duration-300 dark:bg-indigo-400"
+                        :style="{ width: `${subj.percent}%` }"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <template #footer>
+            <div class="flex items-center justify-end">
+                <button
+                    type="button"
+                    @click="showSyllabusModal = false"
+                    class="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                    Close
                 </button>
             </div>
         </template>

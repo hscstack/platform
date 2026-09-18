@@ -42,6 +42,7 @@ class StoreSubjectRequest extends FormRequest
             'icon' => ['required', 'string', 'max:50'],
             'sort_order' => ['required', 'integer'],
             'course' => ['required', 'string', 'in:ssc,hsc'],
+            'is_trackable' => ['sometimes', 'boolean'],
         ];
     }
 }

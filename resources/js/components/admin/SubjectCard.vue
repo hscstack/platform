@@ -55,6 +55,13 @@ const handleDelete = () => {
                     :status="subject.course"
                     size="xs"
                 />
+
+                <span
+                    v-if="subject.is_trackable"
+                    class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
+                >
+                    Trackable
+                </span>
             </div>
         </div>
 

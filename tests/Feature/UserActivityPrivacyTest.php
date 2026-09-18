@@ -20,7 +20,6 @@ test('public profile shows forum activity and stats to guests', function () {
         ->assertInertia(fn ($page) => $page
             ->component('User/Show')
             ->where('isLocked', false)
-            ->where('stats.questionsCount', 1)
             ->has('forumPosts', 1)
         );
 });
@@ -45,7 +44,6 @@ test('private profile hides activity and returns isLocked=true for visitors', fu
             ->component('User/Show')
             ->where('isLocked', true)
             ->where('lockReason', 'private')
-            ->missing('stats')
             ->missing('forumPosts')
         );
 });
@@ -67,7 +65,6 @@ test('private profile owner can view their own activity', function () {
         ->assertInertia(fn ($page) => $page
             ->component('User/Show')
             ->where('isLocked', false)
-            ->where('stats.questionsCount', 1)
             ->has('forumPosts', 1)
         );
 });
@@ -92,7 +89,6 @@ test('appreciators_only profile is locked for non-appreciators', function () {
             ->component('User/Show')
             ->where('isLocked', true)
             ->where('lockReason', 'appreciators_only')
-            ->missing('stats')
             ->missing('forumPosts')
         );
 });
@@ -117,7 +113,6 @@ test('appreciators_only profile is unlocked for users who appreciate them', func
         ->assertInertia(fn ($page) => $page
             ->component('User/Show')
             ->where('isLocked', false)
-            ->where('stats.questionsCount', 1)
             ->has('forumPosts', 1)
         );
 });

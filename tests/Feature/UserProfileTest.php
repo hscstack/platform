@@ -5,6 +5,7 @@ use App\Models\Blog;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Node;
+use App\Models\NodeCompletion;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -58,7 +59,6 @@ test('public profile renders authored blogs when available', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
         ->where('profileUser.is_verified', true)
-        ->where('stats.blogsCount', 1)
         ->has('blogs', 1)
         ->where('blogs.0.title', 'Calculus Masterclass')
     );
@@ -99,8 +99,6 @@ test('public profile accurately displays forum questions, answers, and activitie
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
-        ->where('stats.questionsCount', 1)
-        ->where('stats.answersCount', 1)
         ->has('forumPosts', 1)
         ->where('forumPosts.0.title', 'How to calculate cross product angle?')
         ->has('forumAnswers', 1)
@@ -146,8 +144,6 @@ test('public profile excludes unapproved forum questions and answers', function 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
-        ->where('stats.questionsCount', 0)
-        ->where('stats.answersCount', 0)
         ->has('forumPosts', 0)
         ->has('forumAnswers', 0)
         ->has('recentActivities.forum_posts', 0)
@@ -275,4 +271,66 @@ test('user image_url accessor generates storage url for image_path', function ()
 
     $user2 = User::factory()->create(['image_path' => null]);
     expect($user2->image_url)->toBeNull();
+});
+
+test('public profile accurately displays syllabus progress and subject breakdown', function () {
+    $user = User::factory()->create([
+        'username' => 'syllabus_master',
+        'curriculum' => 'hsc',
+    ]);
+
+    $subject1 = Subject::create([
+        'name' => 'Physics 1st Paper',
+        'slug' => 'physics-1st',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+        'is_trackable' => true,
+    ]);
+
+    $subject2 = Subject::create([
+        'name' => 'Chemistry 1st Paper',
+        'slug' => 'chemistry-1st',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-emerald-500',
+        'icon' => 'flask',
+        'is_trackable' => true,
+    ]);
+
+    $node1 = Node::create([
+        'subject_id' => $subject1->id,
+        'name' => 'Vector',
+        'slug' => 'vector',
+        'is_trackable' => true,
+    ]);
+
+    $node2 = Node::create([
+        'subject_id' => $subject1->id,
+        'name' => 'Dynamics',
+        'slug' => 'dynamics',
+        'is_trackable' => true,
+    ]);
+
+    $node3 = Node::create([
+        'subject_id' => $subject2->id,
+        'name' => 'Qualitative Chemistry',
+        'slug' => 'qualitative-chem',
+        'is_trackable' => true,
+    ]);
+
+    // Complete 1 out of 2 for Physics, 1 out of 1 for Chemistry => 2 / 3 total = 67%
+    NodeCompletion::create(['user_id' => $user->id, 'node_id' => $node1->id]);
+    NodeCompletion::create(['user_id' => $user->id, 'node_id' => $node3->id]);
+
+    $response = $this->get('/u/syllabus_master');
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('User/Show')
+        ->where('syllabusProgress.overallPercent', 67)
+        ->where('syllabusProgress.completedChapters', 2)
+        ->where('syllabusProgress.totalChapters', 3)
+        ->has('syllabusProgress.subjects', 2)
+        ->where('syllabusProgress.subjects.0.percent', 50)
+        ->where('syllabusProgress.subjects.1.percent', 100)
+    );
 });

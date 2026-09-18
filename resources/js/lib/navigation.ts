@@ -21,6 +21,14 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Tracker',
+        labelBn: 'স্টাডি ট্র্যাকার',
+        href: '/tracker',
+        icon: 'timer',
+        match: (url) => url.startsWith('/tracker'),
+        showInBottom: true,
+    },
+    {
         label: 'People',
         href: '/peers',
         icon: 'group',
@@ -47,7 +55,7 @@ export const primaryNavItems: NavItem[] = [
         href: '/blogs',
         icon: 'menu_book',
         match: (url) => url.startsWith('/blogs'),
-        showInBottom: true,
+        showInBottom: false,
     },
     {
         label: 'AI',

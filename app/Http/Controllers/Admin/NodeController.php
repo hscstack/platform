@@ -88,6 +88,7 @@ class NodeController extends Controller
             'name' => $validated['name'],
             'slug' => $slug,
             'sort_order' => $validated['sort_order'] ?? 0,
+            'is_trackable' => (bool) ($validated['is_trackable'] ?? false),
         ]);
 
         return back()->with('success', 'Folder created successfully.');
@@ -138,6 +139,10 @@ class NodeController extends Controller
 
         if (array_key_exists('sort_order', $validated)) {
             $node->sort_order = $validated['sort_order'] ?? 0;
+        }
+
+        if (array_key_exists('is_trackable', $validated)) {
+            $node->is_trackable = (bool) $validated['is_trackable'];
         }
 
         $node->save();
