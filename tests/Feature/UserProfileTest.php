@@ -263,6 +263,12 @@ test('profile update rejects inappropriate words in name, username, about, or in
         'institution' => 'Offensive College',
     ]);
     $response->assertSessionHasErrors(['institution']);
+
+    $response = $this->actingAs($user)->put('/profile', [
+        'name' => 'John Doe',
+        'about' => str_repeat('a', 256),
+    ]);
+    $response->assertSessionHasErrors(['about']);
 });
 
 test('user image_url accessor generates storage url for image_path', function () {
