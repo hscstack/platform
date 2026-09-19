@@ -498,15 +498,21 @@ const submitForm = () => {
             </div>
 
             <div>
-                <label
-                    for="about"
-                    class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
-                    >About</label
-                >
+                <div class="mb-1.5 flex items-center justify-between">
+                    <label
+                        for="about"
+                        class="block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >About</label
+                    >
+                    <span class="text-xs text-slate-400 dark:text-gray-500">
+                        {{ form.about?.length || 0 }}/255
+                    </span>
+                </div>
                 <textarea
                     v-model="form.about"
                     id="about"
                     rows="4"
+                    maxlength="255"
                     placeholder="Short bio..."
                     :disabled="form.processing"
                     class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"

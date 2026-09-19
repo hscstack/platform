@@ -33,7 +33,7 @@ class StoreUserRequest extends FormRequest
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
             'file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'about' => ['nullable', 'string', 'max:1000', new CleanText],
+            'about' => ['nullable', 'string', 'max:255', new CleanText],
             'title' => ['nullable', 'string', 'max:255', new CleanText],
             'institution' => ['nullable', 'string', 'max:255', new CleanText],
             'facebook' => ['nullable', 'string', 'max:255'],
