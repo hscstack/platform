@@ -10,6 +10,7 @@ use App\Http\Controllers\ForumVoteController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeerController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
@@ -98,7 +99,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/join', 'platform/JoinTeam');
     Route::inertia('/guide', 'ContributorGuide');
     Route::inertia('/ai', 'ai/Index');
-    Route::inertia('/projects', 'Projects');
+    Route::get('/projects', [ProductController::class, 'index'])->name('projects.index');
 
     Route::get('/about-us', [AboutUsController::class, 'index']);
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\PeerSettingsController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -152,4 +153,14 @@ Route::middleware('permission:manage forums')->group(function () {
 Route::middleware('permission:manage peers')->group(function () {
     Route::get('/peers/settings', [PeerSettingsController::class, 'edit'])->name('peers.settings.edit');
     Route::post('/peers/settings', [PeerSettingsController::class, 'update'])->name('peers.settings.update');
+});
+
+// Products
+Route::middleware('permission:manage products')->group(function () {
+    Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+    Route::get('/products/edit/{product}', [AdminProductController::class, 'edit'])->name('products.edit');
+    Route::match(['patch', 'post'], '/products/edit/{product}/patch', [AdminProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
 });
