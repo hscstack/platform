@@ -59,7 +59,7 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return redirect()->route('login')->with('error', 'Failed to authenticate with Google. Please try again.');
+            return redirect()->route('login')->with('error', 'Failed to authenticate. Refresh the page & try again.');
         }
 
         $user = User::where('google_id', $googleUser->getId())
