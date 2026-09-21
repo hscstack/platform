@@ -19,14 +19,10 @@ class ProfileController extends Controller
 
     public function deleteAccount(Request $request)
     {
-        $user = $request->user();
-        $openTicketsCount = SupportTicket::where('user_id', $user->id)
-            ->whereIn('status', [SupportTicket::STATUS_OPEN, SupportTicket::STATUS_IN_PROGRESS])
-            ->count();
-
         return Inertia::render('Account/Delete', [
-            'user' => $user->load('roles'),
-            'openTicketsCount' => $openTicketsCount,
+            'openTicketsCount' => SupportTicket::where('user_id', $request->user()->id)
+                ->whereIn('status', [SupportTicket::STATUS_OPEN, SupportTicket::STATUS_IN_PROGRESS])
+                ->count(),
         ]);
     }
 
