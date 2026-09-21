@@ -16,7 +16,7 @@ class ProductController extends Controller
     {
         $products = Cache::rememberForever('products_page_products', function () {
             return Product::where('is_active', true)
-                ->orderBy('order')
+                ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get();
         });

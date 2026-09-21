@@ -84,12 +84,12 @@ const deleteProduct = () => {
 
                     <span
                         v-if="
-                            product.order !== undefined &&
-                            product.order !== null
+                            product.sort_order !== undefined &&
+                            product.sort_order !== null
                         "
                         class="text-[10px] text-slate-400 dark:text-gray-500"
                     >
-                        Order: {{ product.order }}
+                        Sort Order: {{ product.sort_order }}
                     </span>
                 </div>
 

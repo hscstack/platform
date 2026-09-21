@@ -24,7 +24,7 @@ const form = useForm({
     link: props.product?.link || '',
     open_type: props.product?.open_type || '_blank',
     button_text: props.product?.button_text || '',
-    order: props.product?.order ?? 0,
+    sort_order: props.product?.sort_order ?? 0,
     is_active: Boolean(props.product?.is_active ?? true),
 });
 
@@ -289,29 +289,29 @@ const submitForm = () => {
             <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div>
                     <label
-                        for="order"
+                        for="sort_order"
                         class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
                     >
-                        Display Order
+                        Sort Order
                     </label>
                     <input
-                        v-model.number="form.order"
+                        v-model.number="form.sort_order"
                         type="number"
-                        id="order"
+                        id="sort_order"
                         min="0"
                         placeholder="0"
                         class="w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                         :class="
-                            form.errors.order
+                            form.errors.sort_order
                                 ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/20'
                                 : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700'
                         "
                     />
                     <p
-                        v-if="form.errors.order"
+                        v-if="form.errors.sort_order"
                         class="mt-1 text-xs text-rose-600"
                     >
-                        {{ form.errors.order }}
+                        {{ form.errors.sort_order }}
                     </p>
                 </div>
 

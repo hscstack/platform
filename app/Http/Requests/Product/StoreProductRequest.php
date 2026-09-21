@@ -27,7 +27,7 @@ class StoreProductRequest extends FormRequest
             'link' => ['required', 'string', 'max:255'],
             'open_type' => ['required', 'string', 'in:_blank,_self'],
             'button_text' => ['nullable', 'string', 'max:100'],
-            'order' => ['nullable', 'integer', 'min:0'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],
         ];
     }

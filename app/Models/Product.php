@@ -18,7 +18,7 @@ class Product extends Model
         'link',
         'open_type',
         'button_text',
-        'order',
+        'sort_order',
         'is_active',
     ];
 
@@ -30,7 +30,7 @@ class Product extends Model
     {
         return [
             'is_active' => 'boolean',
-            'order' => 'integer',
+            'sort_order' => 'integer',
         ];
     }
 

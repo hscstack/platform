@@ -15,7 +15,7 @@ test('the products page renders dynamic products from database', function () {
         'open_type' => '_blank',
         'users' => '500+ Users',
         'is_active' => true,
-        'order' => 1,
+        'sort_order' => 1,
     ]);
 
     Product::create([
@@ -24,7 +24,7 @@ test('the products page renders dynamic products from database', function () {
         'link' => 'https://example.com/inactive',
         'open_type' => '_self',
         'is_active' => false,
-        'order' => 2,
+        'sort_order' => 2,
     ]);
 
     $response = $this->get('/products');
@@ -114,7 +114,7 @@ test('users with manage products permission can manage products in admin panel',
         'link' => 'https://testplatform.com',
         'open_type' => '_blank',
         'button_text' => 'Launch Test',
-        'order' => 1,
+        'sort_order' => 1,
         'is_active' => true,
     ]);
 
@@ -124,7 +124,8 @@ test('users with manage products permission can manage products in admin panel',
     expect($product)->not->toBeNull()
         ->and($product->users)->toBe('1000+ Users')
         ->and($product->open_type)->toBe('_blank')
-        ->and($product->button_text)->toBe('Launch Test');
+        ->and($product->button_text)->toBe('Launch Test')
+        ->and($product->sort_order)->toBe(1);
 
     Storage::assertExists($product->image_path);
 
@@ -139,7 +140,7 @@ test('users with manage products permission can manage products in admin panel',
         'link' => 'https://updated.com',
         'open_type' => '_self',
         'button_text' => 'Go to Updated',
-        'order' => 5,
+        'sort_order' => 5,
         'is_active' => true,
     ]);
 

@@ -13,7 +13,7 @@ export interface ProductItem {
     link: string;
     open_type?: string;
     button_text?: string | null;
-    order?: number;
+    sort_order?: number;
     is_active?: boolean;
 }
 

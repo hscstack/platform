@@ -18,7 +18,7 @@ class ProductController extends Controller
      */
     public function index(): Response
     {
-        $products = Product::orderBy('order')
+        $products = Product::orderBy('sort_order')
             ->orderByDesc('id')
             ->get();
 

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('link');
             $table->string('open_type')->default('_blank');
             $table->string('button_text')->nullable();
-            $table->integer('order')->default(0);
+            $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
