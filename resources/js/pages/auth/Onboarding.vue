@@ -56,7 +56,7 @@ const form = useForm<{
     image: null,
     receive_emails: true,
     appreciations: (props.suggestedContributors || [])
-        .filter((_, index) => index === 0 || index === 2)
+        .slice(0, 3)
         .map((c) => c.id),
 });
 
