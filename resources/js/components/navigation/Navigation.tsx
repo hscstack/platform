@@ -102,6 +102,7 @@ function getCollapsedAdminLabel(name: string): string {
     const map: Record<string, string> = {
         'Manage Contents': 'Contents',
         'Manage Blogs': 'Blogs',
+        'Manage Products': 'Products',
         'Manage Forum': 'Forum',
         'Support Tickets': 'Support',
         'Site Notice': 'Notice',
