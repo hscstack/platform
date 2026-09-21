@@ -107,7 +107,7 @@ class AuthController extends Controller
 
         $top = User::withCount('appreciationsReceived')
             ->orderByDesc('appreciations_received_count')
-            ->take(1)
+            ->take(2)
             ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
 
         $verified = User::where('is_verified', true)
@@ -120,7 +120,7 @@ class AuthController extends Controller
 
         $random = User::whereNotIn('id', $excludedIds)
             ->inRandomOrder()
-            ->take(2)
+            ->take(1)
             ->get(['id', 'name', 'username', 'image_path', 'institution', 'is_verified']);
 
         $suggestedContributors = $top->concat($verified)->concat($random)->values();
