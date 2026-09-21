@@ -42,6 +42,17 @@ const flashError = computed(() => (page.props as any).flash?.error);
 
 const currentStep = ref<1 | 2>(1);
 
+const getInitialAppreciations = (suggested: Contributor[] = []): number[] => {
+    if (suggested.length === 0) {
+        return [];
+    }
+
+    const [first, ...rest] = suggested;
+    const randomRest = [...rest].sort(() => Math.random() - 0.5).slice(0, 2);
+
+    return [first, ...randomRest].map((c) => c.id);
+};
+
 const form = useForm<{
     name: string;
     username: string;
@@ -55,9 +66,7 @@ const form = useForm<{
     school: '',
     image: null,
     receive_emails: true,
-    appreciations: (props.suggestedContributors || [])
-        .slice(0, 3)
-        .map((c) => c.id),
+    appreciations: getInitialAppreciations(props.suggestedContributors),
 });
 
 const previewUrl = ref<string | null>(null);
