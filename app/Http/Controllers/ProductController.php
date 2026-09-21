@@ -18,7 +18,8 @@ class ProductController extends Controller
             return Product::where('is_active', true)
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         return Inertia::render('Products', [
