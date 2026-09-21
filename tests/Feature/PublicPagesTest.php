@@ -54,10 +54,16 @@ test('the about us page loads successfully', function () {
     $response->assertStatus(200);
 });
 
-test('the projects page loads successfully', function () {
-    $response = $this->get('/projects');
+test('the products page loads successfully', function () {
+    $response = $this->get('/products');
 
     $response->assertStatus(200);
+});
+
+test('the legacy projects route permanently redirects to products', function () {
+    $response = $this->get('/projects');
+
+    $response->assertRedirect('/products');
 });
 
 test('non-existent public resources render the 404 error page', function () {

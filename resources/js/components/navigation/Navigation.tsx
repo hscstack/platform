@@ -102,6 +102,7 @@ function getCollapsedAdminLabel(name: string): string {
     const map: Record<string, string> = {
         'Manage Contents': 'Contents',
         'Manage Blogs': 'Blogs',
+        'Manage Products': 'Products',
         'Manage Forum': 'Forum',
         'Support Tickets': 'Support',
         'Site Notice': 'Notice',
@@ -523,10 +524,10 @@ export const SiteRail = defineComponent({
                                             )}
                                         </Link>
                                         <Link
-                                            href="/projects"
+                                            href="/products"
                                             class={[
                                                 'group flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight transition-colors duration-150',
-                                                isActive('/projects')
+                                                isActive('/products')
                                                     ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
                                                     : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
                                             ]}
@@ -535,7 +536,7 @@ export const SiteRail = defineComponent({
                                                 name="apps"
                                                 size={22}
                                                 class={`shrink-0 transition-colors duration-150 ${
-                                                    isActive('/projects')
+                                                    isActive('/products')
                                                         ? 'text-indigo-600 dark:text-indigo-300'
                                                         : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
                                                 }`}
@@ -543,7 +544,7 @@ export const SiteRail = defineComponent({
                                             <span class="truncate">
                                                 More From Us
                                             </span>
-                                            {isActive('/projects') && (
+                                            {isActive('/products') && (
                                                 <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                             )}
                                         </Link>
@@ -1231,11 +1232,11 @@ export const SiteDrawer = defineComponent({
                                                     )}
                                                 </Link>
                                                 <Link
-                                                    href="/projects"
+                                                    href="/products"
                                                     onClick={close}
                                                     class={[
                                                         'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
-                                                        isActive('/projects')
+                                                        isActive('/products')
                                                             ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
                                                             : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
                                                     ]}
@@ -1245,7 +1246,7 @@ export const SiteDrawer = defineComponent({
                                                         size={22}
                                                         class={`shrink-0 transition-colors duration-150 ${
                                                             isActive(
-                                                                '/projects',
+                                                                '/products',
                                                             )
                                                                 ? 'text-indigo-600 dark:text-indigo-300'
                                                                 : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
@@ -1254,7 +1255,7 @@ export const SiteDrawer = defineComponent({
                                                     <span class="truncate">
                                                         More From Us
                                                     </span>
-                                                    {isActive('/projects') && (
+                                                    {isActive('/products') && (
                                                         <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                                     )}
                                                 </Link>

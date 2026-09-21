@@ -100,6 +100,11 @@ class RolePermissionSeeder extends Seeder
          */
         Permission::findOrCreate('manage peers');
 
+        /*
+         * Product management
+         */
+        Permission::findOrCreate('manage products');
+
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
 
