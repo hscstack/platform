@@ -67,6 +67,11 @@
                 posthog.init('{{ $posthogKey }}', {
                     api_host: '{{ config('services.posthog.host', 'https://us.i.posthog.com') }}',
                     person_profiles: 'identified_only',
+                    session_recording: {
+                        maskAllInputs: true,
+                        maskInputFn: (text, element) =>
+                            element?.closest?.('.ph-no-mask') ? text : '*'.repeat(text?.length || 0),
+                    },
                 });
             </script>
         @endif
