@@ -10,35 +10,45 @@ defineProps<{
 
 <template>
     <Head>
-        <title>Our Products & Open Source Projects</title>
+        <title>The HSCStack Ecosystem & Connected Apps</title>
         <meta
             name="description"
-            content="Explore educational platforms, open-source web applications, and learning tools developed by the HSCStack team."
+            content="Explore interconnected platforms, learning tools, and analytics built under the HSCStack ecosystem."
         />
         <meta
             property="og:title"
-            content="Our Products & Open Source Projects - HSCStack"
+            content="The HSCStack Ecosystem - Connected Apps & Platforms"
         />
         <meta
             property="og:description"
-            content="Explore educational platforms, open-source web applications, and learning tools developed by the HSCStack team."
+            content="Explore interconnected platforms, learning tools, and analytics built under the HSCStack ecosystem."
         />
     </Head>
 
     <header
         class="mx-auto max-w-4xl px-4 pt-8 pb-6 text-center sm:pt-12 sm:pb-10"
     >
+        <div
+            class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-3 py-1 text-xs font-semibold text-indigo-700 backdrop-blur-xs dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
+        >
+            <span
+                class="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"
+            ></span>
+            <span>HSCStack Suite</span>
+        </div>
+
         <h1
             class="mb-3 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
         >
-            Our
-            <span class="text-indigo-600 dark:text-indigo-400">Products</span>
+            The
+            <span class="text-indigo-600 dark:text-indigo-400">Ecosystem</span>
         </h1>
 
         <p
-            class="mx-auto max-w-md text-sm font-medium text-slate-500 dark:text-gray-400"
+            class="mx-auto max-w-lg text-sm font-medium text-slate-600 sm:text-base dark:text-gray-300"
         >
-            Explore platforms and tools built by HSCStack
+            Connected platforms and specialized tools designed for your complete
+            HSC & SSC study journey.
         </p>
     </header>
 
@@ -59,7 +69,7 @@ defineProps<{
             class="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-gray-800 dark:bg-gray-900"
         >
             <p class="text-sm font-medium text-slate-500 dark:text-gray-400">
-                No products are currently available. Check back soon!
+                No ecosystem products are currently available. Check back soon!
             </p>
         </div>
     </main>

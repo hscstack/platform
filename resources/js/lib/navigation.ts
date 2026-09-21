@@ -65,6 +65,14 @@ export const primaryNavItems: NavItem[] = [
         match: (url) => url.startsWith('/ai'),
         showInBottom: false,
     },
+    {
+        label: 'Ecosystem',
+        labelBn: 'ইকোসিস্টেম',
+        href: '/projects',
+        icon: 'hub',
+        match: (url) => url.startsWith('/projects'),
+        showInBottom: false,
+    },
 ];
 
 export const overflowNavItems: NavItem[] = [
