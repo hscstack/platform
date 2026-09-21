@@ -30,6 +30,7 @@ Route::middleware('throttle:60,1')->get('/api/auth/status', function (Request $r
 Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/account/delete', [ProfileController::class, 'deleteAccount'])->name('account.delete');
     Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');
     Route::post('/blogs/{blog}/react', [BlogController::class, 'toggleReaction'])->name('blogs.react');
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');

@@ -16,6 +16,7 @@ import {
     Lock,
     Zap,
     GraduationCap,
+    Trash2,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
@@ -1065,11 +1066,11 @@ const submitForm = () => {
                         <h3
                             class="text-sm font-semibold text-slate-900 dark:text-gray-100"
                         >
-                            Account Deletion & Support.
+                            Help & Support Center
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            অ্যাকাউন্ট ডিলেট করতে চান কিংবা অন্য কোনো সমস্যা?
-                            সরাসরি সাপোর্টে কথা বলুন !
+                            কোনো সমস্যা, প্রশ্ন বা ফিডব্যাকের জন্য সরাসরি
+                            সাপোর্ট টিকেট খুলুন।
                         </p>
                     </div>
                 </div>
@@ -1083,6 +1084,41 @@ const submitForm = () => {
                     />
                     <span>Support Center</span>
                     <ArrowRight class="h-3.5 w-3.5 text-slate-400" />
+                </Link>
+            </div>
+
+            <!-- Danger Zone / Delete Account Link -->
+            <div
+                class="flex flex-col items-start justify-between gap-4 rounded-2xl border border-rose-200/70 bg-rose-50/30 p-5 shadow-xs sm:flex-row sm:items-center dark:border-rose-900/30 dark:bg-rose-950/10"
+            >
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400"
+                    >
+                        <Trash2 class="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h3
+                            class="text-sm font-semibold text-rose-900 dark:text-rose-200"
+                        >
+                            Delete Account
+                        </h3>
+                        <p
+                            class="text-xs text-rose-700/80 dark:text-rose-400/80"
+                        >
+                            অ্যাকাউন্ট ও সংশ্লিষ্ট ডেটা স্থায়ীভাবে মুছে ফেলার
+                            অনুরোধ করুন।
+                        </p>
+                    </div>
+                </div>
+
+                <Link
+                    href="/account/delete"
+                    class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-50 dark:border-rose-900/50 dark:bg-gray-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
+                >
+                    <Trash2 class="h-3.5 w-3.5" />
+                    <span>Delete Account</span>
+                    <ArrowRight class="h-3.5 w-3.5 text-rose-400" />
                 </Link>
             </div>
 
