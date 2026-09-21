@@ -1,7 +1,10 @@
 # Project Guidelines & Automated Checks
 
 ## Formatting and Linting
-When asked to fix or check formatting/linting issues, or before committing changes, run the automated fix commands directly instead of manually inspecting and fixing errors one by one:
+- **Strict Trigger**: Do NOT run formatting, linting, or fix commands (`npm run format`, `composer lint`, `npm run lint`) during intermediate edits or regular conversational turns.
+- Only run the automated check commands when:
+  1. The user explicitly instructs to `"push"` or `"commit"`.
+  2. The user explicitly asks to check or fix formatting/linting issues.
 
 ```bash
 npm run format && composer lint && npm run lint
@@ -16,7 +19,7 @@ npm run format && composer lint && npm run lint
      ```
   2. Switch to that branch.
   3. Use atomic commits where applicable.
-  4. Always run formatting and linting checks before committing:
+  4. Run formatting and linting checks before committing:
      ```bash
      npm run format && composer lint && npm run lint
      ```

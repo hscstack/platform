@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Models\SupportTicket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -13,6 +14,15 @@ class ProfileController extends Controller
     {
         return Inertia::render('Profile', [
             'user' => $request->user()->load('roles'),
+        ]);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        return Inertia::render('Account/Delete', [
+            'openTicketsCount' => SupportTicket::where('user_id', $request->user()->id)
+                ->whereIn('status', [SupportTicket::STATUS_OPEN, SupportTicket::STATUS_IN_PROGRESS])
+                ->count(),
         ]);
     }
 

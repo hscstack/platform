@@ -41,6 +41,7 @@ const page = usePage();
 const flashError = computed(() => (page.props as any).flash?.error);
 
 const currentStep = ref<1 | 2>(1);
+const termsAccepted = ref(false);
 
 const getInitialAppreciations = (suggested: Contributor[] = []): number[] => {
     if (suggested.length === 0) {
@@ -213,7 +214,7 @@ const goToStep2 = () => {
 };
 
 const submit = () => {
-    if (isCompressing.value || form.errors.image) {
+    if (isCompressing.value || form.errors.image || !termsAccepted.value) {
         return;
     }
 
@@ -693,6 +694,41 @@ const getContributorAvatar = (contributor: Contributor) => {
                         {{ form.errors.appreciations }}
                     </p>
 
+                    <!-- Terms & Privacy Agreement Tickmark -->
+                    <div class="pt-1">
+                        <label
+                            class="flex cursor-pointer items-start gap-2.5 text-xs text-slate-600 dark:text-gray-300"
+                        >
+                            <input
+                                v-model="termsAccepted"
+                                type="checkbox"
+                                class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                            />
+                            <span
+                                class="text-[11px] leading-relaxed select-none"
+                            >
+                                আমি
+                                <Link
+                                    href="/terms-service"
+                                    target="_blank"
+                                    class="font-semibold text-slate-800 underline decoration-slate-300 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+                                >
+                                    Terms & Conditions
+                                </Link>
+                                এবং
+                                <Link
+                                    href="/privacy-policy"
+                                    target="_blank"
+                                    class="font-semibold text-slate-800 underline decoration-slate-300 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+                                >
+                                    Privacy Policy
+                                </Link>
+                                পড়েছি এবং আমার তথ্য কীভাবে সুরক্ষিত ও ব্যবহৃত
+                                হবে তা জেনেই অ্যাকাউন্ট তৈরি করছি।
+                            </span>
+                        </label>
+                    </div>
+
                     <!-- Navigation Buttons -->
                     <div class="flex items-center gap-3 pt-2">
                         <button
@@ -708,7 +744,7 @@ const getContributorAvatar = (contributor: Contributor) => {
                         <button
                             type="button"
                             @click="submit"
-                            :disabled="form.processing"
+                            :disabled="form.processing || !termsAccepted"
                             class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                         >
                             <Loader2
@@ -724,30 +760,6 @@ const getContributorAvatar = (contributor: Contributor) => {
                             }}</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- Terms & Privacy subtext -->
-                <div
-                    class="mt-6 border-t border-slate-100 pt-4 text-center dark:border-gray-800"
-                >
-                    <p
-                        class="text-[11px] leading-relaxed text-slate-400 dark:text-gray-500"
-                    >
-                        অ্যাকাউন্ট তৈরির মাধ্যমে আপনি আমাদের
-                        <Link
-                            href="/terms-service"
-                            class="font-medium text-slate-600 underline decoration-slate-300 hover:text-slate-900 dark:text-gray-400 dark:decoration-gray-600 dark:hover:text-gray-200"
-                        >
-                            Terms of Service
-                        </Link>
-                        ও
-                        <Link
-                            href="/privacy-policy"
-                            class="font-medium text-slate-600 underline decoration-slate-300 hover:text-slate-900 dark:text-gray-400 dark:decoration-gray-600 dark:hover:text-gray-200"
-                        >
-                            Privacy Policy </Link
-                        >-তে সম্মতি দিচ্ছেন।
-                    </p>
                 </div>
             </div>
         </div>
