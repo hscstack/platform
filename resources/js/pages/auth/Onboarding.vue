@@ -183,7 +183,7 @@ const goToStep2 = () => {
 
     if (!/^[a-zA-Z0-9_]{3,30}$/.test(form.username.trim())) {
         form.errors.username =
-            'Username must be 3-30 characters (letters, numbers, underscores).';
+            "Username must be 3-30 characters (letters, numbers, underscores). Dots aren't allowed.";
 
         return;
     }
