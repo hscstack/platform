@@ -45,11 +45,9 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products');
             $data['image_path'] = $path;
-        } elseif (! empty($data['image_url'])) {
-            $data['image_path'] = $data['image_url'];
         }
 
-        unset($data['image'], $data['image_url']);
+        unset($data['image']);
 
         Product::create($data);
 
@@ -82,13 +80,9 @@ class ProductController extends Controller
 
             $path = $request->file('image')->store('products');
             $data['image_path'] = $path;
-        } elseif (isset($data['image_url'])) {
-            if (! empty($data['image_url'])) {
-                $data['image_path'] = $data['image_url'];
-            }
         }
 
-        unset($data['image'], $data['image_url']);
+        unset($data['image']);
 
         $product->update($data);
 

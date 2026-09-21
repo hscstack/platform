@@ -10,16 +10,10 @@ const props = defineProps({
     },
 });
 
-const isExternalPath =
-    props.product?.image_path &&
-    (props.product.image_path.startsWith('http://') ||
-        props.product.image_path.startsWith('https://'));
-
 const form = useForm({
     name: props.product?.name || '',
     description: props.product?.description || '',
     image: null as File | null,
-    image_url: isExternalPath ? props.product.image_path : '',
     users: props.product?.users || '',
     link: props.product?.link || '',
     open_type: props.product?.open_type || '_blank',
@@ -252,9 +246,7 @@ const submitForm = () => {
                 <ImageUpload
                     v-model="form.image"
                     :current-image-url="
-                        form.image_url ||
-                        product?.image_url ||
-                        product?.image_path
+                        product?.image_url || product?.image_path
                     "
                     label="Product Banner Image"
                     help-text="16:9 banner image recommended (JPG, PNG, WebP)"
@@ -266,23 +258,6 @@ const submitForm = () => {
                 >
                     {{ form.errors.image }}
                 </p>
-
-                <!-- Optional Direct Image URL fallback -->
-                <div class="mt-3">
-                    <label
-                        for="image_url"
-                        class="mb-1 block text-xs font-medium text-slate-500 dark:text-gray-400"
-                    >
-                        Or provide direct image URL (e.g. CDN URL):
-                    </label>
-                    <input
-                        v-model="form.image_url"
-                        type="text"
-                        id="image_url"
-                        placeholder="https://cdn.example.com/image.png"
-                        class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-1.5 text-xs text-slate-800 transition outline-none placeholder:text-slate-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                    />
-                </div>
             </div>
 
             <!-- Order & Active Status -->

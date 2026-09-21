@@ -22,7 +22,6 @@ class StoreProductRequest extends FormRequest
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120',
             ],
-            'image_url' => ['nullable', 'string', 'max:1000'],
             'users' => ['nullable', 'string', 'max:100'],
             'link' => ['required', 'string', 'max:255'],
             'open_type' => ['required', 'string', 'in:_blank,_self'],
