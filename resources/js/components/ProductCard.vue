@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { ExternalLink, ArrowRight, Users, Layers } from 'lucide-vue-next';
+import { ArrowRight, ExternalLink, Layers, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 export interface ProductItem {
@@ -26,11 +25,7 @@ const displayImage = computed(() => {
 });
 
 const isBlank = computed(() => {
-    return (
-        props.product.open_type === '_blank' ||
-        props.product.link.startsWith('http://') ||
-        props.product.link.startsWith('https://')
-    );
+    return props.product.open_type === '_blank';
 });
 
 const buttonLabel = computed(() => {
@@ -87,24 +82,15 @@ const buttonLabel = computed(() => {
         <!-- Action Button -->
         <div class="mt-6 border-t border-slate-100 pt-4 dark:border-gray-800">
             <a
-                v-if="isBlank"
                 :href="product.link"
-                target="_blank"
-                rel="noopener noreferrer"
+                :target="product.open_type || '_self'"
+                :rel="isBlank ? 'noopener noreferrer' : undefined"
                 class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-98"
             >
                 <span>{{ buttonLabel }}</span>
-                <ExternalLink class="h-4 w-4" />
+                <ExternalLink v-if="isBlank" class="h-4 w-4" />
+                <ArrowRight v-else class="h-4 w-4" />
             </a>
-
-            <Link
-                v-else
-                :href="product.link"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-98"
-            >
-                <span>{{ buttonLabel }}</span>
-                <ArrowRight class="h-4 w-4" />
-            </Link>
         </div>
     </div>
 </template>
