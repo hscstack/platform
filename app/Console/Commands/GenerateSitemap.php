@@ -28,7 +28,7 @@ class GenerateSitemap extends Command
             '/blogs' => ['priority' => 0.8, 'freq' => 'daily'],
             '/forum' => ['priority' => 0.8, 'freq' => 'daily'],
             '/about-us' => ['priority' => 0.7, 'freq' => 'monthly'],
-            '/projects' => ['priority' => 0.7, 'freq' => 'monthly'],
+            '/products' => ['priority' => 0.7, 'freq' => 'monthly'],
             '/guide' => ['priority' => 0.7, 'freq' => 'monthly'],
             '/ai' => ['priority' => 0.7, 'freq' => 'monthly'],
             '/donate' => ['priority' => 0.6, 'freq' => 'monthly'],

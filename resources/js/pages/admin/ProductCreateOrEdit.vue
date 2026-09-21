@@ -66,7 +66,7 @@ const submitForm = () => {
                         {{ props.product ? 'Edit' : 'Create' }} Product
                     </h1>
                     <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                        Configure showcase products displayed on the /projects
+                        Configure showcase products displayed on the /products
                         page.
                     </p>
                 </div>
@@ -329,7 +329,7 @@ const submitForm = () => {
                                 class="text-xs text-slate-500 dark:text-gray-400"
                             >
                                 Make this product visible on the public
-                                /projects showcase.
+                                /products showcase.
                             </p>
                         </div>
                         <input

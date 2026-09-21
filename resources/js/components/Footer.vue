@@ -130,7 +130,7 @@ import AppLogo from './AppLogo.vue';
                             </li>
                             <li>
                                 <Link
-                                    href="/projects"
+                                    href="/products"
                                     class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     <ExternalLink

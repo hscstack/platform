@@ -9,11 +9,11 @@ class ProductObserver
 {
     public function saved(Product $product): void
     {
-        Cache::forget('projects_page_products');
+        Cache::forget('products_page_products');
     }
 
     public function deleted(Product $product): void
     {
-        Cache::forget('projects_page_products');
+        Cache::forget('products_page_products');
     }
 }

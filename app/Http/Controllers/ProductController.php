@@ -14,14 +14,14 @@ class ProductController extends Controller
      */
     public function index(): Response
     {
-        $products = Cache::rememberForever('projects_page_products', function () {
+        $products = Cache::rememberForever('products_page_products', function () {
             return Product::where('is_active', true)
                 ->orderBy('order')
                 ->orderBy('id')
                 ->get();
         });
 
-        return Inertia::render('Projects', [
+        return Inertia::render('Products', [
             'products' => $products,
         ]);
     }

@@ -99,7 +99,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/join', 'platform/JoinTeam');
     Route::inertia('/guide', 'ContributorGuide');
     Route::inertia('/ai', 'ai/Index');
-    Route::get('/projects', [ProductController::class, 'index'])->name('projects.index');
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::permanentRedirect('/projects', '/products');
 
     Route::get('/about-us', [AboutUsController::class, 'index']);
 

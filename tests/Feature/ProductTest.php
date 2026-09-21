@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 
-test('the projects page renders dynamic products from database', function () {
+test('the products page renders dynamic products from database', function () {
     Product::create([
         'name' => 'Demo Platform',
         'description' => 'Demo description',
@@ -27,24 +27,24 @@ test('the projects page renders dynamic products from database', function () {
         'order' => 2,
     ]);
 
-    $response = $this->get('/projects');
+    $response = $this->get('/products');
 
     $response->assertStatus(200);
     $response->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('Projects')
+        ->component('Products')
         ->has('products', 1)
         ->where('products.0.name', 'Demo Platform')
     );
 });
 
-test('projects page products are cached forever and cleared on create, update, and delete', function () {
-    Cache::forget('projects_page_products');
+test('products page products are cached forever and cleared on create, update, and delete', function () {
+    Cache::forget('products_page_products');
 
-    expect(Cache::has('projects_page_products'))->toBeFalse();
+    expect(Cache::has('products_page_products'))->toBeFalse();
 
-    $this->get('/projects')->assertStatus(200);
+    $this->get('/products')->assertStatus(200);
 
-    expect(Cache::has('projects_page_products'))->toBeTrue();
+    expect(Cache::has('products_page_products'))->toBeTrue();
 
     // Invalidate on create
     $product = Product::create([
@@ -55,23 +55,23 @@ test('projects page products are cached forever and cleared on create, update, a
         'is_active' => true,
     ]);
 
-    expect(Cache::has('projects_page_products'))->toBeFalse();
+    expect(Cache::has('products_page_products'))->toBeFalse();
 
     // Re-cache
-    $this->get('/projects')->assertStatus(200);
-    expect(Cache::has('projects_page_products'))->toBeTrue();
+    $this->get('/products')->assertStatus(200);
+    expect(Cache::has('products_page_products'))->toBeTrue();
 
     // Invalidate on update
     $product->update(['name' => 'Renamed Product']);
-    expect(Cache::has('projects_page_products'))->toBeFalse();
+    expect(Cache::has('products_page_products'))->toBeFalse();
 
     // Re-cache
-    $this->get('/projects')->assertStatus(200);
-    expect(Cache::has('projects_page_products'))->toBeTrue();
+    $this->get('/products')->assertStatus(200);
+    expect(Cache::has('products_page_products'))->toBeTrue();
 
     // Invalidate on delete
     $product->delete();
-    expect(Cache::has('projects_page_products'))->toBeFalse();
+    expect(Cache::has('products_page_products'))->toBeFalse();
 });
 
 test('unauthorized users cannot access admin products management', function () {
