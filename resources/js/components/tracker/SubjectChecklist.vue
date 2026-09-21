@@ -55,9 +55,7 @@ watch(
 );
 
 // Expanded accordion cards state
-const expandedSubjectIds = ref<Set<number>>(
-    new Set(props.subjects.slice(0, 3).map((s) => s.id)),
-);
+const expandedSubjectIds = ref<Set<number>>(new Set());
 
 function toggleExpand(subjectId: number) {
     if (expandedSubjectIds.value.has(subjectId)) {
