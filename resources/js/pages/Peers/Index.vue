@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useRemember } from '@inertiajs/vue3';
+import { Head, Link, router, usePage, useRemember } from '@inertiajs/vue3';
 import { Search, X, Users, Heart, Loader2 } from 'lucide-vue-next';
 import { onUnmounted, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -34,6 +34,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const page = usePage();
 
 const peerList = useRemember<Peer[]>(
     [...props.peers.data],
@@ -51,10 +52,8 @@ const currentSort = ref(props.filters.sort || 'relevant');
 watch(
     () => props.peers,
     (newPeers) => {
-        if (!isLoadingMore.value) {
-            peerList.value = [...(newPeers?.data || [])];
-            nextPageUrl.value = newPeers?.next_page_url || null;
-        }
+        peerList.value = [...(newPeers?.data || [])];
+        nextPageUrl.value = newPeers?.next_page_url || null;
     },
 );
 
@@ -106,36 +105,44 @@ const setSort = (sortValue: string) => {
     applyFilters();
 };
 
-const loadMore = () => {
+const loadMore = async () => {
     if (!nextPageUrl.value || isLoadingMore.value) {
         return;
     }
 
     isLoadingMore.value = true;
-    router.get(
-        nextPageUrl.value,
-        {},
-        {
-            preserveState: true,
-            preserveScroll: true,
-            preserveUrl: true,
-            only: ['peers'],
-            onSuccess: (page) => {
-                const newPeersData =
-                    (page.props.peers as Props['peers'])?.data || [];
-                const existingIds = new Set(peerList.value.map((p) => p.id));
-                const uniqueNew = newPeersData.filter(
-                    (p) => !existingIds.has(p.id),
-                );
-                peerList.value.push(...uniqueNew);
-                nextPageUrl.value =
-                    (page.props.peers as Props['peers'])?.next_page_url || null;
-            },
-            onFinish: () => {
-                isLoadingMore.value = false;
-            },
-        },
-    );
+
+    try {
+        const headers: Record<string, string> = {
+            'X-Inertia': 'true',
+            'X-Inertia-Partial-Component': 'Peers/Index',
+            'X-Inertia-Partial-Data': 'peers',
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+
+        if (page.version) {
+            headers['X-Inertia-Version'] = String(page.version);
+        }
+
+        const res = await fetch(nextPageUrl.value, { headers });
+
+        if (res.ok) {
+            const data = await res.json();
+            const newPeersData =
+                (data?.props?.peers as Props['peers'])?.data || [];
+            const existingIds = new Set(peerList.value.map((p) => p.id));
+            const uniqueNew = newPeersData.filter(
+                (p) => !existingIds.has(p.id),
+            );
+            peerList.value = [...peerList.value, ...uniqueNew];
+            nextPageUrl.value =
+                (data?.props?.peers as Props['peers'])?.next_page_url || null;
+        }
+    } catch (e) {
+        console.error('Failed to load more peers:', e);
+    } finally {
+        isLoadingMore.value = false;
+    }
 };
 
 onUnmounted(() => {
