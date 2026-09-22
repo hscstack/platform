@@ -167,3 +167,24 @@ test('already appreciated peers are excluded in default discovery but included i
             ->where('peers.data.0.is_appreciated', true)
         );
 });
+
+test('peers in You May Know prioritizes mutual connections', function () {
+    $viewer = User::factory()->create(['name' => 'Current Viewer']);
+    $friend = User::factory()->create(['name' => 'Direct Friend']);
+    $mutualPeer = User::factory()->create(['name' => 'Mutual Friend Candidate']);
+    $randomPeer = User::factory()->create(['name' => 'Random Candidate']);
+
+    // Viewer appreciates Friend
+    $friend->appreciators()->attach($viewer->id);
+
+    // Friend appreciates Mutual Peer
+    $mutualPeer->appreciators()->attach($friend->id);
+
+    $response = $this->actingAs($viewer)->get(route('peers.index', ['sort' => 'relevant']));
+
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Peers/Index')
+            ->where('peers.data.0.name', 'Mutual Friend Candidate')
+        );
+});

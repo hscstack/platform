@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserAppreciation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -57,6 +58,18 @@ class PeerController extends Controller
         if ($sort === 'appreciated') {
             $query->orderByDesc('appreciations_received_count')->latest('users.id');
         } else {
+            // 1. Primary: Mutual connections (friends of friends) for authenticated users
+            if ($currentUser) {
+                $query->selectSub(
+                    UserAppreciation::query()
+                        ->selectRaw('count(*)')
+                        ->whereIn('appreciator_id', $currentUser->appreciationsGiven()->select('user_id'))
+                        ->whereColumn('user_appreciations.user_id', 'users.id'),
+                    'mutual_count'
+                )->orderByDesc('mutual_count');
+            }
+
+            // 2. Fallback: Institution / location matching
             $targetLocation = $currentUser?->institution ? trim($currentUser->institution) : '';
 
             // For guests or users without institution, infer location from Cloudflare headers
