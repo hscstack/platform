@@ -99,7 +99,7 @@ class PeerController extends Controller
                 }
             }
 
-            $query->latest('users.id');
+            $query->inRandomOrder();
         }
 
         $peers = $query->simplePaginate(20)->withQueryString();
