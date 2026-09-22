@@ -1024,18 +1024,31 @@ export const SiteDrawer = defineComponent({
                         <AppLogo />
                     </div>
                     <div class="ml-auto flex items-center gap-1.5">
-                        {isHome.value && (
+                        {user.value ? (
+                            <>
+                                {isHome.value && (
+                                    <Link
+                                        href="/peers"
+                                        class="relative flex h-9 items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50 px-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                                        aria-label="Find"
+                                        title="Find"
+                                    >
+                                        <Search class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
+                                        <span>Find</span>
+                                    </Link>
+                                )}
+                                <NotificationDropdown plain />
+                            </>
+                        ) : !currentUrl.value.startsWith('/login') ? (
                             <Link
-                                href="/peers"
-                                class="relative flex h-9 items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50 px-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                                aria-label="Find"
-                                title="Find"
+                                href="/login"
+                                class="flex h-9 items-center gap-1.5 rounded-xl bg-indigo-600 px-3 text-xs font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                                aria-label="Login"
                             >
-                                <Search class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
-                                <span>Find</span>
+                                <MaterialIcon name="login" size={18} />
+                                <span>Login</span>
                             </Link>
-                        )}
-                        <NotificationDropdown plain />
+                        ) : null}
                     </div>
                 </div>
 
