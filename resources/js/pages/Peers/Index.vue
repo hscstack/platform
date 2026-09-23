@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage, useRemember } from '@inertiajs/vue3';
 import { Search, X, Users, Heart, Loader2 } from 'lucide-vue-next';
-import { onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
@@ -33,35 +33,44 @@ interface Props {
     };
 }
 
+interface PeerPaginationState {
+    list: Peer[];
+    nextPageUrl: string | null;
+}
+
 const props = defineProps<Props>();
 const page = usePage();
 
-const peerList = useRemember<Peer[]>(
-    [...props.peers.data],
-    'Peers/Index/peerList',
+const pagination = useRemember<PeerPaginationState>(
+    {
+        list: props.peers?.data ? [...props.peers.data] : [],
+        nextPageUrl: props.peers?.next_page_url || null,
+    },
+    'Peers/Index/pagination',
 );
-const nextPageUrl = useRemember<string | null>(
-    props.peers.next_page_url,
-    'Peers/Index/nextPageUrl',
-);
+const peerList = computed(() => pagination.value?.list || []);
+const nextPageUrl = computed(() => pagination.value?.nextPageUrl || null);
 const isLoadingMore = ref(false);
 
-const searchQuery = ref(props.filters.search || '');
-const currentSort = ref(props.filters.sort || 'relevant');
+const searchQuery = ref(props.filters?.search || '');
+const currentSort = ref(props.filters?.sort || 'relevant');
+let currentFilterSignature = `${props.filters?.search || ''}::${props.filters?.sort || 'relevant'}`;
 
 watch(
-    () => props.peers,
-    (newPeers) => {
-        peerList.value = [...(newPeers?.data || [])];
-        nextPageUrl.value = newPeers?.next_page_url || null;
-    },
-);
+    () => [props.filters?.search, props.filters?.sort, props.peers],
+    ([newSearch, newSort, newPeers]) => {
+        searchQuery.value = (newSearch as string) || '';
+        currentSort.value = (newSort as string) || 'relevant';
+        const newSig = `${(newSearch as string) || ''}::${(newSort as string) || 'relevant'}`;
 
-watch(
-    () => props.filters,
-    (newFilters) => {
-        searchQuery.value = newFilters?.search || '';
-        currentSort.value = newFilters?.sort || 'relevant';
+        if (newSig !== currentFilterSignature) {
+            currentFilterSignature = newSig;
+            pagination.value.list = [
+                ...((newPeers as Props['peers'])?.data || []),
+            ];
+            pagination.value.nextPageUrl =
+                (newPeers as Props['peers'])?.next_page_url || null;
+        }
     },
     { deep: true },
 );
@@ -86,7 +95,6 @@ const applyFilters = () => {
         {
             preserveState: true,
             preserveScroll: true,
-            replace: true,
         },
     );
 };
@@ -106,7 +114,7 @@ const setSort = (sortValue: string) => {
 };
 
 const loadMore = async () => {
-    if (!nextPageUrl.value || isLoadingMore.value) {
+    if (!pagination.value.nextPageUrl || isLoadingMore.value) {
         return;
     }
 
@@ -124,18 +132,18 @@ const loadMore = async () => {
             headers['X-Inertia-Version'] = String(page.version);
         }
 
-        const res = await fetch(nextPageUrl.value, { headers });
+        const res = await fetch(pagination.value.nextPageUrl, { headers });
 
         if (res.ok) {
             const data = await res.json();
             const newPeersData =
                 (data?.props?.peers as Props['peers'])?.data || [];
-            const existingIds = new Set(peerList.value.map((p) => p.id));
+            const existingIds = new Set(pagination.value.list.map((p) => p.id));
             const uniqueNew = newPeersData.filter(
                 (p) => !existingIds.has(p.id),
             );
-            peerList.value = [...peerList.value, ...uniqueNew];
-            nextPageUrl.value =
+            pagination.value.list = [...pagination.value.list, ...uniqueNew];
+            pagination.value.nextPageUrl =
                 (data?.props?.peers as Props['peers'])?.next_page_url || null;
         }
     } catch (e) {
@@ -288,7 +296,7 @@ const togglePeerAppreciation = (peer: Peer) => {
             <Link
                 v-for="peer in peerList"
                 :key="peer.id"
-                :href="`/u/${peer.username}`"
+                :href="peer.username ? `/u/${peer.username}` : '#'"
                 class="group flex items-center justify-between gap-3.5 p-3.5 transition hover:bg-slate-50/70 sm:p-4 dark:hover:bg-gray-800/40"
             >
                 <!-- Left: Avatar + Details -->
@@ -307,7 +315,7 @@ const togglePeerAppreciation = (peer: Peer) => {
                             v-else
                             class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-base font-black text-white"
                         >
-                            {{ peer.name.charAt(0).toUpperCase() }}
+                            {{ (peer.name || '?').charAt(0).toUpperCase() }}
                         </div>
                     </div>
 
