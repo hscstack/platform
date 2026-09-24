@@ -14,6 +14,7 @@ import {
 import { computed, onUnmounted, ref } from 'vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { compressImage } from '@/lib/imageCompression';
+import { getCsrfToken } from '@/lib/useCsrf';
 
 interface OnboardingUser {
     google_id: string;
@@ -41,7 +42,8 @@ const page = usePage();
 const flashError = computed(() => (page.props as any).flash?.error);
 
 const currentStep = ref<1 | 2>(1);
-const termsAccepted = ref(false);
+
+const isCheckingUsername = ref(false);
 
 const getInitialAppreciations = (suggested: Contributor[] = []): number[] => {
     if (suggested.length === 0) {
@@ -76,6 +78,61 @@ const isCompressing = ref(false);
 
 const contributors = computed(() => props.suggestedContributors || []);
 const hasContributors = computed(() => contributors.value.length > 0);
+
+const checkUsernameAvailability = async (
+    usernameValue: string,
+): Promise<boolean> => {
+    const trimmed = usernameValue.trim();
+
+    if (!trimmed) {
+        form.errors.username = 'Please choose a username.';
+
+        return false;
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(trimmed)) {
+        form.errors.username =
+            "Username must be 3-30 characters (letters, numbers, underscores). Dots aren't allowed.";
+
+        return false;
+    }
+
+    isCheckingUsername.value = true;
+
+    try {
+        const response = await fetch('/api/check-username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: JSON.stringify({ username: trimmed }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data?.available === false) {
+            const errorMsg =
+                data?.message ||
+                data?.errors?.username?.[0] ||
+                'This username is already taken. Please choose another one.';
+            form.errors.username = errorMsg;
+
+            return false;
+        }
+
+        form.errors.username = '';
+
+        return true;
+    } catch {
+        form.errors.username = '';
+
+        return true;
+    } finally {
+        isCheckingUsername.value = false;
+    }
+};
 
 const handleImageChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -174,7 +231,7 @@ const selectAllContributors = () => {
     }
 };
 
-const goToStep2 = () => {
+const goToStep2 = async () => {
     form.errors.name = '';
     form.errors.username = '';
     form.errors.school = '';
@@ -204,6 +261,13 @@ const goToStep2 = () => {
         return;
     }
 
+    // Immediately check username availability against database on clicking Continue
+    const isAvailable = await checkUsernameAvailability(form.username.trim());
+
+    if (!isAvailable) {
+        return;
+    }
+
     if (!hasContributors.value) {
         submit();
 
@@ -214,7 +278,7 @@ const goToStep2 = () => {
 };
 
 const submit = () => {
-    if (isCompressing.value || form.errors.image || !termsAccepted.value) {
+    if (isCompressing.value || isCheckingUsername.value || form.errors.image) {
         return;
     }
 
@@ -406,12 +470,7 @@ const getContributorAvatar = (contributor: Contributor) => {
                     </div>
 
                     <!-- Onboarding Form Inputs -->
-                    <form
-                        @submit.prevent="
-                            hasContributors ? goToStep2() : submit()
-                        "
-                        class="space-y-4"
-                    >
+                    <form @submit.prevent="goToStep2" class="space-y-4">
                         <!-- Full Name -->
                         <div>
                             <label
@@ -464,11 +523,14 @@ const getContributorAvatar = (contributor: Contributor) => {
                                 </div>
                                 <input
                                     v-model="form.username"
+                                    @input="form.errors.username = ''"
                                     type="text"
                                     id="username"
                                     required
                                     placeholder="your_username"
-                                    :disabled="form.processing"
+                                    :disabled="
+                                        form.processing || isCheckingUsername
+                                    "
                                     class="ph-no-mask w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3.5 pl-10 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-50 disabled:text-slate-500 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 dark:disabled:bg-gray-800/50 dark:disabled:text-gray-400"
                                     :class="{
                                         'border-rose-500 focus:ring-rose-500/20 dark:border-rose-500 dark:focus:border-rose-400 dark:focus:ring-rose-400/20':
@@ -550,22 +612,28 @@ const getContributorAvatar = (contributor: Contributor) => {
                         <div class="pt-2">
                             <button
                                 type="submit"
-                                :disabled="form.processing || isCompressing"
+                                :disabled="
+                                    form.processing ||
+                                    isCompressing ||
+                                    isCheckingUsername
+                                "
                                 class="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                             >
                                 <Loader2
-                                    v-if="form.processing"
+                                    v-if="form.processing || isCheckingUsername"
                                     class="h-4 w-4 animate-spin"
                                 />
                                 <span>
                                     {{
-                                        form.processing
-                                            ? 'Please wait...'
+                                        form.processing || isCheckingUsername
+                                            ? 'Checking username...'
                                             : 'Continue'
                                     }}
                                 </span>
                                 <ArrowRight
-                                    v-if="!form.processing"
+                                    v-if="
+                                        !form.processing && !isCheckingUsername
+                                    "
                                     class="h-4 w-4"
                                 />
                             </button>
@@ -694,40 +762,28 @@ const getContributorAvatar = (contributor: Contributor) => {
                         {{ form.errors.appreciations }}
                     </p>
 
-                    <!-- Terms & Privacy Agreement Tickmark -->
-                    <div class="pt-1">
-                        <label
-                            class="flex cursor-pointer items-start gap-2.5 text-xs text-slate-600 dark:text-gray-300"
+                    <!-- Terms & Privacy Notice (Implied Consent) -->
+                    <p
+                        class="pt-1 text-center text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                    >
+                        অ্যাকাউন্ট তৈরির মাধ্যমে আপনি আমাদের
+                        <Link
+                            href="/terms-service"
+                            target="_blank"
+                            class="font-semibold text-slate-700 underline decoration-slate-300 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
                         >
-                            <input
-                                v-model="termsAccepted"
-                                type="checkbox"
-                                class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
-                            />
-                            <span
-                                class="text-[11px] leading-relaxed select-none"
-                            >
-                                আমি
-                                <Link
-                                    href="/terms-service"
-                                    target="_blank"
-                                    class="font-semibold text-slate-800 underline decoration-slate-300 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
-                                >
-                                    Terms & Conditions
-                                </Link>
-                                এবং
-                                <Link
-                                    href="/privacy-policy"
-                                    target="_blank"
-                                    class="font-semibold text-slate-800 underline decoration-slate-300 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
-                                >
-                                    Privacy Policy
-                                </Link>
-                                পড়েছি এবং আমার তথ্য কীভাবে সুরক্ষিত ও ব্যবহৃত
-                                হবে তা জেনেই অ্যাকাউন্ট তৈরি করছি।
-                            </span>
-                        </label>
-                    </div>
+                            Terms & Conditions
+                        </Link>
+                        এবং
+                        <Link
+                            href="/privacy-policy"
+                            target="_blank"
+                            class="font-semibold text-slate-700 underline decoration-slate-300 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+                        >
+                            Privacy Policy
+                        </Link>
+                        -তে সম্মতি দিচ্ছেন।
+                    </p>
 
                     <!-- Navigation Buttons -->
                     <div class="flex items-center gap-3 pt-2">
@@ -744,7 +800,7 @@ const getContributorAvatar = (contributor: Contributor) => {
                         <button
                             type="button"
                             @click="submit"
-                            :disabled="form.processing || !termsAccepted"
+                            :disabled="form.processing"
                             class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                         >
                             <Loader2

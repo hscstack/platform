@@ -109,6 +109,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
     Route::get('/onboarding', [AuthController::class, 'showOnboarding'])->name('onboarding');
+    Route::post('/onboarding/check-username', [AuthController::class, 'checkUsername'])->name('onboarding.check-username');
+    Route::post('/api/check-username', [AuthController::class, 'checkUsername'])->name('api.check-username');
     Route::post('/onboarding', [AuthController::class, 'completeOnboarding'])->name('onboarding.complete');
 
     Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');

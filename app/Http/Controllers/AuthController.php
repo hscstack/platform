@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
@@ -128,6 +129,39 @@ class AuthController extends Controller
         return Inertia::render('auth/Onboarding', [
             'user' => $request->session()->get('onboarding_user'),
             'suggestedContributors' => $suggestedContributors,
+        ]);
+    }
+
+    public function checkUsername(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'username' => [
+                'required',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[a-zA-Z0-9_]+$/',
+                'unique:users,username',
+                new CleanText,
+            ],
+        ], [
+            'username.required' => 'Please choose a username.',
+            'username.min' => 'Username must be at least 3 characters.',
+            'username.max' => 'Username cannot exceed 30 characters.',
+            'username.regex' => "Username can only contain letters, numbers, and underscores. Dots aren't allowed.",
+            'username.unique' => 'This username is already taken. Please choose another one.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'available' => false,
+                'message' => $validator->errors()->first('username'),
+            ], 422);
+        }
+
+        return response()->json([
+            'available' => true,
+            'message' => 'Username is available.',
         ]);
     }
 
