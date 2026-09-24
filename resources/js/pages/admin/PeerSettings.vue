@@ -12,6 +12,7 @@ import {
     Sparkles,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { adminPageClass } from '@/components/admin/ui';
 
 interface PokePreset {
     id: string;
@@ -92,7 +93,9 @@ const submit = () => {
 <template>
     <Head title="Peer & Poke Settings - Admin" />
 
-    <div class="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
+    <!-- AdminLayout already pads page content; no extra padding here
+         or this page renders narrower/wider than its siblings. -->
+    <div :class="['mx-auto max-w-5xl', adminPageClass]">
         <!-- Header -->
         <div
             class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
