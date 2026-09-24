@@ -364,7 +364,7 @@ test('failed google auth redirects to login with error', function () {
     $response = $this->get(route('auth.google.callback'));
 
     $response->assertRedirect(route('login'));
-    $response->assertSessionHas('error', 'Failed to authenticate with Google. Please try again.');
+    $response->assertSessionHas('error', 'Failed to authenticate. Refresh the page & try again.');
 });
 
 test('google auth redirects to intended url if set for existing user', function () {
