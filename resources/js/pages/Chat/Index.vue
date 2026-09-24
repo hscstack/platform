@@ -1164,9 +1164,11 @@ const submitReport = async () => {
             },
             body: JSON.stringify({
                 message_id: reportingMessage.value.id,
-                reported_user_id: reportingMessage.value.user.id,
-                reported_user_name: reportingMessage.value.user.name,
-                reported_user_username: reportingMessage.value.user.username,
+                reported_user_id: reportingMessage.value.user?.id || null,
+                reported_user_name:
+                    reportingMessage.value.user?.name || 'Deleted User',
+                reported_user_username:
+                    reportingMessage.value.user?.username || null,
                 message_content: reportingMessage.value.content,
                 message_sent_at: reportingMessage.value.created_at,
                 reason: reportReason.value,
@@ -1923,9 +1925,9 @@ onUnmounted(() => {
                                     !msg.is_deleted &&
                                     !msg.deleted_at &&
                                     currentUser &&
-                                    msg.user?.id &&
-                                    Number(currentUser.id) !==
-                                        Number(msg.user.id)
+                                    (!msg.user?.id ||
+                                        Number(currentUser.id) !==
+                                            Number(msg.user.id))
                                 "
                                 type="button"
                                 @click.stop="openReportModal(msg)"
@@ -2387,9 +2389,9 @@ onUnmounted(() => {
                         <button
                             v-if="
                                 currentUser &&
-                                mobileActionMessage.user?.id &&
-                                Number(currentUser.id) !==
-                                    Number(mobileActionMessage.user.id) &&
+                                (!mobileActionMessage.user?.id ||
+                                    Number(currentUser.id) !==
+                                        Number(mobileActionMessage.user.id)) &&
                                 !mobileActionMessage.is_deleted &&
                                 !mobileActionMessage.deleted_at
                             "
