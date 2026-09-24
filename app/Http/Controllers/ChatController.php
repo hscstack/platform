@@ -74,7 +74,7 @@ class ChatController extends Controller
                 'reply_to_content' => $msg->deleted_at ? null : $msg->reply_to_content,
                 'reactions' => $msg->getFormattedReactions($user?->id),
                 'created_at' => $msg->created_at->toIso8601String(),
-                'user' => [
+                'user' => $msg->user ? [
                     'id' => $msg->user->id,
                     'name' => $msg->user->name,
                     'username' => $msg->user->username,
@@ -82,6 +82,14 @@ class ChatController extends Controller
                     'institution' => $msg->user->institution,
                     'is_verified' => $msg->user->is_verified,
                     'roles' => $msg->user->roles->pluck('name')->toArray(),
+                ] : [
+                    'id' => null,
+                    'name' => 'Deleted User',
+                    'username' => null,
+                    'image_url' => null,
+                    'institution' => null,
+                    'is_verified' => false,
+                    'roles' => [],
                 ],
             ]);
 

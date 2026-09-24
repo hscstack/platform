@@ -31,14 +31,22 @@ class ChatMessageSent implements ShouldBroadcastNow
             'reply_to_content' => $chatMessage->reply_to_content,
             'reactions' => $chatMessage->getFormattedReactions(null),
             'created_at' => $chatMessage->created_at->toIso8601String(),
-            'user' => [
+            'user' => $chatMessage->user ? [
                 'id' => $chatMessage->user->id,
                 'name' => $chatMessage->user->name,
                 'username' => $chatMessage->user->username,
                 'image_url' => $chatMessage->user->image_url,
                 'institution' => $chatMessage->user->institution,
                 'is_verified' => $chatMessage->user->is_verified,
-                'roles' => $chatMessage->user->roles->pluck('name')->toArray(),
+                'roles' => $chatMessage->user->roles ? $chatMessage->user->roles->pluck('name')->toArray() : [],
+            ] : [
+                'id' => null,
+                'name' => 'Deleted User',
+                'username' => null,
+                'image_url' => null,
+                'institution' => null,
+                'is_verified' => false,
+                'roles' => [],
             ],
         ];
     }
