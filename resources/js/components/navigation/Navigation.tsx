@@ -841,12 +841,39 @@ export const SiteBottomNav = defineComponent({
     name: 'SiteBottomNav',
     setup() {
         const page = usePage();
+        const user = computed(
+            () => page.props.auth?.user as AuthedUser | undefined,
+        );
         const currentUrl = computed(() => String(page.url));
         const bottomNavItems = computed(() =>
             primaryNavItems.filter((i) => i.showInBottom !== false),
         );
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
+
+        const authItemHref = computed(() => {
+            if (!user.value) {
+                return '/login';
+            }
+
+            return user.value.username
+                ? `/u/${user.value.username}`
+                : '/profile';
+        });
+
+        const isAuthItemActive = computed(() => {
+            if (user.value) {
+                return (
+                    currentUrl.value.startsWith('/profile') ||
+                    currentUrl.value.startsWith('/u/')
+                );
+            }
+
+            return (
+                currentUrl.value.startsWith('/login') ||
+                currentUrl.value.startsWith('/register')
+            );
+        });
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
             if (match) {
@@ -899,6 +926,38 @@ export const SiteBottomNav = defineComponent({
                             </span>
                         </Link>
                     ))}
+
+                    <Link
+                        href={authItemHref.value}
+                        class={[
+                            'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150 ease-out',
+                            isAuthItemActive.value
+                                ? 'text-slate-900 dark:text-white'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
+                        ]}
+                    >
+                        <MaterialIcon
+                            name={user.value ? 'person' : 'login'}
+                            size={26}
+                            filled={isAuthItemActive.value}
+                            weight={400}
+                            class={`shrink-0 transition-transform duration-150 ${
+                                isAuthItemActive.value
+                                    ? 'scale-[1.02] text-slate-900 dark:text-white'
+                                    : 'text-slate-500 dark:text-slate-400'
+                            }`}
+                        />
+                        <span
+                            class={[
+                                'text-[10px] leading-none tracking-wide antialiased',
+                                isAuthItemActive.value
+                                    ? 'font-bold'
+                                    : 'font-medium',
+                            ]}
+                        >
+                            {user.value ? 'Profile' : 'Login'}
+                        </span>
+                    </Link>
                 </div>
             </nav>
         );

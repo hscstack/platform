@@ -217,6 +217,45 @@ test('completing onboarding validates username uniqueness and format', function 
     $this->assertGuest();
 });
 
+test('checking username availability endpoint returns available status for unique username', function () {
+    $response = $this->postJson('/api/check-username', [
+        'username' => 'unique_handle_123',
+    ]);
+
+    $response->assertOk()
+        ->assertJson([
+            'available' => true,
+            'message' => 'Username is available.',
+        ]);
+});
+
+test('checking username availability endpoint returns 422 for taken username', function () {
+    User::factory()->create([
+        'username' => 'existing_user',
+    ]);
+
+    $response = $this->postJson('/api/check-username', [
+        'username' => 'existing_user',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'available' => false,
+            'message' => 'This username is already taken. Please choose another one.',
+        ]);
+});
+
+test('checking username availability endpoint rejects invalid formats and dots', function () {
+    $response = $this->postJson('/api/check-username', [
+        'username' => 'invalid.user.name',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'available' => false,
+        ]);
+});
+
 test('completing onboarding requires school field', function () {
     $response = $this->withSession([
         'onboarding_user' => [
