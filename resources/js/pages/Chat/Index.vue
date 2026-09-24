@@ -20,6 +20,7 @@ import {
     Radio,
     AtSign,
     Users,
+    UserX,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -34,9 +35,9 @@ import { getCsrfToken } from '@/lib/useCsrf';
 import { formatDateDivider, formatTime } from '@/lib/useDate';
 
 interface ChatUser {
-    id: number;
+    id: number | null;
     name: string;
-    username: string;
+    username: string | null;
     image_url: string | null;
     institution: string | null;
     is_verified: boolean;
@@ -1340,6 +1341,10 @@ const isGroupedWithPrevious = (idx: number) => {
         return false;
     }
 
+    if (!prev.user?.id || !curr.user?.id) {
+        return false;
+    }
+
     if (Number(prev.user.id) !== Number(curr.user.id)) {
         return false;
     }
@@ -1358,6 +1363,10 @@ const isBanModalOpen = ref(false);
 const selectedUserToBan = ref<ChatBanUser | null>(null);
 
 const openBanModal = (user: ChatUser) => {
+    if (!user.id) {
+        return;
+    }
+
     closeMobileActions();
     selectedUserToBan.value = {
         id: user.id,
@@ -1598,6 +1607,7 @@ onUnmounted(() => {
                         class="group relative flex items-start gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors duration-150 sm:gap-3 sm:px-3 sm:py-2"
                         :class="[
                             currentUser &&
+                            msg.user?.id &&
                             Number(currentUser.id) === Number(msg.user.id)
                                 ? 'bg-indigo-50/30 dark:bg-indigo-950/15'
                                 : 'hover:bg-slate-50/80 dark:hover:bg-zinc-800/40',
@@ -1612,28 +1622,37 @@ onUnmounted(() => {
                     >
                         <!-- Left Avatar Gutter -->
                         <div class="w-8 shrink-0 sm:w-9">
-                            <Link
-                                v-if="!isGroupedWithPrevious(idx)"
-                                :href="`/u/${msg.user.username}`"
-                                class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:opacity-85 sm:h-9 sm:w-9"
-                                :class="
-                                    currentUser &&
-                                    Number(currentUser.id) ===
-                                        Number(msg.user.id)
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300'
-                                "
-                            >
-                                <img
-                                    v-if="msg.user.image_url"
-                                    :src="msg.user.image_url"
-                                    :alt="msg.user.name"
-                                    class="h-full w-full object-cover"
-                                />
-                                <span v-else class="text-xs uppercase">
-                                    {{ msg.user.name?.charAt(0) || 'U' }}
-                                </span>
-                            </Link>
+                            <template v-if="!isGroupedWithPrevious(idx)">
+                                <Link
+                                    v-if="msg.user?.id && msg.user.username"
+                                    :href="`/u/${msg.user.username}`"
+                                    class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:opacity-85 sm:h-9 sm:w-9"
+                                    :class="
+                                        currentUser &&
+                                        Number(currentUser.id) ===
+                                            Number(msg.user.id)
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300'
+                                    "
+                                >
+                                    <img
+                                        v-if="msg.user.image_url"
+                                        :src="msg.user.image_url"
+                                        :alt="msg.user.name"
+                                        class="h-full w-full object-cover"
+                                    />
+                                    <span v-else class="text-xs uppercase">
+                                        {{ msg.user.name?.charAt(0) || 'U' }}
+                                    </span>
+                                </Link>
+                                <div
+                                    v-else
+                                    class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-slate-400 sm:h-9 sm:w-9 dark:bg-zinc-800 dark:text-zinc-500"
+                                    title="Deleted User"
+                                >
+                                    <UserX class="h-4 w-4" />
+                                </div>
+                            </template>
                             <span
                                 v-else
                                 class="block text-center text-[9px] text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-zinc-600"
@@ -1647,29 +1666,41 @@ onUnmounted(() => {
                             <!-- Header Info (Shown on First in Group) -->
                             <div
                                 v-if="!isGroupedWithPrevious(idx)"
-                                class="flex items-baseline gap-1.5"
+                                class="flex items-center gap-1.5"
                             >
                                 <Link
+                                    v-if="msg.user?.id && msg.user.username"
                                     :href="`/u/${msg.user.username}`"
-                                    class="truncate text-xs font-bold text-slate-900 transition hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
+                                    class="inline-flex items-center gap-1 truncate text-xs font-bold text-slate-900 transition hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
                                 >
-                                    {{ msg.user.name }}
+                                    <span class="truncate">{{
+                                        msg.user.name
+                                    }}</span>
+                                    <VerifiedBadge
+                                        v-if="msg.user?.is_verified"
+                                    />
                                 </Link>
+                                <span
+                                    v-else
+                                    class="truncate text-xs font-semibold text-slate-500 italic dark:text-zinc-400"
+                                >
+                                    {{ msg.user?.name || 'Deleted User' }}
+                                </span>
 
                                 <span
                                     v-if="
                                         currentUser &&
+                                        msg.user?.id &&
                                         Number(currentUser.id) ===
                                             Number(msg.user.id)
                                     "
-                                    class="py-0.2 rounded-md bg-indigo-100 px-1 text-[9px] font-bold text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300"
+                                    class="rounded-md bg-indigo-100 px-1 py-0.5 text-[9px] leading-none font-bold text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300"
                                 >
                                     You
                                 </span>
 
-                                <VerifiedBadge v-if="msg.user.is_verified" />
-
                                 <span
+                                    v-if="msg.user?.username"
                                     class="truncate text-[11px] text-slate-400 dark:text-zinc-500"
                                 >
                                     @{{ msg.user.username }}
@@ -1874,13 +1905,14 @@ onUnmounted(() => {
                             <button
                                 v-if="
                                     (can('manage chat') || canDelete) &&
+                                    msg.user?.id &&
                                     Number(currentUser?.id) !==
                                         Number(msg.user.id)
                                 "
                                 type="button"
                                 @click.stop="openBanModal(msg.user)"
                                 class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                :title="`Ban @${msg.user.username}`"
+                                :title="`Ban @${msg.user.username || msg.user.name}`"
                             >
                                 <Ban class="h-3.5 w-3.5" />
                             </button>
@@ -1891,6 +1923,7 @@ onUnmounted(() => {
                                     !msg.is_deleted &&
                                     !msg.deleted_at &&
                                     currentUser &&
+                                    msg.user?.id &&
                                     Number(currentUser.id) !==
                                         Number(msg.user.id)
                                 "
@@ -1923,6 +1956,7 @@ onUnmounted(() => {
                             v-if="
                                 (!msg.is_deleted && !msg.deleted_at) ||
                                 ((can('manage chat') || canDelete) &&
+                                    msg.user?.id &&
                                     Number(currentUser?.id) !==
                                         Number(msg.user.id))
                             "
@@ -2060,7 +2094,7 @@ onUnmounted(() => {
                         <span class="truncate">
                             Replying to
                             <strong class="font-semibold">{{
-                                activeReplyTo.user.name
+                                activeReplyTo.user?.name || 'Deleted User'
                             }}</strong
                             >:
                             <span class="italic opacity-80"
@@ -2353,6 +2387,7 @@ onUnmounted(() => {
                         <button
                             v-if="
                                 currentUser &&
+                                mobileActionMessage.user?.id &&
                                 Number(currentUser.id) !==
                                     Number(mobileActionMessage.user.id) &&
                                 !mobileActionMessage.is_deleted &&
@@ -2370,6 +2405,7 @@ onUnmounted(() => {
                         <button
                             v-if="
                                 (can('manage chat') || canDelete) &&
+                                mobileActionMessage.user?.id &&
                                 Number(currentUser?.id) !==
                                     Number(mobileActionMessage.user.id)
                             "
@@ -2472,9 +2508,15 @@ onUnmounted(() => {
                                 <span
                                     class="font-semibold text-slate-700 dark:text-zinc-300"
                                 >
-                                    {{ reportingMessage.user.name }} (@{{
-                                        reportingMessage.user.username
-                                    }})
+                                    {{
+                                        reportingMessage.user?.name ||
+                                        'Deleted User'
+                                    }}
+                                    <template
+                                        v-if="reportingMessage.user?.username"
+                                    >
+                                        (@{{ reportingMessage.user.username }})
+                                    </template>
                                 </span>
                                 <span>{{
                                     formatTime(reportingMessage.created_at)
