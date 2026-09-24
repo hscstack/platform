@@ -20,6 +20,25 @@ router.on('navigate', () => {
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
+    /**
+     * Loads a page by its path relative to pages/, preferring .vue over .tsx.
+     * Resolves to the default export, or the module if that export is nullish.
+     * Throws if neither entry exists; import failures reject the promise.
+     */
+    resolve: (name) => {
+        const pages = import.meta.glob('./pages/**/*.{vue,tsx}') as Record<
+            string,
+            () => Promise<{ default: unknown }>
+        >;
+        const loader =
+            pages[`./pages/${name}.vue`] ?? pages[`./pages/${name}.tsx`];
+
+        if (!loader) {
+            throw new Error(`Page not found: ${name}`);
+        }
+
+        return loader().then((module) => module.default ?? module);
+    },
     layout: (name) => {
         switch (true) {
             case name.startsWith('admin/'):

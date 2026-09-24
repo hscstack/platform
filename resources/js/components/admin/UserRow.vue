@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { LogIn, Pencil, Trash2, Ban, Mail } from 'lucide-vue-next';
+import { LogIn, Mail, Pencil, Trash2, Ban } from 'lucide-vue-next';
 import { ref } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
@@ -48,6 +48,10 @@ const openDeleteModal = () => {
     isDeleteModalOpen.value = true;
 };
 
+/**
+ * Wipes the account and all associated data immediately; a farewell
+ * notification email is sent when the user has an address on file.
+ */
 const handleHardDelete = (id: number) => {
     if (
         confirm(
@@ -59,6 +63,11 @@ const handleHardDelete = (id: number) => {
     }
 };
 
+/**
+ * Emails the user a 7-day signed authorization link; the user confirms and
+ * deletes the account themselves. `onFinish` closes the modal even when the
+ * request fails so the choice modal never blocks retrying.
+ */
 const handleSendDeleteLink = (id: number) => {
     if (
         !confirm(
@@ -84,10 +93,10 @@ const handleSendDeleteLink = (id: number) => {
 
 <template>
     <div
-        class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
+        class="group relative flex items-center justify-between gap-3 rounded-xl bg-white/70 p-3 ring-1 ring-slate-200/60 backdrop-blur-xl transition-colors duration-150 hover:bg-white/85 hover:ring-indigo-300/70 sm:p-3.5 dark:bg-slate-900/60 dark:ring-slate-800/60 dark:hover:bg-slate-900/75 dark:hover:ring-indigo-500/40"
         :class="[
             user.id === userId
-                ? 'ring-1 ring-indigo-500/20 dark:ring-indigo-500/30'
+                ? '!ring-indigo-500/25 dark:!ring-indigo-500/35'
                 : '',
         ]"
     >
@@ -120,7 +129,7 @@ const handleSendDeleteLink = (id: number) => {
 
                     <span
                         v-if="user.id === userId"
-                        class="inline-flex items-center rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 uppercase dark:bg-indigo-500/10 dark:text-indigo-400"
+                        class="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 uppercase dark:bg-indigo-500/10 dark:text-indigo-400"
                     >
                         You
                     </span>
@@ -228,7 +237,7 @@ const handleSendDeleteLink = (id: number) => {
             @close="isBanModalOpen = false"
         />
 
-        <!-- Account Deletion Action Modal -->
+        <!-- Account Deletion Choice Modal -->
         <BaseModal
             :is-open="isDeleteModalOpen"
             title="Delete User Account"

@@ -351,7 +351,7 @@ const submitForm = () => {
                                 {{ name || 'Subject Name' }}
                             </h4>
                             <span
-                                class="py-0.2 inline-flex rounded px-1 text-[9px] font-bold uppercase"
+                                class="inline-flex rounded px-1 py-0.5 text-[9px] font-bold uppercase"
                                 :class="
                                     course === 'ssc'
                                         ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
@@ -510,7 +510,7 @@ const submitForm = () => {
 
             <!-- Footer -->
             <div
-                class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/60"
+                class="flex items-center justify-end gap-2 border-t border-slate-200/60 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-slate-800/60 dark:bg-gray-900/60"
             >
                 <button
                     type="button"

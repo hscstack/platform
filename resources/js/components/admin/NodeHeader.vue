@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import {
-    ArrowLeft,
     ChevronDown,
     ChevronRight,
     FolderPlus,
@@ -16,7 +15,6 @@ defineProps<{
     subject: any;
     parent?: any | null;
     breadcrumbs: Array<{ name: string; link: string }>;
-    backUrl: string;
     isFrozen: boolean;
     isDirectlyFrozen: boolean;
     isInheritedFrozen: boolean;
@@ -55,7 +53,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
         <!-- Dedicated Breadcrumb Navigation Bar (Separate Row) -->
         <div
             v-if="breadcrumbs.length > 0"
-            class="mb-3.5 flex items-center rounded-xl bg-slate-50/80 px-3 py-2 text-xs font-medium text-slate-500 sm:text-sm dark:bg-gray-800/40 dark:text-gray-400"
+            class="mb-3.5 flex items-center rounded-xl bg-white/70 px-3 py-2 text-xs font-medium text-slate-500 ring-1 ring-slate-200/60 backdrop-blur-xl sm:text-sm dark:bg-slate-900/60 dark:text-gray-400 dark:ring-slate-800/60"
         >
             <nav
                 class="no-scrollbar flex min-w-0 flex-wrap items-center gap-1.5"
@@ -87,11 +85,11 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
         <!-- Freeze Notice Banner -->
         <div
             v-if="isFrozen"
-            class="mb-3.5 flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-xs font-medium"
+            class="mb-3.5 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium ring-1"
             :class="
                 isDirectlyFrozen
-                    ? 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-800/60 dark:bg-sky-950/40 dark:text-sky-300'
-                    : 'border-amber-200 bg-amber-50/80 text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300'
+                    ? 'bg-sky-50/80 text-sky-800 ring-sky-200/70 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/25'
+                    : 'bg-amber-50/80 text-amber-800 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/25'
             "
         >
             <Lock
@@ -114,38 +112,30 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
         <!-- Compact Page Title Bar -->
         <div
-            class="mb-3.5 flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 pb-3 sm:gap-3 dark:border-gray-800"
+            class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-4 sm:gap-3 dark:border-slate-800/60"
         >
-            <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
-                <Link
-                    :href="backUrl"
-                    class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-2xs transition-colors hover:bg-slate-50 hover:text-slate-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-                    title="Go back"
-                >
-                    <ArrowLeft class="h-4 w-4" :stroke-width="2.2" />
-                </Link>
-
-                <h3
-                    class="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-gray-100"
+            <div class="flex min-w-0 flex-1 items-center sm:gap-2.5">
+                <h1
+                    class="truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg dark:text-gray-100"
                 >
                     {{ parent?.name ? parent.name : subject.name }}
-                </h3>
+                </h1>
             </div>
 
-            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div class="ms-auto flex items-center gap-1.5 sm:gap-2">
                 <!-- Toggle Freeze Button -->
                 <button
                     v-if="parent?.id && can('freeze nodes')"
                     type="button"
                     :disabled="isTogglingFreeze"
                     @click="emit('toggle-freeze')"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50 sm:px-3"
+                    class="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] px-2.5 text-xs font-semibold ring-1 transition-colors duration-150 disabled:opacity-50 sm:px-3"
                     :class="
                         isDirectlyFrozen
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
+                            ? 'bg-emerald-50/80 text-emerald-700 ring-emerald-300/60 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20 dark:hover:bg-emerald-500/15'
                             : isInheritedFrozen
-                              ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-900/50'
-                              : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/50'
+                              ? 'bg-amber-50/80 text-amber-700 ring-amber-300/60 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20 dark:hover:bg-amber-500/15'
+                              : 'bg-sky-50/80 text-sky-700 ring-sky-300/60 hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20 dark:hover:bg-sky-500/15'
                     "
                     :title="
                         isDirectlyFrozen
@@ -179,7 +169,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                     <button
                         type="button"
                         @click="isFolderDropdownOpen = !isFolderDropdownOpen"
-                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 sm:gap-1.5 sm:px-3 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        class="inline-flex h-8 cursor-pointer items-center gap-1 rounded-[10px] bg-white/70 px-2.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 backdrop-blur transition-colors hover:bg-white/90 hover:text-slate-900 sm:gap-1.5 sm:px-3 dark:bg-slate-900/60 dark:text-gray-300 dark:ring-slate-800/60 dark:hover:bg-slate-900/85 dark:hover:text-gray-100"
                     >
                         <FolderPlus
                             class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400"
@@ -194,7 +184,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
                     <div
                         v-if="isFolderDropdownOpen"
-                        class="absolute right-0 z-10 mt-1.5 w-44 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+                        class="absolute right-0 z-10 mt-1.5 w-44 rounded-xl bg-white/90 p-1 shadow-lg ring-1 ring-slate-200/70 backdrop-blur-xl dark:bg-slate-900/90 dark:ring-slate-800/70"
                     >
                         <button
                             type="button"

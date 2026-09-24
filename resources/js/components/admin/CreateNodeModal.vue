@@ -321,7 +321,7 @@ const submitForm = () => {
 
             <!-- Footer -->
             <div
-                class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/60"
+                class="flex items-center justify-end gap-2 border-t border-slate-200/60 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-slate-800/60 dark:bg-gray-900/60"
             >
                 <button
                     type="button"

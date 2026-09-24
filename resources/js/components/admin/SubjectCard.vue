@@ -24,7 +24,7 @@ const handleDelete = () => {
 <template>
     <div
         @click="router.visit(`/admin/subjects/${subject.slug}/nodes`)"
-        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
+        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-white/70 p-3 ring-1 ring-slate-200/60 backdrop-blur-xl transition-colors duration-150 hover:bg-white/85 hover:ring-indigo-300/70 sm:p-3.5 dark:bg-slate-900/60 dark:ring-slate-800/60 dark:hover:bg-slate-900/75 dark:hover:ring-indigo-500/40"
     >
         <!-- Left: Icon + Subject Details (Full title, no ellipsis) -->
         <div class="flex min-w-0 flex-1 items-center gap-3">
