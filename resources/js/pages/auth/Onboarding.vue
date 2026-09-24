@@ -123,6 +123,8 @@ const checkUsernameAvailability = async (
         }
 
         form.errors.username = '';
+
+        return true;
     } catch {
         form.errors.username =
             'Network error. Please check your connection and try again.';
