@@ -79,6 +79,16 @@
     $pageComponent = $page['component'] ?? '';
     $props = $page['props'] ?? [];
 
+    // Inertia page entries are preloaded via @vite below. Admin pages are
+    // being migrated from `.vue` SFCs to `.tsx` (see the dual-extension
+    // resolver in `resources/js/app.ts`), so resolve whichever exists —
+    // hardcoding `.vue` 500s on migrated pages in production builds.
+    $pageEntry = "resources/js/pages/{$pageComponent}.vue";
+
+    if (!is_file(resource_path("js/pages/{$pageComponent}.vue"))) {
+        $pageEntry = "resources/js/pages/{$pageComponent}.tsx";
+    }
+
     $s3Url = rtrim(config('filesystems.disks.s3.url') ?: env('AWS_URL', 'https://cdn.hscstack.site'), '/');
     $defaultOgImage = $s3Url ? "{$s3Url}/images/og.png" : url('/images/og.png');
 
@@ -406,7 +416,7 @@
             </script>
         @endif
 
-        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
+        @vite(['resources/css/app.css', 'resources/js/app.ts', $pageEntry])
         <x-inertia::head>
             <title>{{ $metaTitle ?? config('app.name', 'HSCStack') }}</title>
         </x-inertia::head>

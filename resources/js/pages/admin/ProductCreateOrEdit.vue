@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Loader2, Save } from 'lucide-vue-next';
+import {
+    adminIconBtnClass,
+    adminPageClass,
+    adminPageDescriptionClass,
+    adminPageTitleClass,
+} from '@/components/admin/ui';
 import ImageUpload from '@/components/ImageUpload.vue';
 
 const props = defineProps({
@@ -40,26 +46,24 @@ const submitForm = () => {
 <template>
     <Head :title="product ? `Edit ${product.name}` : 'Create Product'" />
 
-    <div class="flex w-full flex-1 flex-col">
+    <div :class="adminPageClass">
         <!-- Page Header -->
         <div
-            class="mb-6 flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center dark:border-gray-800"
+            class="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
         >
-            <div class="flex items-center gap-3">
+            <div class="flex min-w-0 items-center gap-2">
                 <Link
                     href="/admin/products"
-                    class="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                    :class="adminIconBtnClass"
                     title="Back to products"
                 >
-                    <ArrowLeft class="h-5 w-5" />
+                    <ArrowLeft class="h-4 w-4" />
                 </Link>
-                <div>
-                    <h1
-                        class="text-xl font-bold text-slate-900 dark:text-gray-100"
-                    >
+                <div class="min-w-0">
+                    <h1 :class="adminPageTitleClass">
                         {{ props.product ? 'Edit' : 'Create' }} Product
                     </h1>
-                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
+                    <p :class="adminPageDescriptionClass">
                         Configure showcase products displayed on the /products
                         page.
                     </p>
@@ -195,15 +199,25 @@ const submitForm = () => {
                     <select
                         v-model="form.open_type"
                         id="open_type"
-                        class="w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none dark:bg-gray-900 dark:text-gray-100"
+                        class="w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none dark:bg-gray-900 dark:text-gray-100 dark:[color-scheme:dark]"
                         :class="
                             form.errors.open_type
                                 ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/20'
                                 : 'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700'
                         "
                     >
-                        <option value="_blank">New Tab (_blank)</option>
-                        <option value="_self">Same Page (_self)</option>
+                        <option
+                            value="_blank"
+                            class="bg-white text-slate-900 dark:bg-gray-900 dark:text-gray-100"
+                        >
+                            New Tab (_blank)
+                        </option>
+                        <option
+                            value="_self"
+                            class="bg-white text-slate-900 dark:bg-gray-900 dark:text-gray-100"
+                        >
+                            Same Page (_self)
+                        </option>
                     </select>
                     <p
                         v-if="form.errors.open_type"
