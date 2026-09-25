@@ -370,7 +370,6 @@ const handleAppreciate = () => {
         {
             preserveScroll: true,
             preserveState: !props.isLocked,
-            only: ['auth', 'flash'],
             onError: () => {
                 localIsAppreciated.value = props.isAppreciated;
                 localAppreciationsCount.value = props.appreciationsCount;
