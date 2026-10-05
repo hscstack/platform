@@ -156,29 +156,21 @@ const totalCompletedChapters = computed(() => {
 });
 
 const overallPercentage = computed(() => {
-    let totalWeight = 0;
-    let completedWeight = 0;
+    const subjectsWithChapters = props.subjects.filter(
+        (s) => s.nodes && s.nodes.length > 0,
+    );
 
-    for (const s of props.subjects) {
-        if (!s.nodes) {
-            continue;
-        }
-
-        for (const node of s.nodes) {
-            const weight = node.weight || 2;
-            totalWeight += weight;
-
-            if (completedIds.value.has(node.id)) {
-                completedWeight += weight;
-            }
-        }
-    }
-
-    if (totalWeight === 0) {
+    if (subjectsWithChapters.length === 0) {
         return 0;
     }
 
-    return Math.round((completedWeight / totalWeight) * 100);
+    let totalPercentSum = 0;
+
+    for (const s of subjectsWithChapters) {
+        totalPercentSum += getSubjectProgress(s).percent;
+    }
+
+    return Math.round(totalPercentSum / subjectsWithChapters.length);
 });
 
 function getSubjectProgress(subject: SubjectItem) {
