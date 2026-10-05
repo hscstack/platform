@@ -1,0 +1,32 @@
+# HSCStack
+
+> An open source academic community and learning ecosystem for the students of Bangladesh.
+
+HSCStack brings Bangladeshi HSC and SSC students together into an active academic community. It combines a structured academic resource library with a student Q&A forum, real-time live chat, study progress tracking, peer networking, educational blogging, and an AI study companion.
+
+## Founder & Maintainer
+
+- **Tajim**
+  - Profile: https://hscstack.site/u/trtajim
+  - GitHub: https://github.com/trtajim
+  - Facebook: https://facebook.com/trtajim
+
+## Main Features & URLs
+
+- [Academic Library (HSC)](https://hscstack.site/): Structured syllabus resources for HSC curriculum organized by subject and chapter.
+- [Academic Library (SSC)](https://hscstack.site/ssc): Structured syllabus resources for SSC curriculum organized by subject and chapter.
+- [Q&A Forum](https://hscstack.site/forum): Community discussion board to ask questions, post solutions, and upvote helpful answers.
+- [Study Tracker](https://hscstack.site/tracker): Personal dashboard to log study time, track syllabus completion, and monitor streaks.
+- [Live Chat](https://hscstack.site/chat): Real-time global chat room with instant messaging and community moderation.
+- [Peers Directory](https://hscstack.site/peers): Searchable student directory and public learner profiles.
+- [Community Blog](https://hscstack.site/blogs): Educational articles, study guides, exam strategies, and subject roadmaps.
+- [AI Assistant](https://hscstack.site/ai): Subject-aligned AI study companion for clarifying concepts and solving problems.
+
+## Community & Information
+
+- [Join as Contributor](https://hscstack.site/join): Application portal for verified content contributors.
+- [Support Desk](https://hscstack.site/support): Platform helpdesk and user ticketing.
+- [Donate](https://hscstack.site/donate): Support open-source infrastructure and maintenance.
+- [Terms of Service](https://hscstack.site/terms-service): Platform usage terms.
+- [Privacy Policy](https://hscstack.site/privacy-policy): User privacy and data protection terms.
+- [Content Policy](https://hscstack.site/content-policy): Community rules and academic integrity guidelines.
