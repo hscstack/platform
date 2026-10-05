@@ -18,6 +18,11 @@
                 } catch (_) {}
             })();
         </script>
+        {{-- Critical background: painted before app.css loads, avoids default white/black canvas flash --}}
+        <style>
+            html { background-color: #f8fafc; color-scheme: light; }
+            html.dark { background-color: #030712; color-scheme: dark; }
+        </style>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="color-scheme" content="light dark">
@@ -414,5 +419,13 @@
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
+        {{-- Boot spinner: visible only while #app is still empty (before Vue mounts) --}}
+        <div id="boot-splash" aria-hidden="true"><div class="boot-spinner"></div></div>
+        <style>
+            #boot-splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; }
+            #app:not(:empty) ~ #boot-splash { display: none; }
+            .boot-spinner { width: 40px; height: 40px; border-radius: 9999px; border: 3px solid #4b3aef; border-top-color: transparent; animation: boot-spin .7s linear infinite; }
+            @keyframes boot-spin { to { transform: rotate(360deg); } }
+        </style>
     </body>
 </html>
