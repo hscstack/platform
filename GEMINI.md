@@ -29,3 +29,7 @@ npm run format && composer lint && npm run lint
      git push -u origin <new-branch>
      ```
   7. Create a Pull Request (PR) with a clear, respective title and description linking relevant issues.
+
+## Strict Code Modification & Execution Guardrail
+- **Explicit Instruction Required**: NEVER modify files, apply code edits, or execute code refactors unless the user explicitly gives direct instruction or confirmation to make the change (e.g., "do it", "apply this", "fix it", "proceed").
+- **Exploratory / Question Turns**: When diagnosing bugs, answering questions, explaining behavior, or exploring solutions, provide explanations and code snippets in the response text ONLY. Do not apply file changes until confirmed.
