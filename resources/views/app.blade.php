@@ -1,5 +1,10 @@
+@php
+    $themeCookie = $_COOKIE['theme'] ?? ($_COOKIE['appearance'] ?? null);
+    $isDarkServer = $themeCookie === 'dark';
+    $serverThemeColor = $isDarkServer ? '#030712' : '#f8fafc';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => $isDarkServer])>
     <head>
         <meta charset="utf-8">
         <script>
@@ -21,16 +26,17 @@
             })();
         </script>
         <style>
-            html, body { background-color: #f8fafc; }
+            html, body { background-color: {{ $serverThemeColor }}; }
             html.dark, html.dark body { background-color: #030712; }
         </style>
+        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="color-scheme" content="light dark">
         {{-- Browser chrome: top status bar + bottom nav bar (Chrome / Edge / Samsung Internet) --}}
         <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc">
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030712">
-        <meta name="theme-color" content="#f8fafc">
+        <meta name="theme-color" content="{{ $serverThemeColor }}">
         {{-- PWA / fullscreen web app capabilities --}}
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
@@ -39,7 +45,7 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         {{-- Windows / legacy Edge chrome --}}
         <meta name="msapplication-TileColor" content="#0f172a">
-        <meta name="msapplication-navbutton-color" content="#f8fafc">
+        <meta name="msapplication-navbutton-color" content="{{ $serverThemeColor }}">
         <script>
             // Sync the fallback theme-color + PWA manifest with the resolved theme
             // (runs after the meta tags above are parsed).
@@ -413,7 +419,6 @@
             </script>
         @endif
 
-        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
             <title>{{ $metaTitle ?? config('app.name', 'HSCStack') }}</title>
         </x-inertia::head>

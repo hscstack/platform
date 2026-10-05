@@ -63,11 +63,16 @@ export function setTheme(t: Theme) {
 
     if (typeof window !== 'undefined') {
         localStorage.setItem('theme', t);
+        document.cookie = `theme=${t};path=/;max-age=31536000;SameSite=Lax`;
     }
 }
 
 // Initial apply
 applyTheme(isDark.value);
+
+if (typeof document !== 'undefined' && !document.cookie.includes('theme=')) {
+    document.cookie = `theme=${theme.value};path=/;max-age=31536000;SameSite=Lax`;
+}
 
 if (typeof window !== 'undefined') {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

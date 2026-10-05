@@ -324,7 +324,7 @@ test('public profile accurately displays syllabus progress and subject breakdown
         'is_trackable' => true,
     ]);
 
-    // Complete 1 out of 2 for Physics, 1 out of 1 for Chemistry => 2 / 3 total = 67%
+    // Complete 1 out of 2 for Physics (50%), 1 out of 1 for Chemistry (100%) => (50% + 100%) / 2 = 75%
     NodeCompletion::create(['user_id' => $user->id, 'node_id' => $node1->id]);
     NodeCompletion::create(['user_id' => $user->id, 'node_id' => $node3->id]);
 
@@ -332,7 +332,7 @@ test('public profile accurately displays syllabus progress and subject breakdown
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
-        ->where('syllabusProgress.overallPercent', 67)
+        ->where('syllabusProgress.overallPercent', 75)
         ->where('syllabusProgress.completedChapters', 2)
         ->where('syllabusProgress.totalChapters', 3)
         ->has('syllabusProgress.subjects', 2)
