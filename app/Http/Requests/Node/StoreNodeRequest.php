@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Node;
 
+use App\Models\Node;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,6 +13,12 @@ class StoreNodeRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        if ($parentId = $this->input('parent_id')) {
+            $parent = Node::find($parentId);
+
+            return ! ($parent?->isEffectivelyFrozen());
+        }
+
         return true;
     }
 
@@ -28,6 +35,7 @@ class StoreNodeRequest extends FormRequest
             'parent_id' => ['nullable', 'integer'],
             'sort_order' => ['sometimes', 'integer'],
             'is_trackable' => ['sometimes', 'boolean'],
+            'weight' => ['sometimes', 'integer', 'in:1,2,3'],
         ];
     }
 }

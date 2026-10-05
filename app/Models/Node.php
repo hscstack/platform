@@ -17,17 +17,44 @@ class Node extends Model
         'slug',
         'sort_order',
         'is_trackable',
+        'weight',
+        'is_frozen',
     ];
 
     protected function casts(): array
     {
         return [
             'is_trackable' => 'boolean',
+            'weight' => 'integer',
+            'is_frozen' => 'boolean',
             'children_count' => 'integer',
             'resources_count' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Node $node) {
+            if ($node->isEffectivelyFrozen()) {
+                abort(403, 'This folder is frozen and cannot be deleted.');
+            }
+        });
+    }
+
+    public function isEffectivelyFrozen(): bool
+    {
+        if ($this->is_frozen) {
+            return true;
+        }
+
+        return $this->parent ? $this->parent->isEffectivelyFrozen() : false;
+    }
+
+    public function getIsEffectivelyFrozenAttribute(): bool
+    {
+        return $this->isEffectivelyFrozen();
     }
 
     public function user()

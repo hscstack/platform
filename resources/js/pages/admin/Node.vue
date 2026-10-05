@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     Plus,
     FolderPlus,
     ArrowLeft,
     ChevronDown,
     PencilLine,
+    Lock,
+    Unlock,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkImageModal from '@/components/admin/BulkImageModal.vue';
@@ -28,6 +30,46 @@ const props = defineProps({
     resources: Array,
     parent: Object,
 });
+
+const isDirectlyFrozen = computed(() => Boolean(props.parent?.is_frozen));
+const isInheritedFrozen = computed(
+    () =>
+        !isDirectlyFrozen.value && Boolean(props.parent?.is_effectively_frozen),
+);
+const isFrozen = computed(
+    () => isDirectlyFrozen.value || isInheritedFrozen.value,
+);
+
+const isTogglingFreeze = ref(false);
+
+const toggleFreeze = () => {
+    if (!props.parent?.id) {
+        return;
+    }
+
+    let message = 'Are you sure you want to freeze this folder?';
+
+    if (props.parent.is_frozen) {
+        message = 'Are you sure you want to unfreeze this folder?';
+    } else if (isInheritedFrozen.value) {
+        message =
+            'প্যারেন্ট ফোল্ডার আনলক করা হলেও এই ফোল্ডারটি যাতে লক থাকে, সেজন্য কি এটিকে আলাদাভাবে ফ্রিজ করতে চান?';
+    }
+
+    if (confirm(message)) {
+        isTogglingFreeze.value = true;
+        router.post(
+            `/admin/nodes/${props.parent.id}/toggle-freeze`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    isTogglingFreeze.value = false;
+                },
+            },
+        );
+    }
+};
 
 const isResourceDropdownOpen = ref(false);
 const isFolderDropdownOpen = ref(false);
@@ -121,6 +163,34 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
     <Head :title="parent?.name || subject?.name || 'Manage Nodes'" />
 
     <div class="flex w-full flex-1 flex-col">
+        <!-- Freeze Notice Banner -->
+        <div
+            v-if="isFrozen"
+            class="mb-3.5 flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-xs font-medium"
+            :class="
+                isDirectlyFrozen
+                    ? 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-800/60 dark:bg-sky-950/40 dark:text-sky-300'
+                    : 'border-amber-200 bg-amber-50/80 text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300'
+            "
+        >
+            <Lock
+                class="h-4 w-4 shrink-0"
+                :class="
+                    isDirectlyFrozen
+                        ? 'text-sky-600 dark:text-sky-400'
+                        : 'text-amber-600 dark:text-amber-400'
+                "
+            />
+            <span v-if="isDirectlyFrozen"
+                >এই ফোল্ডারটি ফ্রিজ (লক) করা রয়েছে। এখানে নতুন কিছু আপলোড, এডিট
+                বা ডিলিট করা যাবে না।</span
+            >
+            <span v-else
+                >প্যারেন্ট ফোল্ডার লক থাকায় এই ফোল্ডারটিও স্বয়ংক্রিয়ভাবে লক
+                রয়েছে। এখানে নতুন কিছু আপলোড, এডিট বা ডিলিট করা যাবে না।</span
+            >
+        </div>
+
         <!-- Compact Page Title Bar -->
         <div
             class="mb-3.5 flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 pb-3 sm:gap-3 dark:border-gray-800"
@@ -142,9 +212,46 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             </div>
 
             <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                <!-- Toggle Freeze Button -->
+                <button
+                    v-if="parent?.id && can('freeze nodes')"
+                    type="button"
+                    :disabled="isTogglingFreeze"
+                    @click="toggleFreeze"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50 sm:px-3"
+                    :class="
+                        isDirectlyFrozen
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
+                            : isInheritedFrozen
+                              ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-900/50'
+                              : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/50'
+                    "
+                    :title="
+                        isDirectlyFrozen
+                            ? 'Unfreeze this folder'
+                            : isInheritedFrozen
+                              ? 'Freeze this folder individually'
+                              : 'Freeze this folder'
+                    "
+                >
+                    <Unlock
+                        v-if="isDirectlyFrozen"
+                        class="h-3.5 w-3.5"
+                        :stroke-width="2"
+                    />
+                    <Lock v-else class="h-3.5 w-3.5" :stroke-width="2" />
+                    <span>{{
+                        isDirectlyFrozen
+                            ? 'Unfreeze'
+                            : isInheritedFrozen
+                              ? 'Freeze Individually'
+                              : 'Freeze'
+                    }}</span>
+                </button>
+
                 <!-- Add Folder Dropdown -->
                 <div
-                    v-if="can('create nodes')"
+                    v-if="!isFrozen && can('create nodes')"
                     ref="folderDropdownRef"
                     class="relative inline-block"
                 >
@@ -193,7 +300,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
                 <!-- Add Resource Dropdown -->
                 <div
-                    v-if="parent?.id"
+                    v-if="!isFrozen && parent?.id"
                     ref="resourceDropdownRef"
                     class="relative inline-block"
                 >
@@ -310,7 +417,11 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                     <span>Resources</span>
 
                     <button
-                        v-if="can('edit resources') && resources?.length"
+                        v-if="
+                            !isFrozen &&
+                            can('edit resources') &&
+                            resources?.length
+                        "
                         type="button"
                         @click="isBulkRenameModalOpen = true"
                         class="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-300"
@@ -325,12 +436,14 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         v-for="node in nodes"
                         :key="`node-${node.id}`"
                         :node="node"
+                        :is-frozen="isFrozen"
                         @edit="openEditNodeModal"
                     />
                     <ResourceRow
                         v-for="resource in resources"
                         :key="`resource-${resource.id}`"
                         :resource="resource"
+                        :is-frozen="isFrozen"
                         @edit="openEditResourceModal"
                     />
                 </div>

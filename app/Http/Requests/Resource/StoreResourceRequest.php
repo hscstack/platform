@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Resource;
 
+use App\Models\Node;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -13,7 +14,9 @@ class StoreResourceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $node = Node::find($this->input('node_id'));
+
+        return ! ($node?->isEffectivelyFrozen());
     }
 
     /**
