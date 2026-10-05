@@ -31,6 +31,9 @@ export default defineConfig(({ mode }) => {
                         base: null,
                         includeAbsolute: false,
                     },
+                    compilerOptions: {
+                        isCustomElement: (tag) => tag.startsWith('media-'),
+                    },
                 },
             }),
             vueJsx(),
