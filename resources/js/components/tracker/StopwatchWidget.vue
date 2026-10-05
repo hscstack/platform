@@ -621,10 +621,27 @@ const todayFormatted = computed(() => {
                             v-model.number="manualMinutes"
                             type="number"
                             min="1"
-                            :max="Math.min(720, maxMinutesAllowedForToday)"
-                            :placeholder="`Minutes (max ${Math.min(720, maxMinutesAllowedForToday)})`"
-                            class="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 focus:border-slate-900 focus:outline-hidden dark:border-gray-800 dark:bg-gray-800 dark:text-white dark:focus:border-white"
+                            :max="maxMinutesAllowedForToday"
+                            placeholder="Minutes"
+                            :class="[
+                                manualMinutes &&
+                                manualMinutes > maxMinutesAllowedForToday
+                                    ? 'border-red-300 focus:border-red-500 dark:border-red-800'
+                                    : 'border-slate-200 focus:border-slate-900 dark:border-gray-800 dark:focus:border-white',
+                            ]"
+                            class="h-10 w-full rounded-xl border bg-white px-3 text-sm font-semibold text-slate-900 focus:outline-hidden dark:bg-gray-800 dark:text-white"
                         />
+                        <p
+                            v-if="
+                                manualMinutes &&
+                                manualMinutes > maxMinutesAllowedForToday
+                            "
+                            class="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400"
+                        >
+                            You can log a maximum of
+                            {{ maxMinutesAllowedForToday }} minutes today (24h
+                            daily limit).
+                        </p>
                     </div>
 
                     <div class="mt-5 flex items-center justify-end gap-2">

@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { Calendar, Check, ChevronDown, Clock, X } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
+import {
+    ArrowRight,
+    Calendar,
+    Check,
+    ChevronDown,
+    Clock,
+    X,
+} from 'lucide-vue-next';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 export interface HeatmapItem {
@@ -383,13 +391,13 @@ function handleCellMouseLeave() {
 function getLevelFillClass(level: number): string {
     switch (level) {
         case 0:
-            return 'fill-slate-100 dark:fill-gray-800';
+            return 'fill-slate-100 dark:fill-gray-800/90';
         case 1:
-            return 'fill-emerald-200 dark:fill-emerald-950';
+            return 'fill-emerald-200 dark:fill-emerald-800';
         case 2:
-            return 'fill-emerald-400 dark:fill-emerald-800';
+            return 'fill-emerald-400 dark:fill-emerald-600';
         case 3:
-            return 'fill-emerald-500 dark:fill-emerald-600';
+            return 'fill-emerald-500 dark:fill-emerald-500';
         case 4:
             return 'fill-emerald-600 dark:fill-emerald-400';
         case 5:
@@ -405,14 +413,14 @@ function getLevelFillClass(level: number): string {
         class="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs sm:p-5 dark:border-gray-800 dark:bg-gray-900"
     >
         <!-- Minimal Header -->
-        <div class="flex items-baseline justify-between gap-2">
-            <div>
+        <div class="flex items-center justify-between gap-2 sm:items-baseline">
+            <div class="min-w-0 flex-1">
                 <h3
                     class="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
                 >
                     Study Activity
                 </h3>
-                <div class="mt-1 flex items-center gap-1.5">
+                <div class="mt-1 flex flex-wrap items-center gap-1.5">
                     <span
                         class="text-base font-bold text-slate-900 sm:text-lg dark:text-white"
                     >
@@ -468,6 +476,17 @@ function getLevelFillClass(level: number): string {
                     </div>
                 </div>
             </div>
+
+            <!-- Tracker Link Button (Mobile-friendly) -->
+            <Link
+                href="/tracker"
+                class="group inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50/70 hover:text-indigo-600 sm:px-3 sm:text-xs dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+            >
+                <span>Track Progress</span>
+                <ArrowRight
+                    class="h-3 w-3 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                />
+            </Link>
         </div>
 
         <!-- Heatmap SVG Canvas Container -->
@@ -550,16 +569,16 @@ function getLevelFillClass(level: number): string {
                 >
                     <span>Less</span>
                     <span
-                        class="h-2.5 w-2.5 rounded-[2px] bg-slate-100 dark:bg-gray-800"
+                        class="h-2.5 w-2.5 rounded-[2px] bg-slate-100 dark:bg-gray-800/90"
                     />
                     <span
-                        class="h-2.5 w-2.5 rounded-[2px] bg-emerald-200 dark:bg-emerald-950"
+                        class="h-2.5 w-2.5 rounded-[2px] bg-emerald-200 dark:bg-emerald-800"
                     />
                     <span
-                        class="h-2.5 w-2.5 rounded-[2px] bg-emerald-400 dark:bg-emerald-800"
+                        class="h-2.5 w-2.5 rounded-[2px] bg-emerald-400 dark:bg-emerald-600"
                     />
                     <span
-                        class="h-2.5 w-2.5 rounded-[2px] bg-emerald-500 dark:bg-emerald-600"
+                        class="h-2.5 w-2.5 rounded-[2px] bg-emerald-500 dark:bg-emerald-500"
                     />
                     <span
                         class="h-2.5 w-2.5 rounded-[2px] bg-emerald-600 dark:bg-emerald-400"
@@ -757,7 +776,7 @@ function getLevelFillClass(level: number): string {
                             >
                                 <div class="flex items-center gap-2.5">
                                     <span
-                                        class="h-3.5 w-3.5 rounded-[3px] bg-emerald-200 dark:bg-emerald-950"
+                                        class="h-3.5 w-3.5 rounded-[3px] bg-emerald-200 dark:bg-emerald-800"
                                     />
                                     <span
                                         class="font-medium text-slate-700 dark:text-gray-300"
@@ -775,7 +794,7 @@ function getLevelFillClass(level: number): string {
                             >
                                 <div class="flex items-center gap-2.5">
                                     <span
-                                        class="h-3.5 w-3.5 rounded-[3px] bg-emerald-400 dark:bg-emerald-800"
+                                        class="h-3.5 w-3.5 rounded-[3px] bg-emerald-400 dark:bg-emerald-600"
                                     />
                                     <span
                                         class="font-medium text-slate-700 dark:text-gray-300"
@@ -793,7 +812,7 @@ function getLevelFillClass(level: number): string {
                             >
                                 <div class="flex items-center gap-2.5">
                                     <span
-                                        class="h-3.5 w-3.5 rounded-[3px] bg-emerald-500 dark:bg-emerald-600"
+                                        class="h-3.5 w-3.5 rounded-[3px] bg-emerald-500 dark:bg-emerald-500"
                                     />
                                     <span
                                         class="font-medium text-slate-700 dark:text-gray-300"

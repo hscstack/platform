@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
     BookOpen,
@@ -8,9 +8,11 @@ import {
     ChevronUp,
     ExternalLink,
     Loader2,
+    Share2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import SyllabusShareModal from '@/components/tracker/SyllabusShareModal.vue';
 
 export interface TopLevelNode {
     id: number;
@@ -18,6 +20,7 @@ export interface TopLevelNode {
     name: string;
     slug: string;
     sort_order?: number;
+    weight?: number;
 }
 
 export interface SubjectItem {
@@ -153,13 +156,21 @@ const totalCompletedChapters = computed(() => {
 });
 
 const overallPercentage = computed(() => {
-    if (totalChapters.value === 0) {
+    const subjectsWithChapters = props.subjects.filter(
+        (s) => s.nodes && s.nodes.length > 0,
+    );
+
+    if (subjectsWithChapters.length === 0) {
         return 0;
     }
 
-    return Math.round(
-        (totalCompletedChapters.value / totalChapters.value) * 100,
-    );
+    let totalPercentSum = 0;
+
+    for (const s of subjectsWithChapters) {
+        totalPercentSum += getSubjectProgress(s).percent;
+    }
+
+    return Math.round(totalPercentSum / subjectsWithChapters.length);
 });
 
 function getSubjectProgress(subject: SubjectItem) {
@@ -169,13 +180,52 @@ function getSubjectProgress(subject: SubjectItem) {
         return { completed: 0, total: 0, percent: 0 };
     }
 
-    const completed = subject.nodes.filter((n) =>
-        completedIds.value.has(n.id),
-    ).length;
-    const percent = Math.round((completed / total) * 100);
+    let totalWeight = 0;
+    let completedWeight = 0;
+    let completedCount = 0;
 
-    return { completed, total, percent };
+    for (const node of subject.nodes) {
+        const weight = node.weight || 2;
+        totalWeight += weight;
+
+        if (completedIds.value.has(node.id)) {
+            completedCount++;
+            completedWeight += weight;
+        }
+    }
+
+    const percent =
+        totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
+
+    return { completed: completedCount, total, percent };
 }
+
+const page = usePage();
+const authUser = computed(() => page.props.auth?.user);
+const showShareModal = ref(false);
+
+const shareData = computed(() => {
+    return {
+        user: {
+            name: authUser.value?.name || 'HSC Student',
+            username: authUser.value?.username || 'student',
+            image_url: authUser.value?.image_url || null,
+            institution: authUser.value?.institution || null,
+        },
+        course: props.course,
+        overallPercent: overallPercentage.value,
+        completedChapters: totalCompletedChapters.value,
+        totalChapters: totalChapters.value,
+        subjects: props.subjects.map((s) => ({
+            id: s.id,
+            name: s.name,
+            english_name: s.english_name,
+            completed: getSubjectProgress(s).completed,
+            total: getSubjectProgress(s).total,
+            percent: getSubjectProgress(s).percent,
+        })),
+    };
+});
 </script>
 
 <template>
@@ -206,34 +256,49 @@ function getSubjectProgress(subject: SubjectItem) {
                     </p>
                 </div>
 
-                <!-- Course Switcher Tabs -->
-                <div
-                    class="flex self-start rounded-2xl bg-slate-100 p-1 sm:self-auto dark:bg-gray-800/80"
-                >
+                <!-- Right: Share Button + Course Switcher Tabs -->
+                <div class="flex items-center gap-2">
                     <button
                         type="button"
-                        @click="switchCourse('hsc')"
-                        :class="[
-                            course === 'hsc'
-                                ? 'bg-white text-indigo-600 shadow-2xs dark:bg-gray-900 dark:text-indigo-400'
-                                : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white',
-                        ]"
-                        class="rounded-xl px-4 py-1.5 text-xs font-bold transition"
+                        @click="showShareModal = true"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                        title="Share your progress on social media"
                     >
-                        HSC
+                        <Share2
+                            class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                        />
+                        <span>Share Progress</span>
                     </button>
-                    <button
-                        type="button"
-                        @click="switchCourse('ssc')"
-                        :class="[
-                            course === 'ssc'
-                                ? 'bg-white text-indigo-600 shadow-2xs dark:bg-gray-900 dark:text-indigo-400'
-                                : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white',
-                        ]"
-                        class="rounded-xl px-4 py-1.5 text-xs font-bold transition"
+
+                    <!-- Course Switcher Tabs -->
+                    <div
+                        class="flex self-start rounded-2xl bg-slate-100 p-1 sm:self-auto dark:bg-gray-800/80"
                     >
-                        SSC
-                    </button>
+                        <button
+                            type="button"
+                            @click="switchCourse('hsc')"
+                            :class="[
+                                course === 'hsc'
+                                    ? 'bg-white text-indigo-600 shadow-2xs dark:bg-gray-900 dark:text-indigo-400'
+                                    : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white',
+                            ]"
+                            class="rounded-xl px-4 py-1.5 text-xs font-bold transition"
+                        >
+                            HSC
+                        </button>
+                        <button
+                            type="button"
+                            @click="switchCourse('ssc')"
+                            :class="[
+                                course === 'ssc'
+                                    ? 'bg-white text-indigo-600 shadow-2xs dark:bg-gray-900 dark:text-indigo-400'
+                                    : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white',
+                            ]"
+                            class="rounded-xl px-4 py-1.5 text-xs font-bold transition"
+                        >
+                            SSC
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -383,17 +448,31 @@ function getSubjectProgress(subject: SubjectItem) {
                                 />
                             </div>
 
-                            <!-- Title -->
-                            <span
-                                :class="[
-                                    completedIds.has(node.id)
-                                        ? 'text-slate-400 line-through dark:text-gray-500'
-                                        : 'text-slate-800 dark:text-gray-200',
-                                ]"
-                                class="text-xs font-medium transition sm:text-sm"
-                            >
-                                {{ node.name }}
-                            </span>
+                            <!-- Title + Size Text in Bracket -->
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span
+                                    :class="[
+                                        completedIds.has(node.id)
+                                            ? 'text-slate-400 line-through dark:text-gray-500'
+                                            : 'text-slate-800 dark:text-gray-200',
+                                    ]"
+                                    class="text-xs font-medium transition sm:text-sm"
+                                >
+                                    {{ node.name }}
+                                </span>
+
+                                <span
+                                    class="text-[11px] font-normal text-slate-400 dark:text-gray-500"
+                                >
+                                    ({{
+                                        node.weight === 3
+                                            ? 'Large Chapter'
+                                            : node.weight === 1
+                                              ? 'Small Chapter'
+                                              : 'Normal Chapter'
+                                    }})
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Link to Subject Resources -->
@@ -473,5 +552,8 @@ function getSubjectProgress(subject: SubjectItem) {
                 </button>
             </div>
         </BaseModal>
+
+        <!-- Social Syllabus Share Modal -->
+        <SyllabusShareModal v-model="showShareModal" :data="shareData" />
     </div>
 </template>
