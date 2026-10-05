@@ -43,6 +43,11 @@ class HandleInertiaRequests extends Middleware
             $user->last_active_at = now();
         }
 
+        if ($user && str_contains((string) $request->header('referer', ''), '/chat')) {
+            $user->updateQuietly(['chat_last_seen_at' => now()]);
+            $user->chat_last_seen_at = now();
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
