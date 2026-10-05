@@ -26,6 +26,7 @@ const props = defineProps<{
         slug: string;
         sort_order?: number;
         is_trackable?: boolean;
+        weight?: number;
     } | null;
 }>();
 
@@ -37,6 +38,7 @@ const name = ref('');
 const slug = ref('');
 const sortOrder = ref(0);
 const isTrackable = ref(false);
+const weight = ref(2);
 const showAdvanced = ref(false);
 const isSaving = ref(false);
 const errorMessage = ref('');
@@ -47,11 +49,13 @@ const initForm = () => {
         slug.value = props.node.slug || '';
         sortOrder.value = props.node.sort_order ?? 0;
         isTrackable.value = Boolean(props.node.is_trackable);
+        weight.value = props.node.weight ?? 2;
     } else {
         name.value = '';
         slug.value = '';
         sortOrder.value = 0;
         isTrackable.value = false;
+        weight.value = 2;
     }
 
     errorMessage.value = '';
@@ -89,6 +93,7 @@ const submitForm = () => {
         parent_id: props.parent?.id || null,
         sort_order: sortOrder.value,
         is_trackable: isTrackable.value,
+        weight: isTrackable.value ? weight.value : 2,
     };
 
     if (props.node) {
@@ -257,6 +262,58 @@ const submitForm = () => {
                                     </p>
                                 </div>
                             </label>
+
+                            <!-- Chapter Size / Weight Selector -->
+                            <div
+                                v-if="isTrackable"
+                                class="mt-2.5 ml-6 space-y-1.5 border-t border-slate-200/60 pt-2.5 dark:border-gray-700/60"
+                            >
+                                <label
+                                    class="block text-[11px] font-semibold text-slate-700 dark:text-gray-300"
+                                >
+                                    Chapter Size
+                                </label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button
+                                        type="button"
+                                        @click="weight = 1"
+                                        :class="[
+                                            weight === 1
+                                                ? 'border-indigo-600 bg-indigo-50/80 font-bold text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                                        ]"
+                                        class="flex cursor-pointer items-center justify-center rounded-lg border px-2 py-2 text-center text-xs font-semibold transition"
+                                    >
+                                        Small
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        @click="weight = 2"
+                                        :class="[
+                                            weight === 2
+                                                ? 'border-indigo-600 bg-indigo-50/80 font-bold text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                                        ]"
+                                        class="flex cursor-pointer items-center justify-center rounded-lg border px-2 py-2 text-center text-xs font-semibold transition"
+                                    >
+                                        Normal
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        @click="weight = 3"
+                                        :class="[
+                                            weight === 3
+                                                ? 'border-indigo-600 bg-indigo-50/80 font-bold text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                                        ]"
+                                        class="flex cursor-pointer items-center justify-center rounded-lg border px-2 py-2 text-center text-xs font-semibold transition"
+                                    >
+                                        Large
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

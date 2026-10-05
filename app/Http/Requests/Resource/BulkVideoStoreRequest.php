@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Resource;
 
+use App\Models\Node;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,7 +13,9 @@ class BulkVideoStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $node = Node::find($this->input('node_id'));
+
+        return ! ($node?->isEffectivelyFrozen());
     }
 
     /**

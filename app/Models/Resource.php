@@ -24,6 +24,15 @@ class Resource extends Model
         'file_url',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Resource $resource) {
+            if ($resource->node?->isEffectivelyFrozen()) {
+                abort(403, 'Cannot delete resources from a frozen folder.');
+            }
+        });
+    }
+
     public function getFileUrlAttribute(): ?string
     {
         if ($this->external_url) {

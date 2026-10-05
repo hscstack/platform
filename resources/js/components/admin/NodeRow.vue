@@ -1,12 +1,21 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import { Folder, Pencil, Trash2 } from 'lucide-vue-next';
+import { Folder, Lock, Pencil, Trash2 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
 
-const { node } = defineProps({
+const props = defineProps({
     node: Object,
+    isFrozen: Boolean,
+});
+
+const isNodeEffectivelyFrozen = computed(() => {
+    return (
+        props.isFrozen ||
+        Boolean(props.node?.is_frozen || props.node?.is_effectively_frozen)
+    );
 });
 
 const emit = defineEmits<{
@@ -15,14 +24,14 @@ const emit = defineEmits<{
 
 const handleDelete = () => {
     if (confirm('Are you sure you want to delete this Folder?')) {
-        router.delete(`/admin/nodes/${node.id}`);
+        router.delete(`/admin/nodes/${props.node?.id}`);
     }
 };
 </script>
 
 <template>
     <div
-        @click="router.visit(`${$page.url}/${node.slug}`)"
+        @click="router.visit(`${$page.url}/${node?.slug}`)"
         class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
         <!-- Left: Icon + Full Title -->
@@ -37,20 +46,45 @@ const handleDelete = () => {
                 <h3
                     class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                 >
-                    {{ node.name }}
+                    {{ node?.name }}
                 </h3>
                 <span
-                    v-if="node.is_trackable"
-                    class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
+                    v-if="node?.is_trackable"
+                    class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
                 >
-                    Chapter
+                    <span
+                        v-if="node?.weight === 3"
+                        class="font-normal text-slate-500 dark:text-gray-400"
+                        >Large •</span
+                    >
+                    <span
+                        v-else-if="node?.weight === 1"
+                        class="font-normal text-slate-500 dark:text-gray-400"
+                        >Small •</span
+                    >
+                    <span
+                        v-else
+                        class="font-normal text-slate-500 dark:text-gray-400"
+                        >Normal •</span
+                    >
+                    <span>Chapter</span>
+                </span>
+                <span
+                    v-if="node?.is_frozen || node?.is_effectively_frozen"
+                    class="inline-flex items-center gap-1 rounded-md bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-950/50 dark:text-sky-300 dark:ring-sky-500/30"
+                >
+                    <Lock class="h-2.5 w-2.5" />
+                    Frozen
                 </span>
             </div>
         </div>
 
         <!-- Right: Actions -->
         <div
-            v-if="can('edit nodes') || can('delete nodes')"
+            v-if="
+                !isNodeEffectivelyFrozen &&
+                (can('edit nodes') || can('delete nodes'))
+            "
             class="flex shrink-0 items-center gap-1"
             @click.stop
         >

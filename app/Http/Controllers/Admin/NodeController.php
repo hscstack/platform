@@ -89,6 +89,7 @@ class NodeController extends Controller
             'slug' => $slug,
             'sort_order' => $validated['sort_order'] ?? 0,
             'is_trackable' => (bool) ($validated['is_trackable'] ?? false),
+            'weight' => (int) ($validated['weight'] ?? 2),
         ]);
 
         return back()->with('success', 'Folder created successfully.');
@@ -145,6 +146,10 @@ class NodeController extends Controller
             $node->is_trackable = (bool) $validated['is_trackable'];
         }
 
+        if (array_key_exists('weight', $validated)) {
+            $node->weight = (int) $validated['weight'];
+        }
+
         $node->save();
 
         return back()->with('success', 'Folder updated successfully.');
@@ -164,6 +169,9 @@ class NodeController extends Controller
         $parent = null;
         if ($parentId) {
             $parent = Node::where('id', $parentId)->where('subject_id', $subject->id)->firstOrFail();
+            if ($parent->isEffectivelyFrozen()) {
+                abort(403, 'This folder is frozen and cannot be modified.');
+            }
         }
 
         $inputNodes = $request->input('nodes');
@@ -272,6 +280,17 @@ class NodeController extends Controller
         });
 
         return back()->with('success', "Successfully generated {$createdCount} folders with subfolders!");
+    }
+
+    public function toggleFreeze(Node $node)
+    {
+        $node->update([
+            'is_frozen' => ! $node->is_frozen,
+        ]);
+
+        $status = $node->is_frozen ? 'frozen' : 'unfrozen';
+
+        return back()->with('success', "Folder has been {$status} successfully.");
     }
 
     public function destroy(Node $node)

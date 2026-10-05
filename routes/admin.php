@@ -57,6 +57,8 @@ Route::middleware('permission:edit nodes')->group(function () {
     Route::patch('/subjects/{subject}/nodes/{node}', [AdminNodeController::class, 'update'])->name('nodes.patch');
 });
 
+Route::post('/nodes/{node}/toggle-freeze', [AdminNodeController::class, 'toggleFreeze'])->middleware('permission:freeze nodes')->name('nodes.toggle-freeze');
+
 Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middleware('permission:delete nodes')->name('nodes.destroy');
 
 Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');

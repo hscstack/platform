@@ -169,6 +169,10 @@ class ResourceController extends Controller
 
     public function bulkRename(Request $request, Node $node)
     {
+        if ($node->isEffectivelyFrozen()) {
+            abort(403, 'This folder is frozen and cannot be modified.');
+        }
+
         $validated = $request->validate([
             'prefix' => ['required', 'string', 'max:100'],
             'start_number' => ['nullable', 'integer', 'min:0'],

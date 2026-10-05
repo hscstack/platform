@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Resource;
 
+use App\Models\Node;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,6 +10,18 @@ class UpdateResourceRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        $resource = $this->route('resource');
+        if ($resource?->node?->isEffectivelyFrozen()) {
+            return false;
+        }
+
+        if ($this->has('node_id') && (int) $this->input('node_id') !== (int) $resource?->node_id) {
+            $targetNode = Node::find($this->input('node_id'));
+            if ($targetNode?->isEffectivelyFrozen()) {
+                return false;
+            }
+        }
+
         return true;
     }
 

@@ -41,6 +41,7 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('create nodes');
         Permission::findOrCreate('edit nodes');
         Permission::findOrCreate('delete nodes');
+        Permission::findOrCreate('freeze nodes');
 
         /*
          * Resource management
