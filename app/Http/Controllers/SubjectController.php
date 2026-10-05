@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use App\Models\ForumPost;
-use App\Models\ForumVote;
 use App\Models\Node;
 use App\Models\Notice;
 use App\Models\Subject;
@@ -43,7 +42,7 @@ class SubjectController extends Controller
                 ->toArray();
         });
 
-        $trendingPosts = Cache::remember('home_page_trending_posts', now()->addSeconds(30), function () {
+        $trendingPosts = Cache::remember('home_page_trending_posts', now()->addHours(2), function () {
             return ForumPost::query()
                 ->approved()
                 ->with([
@@ -57,22 +56,6 @@ class SubjectController extends Controller
                 ->get()
                 ->toArray();
         });
-
-        if ($userId = auth()->id()) {
-            $postIds = array_column($trendingPosts, 'id');
-            if (! empty($postIds)) {
-                $userVotes = ForumVote::where('user_id', $userId)
-                    ->where('voteable_type', ForumPost::class)
-                    ->whereIn('voteable_id', $postIds)
-                    ->pluck('value', 'voteable_id')
-                    ->all();
-
-                foreach ($trendingPosts as &$post) {
-                    $post['user_vote'] = $userVotes[$post['id']] ?? null;
-                }
-                unset($post);
-            }
-        }
 
         $notice = Cache::rememberForever('home_page_notice', function () {
             return Notice::activeForDisplay()?->toArray();
