@@ -74,7 +74,7 @@ const fetchNotifications = async () => {
     currentPage.value = 1;
 
     try {
-        const res = await fetch('/notifications?per_page=10&page=1', {
+        const res = await fetch('/notifications?page=1', {
             headers: {
                 Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -86,10 +86,6 @@ const fetchNotifications = async () => {
             notifications.value = data.notifications || [];
             hasMore.value = Boolean(data.has_more);
             currentPage.value = data.current_page || 1;
-
-            if (typeof data.unread_count === 'number') {
-                unreadCount.value = data.unread_count;
-            }
         }
     } catch (e) {
         console.error('Failed to fetch notifications:', e);
@@ -107,7 +103,7 @@ const loadMore = async () => {
     const nextPage = currentPage.value + 1;
 
     try {
-        const res = await fetch(`/notifications?per_page=10&page=${nextPage}`, {
+        const res = await fetch(`/notifications?page=${nextPage}`, {
             headers: {
                 Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -120,10 +116,6 @@ const loadMore = async () => {
             notifications.value = [...notifications.value, ...newItems];
             hasMore.value = Boolean(data.has_more);
             currentPage.value = data.current_page || nextPage;
-
-            if (typeof data.unread_count === 'number') {
-                unreadCount.value = data.unread_count;
-            }
         }
     } catch (e) {
         console.error('Failed to load more notifications:', e);
@@ -154,6 +146,12 @@ const toggleDropdown = () => {
     isOpen.value = !isOpen.value;
 
     if (isOpen.value) {
+        unreadCount.value = 0;
+
+        if (page.props.auth) {
+            (page.props.auth as any).unread_notifications_count = 0;
+        }
+
         updatePanelPosition();
         fetchNotifications();
     }
@@ -211,14 +209,6 @@ const markSingleAsRead = async (notification: NotificationItem, e?: Event) => {
     // Optimistically mark as read in local state
     notification.read_at = new Date().toISOString();
 
-    if (unreadCount.value > 0) {
-        unreadCount.value--;
-    }
-
-    if (page.props.auth) {
-        (page.props.auth as any).unread_notifications_count = unreadCount.value;
-    }
-
     try {
         await fetch(`/notifications/${notification.id}/read`, {
             method: 'POST',
@@ -238,15 +228,6 @@ const markAsRead = async (notification: NotificationItem) => {
     if (!notification.read_at) {
         // Optimistically mark as read in local state
         notification.read_at = new Date().toISOString();
-
-        if (unreadCount.value > 0) {
-            unreadCount.value--;
-        }
-
-        if (page.props.auth) {
-            (page.props.auth as any).unread_notifications_count =
-                unreadCount.value;
-        }
 
         try {
             await fetch(`/notifications/${notification.id}/read`, {
@@ -271,7 +252,7 @@ const markAsRead = async (notification: NotificationItem) => {
 };
 
 const markAllAsRead = async () => {
-    if (isMarkingAll.value || unreadCount.value === 0) {
+    if (isMarkingAll.value || !notifications.value.some((n) => !n.read_at)) {
         return;
     }
 
@@ -282,11 +263,6 @@ const markAllAsRead = async () => {
             n.read_at = new Date().toISOString();
         }
     });
-    unreadCount.value = 0;
-
-    if (page.props.auth) {
-        (page.props.auth as any).unread_notifications_count = 0;
-    }
 
     try {
         await fetch('/notifications/mark-all-read', {
@@ -437,7 +413,7 @@ onBeforeUnmount(() => {
 
                         <div class="flex items-center gap-2.5">
                             <button
-                                v-if="unreadCount > 0"
+                                v-if="notifications.some((n) => !n.read_at)"
                                 @click="markAllAsRead"
                                 :disabled="isMarkingAll"
                                 type="button"

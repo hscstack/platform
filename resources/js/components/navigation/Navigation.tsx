@@ -258,6 +258,11 @@ export const SiteRail = defineComponent({
         };
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
+        const unreadChatCount = computed(
+            () =>
+                (page.props.auth as { unread_chat_messages_count?: number })
+                    ?.unread_chat_messages_count ?? 0,
+        );
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
             if (match) {
@@ -322,6 +327,11 @@ export const SiteRail = defineComponent({
                                         item.href === '/support'
                                             ? 'Support'
                                             : item.label;
+                                    const isChat = item.href === '/chat';
+                                    const hasUnread =
+                                        isChat &&
+                                        !active &&
+                                        unreadChatCount.value > 0;
 
                                     return (
                                         <Link
@@ -339,15 +349,25 @@ export const SiteRail = defineComponent({
                                             ]}
                                             title={item.label}
                                         >
-                                            <MaterialIcon
-                                                name={item.icon}
-                                                size={22}
-                                                class={`shrink-0 transition-colors duration-150 ${
-                                                    active
-                                                        ? 'text-indigo-600 dark:text-indigo-300'
-                                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                                }`}
-                                            />
+                                            <div class="relative flex items-center justify-center">
+                                                <MaterialIcon
+                                                    name={item.icon}
+                                                    size={22}
+                                                    class={`shrink-0 transition-colors duration-150 ${
+                                                        active
+                                                            ? 'text-indigo-600 dark:text-indigo-300'
+                                                            : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                    }`}
+                                                />
+                                                {hasUnread && (
+                                                    <span class="absolute -top-1 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
+                                                        {unreadChatCount.value >
+                                                        9
+                                                            ? '9+'
+                                                            : unreadChatCount.value}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <span class="mt-1 max-w-[64px] truncate text-[10px] leading-tight font-medium">
                                                 {label}
                                             </span>
@@ -398,6 +418,11 @@ export const SiteRail = defineComponent({
                                         item.href === '/chat'
                                             ? 'Global Chat'
                                             : item.label;
+                                    const isChat = item.href === '/chat';
+                                    const hasUnread =
+                                        isChat &&
+                                        !active &&
+                                        unreadChatCount.value > 0;
 
                                     return (
                                         <Link
@@ -426,7 +451,14 @@ export const SiteRail = defineComponent({
                                             <span class="truncate">
                                                 {label}
                                             </span>
-                                            {active && (
+                                            {hasUnread && (
+                                                <span class="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white shadow-xs">
+                                                    {unreadChatCount.value > 9
+                                                        ? '9+'
+                                                        : unreadChatCount.value}
+                                                </span>
+                                            )}
+                                            {active && !hasUnread && (
                                                 <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                             )}
                                         </Link>
@@ -849,6 +881,12 @@ export const SiteBottomNav = defineComponent({
             primaryNavItems.filter((i) => i.showInBottom !== false),
         );
 
+        const unreadChatCount = computed(
+            () =>
+                (page.props.auth as { unread_chat_messages_count?: number })
+                    ?.unread_chat_messages_count ?? 0,
+        );
+
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
 
         const authItemHref = computed(() => {
@@ -892,40 +930,58 @@ export const SiteBottomNav = defineComponent({
                 aria-label="Bottom navigation"
             >
                 <div class="mx-auto flex w-full max-w-md items-center justify-around px-1 py-2">
-                    {bottomNavItems.value.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={resolvedHref(item)}
-                            class={[
-                                'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150 ease-out',
-                                isActive(item.href, item.match)
-                                    ? 'text-slate-900 dark:text-white'
-                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
-                            ]}
-                        >
-                            <MaterialIcon
-                                name={item.icon}
-                                size={26}
-                                filled={isActive(item.href, item.match)}
-                                weight={400}
-                                class={`shrink-0 transition-transform duration-150 ${
-                                    isActive(item.href, item.match)
-                                        ? 'scale-[1.02] text-slate-900 dark:text-white'
-                                        : 'text-slate-500 dark:text-slate-400'
-                                }`}
-                            />
-                            <span
+                    {bottomNavItems.value.map((item) => {
+                        const isChat = item.href === '/chat';
+                        const isCurrentActive = isActive(item.href, item.match);
+                        const hasUnread =
+                            isChat &&
+                            !isCurrentActive &&
+                            unreadChatCount.value > 0;
+
+                        return (
+                            <Link
+                                key={item.href}
+                                href={resolvedHref(item)}
                                 class={[
-                                    'text-[10px] leading-none tracking-wide antialiased',
+                                    'relative flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150 ease-out',
                                     isActive(item.href, item.match)
-                                        ? 'font-bold'
-                                        : 'font-medium',
+                                        ? 'text-slate-900 dark:text-white'
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
                                 ]}
                             >
-                                {item.label}
-                            </span>
-                        </Link>
-                    ))}
+                                <div class="relative flex items-center justify-center">
+                                    <MaterialIcon
+                                        name={item.icon}
+                                        size={26}
+                                        filled={isActive(item.href, item.match)}
+                                        weight={400}
+                                        class={`shrink-0 transition-transform duration-150 ${
+                                            isActive(item.href, item.match)
+                                                ? 'scale-[1.02] text-slate-900 dark:text-white'
+                                                : 'text-slate-500 dark:text-slate-400'
+                                        }`}
+                                    />
+                                    {hasUnread && (
+                                        <span class="absolute -top-1 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
+                                            {unreadChatCount.value > 9
+                                                ? '9+'
+                                                : unreadChatCount.value}
+                                        </span>
+                                    )}
+                                </div>
+                                <span
+                                    class={[
+                                        'text-[10px] leading-none tracking-wide antialiased',
+                                        isActive(item.href, item.match)
+                                            ? 'font-bold'
+                                            : 'font-medium',
+                                    ]}
+                                >
+                                    {item.label}
+                                </span>
+                            </Link>
+                        );
+                    })}
 
                     <Link
                         href={authItemHref.value}
@@ -989,6 +1045,11 @@ export const SiteDrawer = defineComponent({
         );
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
+        const unreadChatCount = computed(
+            () =>
+                (page.props.auth as { unread_chat_messages_count?: number })
+                    ?.unread_chat_messages_count ?? 0,
+        );
         const drawerNavItems = computed(() =>
             allNavItems.filter((item) => !item.showInBottom),
         );
@@ -1158,51 +1219,76 @@ export const SiteDrawer = defineComponent({
                                         </p>
                                         <nav class="space-y-0.5 px-2.5">
                                             {drawerNavItems.value.map(
-                                                (item) => (
-                                                    <Link
-                                                        key={item.href}
-                                                        href={
-                                                            item.href === '/'
-                                                                ? homeHref.value
-                                                                : item.href
-                                                        }
-                                                        onClick={close}
-                                                        class={[
-                                                            'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
-                                                            isActive(
-                                                                item.href,
-                                                                item.match,
-                                                            )
-                                                                ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
-                                                                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
-                                                        ]}
-                                                    >
-                                                        <MaterialIcon
-                                                            name={item.icon}
-                                                            size={22}
-                                                            class={`shrink-0 transition-colors duration-150 ${
+                                                (item) => {
+                                                    const isChat =
+                                                        item.href === '/chat';
+                                                    const isCurrentActive =
+                                                        isActive(
+                                                            item.href,
+                                                            item.match,
+                                                        );
+                                                    const hasUnread =
+                                                        isChat &&
+                                                        !isCurrentActive &&
+                                                        unreadChatCount.value >
+                                                            0;
+
+                                                    return (
+                                                        <Link
+                                                            key={item.href}
+                                                            href={
+                                                                item.href ===
+                                                                '/'
+                                                                    ? homeHref.value
+                                                                    : item.href
+                                                            }
+                                                            onClick={close}
+                                                            class={[
+                                                                'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
                                                                 isActive(
                                                                     item.href,
                                                                     item.match,
                                                                 )
-                                                                    ? 'text-indigo-600 dark:text-indigo-300'
-                                                                    : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                                            }`}
-                                                        />
-                                                        <span class="truncate">
-                                                            {item.href ===
-                                                            '/chat'
-                                                                ? 'Global Chat'
-                                                                : item.label}
-                                                        </span>
-                                                        {isActive(
-                                                            item.href,
-                                                            item.match,
-                                                        ) && (
-                                                            <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                                                        )}
-                                                    </Link>
-                                                ),
+                                                                    ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
+                                                                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
+                                                            ]}
+                                                        >
+                                                            <MaterialIcon
+                                                                name={item.icon}
+                                                                size={22}
+                                                                class={`shrink-0 transition-colors duration-150 ${
+                                                                    isActive(
+                                                                        item.href,
+                                                                        item.match,
+                                                                    )
+                                                                        ? 'text-indigo-600 dark:text-indigo-300'
+                                                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
+                                                                }`}
+                                                            />
+                                                            <span class="truncate">
+                                                                {item.href ===
+                                                                '/chat'
+                                                                    ? 'Global Chat'
+                                                                    : item.label}
+                                                            </span>
+                                                            {hasUnread && (
+                                                                <span class="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white shadow-xs">
+                                                                    {unreadChatCount.value >
+                                                                    9
+                                                                        ? '9+'
+                                                                        : unreadChatCount.value}
+                                                                </span>
+                                                            )}
+                                                            {isActive(
+                                                                item.href,
+                                                                item.match,
+                                                            ) &&
+                                                                !hasUnread && (
+                                                                    <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                                                )}
+                                                        </Link>
+                                                    );
+                                                },
                                             )}
                                             {canAccessAdmin.value && (
                                                 <Link
