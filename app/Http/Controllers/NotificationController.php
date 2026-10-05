@@ -40,6 +40,7 @@ class NotificationController extends Controller
             'notifications' => $notifications,
             'has_more' => $paginator->hasMorePages(),
             'current_page' => $paginator->currentPage(),
+            'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
 
@@ -55,6 +56,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
+            'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
 
@@ -69,6 +71,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
+            'unread_count' => 0,
         ]);
     }
 
@@ -81,6 +84,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
+            'unread_count' => 0,
         ]);
     }
 }
