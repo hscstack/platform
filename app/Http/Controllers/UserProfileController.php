@@ -410,8 +410,8 @@ class UserProfileController extends Controller
         $subjectBreakdown = [];
         $totalChapters = 0;
         $completedChapters = 0;
-        $totalSyllabusWeight = 0;
-        $completedSyllabusWeight = 0;
+        $totalSubjectPercents = 0;
+        $validSubjectsCount = 0;
 
         foreach ($trackableSubjects as $subj) {
             $subjTotalChapters = $subj->nodes->count();
@@ -441,10 +441,12 @@ class UserProfileController extends Controller
 
             $totalChapters += $subjTotalChapters;
             $completedChapters += $subjCompletedChapters;
-            $totalSyllabusWeight += $subjTotalWeight;
-            $completedSyllabusWeight += $subjCompletedWeight;
 
             $subjPercent = $subjTotalWeight > 0 ? (int) round(($subjCompletedWeight / $subjTotalWeight) * 100) : 0;
+            if ($subjTotalWeight > 0) {
+                $totalSubjectPercents += ($subjCompletedWeight / $subjTotalWeight) * 100;
+                $validSubjectsCount++;
+            }
 
             $subjectBreakdown[] = [
                 'id' => $subj->id,
@@ -461,7 +463,7 @@ class UserProfileController extends Controller
             ];
         }
 
-        $overallPercent = $totalSyllabusWeight > 0 ? (int) round(($completedSyllabusWeight / $totalSyllabusWeight) * 100) : 0;
+        $overallPercent = $validSubjectsCount > 0 ? (int) round($totalSubjectPercents / $validSubjectsCount) : 0;
 
         return [
             'course' => $course,
