@@ -48,7 +48,7 @@ class NodeController extends Controller
             'subject' => $subject,
             'nodes' => $node->children,
             'resources' => $node->resources ?? [],
-            'parent' => $node ?? null,
+            'parent' => $node ? $node->append('is_effectively_frozen') : null,
         ]);
     }
 

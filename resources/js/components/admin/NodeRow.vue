@@ -12,10 +12,7 @@ const props = defineProps({
 });
 
 const isNodeEffectivelyFrozen = computed(() => {
-    return (
-        props.isFrozen ||
-        Boolean(props.node?.is_frozen || props.node?.is_effectively_frozen)
-    );
+    return props.isFrozen || Boolean(props.node?.is_frozen);
 });
 
 const emit = defineEmits<{
@@ -70,7 +67,7 @@ const handleDelete = () => {
                     <span>Chapter</span>
                 </span>
                 <span
-                    v-if="node?.is_frozen || node?.is_effectively_frozen"
+                    v-if="node?.is_frozen || isFrozen"
                     class="inline-flex items-center gap-1 rounded-md bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-950/50 dark:text-sky-300 dark:ring-sky-500/30"
                 >
                     <Lock class="h-2.5 w-2.5" />

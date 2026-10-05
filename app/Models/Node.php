@@ -21,10 +21,6 @@ class Node extends Model
         'is_frozen',
     ];
 
-    protected $appends = [
-        'is_effectively_frozen',
-    ];
-
     protected function casts(): array
     {
         return [
