@@ -8,6 +8,7 @@ import {
     ArrowUpRight,
     Calendar,
     CheckCircle2,
+    ChevronDown,
     ChevronRight,
     Edit3,
     Eye,
@@ -18,11 +19,14 @@ import {
     GraduationCap,
     Heart,
     HelpCircle,
+    Info,
     Instagram,
+    Loader2,
     Lock,
     LogIn,
     MessageSquare,
     MessageSquareCheck,
+    Share2,
     UploadCloud,
     Users,
     X,
@@ -31,12 +35,14 @@ import {
 import { computed, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import SubjectIcon from '@/components/SubjectIcon.vue';
 import StudyHeatmap from '@/components/tracker/StudyHeatmap.vue';
 import type {
     HeatmapItem,
     TrackerStats,
 } from '@/components/tracker/StudyHeatmap.vue';
+import SyllabusShareModal from '@/components/tracker/SyllabusShareModal.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { formatTimeAgo } from '@/lib/useDate';
@@ -55,6 +61,8 @@ const props = defineProps<{
         github: string | null;
         created_at: string;
         is_verified?: boolean;
+        is_online?: boolean;
+        last_active_at?: string | null;
     };
     appreciationsCount: number;
     appreciatingCount: number;
@@ -88,6 +96,7 @@ const props = defineProps<{
         image_path?: string | null;
         institution?: string | null;
         is_verified?: boolean;
+        unappreciated?: boolean;
     }>;
     forumPosts?: Array<{
         id: number;
@@ -222,6 +231,12 @@ const props = defineProps<{
             completed: number;
             total: number;
             percent: number;
+            chapters?: Array<{
+                id: number;
+                name: string;
+                weight: number;
+                is_completed: boolean;
+            }>;
         }>;
     };
 }>();
@@ -233,6 +248,18 @@ const isOwnProfile = computed(
 );
 
 const showSyllabusModal = ref(false);
+const showShareModal = ref(false);
+const showAlgorithmInfo = ref(false);
+const expandedSubjects = ref<Set<number>>(new Set());
+
+const toggleSubjectExpanded = (subjId: number) => {
+    if (expandedSubjects.value.has(subjId)) {
+        expandedSubjects.value.delete(subjId);
+    } else {
+        expandedSubjects.value.add(subjId);
+    }
+};
+
 const activeTab = ref<'forum' | 'blogs' | 'activity'>('forum');
 const forumSubTab = ref<'questions' | 'answers'>('questions');
 
@@ -270,6 +297,130 @@ const showAppreciatorsModal = ref(false);
 const showAppreciatingModal = ref(false);
 const showGuestModal = ref(false);
 const guestModalAction = ref<'appreciate' | 'poke'>('appreciate');
+const showAvatarModal = ref(false);
+
+// Paginated appreciators
+const appreciatorsList = ref<
+    Array<{
+        id: number;
+        name: string;
+        username: string;
+        image_path: string | null;
+        institution: string | null;
+        is_verified?: boolean;
+    }>
+>([...(props.appreciators || [])]);
+const appreciatorsPage = ref(1);
+const appreciatorsHasMore = ref(
+    props.appreciationsCount > (props.appreciators?.length || 0),
+);
+const isLoadingMoreAppreciators = ref(false);
+
+watch(
+    () => props.appreciators,
+    (newVal) => {
+        appreciatorsList.value = [...(newVal || [])];
+        appreciatorsPage.value = 1;
+        appreciatorsHasMore.value =
+            localAppreciationsCount.value > appreciatorsList.value.length;
+    },
+    { deep: true },
+);
+
+const loadMoreAppreciators = async () => {
+    if (isLoadingMoreAppreciators.value || !appreciatorsHasMore.value) {
+        return;
+    }
+
+    isLoadingMoreAppreciators.value = true;
+    const nextPage = appreciatorsPage.value + 1;
+
+    try {
+        const res = await fetch(
+            `/u/${props.profileUser.id}/appreciators?page=${nextPage}`,
+            {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            },
+        );
+
+        if (res.ok) {
+            const data = await res.json();
+            const newUsers = data.users || [];
+            appreciatorsList.value.push(...newUsers);
+            appreciatorsPage.value = data.current_page || nextPage;
+            appreciatorsHasMore.value = Boolean(data.has_more);
+        }
+    } catch (e) {
+        console.error('Failed to load more appreciators:', e);
+    } finally {
+        isLoadingMoreAppreciators.value = false;
+    }
+};
+
+// Paginated appreciating
+const appreciatingList = ref<
+    Array<{
+        id: number;
+        name: string;
+        username: string;
+        image_path: string | null;
+        institution: string | null;
+        is_verified?: boolean;
+        unappreciated?: boolean;
+    }>
+>([...(props.appreciating || [])]);
+const appreciatingPage = ref(1);
+const appreciatingHasMore = ref(
+    props.appreciatingCount > (props.appreciating?.length || 0),
+);
+const isLoadingMoreAppreciating = ref(false);
+
+watch(
+    () => props.appreciating,
+    (newVal) => {
+        appreciatingList.value = [...(newVal || [])];
+        appreciatingPage.value = 1;
+        appreciatingHasMore.value =
+            props.appreciatingCount > appreciatingList.value.length;
+    },
+    { deep: true },
+);
+
+const loadMoreAppreciating = async () => {
+    if (isLoadingMoreAppreciating.value || !appreciatingHasMore.value) {
+        return;
+    }
+
+    isLoadingMoreAppreciating.value = true;
+    const nextPage = appreciatingPage.value + 1;
+
+    try {
+        const res = await fetch(
+            `/u/${props.profileUser.id}/appreciating?page=${nextPage}`,
+            {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            },
+        );
+
+        if (res.ok) {
+            const data = await res.json();
+            const newUsers = data.users || [];
+            appreciatingList.value.push(...newUsers);
+            appreciatingPage.value = data.current_page || nextPage;
+            appreciatingHasMore.value = Boolean(data.has_more);
+        }
+    } catch (e) {
+        console.error('Failed to load more appreciating users:', e);
+    } finally {
+        isLoadingMoreAppreciating.value = false;
+    }
+};
 
 watch(
     () => props.isAppreciated,
@@ -282,6 +433,7 @@ watch(
     () => props.appreciationsCount,
     (val) => {
         localAppreciationsCount.value = val;
+        appreciatorsHasMore.value = val > appreciatorsList.value.length;
     },
 );
 
@@ -370,6 +522,7 @@ const handleAppreciate = () => {
         {
             preserveScroll: true,
             preserveState: !props.isLocked,
+            except: ['suggestedUsers'],
             onError: () => {
                 localIsAppreciated.value = props.isAppreciated;
                 localAppreciationsCount.value = props.appreciationsCount;
@@ -451,7 +604,22 @@ const timeAgo = formatTimeAgo;
                         <!-- Avatar -->
                         <div class="relative shrink-0">
                             <div
-                                class="h-16 w-16 overflow-hidden rounded-2xl shadow-sm ring-4 ring-slate-100 sm:h-20 sm:w-20 dark:ring-gray-800"
+                                @click="
+                                    profileUser.image_url
+                                        ? (showAvatarModal = true)
+                                        : undefined
+                                "
+                                :class="[
+                                    'h-16 w-16 overflow-hidden rounded-2xl shadow-sm ring-4 ring-slate-100 sm:h-20 sm:w-20 dark:ring-gray-800',
+                                    profileUser.image_url
+                                        ? 'cursor-pointer transition hover:opacity-90 hover:ring-indigo-300 active:scale-95 dark:hover:ring-indigo-700'
+                                        : '',
+                                ]"
+                                :title="
+                                    profileUser.image_url
+                                        ? 'View profile picture'
+                                        : undefined
+                                "
                             >
                                 <img
                                     v-if="profileUser.image_url"
@@ -505,6 +673,41 @@ const timeAgo = formatTimeAgo;
                                 <span class="leading-snug break-words">{{
                                     profileUser.institution
                                 }}</span>
+                            </div>
+
+                            <!-- Online / Last Active Status -->
+                            <div
+                                class="flex items-center gap-1.5 pt-0.5 text-xs font-medium"
+                                :class="
+                                    profileUser.is_online
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : 'text-slate-500 dark:text-gray-400'
+                                "
+                            >
+                                <span class="relative flex h-2 w-2">
+                                    <span
+                                        v-if="profileUser.is_online"
+                                        class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+                                    ></span>
+                                    <span
+                                        class="relative inline-flex h-2 w-2 rounded-full"
+                                        :class="
+                                            profileUser.is_online
+                                                ? 'bg-emerald-500'
+                                                : 'bg-slate-300 dark:bg-gray-600'
+                                        "
+                                    ></span>
+                                </span>
+                                <span v-if="profileUser.is_online">Online</span>
+                                <span v-else-if="profileUser.last_active_at"
+                                    >Active
+                                    {{
+                                        formatTimeAgo(
+                                            profileUser.last_active_at,
+                                        )
+                                    }}</span
+                                >
+                                <span v-else>Long time ago</span>
                             </div>
                         </div>
                     </div>
@@ -1553,24 +1756,34 @@ const timeAgo = formatTimeAgo;
                 </div>
 
                 <div
-                    v-if="appreciators && appreciators.length > 0"
+                    v-if="appreciatorsList && appreciatorsList.length > 0"
                     class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
                 >
                     <UserListItem
-                        v-for="person in appreciators"
+                        v-for="person in appreciatorsList"
                         :key="person.id"
                         :user="person"
                         theme="rose"
                         @click="showAppreciatorsModal = false"
                     />
 
-                    <div
-                        v-if="localAppreciationsCount > appreciators.length"
-                        class="py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400"
-                    >
-                        and
-                        {{ localAppreciationsCount - appreciators.length }}
-                        more...
+                    <div v-if="appreciatorsHasMore" class="py-3 text-center">
+                        <button
+                            @click="loadMoreAppreciators"
+                            :disabled="isLoadingMoreAppreciators"
+                            type="button"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                        >
+                            <Loader2
+                                v-if="isLoadingMoreAppreciators"
+                                class="h-3.5 w-3.5 animate-spin"
+                            />
+                            <span>{{
+                                isLoadingMoreAppreciators
+                                    ? 'Loading...'
+                                    : 'Load more'
+                            }}</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1627,24 +1840,77 @@ const timeAgo = formatTimeAgo;
                 </div>
 
                 <div
-                    v-if="appreciating && appreciating.length > 0"
+                    v-if="appreciatingList && appreciatingList.length > 0"
                     class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
                 >
-                    <UserListItem
-                        v-for="person in appreciating"
-                        :key="person.id"
-                        :user="person"
-                        theme="indigo"
-                        @click="showAppreciatingModal = false"
-                    />
-
                     <div
-                        v-if="appreciatingCount > appreciating.length"
-                        class="py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400"
+                        v-for="person in appreciatingList"
+                        :key="person.id"
+                        class="flex items-center justify-between gap-2"
                     >
-                        and
-                        {{ appreciatingCount - appreciating.length }}
-                        more...
+                        <UserListItem
+                            :user="person"
+                            theme="indigo"
+                            class="min-w-0 flex-1"
+                            @click="showAppreciatingModal = false"
+                        />
+                        <button
+                            v-if="isOwnProfile"
+                            type="button"
+                            @click.stop="
+                                person.unappreciated = !person.unappreciated;
+                                router.post(
+                                    `/u/${person.id}/appreciate`,
+                                    {},
+                                    {
+                                        preserveScroll: true,
+                                        preserveState: true,
+                                        except: [
+                                            'appreciating',
+                                            'suggestedUsers',
+                                        ],
+                                        onError: () => {
+                                            person.unappreciated =
+                                                !person.unappreciated;
+                                        },
+                                    },
+                                );
+                            "
+                            class="cursor-pointer p-1.5 transition active:scale-90"
+                            :title="
+                                person.unappreciated
+                                    ? 'Appreciate'
+                                    : 'Appreciating'
+                            "
+                        >
+                            <Heart
+                                class="h-4 w-4"
+                                :class="
+                                    person.unappreciated
+                                        ? 'stroke-[2] text-slate-400 dark:text-gray-500'
+                                        : 'fill-rose-500 text-rose-500'
+                                "
+                            />
+                        </button>
+                    </div>
+
+                    <div v-if="appreciatingHasMore" class="py-3 text-center">
+                        <button
+                            @click="loadMoreAppreciating"
+                            :disabled="isLoadingMoreAppreciating"
+                            type="button"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                        >
+                            <Loader2
+                                v-if="isLoadingMoreAppreciating"
+                                class="h-3.5 w-3.5 animate-spin"
+                            />
+                            <span>{{
+                                isLoadingMoreAppreciating
+                                    ? 'Loading...'
+                                    : 'Load more'
+                            }}</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1803,12 +2069,60 @@ const timeAgo = formatTimeAgo;
         @close="showSyllabusModal = false"
     >
         <div class="max-h-[70vh] space-y-3 overflow-y-auto p-4 sm:p-6">
+            <!-- Algorithm Info Banner / Toggle -->
+            <div
+                class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 transition-colors dark:border-indigo-900/40 dark:bg-indigo-950/30"
+            >
+                <button
+                    type="button"
+                    @click="showAlgorithmInfo = !showAlgorithmInfo"
+                    class="flex w-full cursor-pointer items-center justify-between text-left text-xs font-semibold text-indigo-900 dark:text-indigo-200"
+                >
+                    <span class="flex items-center gap-1.5">
+                        <Info
+                            class="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400"
+                        />
+                        সিলেবাসের অগ্রগতি কীভাবে হিসাব করা হয়?
+                    </span>
+                    <span
+                        class="text-[10px] font-medium text-indigo-600 dark:text-indigo-400"
+                    >
+                        {{ showAlgorithmInfo ? 'লুকান' : 'বিস্তারিত' }}
+                    </span>
+                </button>
+
+                <div
+                    v-if="showAlgorithmInfo"
+                    class="mt-2.5 space-y-2 border-t border-indigo-100/80 pt-2.5 text-[11px] leading-relaxed text-indigo-950/80 dark:border-indigo-900/40 dark:text-indigo-200/90"
+                >
+                    <p>
+                        <strong>১. অধ্যায়ের গুরুত্ব (Weight):</strong> অধ্যায়ের
+                        পরিধি অনুযায়ী পয়েন্ট নির্ধারিত (ছোট অধ্যায় = ১ পয়েন্ট,
+                        সাধারণ = ২ পয়েন্ট, বড় অধ্যায় = ৩ পয়েন্ট) থাকে।
+                    </p>
+                    <p>
+                        <strong>২. বিষয়ের অগ্রগতি:</strong> প্রতিটি বিষয়ের
+                        সম্পন্ন হওয়া অধ্যায়ের মোট পয়েন্টকে ঐ বিষয়ের সর্বমোট
+                        পয়েন্ট দিয়ে ভাগ করে শতকরা হার বের করা হয়।
+                    </p>
+                    <p>
+                        <strong>৩. সামগ্রিক অগ্রগতি (Overall):</strong> সব
+                        বিষয়ের শতকরা অগ্রগতির সমান গড় (Average) করে মোট অগ্রগতি
+                        বের করা হয়, যাতে কোনো বিষয়ে অধ্যায় বেশি থাকলেও ফলাফলে
+                        বৈষম্য না ঘটে।
+                    </p>
+                </div>
+            </div>
+
             <div
                 v-for="subj in syllabusProgress.subjects"
                 :key="subj.id"
-                class="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 sm:p-4 dark:border-gray-800/80 dark:bg-gray-800/40"
+                class="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 transition sm:p-4 dark:border-gray-800/80 dark:bg-gray-800/40"
             >
-                <div class="flex items-center justify-between gap-3">
+                <div
+                    @click="toggleSubjectExpanded(subj.id)"
+                    class="flex cursor-pointer items-center justify-between gap-3 select-none"
+                >
                     <div class="flex min-w-0 items-center gap-3">
                         <div
                             :class="[
@@ -1837,17 +2151,27 @@ const timeAgo = formatTimeAgo;
                         </div>
                     </div>
 
-                    <div class="shrink-0 text-right">
-                        <span
-                            class="text-xs font-extrabold text-slate-900 dark:text-gray-100"
-                        >
-                            {{ subj.percent }}%
-                        </span>
-                        <p
-                            class="text-[10px] text-slate-400 dark:text-gray-500"
-                        >
-                            {{ subj.completed }}/{{ subj.total }} Chapters
-                        </p>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <div class="text-right">
+                            <span
+                                class="text-xs font-extrabold text-slate-900 dark:text-gray-100"
+                            >
+                                {{ subj.percent }}%
+                            </span>
+                            <p
+                                class="text-[10px] text-slate-400 dark:text-gray-500"
+                            >
+                                {{ subj.completed }}/{{ subj.total }} Chapters
+                            </p>
+                        </div>
+                        <component
+                            :is="
+                                expandedSubjects.has(subj.id)
+                                    ? ChevronDown
+                                    : ChevronRight
+                            "
+                            class="h-4 w-4 text-slate-400 transition dark:text-gray-500"
+                        />
                     </div>
                 </div>
 
@@ -1860,19 +2184,117 @@ const timeAgo = formatTimeAgo;
                         :style="{ width: `${subj.percent}%` }"
                     />
                 </div>
+
+                <!-- Expanded Chapters List -->
+                <div
+                    v-if="
+                        expandedSubjects.has(subj.id) &&
+                        subj.chapters &&
+                        subj.chapters.length > 0
+                    "
+                    class="mt-3 divide-y divide-slate-200/60 rounded-xl border border-slate-200/60 bg-white/70 pt-0.5 dark:divide-gray-700/50 dark:border-gray-700/50 dark:bg-gray-900/40"
+                >
+                    <div
+                        v-for="chap in subj.chapters"
+                        :key="chap.id"
+                        class="flex items-center justify-between gap-2.5 px-3 py-2 text-xs"
+                    >
+                        <div class="flex min-w-0 items-center gap-2">
+                            <span
+                                :class="[
+                                    chap.is_completed
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : 'text-slate-300 dark:text-gray-600',
+                                    'shrink-0',
+                                ]"
+                            >
+                                <CheckCircle2
+                                    v-if="chap.is_completed"
+                                    class="h-4 w-4 fill-emerald-100 stroke-[2.2] dark:fill-emerald-950"
+                                />
+                                <div
+                                    v-else
+                                    class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 dark:border-gray-600"
+                                />
+                            </span>
+
+                            <span
+                                :class="[
+                                    chap.is_completed
+                                        ? 'font-medium text-slate-900 dark:text-gray-100'
+                                        : 'text-slate-500 dark:text-gray-400',
+                                    'truncate',
+                                ]"
+                            >
+                                {{ chap.name }}
+                            </span>
+                        </div>
+
+                        <span
+                            class="shrink-0 text-[10px] text-slate-400 dark:text-gray-500"
+                        >
+                            {{
+                                chap.weight === 3
+                                    ? '(Large Chapter)'
+                                    : chap.weight === 1
+                                      ? '(Small Chapter)'
+                                      : '(Normal Chapter)'
+                            }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <template #footer>
-            <div class="flex items-center justify-end">
+            <div class="flex items-center justify-between gap-3">
                 <button
                     type="button"
-                    @click="showSyllabusModal = false"
-                    class="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    @click="showShareModal = true"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                 >
-                    Close
+                    <Share2
+                        class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                    />
+                    <span>Share Progress</span>
                 </button>
+
+                <Link
+                    href="/tracker"
+                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+                >
+                    <span>View My Progress</span>
+                    <ArrowRight class="h-3.5 w-3.5" />
+                </Link>
             </div>
         </template>
     </BaseModal>
+
+    <!-- Social Syllabus Share Modal -->
+    <SyllabusShareModal
+        v-if="syllabusProgress"
+        v-model="showShareModal"
+        :data="{
+            user: {
+                name: profileUser.name,
+                username: profileUser.username,
+                image_url: profileUser.image_url,
+                institution: profileUser.institution,
+            },
+            course: syllabusProgress.course,
+            overallPercent: syllabusProgress.overallPercent,
+            completedChapters: syllabusProgress.completedChapters,
+            totalChapters: syllabusProgress.totalChapters,
+            subjects: syllabusProgress.subjects,
+        }"
+    />
+
+    <!-- Avatar Image Previewer Modal -->
+    <ImageViewerModal
+        v-if="profileUser.image_url"
+        v-model="showAvatarModal"
+        :src="profileUser.image_url"
+        :alt="profileUser.name"
+        :title="profileUser.name"
+    />
 </template>

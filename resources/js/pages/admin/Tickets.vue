@@ -404,6 +404,14 @@ const formatDate = formatDateTime;
                                 >Created:
                                 {{ formatDate(ticket.created_at) }}</span
                             >
+                            <template v-if="ticket.replied_by">
+                                <span>&bull;</span>
+                                <span
+                                    class="font-medium text-emerald-600 dark:text-emerald-400"
+                                >
+                                    Replied by: {{ ticket.replied_by.name }}
+                                </span>
+                            </template>
                         </div>
                     </div>
 
@@ -538,11 +546,25 @@ const formatDate = formatDateTime;
                     <!-- Reply Form -->
                     <form @submit.prevent="submitReply" class="space-y-3">
                         <div>
-                            <label
-                                class="mb-1 block text-xs font-bold text-slate-700 dark:text-gray-300"
-                            >
-                                Your Response / Staff Message
-                            </label>
+                            <div class="mb-1 flex items-center justify-between">
+                                <label
+                                    class="block text-xs font-bold text-slate-700 dark:text-gray-300"
+                                >
+                                    Your Response / Staff Message
+                                </label>
+                                <span
+                                    v-if="activeTicket.replied_by"
+                                    class="text-[11px] font-medium text-slate-500 dark:text-gray-400"
+                                >
+                                    (Last replied by:
+                                    <span
+                                        class="font-semibold text-slate-700 dark:text-gray-300"
+                                        >{{
+                                            activeTicket.replied_by.name
+                                        }}</span
+                                    >)
+                                </span>
+                            </div>
                             <textarea
                                 v-model="replyForm.admin_reply"
                                 rows="5"
