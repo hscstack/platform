@@ -256,12 +256,6 @@ const formatDate = formatDateTime;
                                             >
                                                 HSCStack Support Team
                                             </span>
-                                            <span
-                                                v-if="ticket.replied_by"
-                                                class="ml-1 text-[11px] text-slate-500 dark:text-gray-400"
-                                            >
-                                                ({{ ticket.replied_by.name }})
-                                            </span>
                                         </div>
                                     </div>
                                     <span

@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Models\UserAppreciation;
 use App\Notifications\StudyPokeNotification;
 use App\Notifications\UserAppreciationNotification;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -25,8 +26,7 @@ class UserProfileController extends Controller
 {
     public function show(string $username)
     {
-        $user = User::where('username', $username)
-            ->firstOrFail();
+        $user = User::where('username', $username)->firstOrFail();
 
         $profileUser = [
             'id' => $user->id,
@@ -41,6 +41,8 @@ class UserProfileController extends Controller
             'github' => $user->github,
             'created_at' => $user->created_at?->format('M Y') ?? '2026',
             'is_verified' => $user->is_verified,
+            'is_online' => $user->isOnline(),
+            'last_active_at' => $user->last_active_at?->toIso8601String(),
         ];
 
         $appreciationsCount = $user->appreciationsReceived()->count();
@@ -88,13 +90,13 @@ class UserProfileController extends Controller
         $appreciators = $user->appreciators()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
             ->latest('user_appreciations.id')
-            ->take(30)
+            ->take(15)
             ->get();
 
         $appreciating = $user->appreciatingUsers()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
             ->latest('user_appreciations.id')
-            ->take(30)
+            ->take(15)
             ->get();
 
         $pokeEnabled = (bool) AppSetting::get('peer_poke_enabled', true);
@@ -395,7 +397,7 @@ class UserProfileController extends Controller
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
                     ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order');
+                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
             ->get(['id', 'name', 'english_name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
 
@@ -408,20 +410,41 @@ class UserProfileController extends Controller
         $subjectBreakdown = [];
         $totalChapters = 0;
         $completedChapters = 0;
+        $totalSyllabusWeight = 0;
+        $completedSyllabusWeight = 0;
 
         foreach ($trackableSubjects as $subj) {
-            $subjTotal = $subj->nodes->count();
-            $subjCompleted = 0;
+            $subjTotalChapters = $subj->nodes->count();
+            $subjCompletedChapters = 0;
+            $subjTotalWeight = 0;
+            $subjCompletedWeight = 0;
+
+            $chaptersList = [];
+
             foreach ($subj->nodes as $node) {
-                if (isset($completedSet[$node->id])) {
-                    $subjCompleted++;
+                $nodeWeight = (int) ($node->weight ?: 2);
+                $subjTotalWeight += $nodeWeight;
+                $isDone = isset($completedSet[$node->id]);
+
+                if ($isDone) {
+                    $subjCompletedChapters++;
+                    $subjCompletedWeight += $nodeWeight;
                 }
+
+                $chaptersList[] = [
+                    'id' => $node->id,
+                    'name' => $node->name,
+                    'weight' => $nodeWeight,
+                    'is_completed' => $isDone,
+                ];
             }
 
-            $totalChapters += $subjTotal;
-            $completedChapters += $subjCompleted;
+            $totalChapters += $subjTotalChapters;
+            $completedChapters += $subjCompletedChapters;
+            $totalSyllabusWeight += $subjTotalWeight;
+            $completedSyllabusWeight += $subjCompletedWeight;
 
-            $subjPercent = $subjTotal > 0 ? (int) round(($subjCompleted / $subjTotal) * 100) : 0;
+            $subjPercent = $subjTotalWeight > 0 ? (int) round(($subjCompletedWeight / $subjTotalWeight) * 100) : 0;
 
             $subjectBreakdown[] = [
                 'id' => $subj->id,
@@ -431,13 +454,14 @@ class UserProfileController extends Controller
                 'course' => $subj->course,
                 'tailwind_format' => $subj->tailwind_format,
                 'icon' => $subj->icon,
-                'completed' => $subjCompleted,
-                'total' => $subjTotal,
+                'completed' => $subjCompletedChapters,
+                'total' => $subjTotalChapters,
                 'percent' => $subjPercent,
+                'chapters' => $chaptersList,
             ];
         }
 
-        $overallPercent = $totalChapters > 0 ? (int) round(($completedChapters / $totalChapters) * 100) : 0;
+        $overallPercent = $totalSyllabusWeight > 0 ? (int) round(($completedSyllabusWeight / $totalSyllabusWeight) * 100) : 0;
 
         return [
             'course' => $course,
@@ -446,5 +470,39 @@ class UserProfileController extends Controller
             'totalChapters' => $totalChapters,
             'subjects' => $subjectBreakdown,
         ];
+    }
+
+    /**
+     * Fetch paginated list of users who appreciated this profile user.
+     */
+    public function appreciators(Request $request, User $user): JsonResponse
+    {
+        $paginator = $user->appreciators()
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
+            ->latest('user_appreciations.id')
+            ->simplePaginate(15);
+
+        return response()->json([
+            'users' => $paginator->items(),
+            'has_more' => $paginator->hasMorePages(),
+            'current_page' => $paginator->currentPage(),
+        ]);
+    }
+
+    /**
+     * Fetch paginated list of users this profile user is appreciating.
+     */
+    public function appreciating(Request $request, User $user): JsonResponse
+    {
+        $paginator = $user->appreciatingUsers()
+            ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
+            ->latest('user_appreciations.id')
+            ->simplePaginate(15);
+
+        return response()->json([
+            'users' => $paginator->items(),
+            'has_more' => $paginator->hasMorePages(),
+            'current_page' => $paginator->currentPage(),
+        ]);
     }
 }
