@@ -1,10 +1,5 @@
-@php
-    $themeCookie = $_COOKIE['theme'] ?? ($_COOKIE['appearance'] ?? null);
-    $isDarkServer = $themeCookie === 'dark';
-    $serverThemeColor = $isDarkServer ? '#030712' : '#f8fafc';
-@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => $isDarkServer])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
         <script>
@@ -17,26 +12,19 @@
                             window.matchMedia('(prefers-color-scheme: dark)').matches);
                     if (isDark) {
                         document.documentElement.classList.add('dark');
-                        document.documentElement.style.colorScheme = 'dark';
                     } else {
                         document.documentElement.classList.remove('dark');
-                        document.documentElement.style.colorScheme = 'light';
                     }
                 } catch (_) {}
             })();
         </script>
-        <style>
-            html, body { background-color: {{ $serverThemeColor }}; }
-            html.dark, html.dark body { background-color: #030712; }
-        </style>
-        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="color-scheme" content="light dark">
         {{-- Browser chrome: top status bar + bottom nav bar (Chrome / Edge / Samsung Internet) --}}
         <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc">
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030712">
-        <meta name="theme-color" content="{{ $serverThemeColor }}">
+        <meta name="theme-color" content="#f8fafc">
         {{-- PWA / fullscreen web app capabilities --}}
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
@@ -45,7 +33,7 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         {{-- Windows / legacy Edge chrome --}}
         <meta name="msapplication-TileColor" content="#0f172a">
-        <meta name="msapplication-navbutton-color" content="{{ $serverThemeColor }}">
+        <meta name="msapplication-navbutton-color" content="#f8fafc">
         <script>
             // Sync the fallback theme-color + PWA manifest with the resolved theme
             // (runs after the meta tags above are parsed).
@@ -419,6 +407,7 @@
             </script>
         @endif
 
+        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
             <title>{{ $metaTitle ?? config('app.name', 'HSCStack') }}</title>
         </x-inertia::head>
