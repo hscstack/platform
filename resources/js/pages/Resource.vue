@@ -398,7 +398,7 @@ const toggleFullscreen = () => {
         </div>
 
         <div v-else-if="resource.resource_type === 'video'">
-            <YouTubePlayer :url="resource.file_url" :title="resource.title" />
+            <YouTubePlayer :url="resource.file_url" />
         </div>
 
         <div v-else-if="resource.resource_type === 'note'">
