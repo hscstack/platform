@@ -122,10 +122,20 @@ interface TypingUser {
     timeout: ReturnType<typeof setTimeout>;
 }
 const typingUsers = ref<Map<number, TypingUser>>(new Map());
+export interface PresenceMember {
+    id: number;
+    name: string;
+    username?: string | null;
+    image_url?: string | null;
+    is_verified?: boolean;
+}
+
 const isPresenceSubscribed = ref(false);
-const presenceMembers = ref<
-    Map<number, { id: number; name: string; username?: string }>
->(new Map());
+const presenceMembers = ref<Map<number, PresenceMember>>(new Map());
+const showActiveUsersModal = ref(false);
+const activeMembersList = computed(() =>
+    Array.from(presenceMembers.value.values()),
+);
 
 const typingUsersList = computed(() => Array.from(typingUsers.value.values()));
 
@@ -721,48 +731,38 @@ const setupPresenceChannel = () => {
     }
 
     echo.join(presenceChannelName.value)
-        .here(
-            (
-                users: Array<{
-                    id: number | string;
-                    name: string;
-                    username?: string;
-                }>,
-            ) => {
-                isPresenceSubscribed.value = true;
-                activeUsersCount.value = users.length;
-                presenceMembers.value.clear();
-                users.forEach((u) => {
-                    const uid = Number(u.id);
-
-                    if (!isNaN(uid)) {
-                        presenceMembers.value.set(uid, {
-                            id: uid,
-                            name: u.name,
-                            username: u.username,
-                        });
-                    }
-                });
-            },
-        )
-        .joining(
-            (user: {
-                id: number | string;
-                name: string;
-                username?: string;
-            }) => {
-                activeUsersCount.value++;
-                const uid = Number(user.id);
+        .here((users: Array<PresenceMember & { id: number | string }>) => {
+            isPresenceSubscribed.value = true;
+            activeUsersCount.value = users.length;
+            presenceMembers.value.clear();
+            users.forEach((u) => {
+                const uid = Number(u.id);
 
                 if (!isNaN(uid)) {
                     presenceMembers.value.set(uid, {
                         id: uid,
-                        name: user.name,
-                        username: user.username,
+                        name: u.name,
+                        username: u.username,
+                        image_url: u.image_url,
+                        is_verified: u.is_verified,
                     });
                 }
-            },
-        )
+            });
+        })
+        .joining((user: PresenceMember & { id: number | string }) => {
+            activeUsersCount.value++;
+            const uid = Number(user.id);
+
+            if (!isNaN(uid)) {
+                presenceMembers.value.set(uid, {
+                    id: uid,
+                    name: user.name,
+                    username: user.username,
+                    image_url: user.image_url,
+                    is_verified: user.is_verified,
+                });
+            }
+        })
         .leaving((user: { id?: number | string }) => {
             activeUsersCount.value = Math.max(0, activeUsersCount.value - 1);
 
@@ -1521,9 +1521,12 @@ onUnmounted(() => {
                     >
                         Global Chat
                     </h1>
-                    <div
+                    <button
                         v-if="activeUsersCount > 0"
-                        class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-2xs dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        type="button"
+                        @click="showActiveUsersModal = true"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-2xs transition select-none hover:bg-emerald-100/90 active:scale-95 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/70"
+                        title="View active members"
                     >
                         <span class="relative flex h-2 w-2">
                             <span
@@ -1533,8 +1536,8 @@ onUnmounted(() => {
                                 class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"
                             ></span>
                         </span>
-                        {{ activeUsersCount }} active
-                    </div>
+                        <span>{{ activeUsersCount }} active</span>
+                    </button>
                 </div>
                 <p
                     class="mt-0.5 text-xs text-slate-500 sm:text-sm dark:text-zinc-400"
@@ -2858,6 +2861,125 @@ onUnmounted(() => {
                             হবেন। এছাড়া নিয়ম ভঙ্গে মডারেটররা তাৎক্ষণিক স্থায়ী
                             ব্যান দিতে পারেন।
                         </p>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- Active Members Modal -->
+        <Teleport to="body">
+            <div
+                v-if="showActiveUsersModal"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+                <div
+                    class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+                    @click="showActiveUsersModal = false"
+                ></div>
+
+                <div
+                    class="relative flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                    <!-- Header -->
+                    <div
+                        class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-zinc-800"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <div
+                                class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                            >
+                                <Users class="h-4.5 w-4.5" />
+                            </div>
+                            <div>
+                                <h3
+                                    class="text-sm font-bold text-slate-900 dark:text-zinc-100"
+                                >
+                                    Active Members
+                                </h3>
+                                <p
+                                    class="text-[11px] text-slate-400 dark:text-zinc-500"
+                                >
+                                    {{ activeMembersList.length }} online now in
+                                    global chat
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            @click="showActiveUsersModal = false"
+                            class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
+
+                    <!-- Members List -->
+                    <div
+                        class="flex-1 divide-y divide-slate-100 overflow-y-auto p-2 dark:divide-zinc-800/60"
+                    >
+                        <div
+                            v-if="activeMembersList.length === 0"
+                            class="p-6 text-center text-xs text-slate-400 dark:text-zinc-500"
+                        >
+                            No members currently active.
+                        </div>
+
+                        <Link
+                            v-for="member in activeMembersList"
+                            :key="member.id"
+                            :href="
+                                member.username ? `/u/${member.username}` : '#'
+                            "
+                            @click="showActiveUsersModal = false"
+                            class="group flex items-center justify-between gap-3 rounded-xl p-2.5 transition hover:bg-slate-50 dark:hover:bg-zinc-800/50"
+                        >
+                            <div class="flex min-w-0 items-center gap-2.5">
+                                <div
+                                    class="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 text-xs font-bold text-indigo-600 ring-1 ring-slate-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:ring-zinc-800"
+                                >
+                                    <img
+                                        v-if="member.image_url"
+                                        :src="member.image_url"
+                                        :alt="member.name"
+                                        class="h-full w-full object-cover"
+                                    />
+                                    <span v-else>
+                                        {{
+                                            member.name.charAt(0).toUpperCase()
+                                        }}
+                                    </span>
+                                    <span
+                                        class="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 dark:border-zinc-900"
+                                    ></span>
+                                </div>
+
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="truncate text-xs font-bold text-slate-900 transition group-hover:text-indigo-600 dark:text-zinc-100 dark:group-hover:text-indigo-400"
+                                        >
+                                            {{ member.name }}
+                                        </span>
+                                        <VerifiedBadge
+                                            v-if="member.is_verified"
+                                            size="h-3.5 w-3.5"
+                                        />
+                                    </div>
+                                    <p
+                                        v-if="member.username"
+                                        class="truncate text-[11px] text-slate-400 dark:text-zinc-500"
+                                    >
+                                        @{{ member.username }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <span
+                                class="shrink-0 text-[11px] font-semibold text-indigo-600 opacity-0 transition group-hover:opacity-100 dark:text-indigo-400"
+                            >
+                                View &rarr;
+                            </span>
+                        </Link>
                     </div>
                 </div>
             </div>

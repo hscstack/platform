@@ -56,6 +56,9 @@ class User extends Authenticatable
         'facebook',
         'instagram',
         'github',
+        'notifications_last_seen_at',
+        'chat_last_seen_at',
+        'last_active_at',
     ];
 
     protected static function booted(): void
@@ -72,6 +75,11 @@ class User extends Authenticatable
         'image_url',
         'is_banned',
     ];
+
+    public function isOnline(): bool
+    {
+        return $this->last_active_at && $this->last_active_at->greaterThan(now()->subMinutes(5));
+    }
 
     public function isBanned(): bool
     {
@@ -104,6 +112,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'banned_until' => 'datetime',
+            'notifications_last_seen_at' => 'datetime',
+            'chat_last_seen_at' => 'datetime',
+            'last_active_at' => 'datetime',
             'password' => 'hashed',
             'receive_emails' => 'boolean',
             'is_verified' => 'boolean',

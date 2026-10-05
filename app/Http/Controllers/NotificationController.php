@@ -12,12 +12,18 @@ class NotificationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = min(max((int) $request->query('per_page', 10), 5), 50);
+        $page = (int) $request->query('page', 1);
+
+        if ($page === 1) {
+            $request->user()->updateQuietly([
+                'notifications_last_seen_at' => now(),
+            ]);
+        }
 
         $paginator = $request->user()
             ->notifications()
             ->latest()
-            ->simplePaginate($perPage);
+            ->simplePaginate(10);
 
         $notifications = collect($paginator->items())->map(function ($notification) {
             return [
