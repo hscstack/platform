@@ -44,18 +44,33 @@ class HandleInertiaRequests extends Middleware
         }
 
         if ($user && ($request->is('chat*') || str_contains((string) $request->header('referer', ''), '/chat'))) {
-            $user->updateQuietly(['chat_last_seen_at' => now()]);
-            $user->chat_last_seen_at = now();
+            Cache::forever("user:{$user->id}:chat_last_seen_at", now()->timestamp);
+        }
+
+        if ($user && ($request->is('forum*') || str_contains((string) $request->header('referer', ''), '/forum'))) {
+            Cache::forever("user:{$user->id}:forum_last_seen_at", now()->timestamp);
         }
 
         $latestChatMessage = Cache::get('chat:latest_message');
 
         $hasUnreadChat = false;
         if ($user && ! $request->is('chat*') && $latestChatMessage) {
+            $chatLastSeen = Cache::get("user:{$user->id}:chat_last_seen_at");
             $isFromOtherUser = (int) $latestChatMessage['user_id'] !== (int) $user->id;
-            $isNewer = ! $user->chat_last_seen_at || $latestChatMessage['created_at'] > $user->chat_last_seen_at->getTimestamp();
+            $isNewer = ! $chatLastSeen || $latestChatMessage['created_at'] > $chatLastSeen;
 
             $hasUnreadChat = $isFromOtherUser && $isNewer;
+        }
+
+        $latestForumPost = Cache::get('forum:latest_post');
+
+        $hasUnreadForum = false;
+        if ($user && ! $request->is('forum*') && $latestForumPost) {
+            $forumLastSeen = Cache::get("user:{$user->id}:forum_last_seen_at");
+            $isFromOtherUser = (int) $latestForumPost['user_id'] !== (int) $user->id;
+            $isNewer = ! $forumLastSeen || $latestForumPost['created_at'] > $forumLastSeen;
+
+            $hasUnreadForum = $isFromOtherUser && $isNewer;
         }
 
         $canAccessAdmin = $user && Cache::remember(
@@ -82,6 +97,7 @@ class HandleInertiaRequests extends Middleware
                     ? (bool) Cache::rememberForever("user:{$user->id}:has_unread_notifs", fn () => $user->unreadNotifications()->exists())
                     : false,
                 'has_unread_chat' => $hasUnreadChat,
+                'has_unread_forum' => $hasUnreadForum,
                 'can_access_admin' => (bool) $canAccessAdmin,
                 'permissions' => $permissions,
             ],

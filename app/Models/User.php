@@ -57,7 +57,6 @@ class User extends Authenticatable
         'facebook',
         'instagram',
         'github',
-        'chat_last_seen_at',
         'last_active_at',
     ];
 
@@ -112,7 +111,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'banned_until' => 'datetime',
-            'chat_last_seen_at' => 'datetime',
             'last_active_at' => 'datetime',
             'password' => 'hashed',
             'receive_emails' => 'boolean',

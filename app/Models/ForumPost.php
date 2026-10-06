@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -80,6 +81,15 @@ class ForumPost extends Model
                 }
 
                 $post->slug = $slug;
+            }
+        });
+
+        static::saved(function (ForumPost $post) {
+            if ($post->moderation_status === 'approved') {
+                Cache::forever('forum:latest_post', [
+                    'user_id' => $post->user_id,
+                    'created_at' => $post->created_at?->getTimestamp() ?? now()->timestamp,
+                ]);
             }
         });
     }
