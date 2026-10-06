@@ -60,14 +60,14 @@ class HandleInertiaRequests extends Middleware
 
         $canAccessAdmin = $user && Cache::remember(
             "user:{$user->id}:can_admin",
-            3600,
+            now()->addDay(),
             fn () => $user->can('view admin')
         );
 
         $permissions = ($user && $canAccessAdmin)
             ? Cache::remember(
                 "user:{$user->id}:permissions",
-                3600,
+                now()->addDay(),
                 fn () => $user->getAllPermissions()->pluck('name')->toArray()
             )
             : [];
