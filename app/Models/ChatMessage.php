@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
 
 class ChatMessage extends Model
 {
@@ -21,6 +22,16 @@ class ChatMessage extends Model
     protected $casts = [
         'deleted_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::created(function (ChatMessage $message) {
+            Cache::forever('chat:latest_message', [
+                'created_at' => $message->created_at?->getTimestamp() ?? now()->getTimestamp(),
+                'user_id' => $message->user_id,
+            ]);
+        });
+    }
 
     public function user(): BelongsTo
     {

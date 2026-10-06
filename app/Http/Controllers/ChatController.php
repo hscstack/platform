@@ -24,10 +24,6 @@ class ChatController extends Controller
     {
         $user = $request->user();
 
-        if ($user) {
-            $user->updateQuietly(['chat_last_seen_at' => now()]);
-        }
-
         // Get Chat Config Status
         $isEnabled = AppSetting::get('global_chat_enabled', true);
         $audience = AppSetting::get('global_chat_audience', 'verified_members'); // 'verified_members', 'all', 'disabled'
