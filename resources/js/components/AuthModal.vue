@@ -29,7 +29,7 @@ const page = usePage();
         @close="modelValue = false"
     >
         <div class="p-5 pt-2">
-            <div class="flex items-center gap-2">
+            <div class="mt-4 flex items-center gap-2">
                 <Link
                     :href="`/login?redirect=${encodeURIComponent(page.url)}`"
                     @click="modelValue = false"

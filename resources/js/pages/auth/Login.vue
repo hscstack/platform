@@ -76,15 +76,6 @@ const googleAuthUrl = redirectParam
             <div
                 class="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-[0_20px_50px_rgba(8,11,46,0.08)] backdrop-blur-xl sm:p-8 dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
             >
-                <!-- 1-Click Dev Sign-In Button -->
-                <a
-                    href="/dev-login"
-                    class="mb-3.5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3.5 text-sm font-bold text-white shadow-md shadow-indigo-500/20 transition-all hover:from-indigo-700 hover:to-violet-700 active:scale-[0.98]"
-                >
-                    <Zap class="h-4 w-4" />
-                    <span>⚡ 1-Click Sign In as Tajim (Admin)</span>
-                </a>
-
                 <!-- Main Action Button -->
                 <a
                     :href="googleAuthUrl"

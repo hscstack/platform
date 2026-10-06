@@ -10,7 +10,6 @@ import {
     Image as ImageIcon,
     ExternalLink,
     CheckCircle2,
-    X,
 } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -181,7 +180,7 @@ const handleDownload = () => {
 
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.download = props.resource?.title || 'download';
+        link.download = props.resource.title || 'download';
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
