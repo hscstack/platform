@@ -43,34 +43,52 @@ class HandleInertiaRequests extends Middleware
             $user->last_active_at = now();
         }
 
-        if ($user && ($request->is('chat*') || str_contains((string) $request->header('referer', ''), '/chat'))) {
-            Cache::forever("user:{$user->id}:chat_last_seen_at", now()->timestamp);
-        }
-
-        if ($user && ($request->is('forum*') || str_contains((string) $request->header('referer', ''), '/forum'))) {
-            Cache::forever("user:{$user->id}:forum_last_seen_at", now()->timestamp);
-        }
-
         $latestChatMessage = Cache::get('chat:latest_message');
-
         $hasUnreadChat = false;
-        if ($user && ! $request->is('chat*') && $latestChatMessage) {
-            $chatLastSeen = Cache::get("user:{$user->id}:chat_last_seen_at");
+        if ($user && $latestChatMessage) {
+            $chatLastSeen = $user->lastSeen('chat');
             $isFromOtherUser = (int) $latestChatMessage['user_id'] !== (int) $user->id;
             $isNewer = ! $chatLastSeen || $latestChatMessage['created_at'] > $chatLastSeen;
 
-            $hasUnreadChat = $isFromOtherUser && $isNewer;
+            if ($isFromOtherUser && $isNewer) {
+                if ($request->is('chat*') || str_contains((string) $request->header('referer', ''), '/chat')) {
+                    $user->markSeen('chat');
+                } else {
+                    $hasUnreadChat = true;
+                }
+            }
         }
 
         $latestForumPost = Cache::get('forum:latest_post');
-
         $hasUnreadForum = false;
-        if ($user && ! $request->is('forum*') && $latestForumPost) {
-            $forumLastSeen = Cache::get("user:{$user->id}:forum_last_seen_at");
+        if ($user && $latestForumPost) {
+            $forumLastSeen = $user->lastSeen('forum');
             $isFromOtherUser = (int) $latestForumPost['user_id'] !== (int) $user->id;
             $isNewer = ! $forumLastSeen || $latestForumPost['created_at'] > $forumLastSeen;
 
-            $hasUnreadForum = $isFromOtherUser && $isNewer;
+            if ($isFromOtherUser && $isNewer) {
+                if ($request->is('forum*') || str_contains((string) $request->header('referer', ''), '/forum')) {
+                    $user->markSeen('forum');
+                } else {
+                    $hasUnreadForum = true;
+                }
+            }
+        }
+
+        $latestBlogPost = Cache::get('blogs:latest_post');
+        $hasUnreadBlogs = false;
+        if ($user && $latestBlogPost) {
+            $blogsLastSeen = $user->lastSeen('blogs');
+            $isFromOtherUser = (int) $latestBlogPost['user_id'] !== (int) $user->id;
+            $isNewer = ! $blogsLastSeen || $latestBlogPost['created_at'] > $blogsLastSeen;
+
+            if ($isFromOtherUser && $isNewer) {
+                if ($request->is('blogs*') || str_contains((string) $request->header('referer', ''), '/blogs')) {
+                    $user->markSeen('blogs');
+                } else {
+                    $hasUnreadBlogs = true;
+                }
+            }
         }
 
         $canAccessAdmin = $user && Cache::remember(
@@ -98,6 +116,7 @@ class HandleInertiaRequests extends Middleware
                     : false,
                 'has_unread_chat' => $hasUnreadChat,
                 'has_unread_forum' => $hasUnreadForum,
+                'has_unread_blogs' => $hasUnreadBlogs,
                 'can_access_admin' => (bool) $canAccessAdmin,
                 'permissions' => $permissions,
             ],

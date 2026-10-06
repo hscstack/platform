@@ -270,6 +270,12 @@ export const SiteRail = defineComponent({
                     ?.has_unread_forum,
             ),
         );
+        const hasUnreadBlogs = computed(() =>
+            Boolean(
+                (page.props.auth as { has_unread_blogs?: boolean })
+                    ?.has_unread_blogs,
+            ),
+        );
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
             if (match) {
@@ -336,13 +342,17 @@ export const SiteRail = defineComponent({
                                             : item.label;
                                     const isChat = item.href === '/chat';
                                     const isForum = item.href === '/forum';
+                                    const isBlogs = item.href === '/blogs';
                                     const hasUnread =
                                         (!active &&
                                             isChat &&
                                             hasUnreadChat.value) ||
                                         (!active &&
                                             isForum &&
-                                            hasUnreadForum.value);
+                                            hasUnreadForum.value) ||
+                                        (!active &&
+                                            isBlogs &&
+                                            hasUnreadBlogs.value);
 
                                     return (
                                         <Link
@@ -426,13 +436,17 @@ export const SiteRail = defineComponent({
                                             : item.label;
                                     const isChat = item.href === '/chat';
                                     const isForum = item.href === '/forum';
+                                    const isBlogs = item.href === '/blogs';
                                     const hasUnread =
                                         (!active &&
                                             isChat &&
                                             hasUnreadChat.value) ||
                                         (!active &&
                                             isForum &&
-                                            hasUnreadForum.value);
+                                            hasUnreadForum.value) ||
+                                        (!active &&
+                                            isBlogs &&
+                                            hasUnreadBlogs.value);
 
                                     return (
                                         <Link
@@ -899,6 +913,12 @@ export const SiteBottomNav = defineComponent({
                     ?.has_unread_forum,
             ),
         );
+        const hasUnreadBlogs = computed(() =>
+            Boolean(
+                (page.props.auth as { has_unread_blogs?: boolean })
+                    ?.has_unread_blogs,
+            ),
+        );
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
 
@@ -946,6 +966,7 @@ export const SiteBottomNav = defineComponent({
                     {bottomNavItems.value.map((item) => {
                         const isChat = item.href === '/chat';
                         const isForum = item.href === '/forum';
+                        const isBlogs = item.href === '/blogs';
                         const isCurrentActive = isActive(item.href, item.match);
                         const hasUnread =
                             (!isCurrentActive &&
@@ -953,7 +974,10 @@ export const SiteBottomNav = defineComponent({
                                 hasUnreadChat.value) ||
                             (!isCurrentActive &&
                                 isForum &&
-                                hasUnreadForum.value);
+                                hasUnreadForum.value) ||
+                            (!isCurrentActive &&
+                                isBlogs &&
+                                hasUnreadBlogs.value);
 
                         return (
                             <Link
@@ -1068,6 +1092,12 @@ export const SiteDrawer = defineComponent({
             Boolean(
                 (page.props.auth as { has_unread_forum?: boolean })
                     ?.has_unread_forum,
+            ),
+        );
+        const hasUnreadBlogs = computed(() =>
+            Boolean(
+                (page.props.auth as { has_unread_blogs?: boolean })
+                    ?.has_unread_blogs,
             ),
         );
         const drawerNavItems = computed(() =>
@@ -1249,13 +1279,18 @@ export const SiteDrawer = defineComponent({
                                                         );
                                                     const isForum =
                                                         item.href === '/forum';
+                                                    const isBlogs =
+                                                        item.href === '/blogs';
                                                     const hasUnread =
                                                         (!isCurrentActive &&
                                                             isChat &&
                                                             hasUnreadChat.value) ||
                                                         (!isCurrentActive &&
                                                             isForum &&
-                                                            hasUnreadForum.value);
+                                                            hasUnreadForum.value) ||
+                                                        (!isCurrentActive &&
+                                                            isBlogs &&
+                                                            hasUnreadBlogs.value);
 
                                                     return (
                                                         <Link
