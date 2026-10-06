@@ -18,6 +18,7 @@ use App\Http\Controllers\StudyTrackerController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -89,6 +90,18 @@ Route::get('/local/oauth2callback', function (Request $request) {
 
     dd($request->code);
 });
+
+if (app()->environment('local')) {
+    Route::get('/dev-login', function () {
+        $user = User::first();
+        if ($user) {
+            Illuminate\Support\Facades\Auth::login($user, remember: true);
+            request()->session()->regenerate();
+        }
+
+        return redirect()->intended('/');
+    })->name('dev-login');
+}
 
 Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
