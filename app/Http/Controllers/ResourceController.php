@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Node;
 use App\Models\Resource;
 use App\Models\ResourceCompletion;
 use Illuminate\Support\Facades\Cache;
@@ -47,7 +48,20 @@ class ResourceController extends Controller
             ->filter()
             ->values();
 
+        $backUrl = '/';
+        $subjectSlug = $data['subject']['slug'] ?? null;
+
+        if ($subjectSlug) {
+            $node = Node::find($data['resource']['node_id']);
+            $path = $node
+                ? collect($node->breadcrumb())->pluck('slug')->implode('/')
+                : '';
+
+            $backUrl = $path ? "/{$subjectSlug}/{$path}" : "/{$subjectSlug}";
+        }
+
         return Inertia::render('Resource', array_merge($data, [
+            'backUrl' => $backUrl,
             'isCompleted' => $isCompleted,
             'completionsCount' => $completionsCount,
             'completers' => $completers,
