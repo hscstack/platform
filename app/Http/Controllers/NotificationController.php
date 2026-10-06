@@ -53,12 +53,9 @@ class NotificationController extends Controller
             ->where('id', $id)
             ->update(['read_at' => now()]);
 
-        $hasRemaining = $request->user()->unreadNotifications()->exists();
-        Cache::forever("user:{$request->user()->id}:has_unread_notifs", $hasRemaining);
-
         return response()->json([
             'success' => true,
-            'unread_count' => $hasRemaining ? 1 : 0,
+            'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
 
@@ -70,8 +67,6 @@ class NotificationController extends Controller
         $request->user()
             ->unreadNotifications()
             ->update(['read_at' => now()]);
-
-        Cache::forever("user:{$request->user()->id}:has_unread_notifs", false);
 
         return response()->json([
             'success' => true,
@@ -85,8 +80,6 @@ class NotificationController extends Controller
     public function clearAll(Request $request): JsonResponse
     {
         $request->user()->notifications()->delete();
-
-        Cache::forever("user:{$request->user()->id}:has_unread_notifs", false);
 
         return response()->json([
             'success' => true,
