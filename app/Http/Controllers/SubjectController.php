@@ -79,12 +79,6 @@ class SubjectController extends Controller
         });
 
         if ($user = $request->user()) {
-            $unreadNotifCount = $user->unreadNotifications()
-                ->when($user->notifications_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))
-                ->take(10)
-                ->count();
-            $request->session()->put('unread_notifications_count', $unreadNotifCount);
-
             $unreadForumCount = ForumPost::approved()
                 ->where('user_id', '!=', $user->id)
                 ->when($user->forum_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))

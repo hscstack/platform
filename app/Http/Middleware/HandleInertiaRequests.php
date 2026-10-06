@@ -64,9 +64,7 @@ class HandleInertiaRequests extends Middleware
             'app_version' => config('app.version'),
             'auth' => [
                 'user' => $user,
-                'unread_notifications_count' => $user
-                    ? (int) $request->session()->get('unread_notifications_count', 0)
-                    : 0,
+                'unread_notifications_count' => $request->user()?->unreadNotifications()->when($request->user()?->notifications_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))->take(10)->count() ?? 0,
                 'unread_chat_messages_count' => ($request->user() && ! $request->is('chat*'))
                     ? ChatMessage::where('user_id', '!=', $request->user()->id)
                         ->when(

@@ -18,7 +18,6 @@ class NotificationController extends Controller
             $request->user()->updateQuietly([
                 'notifications_last_seen_at' => now(),
             ]);
-            $request->session()->put('unread_notifications_count', 0);
         }
 
         $paginator = $request->user()
@@ -55,12 +54,9 @@ class NotificationController extends Controller
             ->where('id', $id)
             ->update(['read_at' => now()]);
 
-        $unreadCount = $request->user()->unreadNotifications()->count();
-        $request->session()->put('unread_notifications_count', $unreadCount);
-
         return response()->json([
             'success' => true,
-            'unread_count' => $unreadCount,
+            'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
 
@@ -72,8 +68,6 @@ class NotificationController extends Controller
         $request->user()
             ->unreadNotifications()
             ->update(['read_at' => now()]);
-
-        $request->session()->put('unread_notifications_count', 0);
 
         return response()->json([
             'success' => true,
@@ -87,8 +81,6 @@ class NotificationController extends Controller
     public function clearAll(Request $request): JsonResponse
     {
         $request->user()->notifications()->delete();
-
-        $request->session()->put('unread_notifications_count', 0);
 
         return response()->json([
             'success' => true,
