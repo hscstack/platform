@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -48,13 +49,24 @@ class HandleInertiaRequests extends Middleware
             $user->chat_last_seen_at = now();
         }
 
+        $permissionsData = $user
+            ? Cache::remember("user_{$user->id}_permissions", now()->addDay(), function () use ($user) {
+                return [
+                    'can_access_admin' => (bool) $user->can('view admin'),
+                    'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
+                ];
+            })
+            : ['can_access_admin' => false, 'permissions' => []];
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'app_version' => config('app.version'),
             'auth' => [
                 'user' => $user,
-                'unread_notifications_count' => $request->user()?->unreadNotifications()->when($request->user()?->notifications_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))->take(10)->count() ?? 0,
+                'unread_notifications_count' => $user
+                    ? (int) $request->session()->get('unread_notifications_count', 0)
+                    : 0,
                 'unread_chat_messages_count' => ($request->user() && ! $request->is('chat*'))
                     ? ChatMessage::where('user_id', '!=', $request->user()->id)
                         ->when(
@@ -65,8 +77,8 @@ class HandleInertiaRequests extends Middleware
                 'unread_forum_posts_count' => ($request->user() && ! $request->is('forum*'))
                     ? (int) $request->session()->get('forum_unread_count', 0)
                     : 0,
-                'can_access_admin' => $request->user()?->can('view admin') ?? false,
-                'permissions' => $request->user()?->getAllPermissions()->pluck('name')->toArray() ?? [],
+                'can_access_admin' => $permissionsData['can_access_admin'],
+                'permissions' => $permissionsData['permissions'],
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

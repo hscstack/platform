@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
@@ -146,6 +147,8 @@ class UserController extends Controller
             }
         }
 
+        Cache::forget("user_{$user->id}_permissions");
+
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User updated successfully.');
@@ -153,6 +156,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        Cache::forget("user_{$user->id}_permissions");
+
         $user->delete();
 
         return redirect()
