@@ -18,7 +18,9 @@ use App\Http\Controllers\StudyTrackerController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('throttle:60,1')->get('/api/auth/status', function (Request $request) {
@@ -89,6 +91,26 @@ Route::get('/local/oauth2callback', function (Request $request) {
 
     dd($request->code);
 });
+
+Route::get('/local/login/{user?}', function (Request $request, string|int|null $user = null) {
+    abort_unless(app()->environment('local'), 403);
+
+    $targetUser = match (true) {
+        is_numeric($user) => User::find($user),
+        is_string($user) && filter_var($user, FILTER_VALIDATE_EMAIL) => User::where('email', $user)->first(),
+        is_string($user) => User::where('username', $user)->first(),
+        default => User::first(),
+    };
+
+    if (! $targetUser) {
+        return response('No user found to log in with.', 404);
+    }
+
+    Auth::login($targetUser);
+    $request->session()->regenerate();
+
+    return redirect()->intended('/');
+})->name('local.login');
 
 Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
