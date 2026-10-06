@@ -293,115 +293,121 @@ const togglePeerAppreciation = (peer: Peer) => {
             v-if="peerList.length > 0"
             class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs dark:divide-gray-800/80 dark:border-gray-800 dark:bg-gray-900"
         >
-            <Link
-                v-for="peer in peerList"
-                :key="peer.id"
-                :href="peer.username ? `/u/${peer.username}` : '#'"
-                class="group flex items-center justify-between gap-3.5 p-3.5 transition hover:bg-slate-50/70 sm:p-4 dark:hover:bg-gray-800/40"
-            >
-                <!-- Left: Avatar + Details -->
-                <div class="flex min-w-0 items-center gap-3.5">
-                    <!-- Avatar -->
-                    <div
-                        class="h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ring-slate-100 transition group-hover:ring-indigo-200 sm:h-12 sm:w-12 dark:ring-gray-800 dark:group-hover:ring-indigo-900/60"
-                    >
-                        <img
-                            v-if="peer.image_url"
-                            :src="peer.image_url"
-                            :alt="peer.name"
-                            class="h-full w-full object-cover"
-                        />
+            <template v-for="peer in peerList" :key="peer.id">
+                <Link
+                    :href="peer.username ? `/u/${peer.username}` : '#'"
+                    class="group flex items-center justify-between gap-3.5 p-3.5 transition hover:bg-slate-50/70 sm:p-4 dark:hover:bg-gray-800/40"
+                >
+                    <!-- Left: Avatar + Details -->
+                    <div class="flex min-w-0 items-center gap-3.5">
+                        <!-- Avatar -->
                         <div
-                            v-else
-                            class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-base font-black text-white"
+                            class="h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ring-slate-100 transition group-hover:ring-indigo-200 sm:h-12 sm:w-12 dark:ring-gray-800 dark:group-hover:ring-indigo-900/60"
                         >
-                            {{ (peer.name || '?').charAt(0).toUpperCase() }}
-                        </div>
-                    </div>
-
-                    <!-- User Info -->
-                    <div class="min-w-0 flex-1 space-y-0.5">
-                        <!-- Name + Verified -->
-                        <div class="flex items-center gap-1.5">
-                            <span
-                                class="truncate text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
-                            >
-                                {{ peer.name }}
-                            </span>
-                            <VerifiedBadge
-                                v-if="peer.is_verified"
-                                size="h-4 w-4"
+                            <img
+                                v-if="peer.image_url"
+                                :src="peer.image_url"
+                                :alt="peer.name"
+                                class="h-full w-full object-cover"
                             />
+                            <div
+                                v-else
+                                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-base font-black text-white"
+                            >
+                                {{ (peer.name || '?').charAt(0).toUpperCase() }}
+                            </div>
                         </div>
 
-                        <!-- School & Appreciators Row -->
-                        <div
-                            class="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-gray-400"
-                        >
-                            <!-- Institution -->
-                            <span
-                                v-if="peer.institution"
-                                class="max-w-[200px] truncate sm:max-w-xs"
-                            >
-                                {{ peer.institution }}
-                            </span>
-
-                            <span
-                                v-if="peer.institution"
-                                class="text-slate-300 select-none dark:text-gray-600"
-                                >·</span
-                            >
-
-                            <!-- Appreciators Minimal Format -->
-                            <span class="inline-flex items-center gap-1">
+                        <!-- User Info -->
+                        <div class="min-w-0 flex-1 space-y-0.5">
+                            <!-- Name + Verified -->
+                            <div class="flex items-center gap-1.5">
                                 <span
-                                    class="font-bold text-slate-800 dark:text-gray-200"
+                                    class="truncate text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                                 >
-                                    {{ peer.appreciations_received_count || 0 }}
+                                    {{ peer.name }}
                                 </span>
-                                <span>
-                                    {{
-                                        peer.appreciations_received_count === 1
-                                            ? 'Appreciator'
-                                            : 'Appreciators'
-                                    }}
+                                <VerifiedBadge
+                                    v-if="peer.is_verified"
+                                    size="h-4 w-4"
+                                />
+                            </div>
+
+                            <!-- School & Appreciators Row -->
+                            <div
+                                class="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                <!-- Institution -->
+                                <span
+                                    v-if="peer.institution"
+                                    class="max-w-[200px] truncate sm:max-w-xs"
+                                >
+                                    {{ peer.institution }}
                                 </span>
-                            </span>
+
+                                <span
+                                    v-if="peer.institution"
+                                    class="text-slate-300 select-none dark:text-gray-600"
+                                    >·</span
+                                >
+
+                                <!-- Appreciators Minimal Format -->
+                                <span class="inline-flex items-center gap-1">
+                                    <span
+                                        class="font-bold text-slate-800 dark:text-gray-200"
+                                    >
+                                        {{
+                                            peer.appreciations_received_count ||
+                                            0
+                                        }}
+                                    </span>
+                                    <span>
+                                        {{
+                                            peer.appreciations_received_count ===
+                                            1
+                                                ? 'Appreciator'
+                                                : 'Appreciators'
+                                        }}
+                                    </span>
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Right: Quick Appreciate Action -->
-                <div class="shrink-0 pl-2">
-                    <button
-                        @click.prevent.stop="togglePeerAppreciation(peer)"
-                        type="button"
-                        class="group/btn inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:px-3"
-                        :class="[
-                            peer.is_appreciated
-                                ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-2xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
-                                : 'border border-slate-200 bg-white text-slate-700 shadow-2xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
-                        ]"
-                        :title="
-                            peer.is_appreciated
-                                ? 'Appreciating (click to remove)'
-                                : 'Appreciate this member'
-                        "
-                    >
-                        <Heart
-                            class="h-3.5 w-3.5 transition-transform group-hover/btn:scale-110"
+                    <!-- Right: Quick Appreciate Action -->
+                    <div class="shrink-0 pl-2">
+                        <button
+                            @click.prevent.stop="togglePeerAppreciation(peer)"
+                            type="button"
+                            class="group/btn inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 text-xs font-bold transition-all duration-150 select-none active:scale-95 sm:px-3"
                             :class="[
                                 peer.is_appreciated
-                                    ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
-                                    : 'stroke-[2.2] text-slate-500 group-hover/btn:text-rose-500 dark:text-gray-400 dark:group-hover/btn:text-rose-400',
+                                    ? 'border border-rose-200 bg-rose-50 text-rose-600 shadow-2xs dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-400'
+                                    : 'border border-slate-200 bg-white text-slate-700 shadow-2xs hover:border-rose-200 hover:bg-rose-50/40 hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-rose-900/50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400',
                             ]"
-                        />
-                        <span class="hidden sm:inline">{{
-                            peer.is_appreciated ? 'Appreciating' : 'Appreciate'
-                        }}</span>
-                    </button>
-                </div>
-            </Link>
+                            :title="
+                                peer.is_appreciated
+                                    ? 'Appreciating (click to remove)'
+                                    : 'Appreciate this member'
+                            "
+                        >
+                            <Heart
+                                class="h-3.5 w-3.5 transition-transform group-hover/btn:scale-110"
+                                :class="[
+                                    peer.is_appreciated
+                                        ? 'fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400'
+                                        : 'stroke-[2.2] text-slate-500 group-hover/btn:text-rose-500 dark:text-gray-400 dark:group-hover/btn:text-rose-400',
+                                ]"
+                            />
+                            <span class="hidden sm:inline">{{
+                                peer.is_appreciated
+                                    ? 'Appreciating'
+                                    : 'Appreciate'
+                            }}</span>
+                        </button>
+                    </div>
+                </Link>
+            </template>
         </div>
 
         <!-- Empty State -->

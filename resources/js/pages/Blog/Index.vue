@@ -2,6 +2,7 @@
 import { router, Head } from '@inertiajs/vue3';
 import { Search, X, AlertTriangle } from 'lucide-vue-next';
 import { ref } from 'vue';
+import AdUnit from '@/components/AdUnit.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
@@ -103,7 +104,21 @@ const clearSearch = () => {
             v-if="blogs.data.length > 0"
             class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8"
         >
-            <BlogCard v-for="blog in blogs.data" :key="blog.id" :blog="blog" />
+            <template v-for="(blog, index) in blogs.data" :key="blog.id">
+                <BlogCard :blog="blog" />
+
+                <!-- Native Blog Ad Card (Placed after 2nd blog) -->
+                <AdUnit
+                    v-if="
+                        index === 1 || (index === 0 && blogs.data.length === 1)
+                    "
+                    variant="native-blog"
+                    title="Your Ad Goes Here — Reach Readers & Learners"
+                    subtitle="Highlight your educational books, courses, or college programs to thousands of eager students."
+                    cta-text="Learn More"
+                    badge-text="Sponsored"
+                />
+            </template>
         </div>
 
         <EmptyState
