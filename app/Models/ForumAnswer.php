@@ -7,22 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ForumAnswer extends Model
 {
     use HasFactory;
-
-    protected static function booted(): void
-    {
-        static::created(function (ForumAnswer $answer) {
-            Cache::forever('forum:latest_post', [
-                'user_id' => $answer->user_id,
-                'created_at' => $answer->created_at?->getTimestamp() ?? now()->timestamp,
-            ]);
-        });
-    }
 
     protected $fillable = [
         'forum_post_id',
