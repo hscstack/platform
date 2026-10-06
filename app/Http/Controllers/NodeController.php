@@ -68,7 +68,7 @@ class NodeController extends Controller
             ],
             'nodes' => $nodes,
             'breadcrumb' => Cache::remember("node_breadcrumb_{$node->id}", now()->addDay(), function () use ($node) {
-                return $this->buildBreadcrumb($node);
+                return $node->breadcrumb();
             }),
             'resources' => $resources,
             'upvotesCount' => $upvotesCount,
@@ -110,21 +110,5 @@ class NodeController extends Controller
         }
 
         return back();
-    }
-
-    private function buildBreadcrumb($node)
-    {
-        $breadcrumb = [];
-
-        while ($node) {
-            array_unshift($breadcrumb, [
-                'name' => $node->name,
-                'slug' => $node->slug,
-            ]);
-
-            $node = $node->parent;
-        }
-
-        return $breadcrumb;
     }
 }

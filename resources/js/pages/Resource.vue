@@ -49,6 +49,22 @@ const props = defineProps({
         type: Array as () => any[],
         default: () => [],
     },
+    breadcrumb: {
+        type: Array as () => { name: string; slug: string }[],
+        default: () => [],
+    },
+});
+
+const backUrl = computed(() => {
+    const subjectSlug = props.subject?.slug;
+
+    if (!subjectSlug) {
+        return '/';
+    }
+
+    const path = props.breadcrumb.map((crumb) => crumb.slug).join('/');
+
+    return path ? `/${subjectSlug}/${path}` : `/${subjectSlug}`;
 });
 
 const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
@@ -174,12 +190,6 @@ const handleDownload = () => {
 
 const isFullscreen = ref(false);
 
-const handleBack = () => {
-    if (typeof window !== 'undefined') {
-        window.history.back();
-    }
-};
-
 const toggleFullscreen = () => {
     isFullscreen.value = !isFullscreen.value;
 };
@@ -216,9 +226,8 @@ const toggleFullscreen = () => {
         <div class="mb-3 flex items-center justify-between gap-3">
             <!-- Left: Back Button + Title -->
             <div class="flex min-w-0 items-center gap-2.5">
-                <button
-                    @click="handleBack"
-                    type="button"
+                <Link
+                    :href="backUrl"
                     aria-label="Go back"
                     class="group flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs transition hover:border-slate-300 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-700 dark:hover:text-indigo-400"
                     title="Back"
@@ -226,7 +235,7 @@ const toggleFullscreen = () => {
                     <ArrowLeft
                         class="h-4 w-4 transition-transform group-hover:-translate-x-0.5"
                     />
-                </button>
+                </Link>
 
                 <div class="min-w-0">
                     <span

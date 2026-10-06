@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Node;
 use App\Models\Resource;
 use App\Models\ResourceCompletion;
 use Illuminate\Support\Facades\Cache;
@@ -47,7 +48,10 @@ class ResourceController extends Controller
             ->filter()
             ->values();
 
+        $node = Node::find($data['resource']['node_id']);
+
         return Inertia::render('Resource', array_merge($data, [
+            'breadcrumb' => $node ? $node->breadcrumb() : [],
             'isCompleted' => $isCompleted,
             'completionsCount' => $completionsCount,
             'completers' => $completers,
