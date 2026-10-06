@@ -86,8 +86,6 @@ class ForumController extends Controller
 
     public function show(Request $request, ForumPost $post): Response
     {
-        $this->recordForumVisit($request);
-
         $user = auth()->user();
         $isAuthor = $user && $user->id === $post->user_id;
         $isModerator = $user && $user->can('manage forums');
@@ -378,7 +376,7 @@ class ForumController extends Controller
         $request->session()->forget('forum_unread_count');
 
         $user = $request->user();
-        if ($user && (! $user->forum_last_seen_at || $user->forum_last_seen_at->diffInMinutes(now()) >= 5)) {
+        if ($user && (! $user->forum_last_seen_at || $user->forum_last_seen_at->diffInMinutes(now()) >= 1)) {
             $user->updateQuietly(['forum_last_seen_at' => now()]);
             $user->forum_last_seen_at = now();
         }
