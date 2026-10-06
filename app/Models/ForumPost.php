@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -81,6 +82,18 @@ class ForumPost extends Model
 
                 $post->slug = $slug;
             }
+        });
+
+        static::saved(function (ForumPost $post) {
+            if ($post->moderation_status === 'approved') {
+                Cache::put('forum_latest_post_at', $post->created_at ?? now(), 300);
+            } elseif ($post->wasChanged('moderation_status')) {
+                Cache::forget('forum_latest_post_at');
+            }
+        });
+
+        static::deleted(function () {
+            Cache::forget('forum_latest_post_at');
         });
     }
 

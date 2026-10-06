@@ -263,10 +263,10 @@ export const SiteRail = defineComponent({
                 (page.props.auth as { unread_chat_messages_count?: number })
                     ?.unread_chat_messages_count ?? 0,
         );
-        const unreadForumCount = computed(
+        const hasUnreadForum = computed(
             () =>
-                (page.props.auth as { unread_forum_posts_count?: number })
-                    ?.unread_forum_posts_count ?? 0,
+                (page.props.auth as { has_unread_forum?: boolean })
+                    ?.has_unread_forum ?? false,
         );
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
@@ -425,14 +425,16 @@ export const SiteRail = defineComponent({
                                         item.href === '/chat'
                                             ? 'Global Chat'
                                             : item.label;
-                                    const unreadCount =
-                                        item.href === '/chat'
-                                            ? unreadChatCount.value
-                                            : item.href === '/forum'
-                                              ? unreadForumCount.value
-                                              : 0;
-                                    const hasUnread =
-                                        !active && unreadCount > 0;
+                                    const isChat = item.href === '/chat';
+                                    const isForum = item.href === '/forum';
+                                    const hasUnreadChat =
+                                        isChat &&
+                                        !active &&
+                                        unreadChatCount.value > 0;
+                                    const hasUnreadForumDot =
+                                        isForum &&
+                                        !active &&
+                                        hasUnreadForum.value;
 
                                     return (
                                         <Link
@@ -461,16 +463,21 @@ export const SiteRail = defineComponent({
                                             <span class="truncate">
                                                 {label}
                                             </span>
-                                            {hasUnread && (
+                                            {hasUnreadChat && (
                                                 <span class="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white shadow-xs">
-                                                    {unreadCount > 9
+                                                    {unreadChatCount.value > 9
                                                         ? '9+'
-                                                        : unreadCount}
+                                                        : unreadChatCount.value}
                                                 </span>
                                             )}
-                                            {active && !hasUnread && (
-                                                <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                            {hasUnreadForumDot && (
+                                                <span class="ml-auto h-2 w-2 shrink-0 rounded-full bg-rose-500 shadow-xs" />
                                             )}
+                                            {active &&
+                                                !hasUnreadChat &&
+                                                !hasUnreadForumDot && (
+                                                    <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                                )}
                                         </Link>
                                     );
                                 })}
@@ -896,10 +903,10 @@ export const SiteBottomNav = defineComponent({
                 (page.props.auth as { unread_chat_messages_count?: number })
                     ?.unread_chat_messages_count ?? 0,
         );
-        const unreadForumCount = computed(
+        const hasUnreadForum = computed(
             () =>
-                (page.props.auth as { unread_forum_posts_count?: number })
-                    ?.unread_forum_posts_count ?? 0,
+                (page.props.auth as { has_unread_forum?: boolean })
+                    ?.has_unread_forum ?? false,
         );
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
@@ -947,13 +954,14 @@ export const SiteBottomNav = defineComponent({
                 <div class="mx-auto flex w-full max-w-md items-center justify-around px-1 py-2">
                     {bottomNavItems.value.map((item) => {
                         const isCurrentActive = isActive(item.href, item.match);
-                        const unreadCount =
-                            item.href === '/chat'
-                                ? unreadChatCount.value
-                                : item.href === '/forum'
-                                  ? unreadForumCount.value
-                                  : 0;
-                        const hasUnread = !isCurrentActive && unreadCount > 0;
+                        const isChat = item.href === '/chat';
+                        const isForum = item.href === '/forum';
+                        const hasUnreadChat =
+                            isChat &&
+                            !isCurrentActive &&
+                            unreadChatCount.value > 0;
+                        const hasUnreadForumDot =
+                            isForum && !isCurrentActive && hasUnreadForum.value;
 
                         return (
                             <Link
@@ -978,12 +986,15 @@ export const SiteBottomNav = defineComponent({
                                                 : 'text-slate-500 dark:text-slate-400'
                                         }`}
                                     />
-                                    {hasUnread && (
+                                    {hasUnreadChat && (
                                         <span class="absolute -top-1 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
-                                            {unreadCount > 9
+                                            {unreadChatCount.value > 9
                                                 ? '9+'
-                                                : unreadCount}
+                                                : unreadChatCount.value}
                                         </span>
+                                    )}
+                                    {hasUnreadForumDot && (
+                                        <span class="absolute -top-0.5 -right-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
                                     )}
                                 </div>
                                 <span
@@ -1067,10 +1078,10 @@ export const SiteDrawer = defineComponent({
                 (page.props.auth as { unread_chat_messages_count?: number })
                     ?.unread_chat_messages_count ?? 0,
         );
-        const unreadForumCount = computed(
+        const hasUnreadForum = computed(
             () =>
-                (page.props.auth as { unread_forum_posts_count?: number })
-                    ?.unread_forum_posts_count ?? 0,
+                (page.props.auth as { has_unread_forum?: boolean })
+                    ?.has_unread_forum ?? false,
         );
         const drawerNavItems = computed(() =>
             allNavItems.filter((item) => !item.showInBottom),
@@ -1247,16 +1258,19 @@ export const SiteDrawer = defineComponent({
                                                             item.href,
                                                             item.match,
                                                         );
-                                                    const unreadCount =
-                                                        item.href === '/chat'
-                                                            ? unreadChatCount.value
-                                                            : item.href ===
-                                                                '/forum'
-                                                              ? unreadForumCount.value
-                                                              : 0;
-                                                    const hasUnread =
+                                                    const isChat =
+                                                        item.href === '/chat';
+                                                    const isForum =
+                                                        item.href === '/forum';
+                                                    const hasUnreadChat =
+                                                        isChat &&
                                                         !isCurrentActive &&
-                                                        unreadCount > 0;
+                                                        unreadChatCount.value >
+                                                            0;
+                                                    const hasUnreadForumDot =
+                                                        isForum &&
+                                                        !isCurrentActive &&
+                                                        hasUnreadForum.value;
 
                                                     return (
                                                         <Link
@@ -1296,19 +1310,23 @@ export const SiteDrawer = defineComponent({
                                                                     ? 'Global Chat'
                                                                     : item.label}
                                                             </span>
-                                                            {hasUnread && (
+                                                            {hasUnreadChat && (
                                                                 <span class="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white shadow-xs">
-                                                                    {unreadCount >
+                                                                    {unreadChatCount.value >
                                                                     9
                                                                         ? '9+'
-                                                                        : unreadCount}
+                                                                        : unreadChatCount.value}
                                                                 </span>
+                                                            )}
+                                                            {hasUnreadForumDot && (
+                                                                <span class="ml-auto h-2 w-2 shrink-0 rounded-full bg-rose-500 shadow-xs" />
                                                             )}
                                                             {isActive(
                                                                 item.href,
                                                                 item.match,
                                                             ) &&
-                                                                !hasUnread && (
+                                                                !hasUnreadChat &&
+                                                                !hasUnreadForumDot && (
                                                                     <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                                                 )}
                                                         </Link>

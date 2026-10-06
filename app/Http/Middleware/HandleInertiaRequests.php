@@ -3,7 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Models\ChatMessage;
+use App\Models\ForumPost;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
@@ -49,6 +52,28 @@ class HandleInertiaRequests extends Middleware
             $user->chat_last_seen_at = now();
         }
 
+        if ($user && ($request->is('forum*') || str_contains((string) $request->header('referer', ''), '/forum'))) {
+            if (! $user->forum_last_seen_at || $user->forum_last_seen_at->diffInMinutes(now()) >= 1) {
+                $user->updateQuietly(['forum_last_seen_at' => now()]);
+                $user->forum_last_seen_at = now();
+            }
+        }
+
+        $latestForumPostAt = Cache::remember('forum_latest_post_at', 300, function () {
+            return ForumPost::approved()->latest('created_at')->value('created_at');
+        });
+
+        $hasUnreadForum = false;
+        if ($user && ! $request->is('forum*')) {
+            if ($latestForumPostAt) {
+                $latestCarbon = $latestForumPostAt instanceof CarbonInterface
+                    ? $latestForumPostAt
+                    : Carbon::parse($latestForumPostAt);
+
+                $hasUnreadForum = ! $user->forum_last_seen_at || $latestCarbon->gt($user->forum_last_seen_at);
+            }
+        }
+
         $permissionsData = $user
             ? Cache::remember("user_{$user->id}_permissions", now()->addDay(), function () use ($user) {
                 return [
@@ -72,9 +97,7 @@ class HandleInertiaRequests extends Middleware
                             fn ($q, $seen) => $q->where('created_at', '>', $seen)
                         )->take(10)->count()
                     : 0,
-                'unread_forum_posts_count' => ($request->user() && ! $request->is('forum*'))
-                    ? (int) $request->session()->get('forum_unread_count', 0)
-                    : 0,
+                'has_unread_forum' => $hasUnreadForum,
                 'can_access_admin' => $permissionsData['can_access_admin'],
                 'permissions' => $permissionsData['permissions'],
             ],
