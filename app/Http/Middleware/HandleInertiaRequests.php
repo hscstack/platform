@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
@@ -49,14 +48,7 @@ class HandleInertiaRequests extends Middleware
             $user->chat_last_seen_at = now();
         }
 
-        $latestChatMessage = Cache::rememberForever('chat:latest_message', function () {
-            $latest = ChatMessage::latest('id')->first(['id', 'user_id', 'created_at']);
-
-            return $latest ? [
-                'created_at' => $latest->created_at?->getTimestamp() ?? now()->getTimestamp(),
-                'user_id' => $latest->user_id,
-            ] : null;
-        });
+        $latestChatMessage = Cache::get('chat:latest_message');
 
         $hasUnreadChat = false;
         if ($user && ! $request->is('chat*') && $latestChatMessage) {
