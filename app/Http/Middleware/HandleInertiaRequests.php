@@ -120,7 +120,7 @@ class HandleInertiaRequests extends Middleware
         $isNewer = ! $lastSeen || $latest['created_at'] > $lastSeen;
 
         if ($isFromOtherUser && $isNewer) {
-            if ($request->is("{$section}*") || str_contains((string) $request->header('referer', ''), "/{$section}")) {
+            if ($request->is("{$section}*")) {
                 $user->markSeen($section);
 
                 return false;
