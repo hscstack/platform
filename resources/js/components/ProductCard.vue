@@ -35,9 +35,9 @@ const buttonLabel = computed(() => {
 
 <template>
     <div
-        class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-6 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+        class="group flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-6 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
     >
-        <div>
+        <div class="flex flex-1 flex-col">
             <!-- Image / Thumbnail -->
             <div
                 class="aspect-[16/9] overflow-hidden rounded-xl bg-slate-100 dark:bg-gray-800"
@@ -59,12 +59,14 @@ const buttonLabel = computed(() => {
 
             <!-- Title & User Badge -->
             <div class="mt-5 flex items-center justify-between gap-2">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-gray-100">
+                <h2
+                    class="min-w-0 text-xl font-bold text-slate-900 dark:text-gray-100"
+                >
                     {{ product.name }}
                 </h2>
                 <span
                     v-if="product.users"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                    class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
                 >
                     <Users class="h-3.5 w-3.5" />
                     {{ product.users }}
@@ -80,7 +82,9 @@ const buttonLabel = computed(() => {
         </div>
 
         <!-- Action Button -->
-        <div class="mt-6 border-t border-slate-100 pt-4 dark:border-gray-800">
+        <div
+            class="mt-6 border-t border-slate-100 pt-4 sm:mt-auto dark:border-gray-800"
+        >
             <a
                 :href="product.link"
                 :target="product.open_type || '_self'"

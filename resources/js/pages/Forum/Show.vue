@@ -23,6 +23,7 @@ import {
     Ban,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import AdUnit from '@/components/AdUnit.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import type { ChatBanUser } from '@/components/ChatBanModal.vue';
@@ -1734,6 +1735,16 @@ function parseMentions(
                     Sign In
                 </button>
             </div>
+        </div>
+
+        <!-- Sponsored Banner Placement: Below Answer / Comment Box -->
+        <div class="mt-6">
+            <AdUnit
+                variant="leaderboard"
+                title="Your Ad Goes Here"
+                subtitle="Reach thousands of students. Study & education promotions only — strictly verified and student-safe."
+                cta-text="Book Ad Space"
+            />
         </div>
 
         <!-- Reusable Components -->

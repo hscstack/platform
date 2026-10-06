@@ -10,6 +10,7 @@ import {
     Lock,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import AdUnit from '@/components/AdUnit.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -627,11 +628,18 @@ const handleAskQuestion = () => {
 
         <!-- Post List Feed -->
         <div v-if="posts.data.length > 0" class="space-y-3">
-            <ForumPostCard
-                v-for="post in posts.data"
-                :key="post.id"
-                :post="post"
-            />
+            <template v-for="(post, index) in posts.data" :key="post.id">
+                <ForumPostCard :post="post" />
+
+                <!-- Demo Advertisement Placement: In-Feed Native Ad (After 2nd question) -->
+                <AdUnit
+                    v-if="index === 1"
+                    variant="in-feed"
+                    title="Your Ad Goes Here — Sponsor HSCStack Forum"
+                    subtitle="Reach thousands of students. Study & education promotions only — strictly verified and student-safe."
+                    cta-text="Promote with Us"
+                />
+            </template>
         </div>
 
         <!-- Empty State -->

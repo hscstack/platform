@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import AdUnit from '@/components/AdUnit.vue';
 import ProductCard from '@/components/ProductCard.vue';
 import type { ProductItem } from '@/components/ProductCard.vue';
 
@@ -47,11 +48,22 @@ defineProps<{
             v-if="products && products.length > 0"
             class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8"
         >
-            <ProductCard
-                v-for="product in products"
+            <template
+                v-for="(product, index) in products"
                 :key="product.id || product.name"
-                :product="product"
-            />
+            >
+                <ProductCard :product="product" />
+
+                <!-- Native Sponsored Tool / Partner Card in More From Us -->
+                <AdUnit
+                    v-if="index === 1 || (index === 0 && products.length === 1)"
+                    variant="native-product"
+                    title="Your Ad Goes Here"
+                    subtitle="Reach thousands of students. Study & education promotions only — strictly verified and student-safe."
+                    cta-text="Book Ad Space"
+                    badge-text="Sponsored"
+                />
+            </template>
         </div>
 
         <div

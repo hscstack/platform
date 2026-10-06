@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { Search } from 'lucide-vue-next';
 import { computed } from 'vue';
+import AdUnit from '@/components/AdUnit.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -94,6 +95,16 @@ const filteredSubjects = computed(() => {
                 Show all subjects
             </button>
         </EmptyState>
+
+        <!-- Demo Advertisement Placement: Home Middle Banner (Leaderboard) -->
+        <div class="mt-8">
+            <AdUnit
+                variant="leaderboard"
+                title="Your Ad Goes Here"
+                subtitle="Reach thousands of students. Study & education promotions only — strictly verified and student-safe."
+                cta-text="Book Ad Space"
+            />
+        </div>
 
         <div
             v-if="trending_posts?.length"
