@@ -260,17 +260,8 @@ export const SiteRail = defineComponent({
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
         const hasUnreadChat = computed(() =>
             Boolean(
-                (
-                    page.props.auth as {
-                        has_unread_chat?: boolean;
-                        unread_chat_messages_count?: number;
-                    }
-                )?.has_unread_chat ??
-                ((
-                    page.props.auth as {
-                        unread_chat_messages_count?: number;
-                    }
-                )?.unread_chat_messages_count ?? 0) > 0,
+                (page.props.auth as { has_unread_chat?: boolean })
+                    ?.has_unread_chat,
             ),
         );
 
@@ -884,17 +875,8 @@ export const SiteBottomNav = defineComponent({
 
         const hasUnreadChat = computed(() =>
             Boolean(
-                (
-                    page.props.auth as {
-                        has_unread_chat?: boolean;
-                        unread_chat_messages_count?: number;
-                    }
-                )?.has_unread_chat ??
-                ((
-                    page.props.auth as {
-                        unread_chat_messages_count?: number;
-                    }
-                )?.unread_chat_messages_count ?? 0) > 0,
+                (page.props.auth as { has_unread_chat?: boolean })
+                    ?.has_unread_chat,
             ),
         );
 
@@ -1052,17 +1034,8 @@ export const SiteDrawer = defineComponent({
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
         const hasUnreadChat = computed(() =>
             Boolean(
-                (
-                    page.props.auth as {
-                        has_unread_chat?: boolean;
-                        unread_chat_messages_count?: number;
-                    }
-                )?.has_unread_chat ??
-                ((
-                    page.props.auth as {
-                        unread_chat_messages_count?: number;
-                    }
-                )?.unread_chat_messages_count ?? 0) > 0,
+                (page.props.auth as { has_unread_chat?: boolean })
+                    ?.has_unread_chat,
             ),
         );
         const drawerNavItems = computed(() =>

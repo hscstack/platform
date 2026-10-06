@@ -66,7 +66,6 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'unread_notifications_count' => $request->user()?->unreadNotifications()->when($request->user()?->notifications_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))->take(10)->count() ?? 0,
                 'has_unread_chat' => $hasUnreadChat,
-                'unread_chat_messages_count' => $hasUnreadChat ? 1 : 0,
                 'can_access_admin' => $request->user()?->can('view admin') ?? false,
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->toArray() ?? [],
             ],
