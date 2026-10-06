@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Blog;
+use App\Models\ChatMessage;
+use App\Models\ForumPost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
@@ -43,7 +46,14 @@ class HandleInertiaRequests extends Middleware
             $user->last_active_at = now();
         }
 
-        $latestChatMessage = Cache::get('chat:latest_message');
+        $latestChatMessage = Cache::rememberForever('chat:latest_message', function () {
+            $msg = ChatMessage::latest('created_at')->first();
+
+            return $msg ? [
+                'user_id' => $msg->user_id,
+                'created_at' => $msg->created_at?->getTimestamp() ?? now()->timestamp,
+            ] : null;
+        });
         $hasUnreadChat = false;
         if ($user && $latestChatMessage) {
             $chatLastSeen = $user->lastSeen('chat');
@@ -59,7 +69,14 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
-        $latestForumPost = Cache::get('forum:latest_post');
+        $latestForumPost = Cache::rememberForever('forum:latest_post', function () {
+            $post = ForumPost::where('moderation_status', 'approved')->latest('created_at')->first();
+
+            return $post ? [
+                'user_id' => $post->user_id,
+                'created_at' => $post->created_at?->getTimestamp() ?? now()->timestamp,
+            ] : null;
+        });
         $hasUnreadForum = false;
         if ($user && $latestForumPost) {
             $forumLastSeen = $user->lastSeen('forum');
@@ -75,7 +92,14 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
-        $latestBlogPost = Cache::get('blogs:latest_post');
+        $latestBlogPost = Cache::rememberForever('blogs:latest_post', function () {
+            $blog = Blog::where('is_published', true)->latest('created_at')->first();
+
+            return $blog ? [
+                'user_id' => $blog->user_id,
+                'created_at' => $blog->created_at?->getTimestamp() ?? now()->timestamp,
+            ] : null;
+        });
         $hasUnreadBlogs = false;
         if ($user && $latestBlogPost) {
             $blogsLastSeen = $user->lastSeen('blogs');
