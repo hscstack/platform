@@ -11,6 +11,7 @@ use App\Models\Report;
 use App\Models\User;
 use App\Notifications\UserSuspensionNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -149,6 +150,8 @@ class ChatSettingsController extends Controller
             ChatMessageReaction::query()->delete();
             ChatMessage::query()->delete();
         });
+
+        Cache::forget('chat:latest_message');
 
         return back()->with('success', 'All chat messages have been cleared.');
     }

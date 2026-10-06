@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -43,9 +44,26 @@ class HandleInertiaRequests extends Middleware
             $user->last_active_at = now();
         }
 
-        if ($user && str_contains((string) $request->header('referer', ''), '/chat')) {
+        if ($user && ($request->is('chat*') || str_contains((string) $request->header('referer', ''), '/chat'))) {
             $user->updateQuietly(['chat_last_seen_at' => now()]);
             $user->chat_last_seen_at = now();
+        }
+
+        $latestChatMessage = Cache::rememberForever('chat:latest_message', function () {
+            $latest = ChatMessage::latest('id')->first(['id', 'user_id', 'created_at']);
+
+            return $latest ? [
+                'created_at' => $latest->created_at?->getTimestamp() ?? now()->getTimestamp(),
+                'user_id' => $latest->user_id,
+            ] : null;
+        });
+
+        $hasUnreadChat = false;
+        if ($user && ! $request->is('chat*') && $latestChatMessage) {
+            $isFromOtherUser = (int) $latestChatMessage['user_id'] !== (int) $user->id;
+            $isNewer = ! $user->chat_last_seen_at || $latestChatMessage['created_at'] > $user->chat_last_seen_at->getTimestamp();
+
+            $hasUnreadChat = $isFromOtherUser && $isNewer;
         }
 
         return [
@@ -55,13 +73,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
                 'unread_notifications_count' => $request->user()?->unreadNotifications()->when($request->user()?->notifications_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))->take(10)->count() ?? 0,
-                'unread_chat_messages_count' => ($request->user() && ! $request->is('chat*'))
-                    ? ChatMessage::where('user_id', '!=', $request->user()->id)
-                        ->when(
-                            $request->user()->chat_last_seen_at,
-                            fn ($q, $seen) => $q->where('created_at', '>', $seen)
-                        )->take(10)->count()
-                    : 0,
+                'has_unread_chat' => $hasUnreadChat,
+                'unread_chat_messages_count' => $hasUnreadChat ? 1 : 0,
                 'can_access_admin' => $request->user()?->can('view admin') ?? false,
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->toArray() ?? [],
             ],
