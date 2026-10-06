@@ -48,20 +48,10 @@ class ResourceController extends Controller
             ->filter()
             ->values();
 
-        $backUrl = '/';
-        $subjectSlug = $data['subject']['slug'] ?? null;
-
-        if ($subjectSlug) {
-            $node = Node::find($data['resource']['node_id']);
-            $path = $node
-                ? collect($node->breadcrumb())->pluck('slug')->implode('/')
-                : '';
-
-            $backUrl = $path ? "/{$subjectSlug}/{$path}" : "/{$subjectSlug}";
-        }
+        $node = Node::find($data['resource']['node_id']);
 
         return Inertia::render('Resource', array_merge($data, [
-            'backUrl' => $backUrl,
+            'breadcrumb' => $node ? $node->breadcrumb() : [],
             'isCompleted' => $isCompleted,
             'completionsCount' => $completionsCount,
             'completers' => $completers,

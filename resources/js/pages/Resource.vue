@@ -49,10 +49,22 @@ const props = defineProps({
         type: Array as () => any[],
         default: () => [],
     },
-    backUrl: {
-        type: String,
-        default: '/',
+    breadcrumb: {
+        type: Array as () => { name: string; slug: string }[],
+        default: () => [],
     },
+});
+
+const backUrl = computed(() => {
+    const subjectSlug = props.subject?.slug;
+
+    if (!subjectSlug) {
+        return '/';
+    }
+
+    const path = props.breadcrumb.map((crumb) => crumb.slug).join('/');
+
+    return path ? `/${subjectSlug}/${path}` : `/${subjectSlug}`;
 });
 
 const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
