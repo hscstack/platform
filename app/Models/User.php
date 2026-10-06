@@ -57,8 +57,8 @@ class User extends Authenticatable
         'facebook',
         'instagram',
         'github',
-        'chat_last_seen_at',
         'last_active_at',
+        'last_seen_at',
     ];
 
     protected static function booted(): void
@@ -112,13 +112,27 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'banned_until' => 'datetime',
-            'chat_last_seen_at' => 'datetime',
             'last_active_at' => 'datetime',
+            'last_seen_at' => 'array',
             'password' => 'hashed',
             'receive_emails' => 'boolean',
             'is_verified' => 'boolean',
             'allow_pokes' => 'boolean',
         ];
+    }
+
+    public function markSeen(string $section): void
+    {
+        $seen = $this->last_seen_at ?? [];
+        $seen[$section] = now()->timestamp;
+
+        $this->updateQuietly(['last_seen_at' => $seen]);
+        $this->last_seen_at = $seen;
+    }
+
+    public function lastSeen(string $section): ?int
+    {
+        return $this->last_seen_at[$section] ?? null;
     }
 
     public function nodeCompletions(): HasMany

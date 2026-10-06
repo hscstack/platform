@@ -2,6 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Blog;
+use App\Models\ChatMessage;
+use App\Models\ForumPost;
+use App\Models\User;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
@@ -43,21 +48,6 @@ class HandleInertiaRequests extends Middleware
             $user->last_active_at = now();
         }
 
-        if ($user && ($request->is('chat*') || str_contains((string) $request->header('referer', ''), '/chat'))) {
-            $user->updateQuietly(['chat_last_seen_at' => now()]);
-            $user->chat_last_seen_at = now();
-        }
-
-        $latestChatMessage = Cache::get('chat:latest_message');
-
-        $hasUnreadChat = false;
-        if ($user && ! $request->is('chat*') && $latestChatMessage) {
-            $isFromOtherUser = (int) $latestChatMessage['user_id'] !== (int) $user->id;
-            $isNewer = ! $user->chat_last_seen_at || $latestChatMessage['created_at'] > $user->chat_last_seen_at->getTimestamp();
-
-            $hasUnreadChat = $isFromOtherUser && $isNewer;
-        }
-
         $canAccessAdmin = $user && Cache::remember(
             "user:{$user->id}:can_admin",
             now()->addDay(),
@@ -81,7 +71,18 @@ class HandleInertiaRequests extends Middleware
                 'has_unread_notifications' => $user
                     ? (bool) Cache::rememberForever("user:{$user->id}:has_unread_notifs", fn () => $user->unreadNotifications()->exists())
                     : false,
-                'has_unread_chat' => $hasUnreadChat,
+                'has_unread_chat' => $this->resolveUnreadStatus(
+                    $request, $user, 'chat', 'chat:latest_message',
+                    fn () => ChatMessage::latest('created_at')->first()
+                ),
+                'has_unread_forum' => $this->resolveUnreadStatus(
+                    $request, $user, 'forum', 'forum:latest_post',
+                    fn () => ForumPost::where('moderation_status', 'approved')->latest('created_at')->first()
+                ),
+                'has_unread_blogs' => $this->resolveUnreadStatus(
+                    $request, $user, 'blogs', 'blogs:latest_post',
+                    fn () => Blog::where('is_published', true)->latest('created_at')->first()
+                ),
                 'can_access_admin' => (bool) $canAccessAdmin,
                 'permissions' => $permissions,
             ],
@@ -90,5 +91,44 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
         ];
+    }
+
+    /**
+     * Resolves the unread red dot status for a given section with zero-write churn.
+     */
+    private function resolveUnreadStatus(Request $request, ?User $user, string $section, string $cacheKey, Closure $fallback): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        $latest = Cache::rememberForever($cacheKey, function () use ($fallback) {
+            $item = $fallback();
+
+            return $item ? [
+                'user_id' => $item->user_id,
+                'created_at' => $item->created_at?->getTimestamp() ?? now()->timestamp,
+            ] : null;
+        });
+
+        if (! $latest) {
+            return false;
+        }
+
+        $isFromOtherUser = (int) $latest['user_id'] !== (int) $user->id;
+        $lastSeen = $user->lastSeen($section);
+        $isNewer = ! $lastSeen || $latest['created_at'] > $lastSeen;
+
+        if ($isFromOtherUser && $isNewer) {
+            if ($request->is("{$section}*") || ($section === 'chat' && str_contains((string) $request->header('referer', ''), '/chat'))) {
+                $user->markSeen($section);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
