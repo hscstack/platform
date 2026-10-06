@@ -58,6 +58,20 @@ class HandleInertiaRequests extends Middleware
             $hasUnreadChat = $isFromOtherUser && $isNewer;
         }
 
+        $canAccessAdmin = $user && Cache::remember(
+            "user:{$user->id}:can_admin",
+            3600,
+            fn () => $user->can('view admin')
+        );
+
+        $permissions = ($user && $canAccessAdmin)
+            ? Cache::remember(
+                "user:{$user->id}:permissions",
+                3600,
+                fn () => $user->getAllPermissions()->pluck('name')->toArray()
+            )
+            : [];
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -66,8 +80,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'unread_notifications_count' => $request->user()?->unreadNotifications()->when($request->user()?->notifications_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))->take(10)->count() ?? 0,
                 'has_unread_chat' => $hasUnreadChat,
-                'can_access_admin' => $request->user()?->can('view admin') ?? false,
-                'permissions' => $request->user()?->getAllPermissions()->pluck('name')->toArray() ?? [],
+                'can_access_admin' => (bool) $canAccessAdmin,
+                'permissions' => $permissions,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
