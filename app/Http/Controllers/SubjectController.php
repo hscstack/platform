@@ -78,6 +78,16 @@ class SubjectController extends Controller
             return Notice::activeForDisplay()?->toArray();
         });
 
+        if ($user = $request->user()) {
+            $unreadForumCount = ForumPost::approved()
+                ->where('user_id', '!=', $user->id)
+                ->when($user->forum_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))
+                ->take(10)
+                ->count();
+
+            $request->session()->put('forum_unread_count', $unreadForumCount);
+        }
+
         return Inertia::render('Home', [
             'subjects' => $subjects,
             'featured_blogs' => $featuredBlogs,

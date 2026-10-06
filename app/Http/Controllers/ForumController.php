@@ -27,6 +27,8 @@ class ForumController extends Controller
 {
     public function index(Request $request): Response
     {
+        $this->recordForumVisit($request);
+
         $myPosts = $request->boolean('my_posts');
 
         $filters = [
@@ -84,6 +86,8 @@ class ForumController extends Controller
 
     public function show(Request $request, ForumPost $post): Response
     {
+        $this->recordForumVisit($request);
+
         $user = auth()->user();
         $isAuthor = $user && $user->id === $post->user_id;
         $isModerator = $user && $user->can('manage forums');
@@ -367,5 +371,16 @@ class ForumController extends Controller
             'message' => 'Question reported successfully. Our moderation team will review it.',
             'report_id' => $report->id,
         ], 201);
+    }
+
+    private function recordForumVisit(Request $request): void
+    {
+        $request->session()->forget('forum_unread_count');
+
+        $user = $request->user();
+        if ($user && (! $user->forum_last_seen_at || $user->forum_last_seen_at->diffInMinutes(now()) >= 5)) {
+            $user->updateQuietly(['forum_last_seen_at' => now()]);
+            $user->forum_last_seen_at = now();
+        }
     }
 }

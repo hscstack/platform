@@ -62,6 +62,9 @@ class HandleInertiaRequests extends Middleware
                             fn ($q, $seen) => $q->where('created_at', '>', $seen)
                         )->take(10)->count()
                     : 0,
+                'unread_forum_posts_count' => ($request->user() && ! $request->is('forum*'))
+                    ? (int) $request->session()->get('forum_unread_count', 0)
+                    : 0,
                 'can_access_admin' => $request->user()?->can('view admin') ?? false,
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name')->toArray() ?? [],
             ],
