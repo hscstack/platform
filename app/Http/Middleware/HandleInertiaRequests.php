@@ -78,7 +78,9 @@ class HandleInertiaRequests extends Middleware
             'app_version' => config('app.version'),
             'auth' => [
                 'user' => $user,
-                'unread_notifications_count' => $request->user()?->unreadNotifications()->when($request->user()?->notifications_last_seen_at, fn ($q, $seen) => $q->where('created_at', '>', $seen))->take(10)->count() ?? 0,
+                'has_unread_notifications' => $user
+                    ? (bool) Cache::get("user:{$user->id}:has_unread_notifs", false)
+                    : false,
                 'has_unread_chat' => $hasUnreadChat,
                 'can_access_admin' => (bool) $canAccessAdmin,
                 'permissions' => $permissions,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
@@ -15,9 +16,7 @@ class NotificationController extends Controller
         $page = (int) $request->query('page', 1);
 
         if ($page === 1) {
-            $request->user()->updateQuietly([
-                'notifications_last_seen_at' => now(),
-            ]);
+            Cache::forever("user:{$request->user()->id}:has_unread_notifs", false);
         }
 
         $paginator = $request->user()
@@ -54,9 +53,12 @@ class NotificationController extends Controller
             ->where('id', $id)
             ->update(['read_at' => now()]);
 
+        $hasRemaining = $request->user()->unreadNotifications()->exists();
+        Cache::forever("user:{$request->user()->id}:has_unread_notifs", $hasRemaining);
+
         return response()->json([
             'success' => true,
-            'unread_count' => $request->user()->unreadNotifications()->count(),
+            'unread_count' => $hasRemaining ? 1 : 0,
         ]);
     }
 
@@ -68,6 +70,8 @@ class NotificationController extends Controller
         $request->user()
             ->unreadNotifications()
             ->update(['read_at' => now()]);
+
+        Cache::forever("user:{$request->user()->id}:has_unread_notifs", false);
 
         return response()->json([
             'success' => true,
@@ -81,6 +85,8 @@ class NotificationController extends Controller
     public function clearAll(Request $request): JsonResponse
     {
         $request->user()->notifications()->delete();
+
+        Cache::forever("user:{$request->user()->id}:has_unread_notifs", false);
 
         return response()->json([
             'success' => true,

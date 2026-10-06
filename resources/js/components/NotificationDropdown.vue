@@ -54,18 +54,17 @@ const hasMore = ref(false);
 const currentPage = ref(1);
 const dropdownRef = ref<HTMLElement | null>(null);
 
-// Get initial unread count from Inertia shared prop
-const unreadCount = ref<number>(
-    (page.props.auth as any)?.unread_notifications_count ?? 0,
+// Get initial unread state from Inertia shared prop
+const hasUnread = ref<boolean>(
+    Boolean((page.props.auth as any)?.has_unread_notifications),
 );
+const unreadCount = ref<number>(0);
 
-// Keep unreadCount in sync if page props change (e.g. after Inertia navigation)
+// Keep unread state in sync if page props change (e.g. after Inertia navigation)
 watch(
-    () => (page.props.auth as any)?.unread_notifications_count,
-    (newCount) => {
-        if (typeof newCount === 'number') {
-            unreadCount.value = newCount;
-        }
+    () => (page.props.auth as any)?.has_unread_notifications,
+    (val) => {
+        hasUnread.value = Boolean(val);
     },
 );
 
@@ -86,6 +85,10 @@ const fetchNotifications = async () => {
             notifications.value = data.notifications || [];
             hasMore.value = Boolean(data.has_more);
             currentPage.value = data.current_page || 1;
+
+            if (typeof data.unread_count === 'number') {
+                unreadCount.value = data.unread_count;
+            }
         }
     } catch (e) {
         console.error('Failed to fetch notifications:', e);
@@ -146,10 +149,11 @@ const toggleDropdown = () => {
     isOpen.value = !isOpen.value;
 
     if (isOpen.value) {
+        hasUnread.value = false;
         unreadCount.value = 0;
 
         if (page.props.auth) {
-            (page.props.auth as any).unread_notifications_count = 0;
+            (page.props.auth as any).has_unread_notifications = false;
         }
 
         updatePanelPosition();
@@ -257,6 +261,13 @@ const markAllAsRead = async () => {
     }
 
     isMarkingAll.value = true;
+    hasUnread.value = false;
+    unreadCount.value = 0;
+
+    if (page.props.auth) {
+        (page.props.auth as any).has_unread_notifications = false;
+    }
+
     // Optimistic update
     notifications.value.forEach((n) => {
         if (!n.read_at) {
@@ -292,11 +303,12 @@ const clearAll = async () => {
 
     isClearingAll.value = true;
     notifications.value = [];
+    hasUnread.value = false;
     unreadCount.value = 0;
     hasMore.value = false;
 
     if (page.props.auth) {
-        (page.props.auth as any).unread_notifications_count = 0;
+        (page.props.auth as any).has_unread_notifications = false;
     }
 
     try {
@@ -365,10 +377,15 @@ onBeforeUnmount(() => {
 
             <!-- Unread Badge Indicator -->
             <span
-                v-if="unreadCount > 0"
-                class="animate-in zoom-in-50 absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white shadow-xs"
+                v-if="hasUnread"
+                class="absolute top-1.5 right-1.5 flex h-2 w-2"
             >
-                {{ unreadCount > 9 ? '9+' : unreadCount }}
+                <span
+                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"
+                />
+                <span
+                    class="relative inline-flex h-2 w-2 rounded-full bg-rose-500"
+                />
             </span>
         </button>
 

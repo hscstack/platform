@@ -19,6 +19,8 @@ use App\Observers\ResourceObserver;
 use App\Observers\SubjectObserver;
 use App\Observers\UserObserver;
 use Carbon\CarbonImmutable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -49,6 +51,12 @@ class AppServiceProvider extends ServiceProvider
         Resource::observe(ResourceObserver::class);
         Subject::observe(SubjectObserver::class);
         User::observe(UserObserver::class);
+
+        DatabaseNotification::created(function (DatabaseNotification $notification) {
+            if ($notification->notifiable_type === User::class && $notification->notifiable_id) {
+                Cache::forever("user:{$notification->notifiable_id}:has_unread_notifs", true);
+            }
+        });
     }
 
     /**
