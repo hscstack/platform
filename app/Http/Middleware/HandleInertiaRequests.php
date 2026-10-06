@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use App\Models\Blog;
 use App\Models\ChatMessage;
 use App\Models\ForumPost;
+use App\Models\User;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
@@ -46,75 +48,6 @@ class HandleInertiaRequests extends Middleware
             $user->last_active_at = now();
         }
 
-        $latestChatMessage = Cache::rememberForever('chat:latest_message', function () {
-            $msg = ChatMessage::latest('created_at')->first();
-
-            return $msg ? [
-                'user_id' => $msg->user_id,
-                'created_at' => $msg->created_at?->getTimestamp() ?? now()->timestamp,
-            ] : null;
-        });
-        $hasUnreadChat = false;
-        if ($user && $latestChatMessage) {
-            $chatLastSeen = $user->lastSeen('chat');
-            $isFromOtherUser = (int) $latestChatMessage['user_id'] !== (int) $user->id;
-            $isNewer = ! $chatLastSeen || $latestChatMessage['created_at'] > $chatLastSeen;
-
-            if ($isFromOtherUser && $isNewer) {
-                if ($request->is('chat*') || str_contains((string) $request->header('referer', ''), '/chat')) {
-                    $user->markSeen('chat');
-                } else {
-                    $hasUnreadChat = true;
-                }
-            }
-        }
-
-        $latestForumPost = Cache::rememberForever('forum:latest_post', function () {
-            $post = ForumPost::where('moderation_status', 'approved')->latest('created_at')->first();
-
-            return $post ? [
-                'user_id' => $post->user_id,
-                'created_at' => $post->created_at?->getTimestamp() ?? now()->timestamp,
-            ] : null;
-        });
-        $hasUnreadForum = false;
-        if ($user && $latestForumPost) {
-            $forumLastSeen = $user->lastSeen('forum');
-            $isFromOtherUser = (int) $latestForumPost['user_id'] !== (int) $user->id;
-            $isNewer = ! $forumLastSeen || $latestForumPost['created_at'] > $forumLastSeen;
-
-            if ($isFromOtherUser && $isNewer) {
-                if ($request->is('forum*') || str_contains((string) $request->header('referer', ''), '/forum')) {
-                    $user->markSeen('forum');
-                } else {
-                    $hasUnreadForum = true;
-                }
-            }
-        }
-
-        $latestBlogPost = Cache::rememberForever('blogs:latest_post', function () {
-            $blog = Blog::where('is_published', true)->latest('created_at')->first();
-
-            return $blog ? [
-                'user_id' => $blog->user_id,
-                'created_at' => $blog->created_at?->getTimestamp() ?? now()->timestamp,
-            ] : null;
-        });
-        $hasUnreadBlogs = false;
-        if ($user && $latestBlogPost) {
-            $blogsLastSeen = $user->lastSeen('blogs');
-            $isFromOtherUser = (int) $latestBlogPost['user_id'] !== (int) $user->id;
-            $isNewer = ! $blogsLastSeen || $latestBlogPost['created_at'] > $blogsLastSeen;
-
-            if ($isFromOtherUser && $isNewer) {
-                if ($request->is('blogs*') || str_contains((string) $request->header('referer', ''), '/blogs')) {
-                    $user->markSeen('blogs');
-                } else {
-                    $hasUnreadBlogs = true;
-                }
-            }
-        }
-
         $canAccessAdmin = $user && Cache::remember(
             "user:{$user->id}:can_admin",
             now()->addDay(),
@@ -138,9 +71,18 @@ class HandleInertiaRequests extends Middleware
                 'has_unread_notifications' => $user
                     ? (bool) Cache::rememberForever("user:{$user->id}:has_unread_notifs", fn () => $user->unreadNotifications()->exists())
                     : false,
-                'has_unread_chat' => $hasUnreadChat,
-                'has_unread_forum' => $hasUnreadForum,
-                'has_unread_blogs' => $hasUnreadBlogs,
+                'has_unread_chat' => $this->resolveUnreadStatus(
+                    $request, $user, 'chat', 'chat:latest_message',
+                    fn () => ChatMessage::latest('created_at')->first()
+                ),
+                'has_unread_forum' => $this->resolveUnreadStatus(
+                    $request, $user, 'forum', 'forum:latest_post',
+                    fn () => ForumPost::where('moderation_status', 'approved')->latest('created_at')->first()
+                ),
+                'has_unread_blogs' => $this->resolveUnreadStatus(
+                    $request, $user, 'blogs', 'blogs:latest_post',
+                    fn () => Blog::where('is_published', true)->latest('created_at')->first()
+                ),
                 'can_access_admin' => (bool) $canAccessAdmin,
                 'permissions' => $permissions,
             ],
@@ -149,5 +91,44 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
         ];
+    }
+
+    /**
+     * Resolves the unread red dot status for a given section with zero-write churn.
+     */
+    private function resolveUnreadStatus(Request $request, ?User $user, string $section, string $cacheKey, Closure $fallback): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        $latest = Cache::rememberForever($cacheKey, function () use ($fallback) {
+            $item = $fallback();
+
+            return $item ? [
+                'user_id' => $item->user_id,
+                'created_at' => $item->created_at?->getTimestamp() ?? now()->timestamp,
+            ] : null;
+        });
+
+        if (! $latest) {
+            return false;
+        }
+
+        $isFromOtherUser = (int) $latest['user_id'] !== (int) $user->id;
+        $lastSeen = $user->lastSeen($section);
+        $isNewer = ! $lastSeen || $latest['created_at'] > $lastSeen;
+
+        if ($isFromOtherUser && $isNewer) {
+            if ($request->is("{$section}*") || str_contains((string) $request->header('referer', ''), "/{$section}")) {
+                $user->markSeen($section);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
