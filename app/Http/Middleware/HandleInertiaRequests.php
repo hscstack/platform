@@ -79,7 +79,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
                 'has_unread_notifications' => $user
-                    ? (bool) Cache::get("user:{$user->id}:has_unread_notifs", false)
+                    ? (bool) Cache::rememberForever("user:{$user->id}:has_unread_notifs", fn () => $user->unreadNotifications()->exists())
                     : false,
                 'has_unread_chat' => $hasUnreadChat,
                 'can_access_admin' => (bool) $canAccessAdmin,
