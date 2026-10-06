@@ -57,6 +57,23 @@ class Node extends Model
         return $this->isEffectivelyFrozen();
     }
 
+    public function breadcrumb(): array
+    {
+        $breadcrumb = [];
+        $node = $this;
+
+        while ($node) {
+            array_unshift($breadcrumb, [
+                'name' => $node->name,
+                'slug' => $node->slug,
+            ]);
+
+            $node = $node->parent;
+        }
+
+        return $breadcrumb;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
