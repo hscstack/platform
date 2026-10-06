@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -195,5 +196,11 @@ class User extends Authenticatable
     public function forumAnswers(): HasMany
     {
         return $this->hasMany(ForumAnswer::class);
+    }
+
+    public function clearPermissionCache(): void
+    {
+        Cache::forget("user:{$this->id}:can_admin");
+        Cache::forget("user:{$this->id}:permissions");
     }
 }

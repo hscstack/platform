@@ -93,6 +93,8 @@ class UserController extends Controller
             $user->syncPermissions([]);
         }
 
+        $user->clearPermissionCache();
+
         $user->notify(new WelcomeNotification);
 
         return redirect()->route('admin.users.index')
@@ -144,6 +146,8 @@ class UserController extends Controller
                 $user->syncRoles([]);
                 $user->syncPermissions([]);
             }
+
+            $user->clearPermissionCache();
         }
 
         return redirect()
