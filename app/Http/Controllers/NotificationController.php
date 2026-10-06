@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
@@ -15,9 +16,7 @@ class NotificationController extends Controller
         $page = (int) $request->query('page', 1);
 
         if ($page === 1) {
-            $request->user()->updateQuietly([
-                'notifications_last_seen_at' => now(),
-            ]);
+            Cache::forever("user:{$request->user()->id}:has_unread_notifs", false);
         }
 
         $paginator = $request->user()
