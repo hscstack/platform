@@ -223,7 +223,6 @@ const props = defineProps<{
         subjects: Array<{
             id: number;
             name: string;
-            english_name?: string | null;
             slug: string;
             course: string;
             tailwind_format: string;
@@ -2142,12 +2141,6 @@ const timeAgo = formatTimeAgo;
                             >
                                 {{ subj.name }}
                             </h4>
-                            <p
-                                v-if="subj.english_name"
-                                class="truncate text-[11px] text-slate-400 dark:text-gray-500"
-                            >
-                                {{ subj.english_name }}
-                            </p>
                         </div>
                     </div>
 

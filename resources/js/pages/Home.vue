@@ -1,51 +1,28 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Search } from 'lucide-vue-next';
-import { computed } from 'vue';
 import AdUnit from '@/components/AdUnit.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import CourseSwitcher from '@/components/CourseSwitcher.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import ForumPostCard from '@/components/forum/ForumPostCard.vue';
+import GroupSwitcher from '@/components/GroupSwitcher.vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
 
-import { globalSearchQuery } from '@/lib/searchStore';
-
 const props = defineProps({
-    subjects: Array,
+    subjects: {
+        type: Array as () => any[],
+        default: () => [],
+    },
+    current_group: {
+        type: String,
+        default: 'science',
+    },
     notice: Object,
     featured_blogs: Array,
     trending_posts: Array,
-});
-
-const subjects = props.subjects as Array<{
-    id: number;
-    name: string;
-    english_name?: string | null;
-    slug: string;
-    course?: string;
-    tailwind_format: string;
-    icon: string;
-    nodes_count?: number;
-}>;
-
-const filteredSubjects = computed(() => {
-    const q = globalSearchQuery.value.toLowerCase().trim();
-
-    if (!q) {
-        return subjects;
-    }
-
-    return subjects.filter(
-        (subject) =>
-            (subject.name && subject.name.toLowerCase().includes(q)) ||
-            (subject.english_name &&
-                subject.english_name.toLowerCase().includes(q)) ||
-            (subject.slug && subject.slug.toLowerCase().includes(q)),
-    );
 });
 </script>
 
@@ -73,28 +50,20 @@ const filteredSubjects = computed(() => {
     <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
         <PwaInstallPrompt variant="banner" class="mb-6" />
         <CourseSwitcher />
+        <GroupSwitcher :current-group="props.current_group" />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SubjectCard
-                v-for="subject in filteredSubjects"
+                v-for="subject in subjects"
                 :key="subject.id"
                 :subject="subject"
             />
         </div>
 
         <EmptyState
-            v-if="filteredSubjects.length === 0"
-            :icon="Search"
+            v-if="!subjects || subjects.length === 0"
             variant="dashed"
-            :title="`No subjects found matching &quot;${globalSearchQuery}&quot;`"
-        >
-            <button
-                type="button"
-                @click="globalSearchQuery = ''"
-                class="cursor-pointer text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
-            >
-                Show all subjects
-            </button>
-        </EmptyState>
+            title="No subjects found in this category"
+        />
 
         <!-- Demo Advertisement Placement: Home Middle Banner (Leaderboard) -->
         <div class="mt-8">

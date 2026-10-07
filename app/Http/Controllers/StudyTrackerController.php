@@ -26,7 +26,7 @@ class StudyTrackerController extends Controller
                     ->orderBy('sort_order', 'asc')
                     ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
-            ->get(['id', 'name', 'english_name', 'slug', 'course', 'sort_order'])
+            ->get(['id', 'name', 'slug', 'course', 'sort_order'])
             ->toArray();
 
         if (! $user) {
