@@ -15,36 +15,35 @@ class GenerateSitemap extends Command
 {
     protected $signature = 'seo:sitemap';
 
-    protected $description = 'Generate sitemap.xml with static pages, subjects, curriculum nodes, blogs, forum discussions, and active user profiles.';
+    protected $description = 'Generate a clean, optimized sitemap.xml with static pages, subjects, curriculum nodes, published blogs, answered forum discussions, and top appreciated contributors.';
 
     public function handle(): int
     {
         $sitemap = Sitemap::create();
 
-        // 1. Static Pages
+        // 1. Static Public Pages (excluding auth/login utility pages)
         $staticPages = [
-            '/' => ['priority' => 1.0, 'freq' => 'daily'],
-            '/ssc' => ['priority' => 0.9, 'freq' => 'daily'],
-            '/blogs' => ['priority' => 0.8, 'freq' => 'daily'],
-            '/forum' => ['priority' => 0.8, 'freq' => 'daily'],
-            '/about-us' => ['priority' => 0.7, 'freq' => 'monthly'],
-            '/products' => ['priority' => 0.7, 'freq' => 'monthly'],
-            '/guide' => ['priority' => 0.7, 'freq' => 'monthly'],
-            '/ai' => ['priority' => 0.7, 'freq' => 'monthly'],
-            '/donate' => ['priority' => 0.6, 'freq' => 'monthly'],
-            '/join' => ['priority' => 0.6, 'freq' => 'monthly'],
-            '/login' => ['priority' => 0.5, 'freq' => 'monthly'],
-            '/support' => ['priority' => 0.5, 'freq' => 'monthly'],
-            '/privacy-policy' => ['priority' => 0.3, 'freq' => 'yearly'],
-            '/terms-service' => ['priority' => 0.3, 'freq' => 'yearly'],
-            '/content-policy' => ['priority' => 0.3, 'freq' => 'yearly'],
+            '/',
+            '/ssc',
+            '/tracker',
+            '/peers',
+            '/blogs',
+            '/forum',
+            '/about-us',
+            '/products',
+            '/guide',
+            '/ai',
+            '/donate',
+            '/join',
+            '/support',
+            '/privacy-policy',
+            '/terms-service',
+            '/content-policy',
         ];
 
-        foreach ($staticPages as $page => $meta) {
+        foreach ($staticPages as $page) {
             $sitemap->add(
                 Url::create(url($page))
-                    ->setChangeFrequency($meta['freq'])
-                    ->setPriority($meta['priority'])
             );
         }
 
@@ -53,12 +52,16 @@ class GenerateSitemap extends Command
             $sitemap->add(
                 Url::create(url($subject->slug))
                     ->setLastModificationDate($subject->updated_at)
-                    ->setChangeFrequency('weekly')
-                    ->setPriority(0.9)
             );
         });
 
-        // 3. Subject Nodes (Chapters, Sub-topics & Study Materials)
+        // 3. Subject Nodes (Chapters & Topic Nodes, filtering out resource sub-tabs)
+        $ignoredSlugs = [
+            'class', 'klas', 'classes',
+            'handnote', 'hzandnot', 'handnotes',
+            'dagano-boi', 'dagano-bi', 'marked-book',
+        ];
+
         $allNodes = Node::with('subject:id,slug')
             ->whereNotNull('subject_id')
             ->get(['id', 'subject_id', 'parent_id', 'slug', 'updated_at']);
@@ -67,6 +70,10 @@ class GenerateSitemap extends Command
 
         foreach ($allNodes as $node) {
             if (! $node->subject || ! $node->slug) {
+                continue;
+            }
+
+            if (in_array(strtolower($node->slug), $ignoredSlugs, true)) {
                 continue;
             }
 
@@ -85,8 +92,6 @@ class GenerateSitemap extends Command
             $sitemap->add(
                 Url::create(url($nodePath))
                     ->setLastModificationDate($node->updated_at)
-                    ->setChangeFrequency('weekly')
-                    ->setPriority(0.8)
             );
         }
 
@@ -98,44 +103,35 @@ class GenerateSitemap extends Command
                 $sitemap->add(
                     Url::create(url("/blogs/{$blog->slug}"))
                         ->setLastModificationDate($blog->updated_at)
-                        ->setChangeFrequency('weekly')
-                        ->setPriority(0.8)
                 );
             });
 
-        // 5. Active & Contributor User Profiles (Filtering out blank/inactive accounts)
+        // 5. Top 3 Most Appreciated User Profiles
         User::whereNotNull('username')
-            ->where(function ($query) {
-                $query->whereHas('blogs', fn ($q) => $q->where('is_published', true))
-                    ->orWhereHas('roles')
-                    ->orWhereHas('resources')
-                    ->orWhere(function ($sub) {
-                        $sub->whereNotNull('about')
-                            ->whereNotNull('institution');
-                    });
-            })
-            ->select(['username', 'updated_at'])
-            ->orderByDesc('updated_at')
-            ->get()
+            ->withCount('appreciationsReceived')
+            ->orderByDesc('appreciations_received_count')
+            ->take(3)
+            ->get(['username', 'updated_at'])
             ->each(function ($user) use ($sitemap) {
                 $sitemap->add(
                     Url::create(url("/u/{$user->username}"))
                         ->setLastModificationDate($user->updated_at)
-                        ->setChangeFrequency('weekly')
-                        ->setPriority(0.5)
                 );
             });
 
-        // 6. Published Forum Questions
+        // 6. Latest 100 Answered Forum Questions
         ForumPost::approved()
+            ->where(function ($query) {
+                $query->where('answers_count', '>', 0)
+                    ->orWhere('is_answered', true);
+            })
             ->orderByDesc('updated_at')
+            ->take(100)
             ->get(['slug', 'updated_at'])
             ->each(function ($post) use ($sitemap) {
                 $sitemap->add(
                     Url::create(url("/forum/questions/{$post->slug}"))
                         ->setLastModificationDate($post->updated_at)
-                        ->setChangeFrequency('daily')
-                        ->setPriority(0.7)
                 );
             });
 
