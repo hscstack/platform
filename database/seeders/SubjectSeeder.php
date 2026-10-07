@@ -31,11 +31,14 @@ class SubjectSeeder extends Seeder
         ];
 
         foreach ($subjects as $index => $subject) {
+            $isCommon = str_contains($subject['name'], 'বাংলা') || str_contains($subject['name'], 'ইংরেজি');
             DB::table('subjects')->insert([
                 'name' => $subject['name'],
                 'slug' => Str::slug($subject['name']),
                 'icon' => $subject['icon'],
                 'tailwind_format' => $subject['tailwind_format'],
+                'course' => 'hsc',
+                'group' => $isCommon ? 'common' : 'science',
                 'sort_order' => $index,
                 'created_at' => now(),
                 'updated_at' => now(),
