@@ -10,13 +10,13 @@ import {
     Ban,
     Flag,
     Check,
+    Copy,
     X,
     Reply,
     Smile,
     Info,
     ShieldCheck,
     AlertCircle,
-    MoreHorizontal,
     Radio,
     AtSign,
     Users,
@@ -200,6 +200,8 @@ const showRulesModal = ref(false);
 
 // Mobile Action Sheet State
 const mobileActionMessage = ref<ChatMessageItem | null>(null);
+const isCopied = ref(false);
+let copiedTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const openMobileActions = (msg: ChatMessageItem) => {
     const isDeleted = Boolean(msg.is_deleted || msg.deleted_at);
@@ -209,11 +211,70 @@ const openMobileActions = (msg: ChatMessageItem) => {
         return;
     }
 
+    isCopied.value = false;
     mobileActionMessage.value = msg;
+};
+
+const handleMessageRowClick = (msg: ChatMessageItem) => {
+    // Only trigger mobile bottom sheet on small screens / mobile devices (< 640px)
+    if (typeof window !== 'undefined' && window.innerWidth >= 640) {
+        return;
+    }
+
+    // Do not trigger if user was selecting/copying text
+    const selection =
+        typeof window !== 'undefined' ? window.getSelection?.() : null;
+
+    if (selection && selection.toString().trim().length > 0) {
+        return;
+    }
+
+    openMobileActions(msg);
+};
+
+const copyMessageText = async (content: string) => {
+    if (!content) {
+        return;
+    }
+
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(content);
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = content;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        isCopied.value = true;
+
+        if (copiedTimeout) {
+            clearTimeout(copiedTimeout);
+        }
+
+        copiedTimeout = setTimeout(() => {
+            isCopied.value = false;
+            closeMobileActions();
+        }, 600);
+    } catch (err) {
+        console.error('Failed to copy message:', err);
+    }
 };
 
 const closeMobileActions = () => {
     mobileActionMessage.value = null;
+    isCopied.value = false;
+
+    if (copiedTimeout) {
+        clearTimeout(copiedTimeout);
+        copiedTimeout = null;
+    }
 };
 
 // Reply State
@@ -1418,6 +1479,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    if (copiedTimeout) {
+        clearTimeout(copiedTimeout);
+    }
+
     isPresenceSubscribed.value = false;
     presenceMembers.value.clear();
 
@@ -1609,7 +1674,8 @@ onUnmounted(() => {
                     <!-- Chat Message Row -->
                     <div
                         :id="`chat-msg-${msg.id}`"
-                        class="group relative flex items-start gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors duration-150 sm:gap-3 sm:px-3 sm:py-2"
+                        @click="handleMessageRowClick(msg)"
+                        class="group relative flex cursor-pointer items-start gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors duration-150 active:bg-slate-100/70 sm:cursor-default sm:gap-3 sm:px-3 sm:py-2 dark:active:bg-zinc-800/50"
                         :class="[
                             currentUser &&
                             msg.user?.id &&
@@ -1631,6 +1697,7 @@ onUnmounted(() => {
                                 <Link
                                     v-if="msg.user?.id && msg.user.username"
                                     :href="`/u/${msg.user.username}`"
+                                    @click.stop
                                     class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full font-semibold transition hover:opacity-85 sm:h-9 sm:w-9"
                                     :class="
                                         currentUser &&
@@ -1676,6 +1743,7 @@ onUnmounted(() => {
                                 <Link
                                     v-if="msg.user?.id && msg.user.username"
                                     :href="`/u/${msg.user.username}`"
+                                    @click.stop
                                     class="inline-flex items-center gap-1 truncate text-xs font-bold text-slate-900 transition hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
                                 >
                                     <span class="truncate">{{
@@ -1705,13 +1773,6 @@ onUnmounted(() => {
                                 </span>
 
                                 <span
-                                    v-if="msg.user?.username"
-                                    class="truncate text-[11px] text-slate-400 dark:text-zinc-500"
-                                >
-                                    @{{ msg.user.username }}
-                                </span>
-
-                                <span
                                     class="ml-auto text-[10px] text-slate-400 select-none sm:text-[11px] dark:text-zinc-500"
                                 >
                                     {{ formatTime(msg.created_at) }}
@@ -1721,7 +1782,7 @@ onUnmounted(() => {
                             <!-- Quoted Parent Snapshot (If Reply) -->
                             <div
                                 v-if="msg.reply_to_content"
-                                @click="
+                                @click.stop="
                                     msg.reply_to_id
                                         ? scrollToMessage(msg.reply_to_id)
                                         : null
@@ -1955,22 +2016,6 @@ onUnmounted(() => {
                                 <Trash2 class="h-3.5 w-3.5" />
                             </button>
                         </div>
-
-                        <!-- Mobile Action Trigger (3-dots) -->
-                        <button
-                            v-if="
-                                (!msg.is_deleted && !msg.deleted_at) ||
-                                ((can('manage chat') || canDelete) &&
-                                    msg.user?.id &&
-                                    Number(currentUser?.id) !==
-                                        Number(msg.user.id))
-                            "
-                            type="button"
-                            @click.stop="openMobileActions(msg)"
-                            class="shrink-0 p-1 text-slate-300 hover:text-slate-600 sm:hidden dark:text-zinc-600 dark:hover:text-zinc-300"
-                        >
-                            <MoreHorizontal class="h-3.5 w-3.5" />
-                        </button>
                     </div>
                 </template>
             </div>
@@ -2311,6 +2356,11 @@ onUnmounted(() => {
                 <div
                     class="w-full rounded-t-2xl border-t border-slate-200 bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
                 >
+                    <!-- Grab Handle -->
+                    <div
+                        class="mx-auto -mt-1 mb-3 h-1 w-10 rounded-full bg-slate-200 dark:bg-zinc-700"
+                    />
+
                     <!-- Header with message preview -->
                     <div
                         class="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800"
@@ -2318,7 +2368,13 @@ onUnmounted(() => {
                         <span
                             class="text-xs font-bold text-slate-700 dark:text-zinc-300"
                         >
-                            Message by @{{ mobileActionMessage.user.username }}
+                            Message by
+                            {{
+                                mobileActionMessage.user?.name ||
+                                (mobileActionMessage.user?.username
+                                    ? `@${mobileActionMessage.user.username}`
+                                    : 'User')
+                            }}
                         </span>
                         <button
                             type="button"
@@ -2351,6 +2407,37 @@ onUnmounted(() => {
 
                     <!-- Action Rows -->
                     <div class="space-y-1 pt-1 text-xs">
+                        <!-- Copy Text (active messages only) -->
+                        <button
+                            v-if="
+                                !mobileActionMessage.is_deleted &&
+                                !mobileActionMessage.deleted_at &&
+                                mobileActionMessage.content
+                            "
+                            type="button"
+                            @click="
+                                copyMessageText(mobileActionMessage.content)
+                            "
+                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold transition active:scale-98"
+                            :class="
+                                isCopied
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                    : 'text-slate-700 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-zinc-800'
+                            "
+                        >
+                            <Check
+                                v-if="isCopied"
+                                class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                            />
+                            <Copy
+                                v-else
+                                class="h-4 w-4 text-slate-500 dark:text-zinc-400"
+                            />
+                            <span>{{
+                                isCopied ? 'Copied to clipboard!' : 'Copy Text'
+                            }}</span>
+                        </button>
+
                         <button
                             v-if="
                                 mobileActionMessage.reactions &&

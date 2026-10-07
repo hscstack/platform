@@ -168,6 +168,11 @@ const closeDropdown = () => {
 const handleClickOutside = (e: MouseEvent | TouchEvent) => {
     const target = e.target as Node;
 
+    // If target was unmounted or removed from DOM during click handling, ignore
+    if (!target || !document.contains(target)) {
+        return;
+    }
+
     if (
         dropdownRef.value &&
         !dropdownRef.value.contains(target) &&
@@ -373,12 +378,19 @@ onBeforeUnmount(() => {
             aria-label="Notifications"
             title="Notifications"
         >
-            <Bell class="h-4 w-4" />
+            <Bell
+                :class="[
+                    'h-4 w-4 transition-transform',
+                    hasUnread
+                        ? 'animate-bell-swing text-rose-500 dark:text-rose-400'
+                        : '',
+                ]"
+            />
 
             <!-- Unread Badge Indicator -->
             <span
                 v-if="hasUnread"
-                class="absolute top-1.5 right-1.5 flex h-2 w-2"
+                class="pointer-events-none absolute top-1.5 right-1.5 flex h-2 w-2"
             >
                 <span
                     class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"
@@ -712,3 +724,35 @@ onBeforeUnmount(() => {
         </Teleport>
     </div>
 </template>
+
+<style scoped>
+@keyframes bell-swing {
+    0%,
+    100% {
+        transform: rotate(0);
+    }
+    10% {
+        transform: rotate(14deg);
+    }
+    20% {
+        transform: rotate(-12deg);
+    }
+    30% {
+        transform: rotate(10deg);
+    }
+    40% {
+        transform: rotate(-8deg);
+    }
+    50% {
+        transform: rotate(4deg);
+    }
+    60% {
+        transform: rotate(0);
+    }
+}
+
+.animate-bell-swing {
+    transform-origin: top center;
+    animation: bell-swing 3s ease-in-out infinite;
+}
+</style>
