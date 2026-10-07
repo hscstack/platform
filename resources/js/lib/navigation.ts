@@ -36,6 +36,13 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Blogs',
+        href: '/blogs',
+        icon: 'menu_book',
+        match: (url) => url.startsWith('/blogs'),
+        showInBottom: true,
+    },
+    {
         label: 'Forum',
         href: '/forum',
         icon: 'forum',
@@ -49,13 +56,6 @@ export const primaryNavItems: NavItem[] = [
         icon: 'chat',
         match: (url) => url.startsWith('/chat'),
         showInBottom: true,
-    },
-    {
-        label: 'Blogs',
-        href: '/blogs',
-        icon: 'menu_book',
-        match: (url) => url.startsWith('/blogs'),
-        showInBottom: false,
     },
     {
         label: 'AI',

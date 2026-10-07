@@ -15,7 +15,6 @@
  * imported — only the navigation chrome itself is unified here.
  */
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Search } from 'lucide-vue-next';
 import {
     Teleport,
     Transition,
@@ -23,6 +22,7 @@ import {
     defineComponent,
     nextTick,
     onBeforeUnmount,
+    onMounted,
     ref,
     toRef,
     watch,
@@ -893,9 +893,6 @@ export const SiteBottomNav = defineComponent({
     name: 'SiteBottomNav',
     setup() {
         const page = usePage();
-        const user = computed(
-            () => page.props.auth?.user as AuthedUser | undefined,
-        );
         const currentUrl = computed(() => String(page.url));
         const bottomNavItems = computed(() =>
             primaryNavItems.filter((i) => i.showInBottom !== false),
@@ -921,30 +918,6 @@ export const SiteBottomNav = defineComponent({
         );
 
         const homeHref = computed(() => preferredHomeHref(currentUrl.value));
-
-        const authItemHref = computed(() => {
-            if (!user.value) {
-                return '/login';
-            }
-
-            return user.value.username
-                ? `/u/${user.value.username}`
-                : '/profile';
-        });
-
-        const isAuthItemActive = computed(() => {
-            if (user.value) {
-                return (
-                    currentUrl.value.startsWith('/profile') ||
-                    currentUrl.value.startsWith('/u/')
-                );
-            }
-
-            return (
-                currentUrl.value.startsWith('/login') ||
-                currentUrl.value.startsWith('/register')
-            );
-        });
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
             if (match) {
@@ -1019,38 +992,6 @@ export const SiteBottomNav = defineComponent({
                             </Link>
                         );
                     })}
-
-                    <Link
-                        href={authItemHref.value}
-                        class={[
-                            'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150 ease-out',
-                            isAuthItemActive.value
-                                ? 'text-slate-900 dark:text-white'
-                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
-                        ]}
-                    >
-                        <MaterialIcon
-                            name={user.value ? 'person' : 'login'}
-                            size={26}
-                            filled={isAuthItemActive.value}
-                            weight={400}
-                            class={`shrink-0 transition-transform duration-150 ${
-                                isAuthItemActive.value
-                                    ? 'scale-[1.02] text-slate-900 dark:text-white'
-                                    : 'text-slate-500 dark:text-slate-400'
-                            }`}
-                        />
-                        <span
-                            class={[
-                                'text-[10px] leading-none tracking-wide antialiased',
-                                isAuthItemActive.value
-                                    ? 'font-bold'
-                                    : 'font-medium',
-                            ]}
-                        >
-                            {user.value ? 'Profile' : 'Login'}
-                        </span>
-                    </Link>
                 </div>
             </nav>
         );
@@ -1105,10 +1046,80 @@ export const SiteDrawer = defineComponent({
         );
 
         const showLogoutModal = ref(false);
+        const isProfileMenuOpen = ref(false);
+        const profileMenuRef = ref<HTMLElement | null>(null);
         const panelRef = ref<HTMLElement | null>(null);
         const closeButtonRef = ref<HTMLElement | null>(null);
 
+        const closeProfileMenu = () => {
+            isProfileMenuOpen.value = false;
+        };
+
+        const handleProfileClickOutside = (e: MouseEvent | TouchEvent) => {
+            if (!isProfileMenuOpen.value) {
+                return;
+            }
+
+            const target = e.target as Node;
+
+            if (!target || !document.contains(target)) {
+                return;
+            }
+
+            if (
+                profileMenuRef.value &&
+                !profileMenuRef.value.contains(target)
+            ) {
+                closeProfileMenu();
+            }
+        };
+
+        const handleProfileScroll = (e: Event) => {
+            if (!isProfileMenuOpen.value) {
+                return;
+            }
+
+            if (
+                e.target instanceof Node &&
+                profileMenuRef.value?.contains(e.target)
+            ) {
+                return;
+            }
+
+            closeProfileMenu();
+        };
+
+        const handleProfileKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isProfileMenuOpen.value) {
+                closeProfileMenu();
+            }
+        };
+
+        let removeProfileNavListener: (() => void) | null = null;
+
+        onMounted(() => {
+            if (typeof document !== 'undefined') {
+                document.addEventListener('click', handleProfileClickOutside);
+                document.addEventListener('keydown', handleProfileKeyDown);
+            }
+
+            if (typeof window !== 'undefined') {
+                window.addEventListener('scroll', handleProfileScroll, {
+                    passive: true,
+                    capture: true,
+                });
+                window.addEventListener('resize', closeProfileMenu, {
+                    passive: true,
+                });
+            }
+
+            removeProfileNavListener = router.on('navigate', () => {
+                closeProfileMenu();
+            });
+        });
+
         const close = () => {
+            closeProfileMenu();
             emit('update:open', false);
             emit('close');
         };
@@ -1138,14 +1149,6 @@ export const SiteDrawer = defineComponent({
             return currentUrl.value.startsWith(href);
         };
 
-        const isHome = computed(
-            () =>
-                currentUrl.value === '/' ||
-                currentUrl.value.startsWith('/?') ||
-                currentUrl.value === '/ssc' ||
-                currentUrl.value.startsWith('/ssc?'),
-        );
-
         let previousOverflow: string | null = null;
 
         watch(
@@ -1166,8 +1169,24 @@ export const SiteDrawer = defineComponent({
         );
 
         onBeforeUnmount(() => {
-            if (typeof document === 'undefined') {
-                return;
+            if (typeof document !== 'undefined') {
+                document.removeEventListener(
+                    'click',
+                    handleProfileClickOutside,
+                );
+                document.removeEventListener('keydown', handleProfileKeyDown);
+            }
+
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('scroll', handleProfileScroll, {
+                    capture: true,
+                } as any);
+                window.removeEventListener('resize', closeProfileMenu);
+            }
+
+            if (removeProfileNavListener) {
+                removeProfileNavListener();
+                removeProfileNavListener = null;
             }
 
             if (previousOverflow !== null) {
@@ -1196,18 +1215,139 @@ export const SiteDrawer = defineComponent({
                     <div class="ml-auto flex items-center gap-1.5">
                         {user.value ? (
                             <>
-                                {isHome.value && (
-                                    <Link
-                                        href="/peers"
-                                        class="relative flex h-9 items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50 px-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                                        aria-label="Find"
-                                        title="Find"
-                                    >
-                                        <Search class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
-                                        <span>Find</span>
-                                    </Link>
-                                )}
                                 <NotificationDropdown plain />
+                                <div class="relative" ref={profileMenuRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            isProfileMenuOpen.value =
+                                                !isProfileMenuOpen.value;
+                                        }}
+                                        class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition-transform active:scale-95"
+                                        title="Profile Menu"
+                                        aria-label="Profile Menu"
+                                        aria-expanded={isProfileMenuOpen.value}
+                                    >
+                                        {user.value.image_url ? (
+                                            <img
+                                                src={user.value.image_url}
+                                                alt={user.value.name}
+                                                class="h-8 w-8 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700"
+                                            />
+                                        ) : (
+                                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-xs font-bold text-white shadow-xs ring-2 ring-white dark:ring-slate-900">
+                                                {user.value.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    <Transition
+                                        enterActiveClass="transition duration-150 ease-out"
+                                        enterFromClass="scale-95 opacity-0"
+                                        enterToClass="scale-100 opacity-100"
+                                        leaveActiveClass="transition duration-100 ease-in"
+                                        leaveFromClass="scale-100 opacity-100"
+                                        leaveToClass="scale-95 opacity-0"
+                                    >
+                                        {isProfileMenuOpen.value && (
+                                            <div class="absolute top-full right-0 z-50 mt-2 w-56 origin-top-right overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95">
+                                                {/* User Info Header */}
+                                                <div class="border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
+                                                    <div class="truncate text-xs font-bold text-slate-900 dark:text-white">
+                                                        {user.value.name}
+                                                    </div>
+                                                    <div class="truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                        @
+                                                        {user.value.username ||
+                                                            'student'}
+                                                    </div>
+                                                </div>
+
+                                                <div class="space-y-0.5 py-1">
+                                                    {/* 1. My Profile */}
+                                                    <Link
+                                                        href={
+                                                            user.value.username
+                                                                ? `/u/${user.value.username}`
+                                                                : '/profile'
+                                                        }
+                                                        onClick={() => {
+                                                            isProfileMenuOpen.value = false;
+                                                        }}
+                                                        class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                                                    >
+                                                        <MaterialIcon
+                                                            name="person"
+                                                            size={18}
+                                                            class="text-slate-500 dark:text-slate-400"
+                                                        />
+                                                        <span>My Profile</span>
+                                                    </Link>
+
+                                                    {/* 2. Account Settings */}
+                                                    <Link
+                                                        href="/profile"
+                                                        onClick={() => {
+                                                            isProfileMenuOpen.value = false;
+                                                        }}
+                                                        class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                                                    >
+                                                        <MaterialIcon
+                                                            name="settings"
+                                                            size={18}
+                                                            class="text-slate-500 dark:text-slate-400"
+                                                        />
+                                                        <span>
+                                                            Account Settings
+                                                        </span>
+                                                    </Link>
+
+                                                    {/* 3. Dashboard (if admin/staff) */}
+                                                    {canAccessAdmin.value && (
+                                                        <Link
+                                                            href="/admin"
+                                                            onClick={() => {
+                                                                isProfileMenuOpen.value = false;
+                                                            }}
+                                                            class="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                                                        >
+                                                            <MaterialIcon
+                                                                name="dashboard"
+                                                                size={18}
+                                                                class="text-indigo-500 dark:text-indigo-400"
+                                                            />
+                                                            <span>
+                                                                Dashboard
+                                                            </span>
+                                                        </Link>
+                                                    )}
+                                                </div>
+
+                                                <div class="border-t border-slate-100 pt-1 dark:border-slate-800">
+                                                    {/* 4. Sign out */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            isProfileMenuOpen.value = false;
+                                                            showLogoutModal.value = true;
+                                                        }}
+                                                        class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                                                    >
+                                                        <MaterialIcon
+                                                            name="logout"
+                                                            size={18}
+                                                            class="text-rose-500 dark:text-rose-400"
+                                                        />
+                                                        <span>Sign out</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </Transition>
+                                </div>
                             </>
                         ) : !currentUrl.value.startsWith('/login') ? (
                             <Link
