@@ -25,6 +25,8 @@ class GenerateSitemap extends Command
         $staticPages = [
             '/',
             '/ssc',
+            '/tracker',
+            '/peers',
             '/blogs',
             '/forum',
             '/about-us',
