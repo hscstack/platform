@@ -37,12 +37,12 @@ class UpdateSubjectRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:100', 'min:3'],
-            'english_name' => ['nullable', 'string', 'max:100'],
             'tailwind_format' => ['sometimes', 'string', 'max:100'],
             'icon' => ['sometimes', 'string', 'max:50'],
             'sort_order' => ['sometimes', 'integer'],
             'slug' => ['sometimes', 'string', 'max:100', Rule::unique('subjects', 'slug')->ignore($subject->id)],
             'course' => ['sometimes', 'string', 'in:ssc,hsc'],
+            'group' => ['sometimes', 'string', 'in:science,humanities,commerce,common'],
             'is_trackable' => ['sometimes', 'boolean'],
         ];
     }

@@ -399,7 +399,7 @@ class UserProfileController extends Controller
                     ->orderBy('sort_order', 'asc')
                     ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
-            ->get(['id', 'name', 'english_name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
+            ->get(['id', 'name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
 
         $completedNodeIds = NodeCompletion::where('user_id', $user->id)
             ->pluck('node_id')
@@ -451,7 +451,6 @@ class UserProfileController extends Controller
             $subjectBreakdown[] = [
                 'id' => $subj->id,
                 'name' => $subj->name,
-                'english_name' => $subj->english_name,
                 'slug' => $subj->slug,
                 'course' => $subj->course,
                 'tailwind_format' => $subj->tailwind_format,

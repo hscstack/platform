@@ -6,19 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Subject\StoreSubjectRequest;
 use App\Http\Requests\Subject\UpdateSubjectRequest;
 use App\Models\Subject;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SubjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $subjects = Subject::orderBy('course', 'desc')
+        $course = $request->query('course', 'hsc');
+        if (! in_array($course, ['hsc', 'ssc'], true)) {
+            $course = 'hsc';
+        }
+
+        $group = $request->query('group', 'science');
+        if (! in_array($group, ['science', 'humanities', 'commerce'], true)) {
+            $group = 'science';
+        }
+
+        $subjects = Subject::where('course', $course)
+            ->whereIn('group', [$group, 'common'])
             ->orderBy('sort_order', 'asc')
             ->withCount('nodes')
             ->get();
 
         return Inertia::render('admin/Index', [
             'subjects' => $subjects,
+            'current_course' => $course,
+            'current_group' => $group,
         ]);
     }
 

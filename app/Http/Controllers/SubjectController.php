@@ -20,9 +20,16 @@ class SubjectController extends Controller
         if ($request->path() === '/' && $request->cookie('preferred_course') === 'ssc') {
             return redirect('/ssc');
         }
-        $subjects = Cache::rememberForever("home_page_subjects_{$course}", function () use ($course) {
+
+        $group = $request->query('group');
+        if (! in_array($group, ['science', 'humanities', 'commerce'], true)) {
+            $group = 'science';
+        }
+
+        $subjects = Cache::rememberForever("home_page_subjects_{$course}_{$group}", function () use ($course, $group) {
             return Subject::orderBy('sort_order', 'asc')
                 ->where('course', $course)
+                ->whereIn('group', [$group, 'common'])
                 ->withCount([
                     'nodes' => function ($query) {
                         $query->whereNull('parent_id');
@@ -80,6 +87,7 @@ class SubjectController extends Controller
 
         return Inertia::render('Home', [
             'subjects' => $subjects,
+            'current_group' => $group,
             'featured_blogs' => $featuredBlogs,
             'trending_posts' => $trendingPosts,
             'notice' => $notice,

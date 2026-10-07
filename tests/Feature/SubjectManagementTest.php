@@ -7,7 +7,6 @@ test('admin can create a subject', function () {
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Platform Testing',
-        'english_name' => 'Testing Platform Subject',
         'course' => 'hsc',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
@@ -19,7 +18,6 @@ test('admin can create a subject', function () {
 
     $this->assertDatabaseHas('subjects', [
         'name' => 'Platform Testing',
-        'english_name' => 'Testing Platform Subject',
         'course' => 'hsc',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
@@ -32,7 +30,6 @@ test('admin can update a subject', function () {
 
     $subject = Subject::create([
         'name' => 'Platform Testing',
-        'english_name' => 'Testing Platform Subject',
         'slug' => 'platform-testing',
         'course' => 'hsc',
         'tailwind_format' => 'bg-slate-500',
@@ -42,7 +39,6 @@ test('admin can update a subject', function () {
 
     $response = $this->actingAs($admin)->patch("/admin/subjects/edit/{$subject->id}", [
         'name' => 'Platform Testing Updated',
-        'english_name' => 'Testing Platform Updated',
         'course' => 'ssc',
         'tailwind_format' => 'bg-slate-600',
         'icon' => 'book-open',
@@ -55,7 +51,6 @@ test('admin can update a subject', function () {
     $this->assertDatabaseHas('subjects', [
         'id' => $subject->id,
         'name' => 'Platform Testing Updated',
-        'english_name' => 'Testing Platform Updated',
         'course' => 'ssc',
         'sort_order' => 2,
     ]);
@@ -88,7 +83,6 @@ test('admin can create a subject with custom slug', function () {
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Custom Slug Subject',
-        'english_name' => 'Custom Slug Eng',
         'slug' => 'my-special-custom-slug',
         'course' => 'hsc',
         'tailwind_format' => 'bg-slate-500',
@@ -158,7 +152,6 @@ test('admin can create subjects with same name in different courses', function (
 
     Subject::create([
         'name' => 'Physics',
-        'english_name' => 'Physics',
         'slug' => 'hsc-physics',
         'course' => 'hsc',
         'tailwind_format' => 'bg-slate-500',
@@ -168,7 +161,6 @@ test('admin can create subjects with same name in different courses', function (
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Physics',
-        'english_name' => 'Physics',
         'course' => 'ssc',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
