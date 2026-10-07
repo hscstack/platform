@@ -8,6 +8,7 @@ test('admin can create a subject', function () {
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Platform Testing',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -19,6 +20,7 @@ test('admin can create a subject', function () {
     $this->assertDatabaseHas('subjects', [
         'name' => 'Platform Testing',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -32,6 +34,7 @@ test('admin can update a subject', function () {
         'name' => 'Platform Testing',
         'slug' => 'platform-testing',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -40,6 +43,7 @@ test('admin can update a subject', function () {
     $response = $this->actingAs($admin)->patch("/admin/subjects/edit/{$subject->id}", [
         'name' => 'Platform Testing Updated',
         'course' => 'ssc',
+        'group' => 'commerce',
         'tailwind_format' => 'bg-slate-600',
         'icon' => 'book-open',
         'sort_order' => 2,
@@ -52,6 +56,7 @@ test('admin can update a subject', function () {
         'id' => $subject->id,
         'name' => 'Platform Testing Updated',
         'course' => 'ssc',
+        'group' => 'commerce',
         'sort_order' => 2,
     ]);
 });
@@ -63,6 +68,7 @@ test('admin can delete a subject', function () {
         'name' => 'Platform Testing',
         'slug' => 'platform-testing',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -85,6 +91,7 @@ test('admin can create a subject with custom slug', function () {
         'name' => 'Custom Slug Subject',
         'slug' => 'my-special-custom-slug',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -96,6 +103,7 @@ test('admin can create a subject with custom slug', function () {
     $this->assertDatabaseHas('subjects', [
         'name' => 'Custom Slug Subject',
         'slug' => 'my-special-custom-slug',
+        'group' => 'science',
     ]);
 });
 
@@ -106,6 +114,7 @@ test('admin can update a subject with custom slug', function () {
         'name' => 'Existing Subject',
         'slug' => 'existing-subject-slug',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -154,6 +163,7 @@ test('admin can create subjects with same name in different courses', function (
         'name' => 'Physics',
         'slug' => 'hsc-physics',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -162,6 +172,7 @@ test('admin can create subjects with same name in different courses', function (
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Physics',
         'course' => 'ssc',
+        'group' => 'science',
         'tailwind_format' => 'bg-slate-500',
         'icon' => 'book-open',
         'sort_order' => 1,
@@ -174,5 +185,6 @@ test('admin can create subjects with same name in different courses', function (
         'name' => 'Physics',
         'course' => 'ssc',
         'slug' => 'ssc-physics',
+        'group' => 'science',
     ]);
 });

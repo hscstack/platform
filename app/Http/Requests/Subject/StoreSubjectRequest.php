@@ -24,6 +24,7 @@ class StoreSubjectRequest extends FormRequest
 
         $this->merge([
             'slug' => $slug,
+            'group' => $this->filled('group') ? $this->group : 'science',
         ]);
     }
 
@@ -41,7 +42,7 @@ class StoreSubjectRequest extends FormRequest
             'icon' => ['required', 'string', 'max:50'],
             'sort_order' => ['required', 'integer'],
             'course' => ['required', 'string', 'in:ssc,hsc'],
-            'group' => ['required', 'string', 'in:science,humanities,commerce,common'],
+            'group' => ['sometimes', 'string', 'in:science,humanities,commerce,common'],
             'is_trackable' => ['sometimes', 'boolean'],
         ];
     }
