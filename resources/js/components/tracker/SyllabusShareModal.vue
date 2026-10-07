@@ -7,7 +7,6 @@ import BaseModal from '@/components/BaseModal.vue';
 export interface ShareSubject {
     id: number;
     name: string;
-    english_name?: string | null;
     icon?: string;
     tailwind_format?: string;
     completed: number;

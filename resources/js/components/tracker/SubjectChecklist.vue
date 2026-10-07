@@ -26,7 +26,6 @@ export interface TopLevelNode {
 export interface SubjectItem {
     id: number;
     name: string;
-    english_name?: string | null;
     slug: string;
     course: 'hsc' | 'ssc';
     sort_order?: number;
@@ -219,7 +218,6 @@ const shareData = computed(() => {
         subjects: props.subjects.map((s) => ({
             id: s.id,
             name: s.name,
-            english_name: s.english_name,
             completed: getSubjectProgress(s).completed,
             total: getSubjectProgress(s).total,
             percent: getSubjectProgress(s).percent,
@@ -344,13 +342,7 @@ const shareData = computed(() => {
                         <div
                             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-xs font-extrabold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                         >
-                            {{
-                                subject.english_name
-                                    ? subject.english_name
-                                          .charAt(0)
-                                          .toUpperCase()
-                                    : subject.name.charAt(0)
-                            }}
+                            {{ subject.name.charAt(0) }}
                         </div>
                         <div>
                             <h3
@@ -361,9 +353,6 @@ const shareData = computed(() => {
                             <div
                                 class="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400"
                             >
-                                <span v-if="subject.english_name"
-                                    >{{ subject.english_name }} •
-                                </span>
                                 <span
                                     >{{
                                         getSubjectProgress(subject).completed

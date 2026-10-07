@@ -17,9 +17,9 @@ const props = defineProps<{
     subject?: {
         id: number;
         name: string;
-        english_name?: string | null;
         slug: string;
         course: string;
+        group?: string;
         tailwind_format: string;
         icon: string;
         sort_order: number;
@@ -51,9 +51,9 @@ const tailwindPresets = [
 ];
 
 const name = ref('');
-const englishName = ref('');
 const slug = ref('');
 const course = ref('hsc');
+const group = ref('science');
 const tailwindFormat = ref('bg-indigo-50 text-indigo-600');
 const icon = ref('BookOpen');
 const sortOrder = ref(0);
@@ -62,9 +62,9 @@ const isTrackable = ref(false);
 const initForm = () => {
     if (props.subject) {
         name.value = props.subject.name || '';
-        englishName.value = props.subject.english_name || '';
         slug.value = props.subject.slug || '';
         course.value = props.subject.course || 'hsc';
+        group.value = props.subject.group || 'science';
         tailwindFormat.value =
             props.subject.tailwind_format || 'bg-indigo-50 text-indigo-600';
         icon.value = props.subject.icon || 'BookOpen';
@@ -72,9 +72,9 @@ const initForm = () => {
         isTrackable.value = Boolean(props.subject.is_trackable);
     } else {
         name.value = '';
-        englishName.value = '';
         slug.value = '';
         course.value = 'hsc';
+        group.value = 'science';
         tailwindFormat.value = 'bg-indigo-50 text-indigo-600';
         icon.value = 'BookOpen';
         sortOrder.value = 0;
@@ -112,9 +112,9 @@ const submitForm = () => {
 
     const payload = {
         name: name.value,
-        english_name: englishName.value || null,
         slug: slug.value || null,
         course: course.value,
+        group: group.value,
         tailwind_format: tailwindFormat.value,
         icon: icon.value,
         sort_order: sortOrder.value,
@@ -189,8 +189,8 @@ const submitForm = () => {
             <div
                 class="flex-1 space-y-4 overflow-y-auto p-4 text-slate-800 sm:p-6 dark:text-gray-200"
             >
-                <!-- Name & Course Grid -->
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <!-- Name & Course/Group Grid -->
+                <div class="space-y-3">
                     <div class="space-y-1.5">
                         <label
                             for="subject_name"
@@ -210,22 +210,50 @@ const submitForm = () => {
                         />
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label
-                            for="subject_course"
-                            class="block text-xs font-bold text-slate-700 dark:text-gray-300"
-                        >
-                            Course Level
-                            <span class="text-rose-500">*</span>
-                        </label>
-                        <select
-                            id="subject_course"
-                            v-model="course"
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                        >
-                            <option value="hsc">HSC</option>
-                            <option value="ssc">SSC</option>
-                        </select>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div class="space-y-1.5">
+                            <label
+                                for="subject_course"
+                                class="block text-xs font-bold text-slate-700 dark:text-gray-300"
+                            >
+                                Course Level
+                                <span class="text-rose-500">*</span>
+                            </label>
+                            <select
+                                id="subject_course"
+                                v-model="course"
+                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            >
+                                <option value="hsc">HSC</option>
+                                <option value="ssc">SSC</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label
+                                for="subject_group"
+                                class="block text-xs font-bold text-slate-700 dark:text-gray-300"
+                            >
+                                Group (বিভাগ)
+                                <span class="text-rose-500">*</span>
+                            </label>
+                            <select
+                                id="subject_group"
+                                v-model="group"
+                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            >
+                                <option value="science">
+                                    Science (বিজ্ঞান)
+                                </option>
+                                <option value="humanities">
+                                    Humanities (মানবিক)
+                                </option>
+                                <option value="commerce">
+                                    Commerce (ব্যবসায় শিক্ষা)
+                                </option>
+                                <option value="common">Common (আবশ্যিক)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -342,26 +370,6 @@ const submitForm = () => {
                         class="mt-2.5 space-y-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 dark:border-gray-700/80 dark:bg-gray-800/40"
                     >
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <!-- English Name -->
-                            <div class="space-y-1">
-                                <label
-                                    for="subject_english_name"
-                                    class="block text-[11px] font-semibold text-slate-700 dark:text-gray-300"
-                                >
-                                    English Name
-                                    <span class="font-normal text-slate-400"
-                                        >(Search keyword)</span
-                                    >
-                                </label>
-                                <input
-                                    id="subject_english_name"
-                                    v-model="englishName"
-                                    type="text"
-                                    placeholder="e.g. Physics 1st Paper"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
-                                />
-                            </div>
-
                             <!-- Sort Order -->
                             <div class="space-y-1">
                                 <label
@@ -378,26 +386,26 @@ const submitForm = () => {
                                     class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                 />
                             </div>
-                        </div>
 
-                        <!-- Custom Slug -->
-                        <div class="space-y-1">
-                            <label
-                                for="subject_slug"
-                                class="block text-[11px] font-semibold text-slate-700 dark:text-gray-300"
-                            >
-                                Custom URL Slug
-                                <span class="font-normal text-slate-400"
-                                    >(Optional)</span
+                            <!-- Custom Slug -->
+                            <div class="space-y-1">
+                                <label
+                                    for="subject_slug"
+                                    class="block text-[11px] font-semibold text-slate-700 dark:text-gray-300"
                                 >
-                            </label>
-                            <input
-                                id="subject_slug"
-                                v-model="slug"
-                                type="text"
-                                placeholder="Auto-generated if empty"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
-                            />
+                                    Custom URL Slug
+                                    <span class="font-normal text-slate-400"
+                                        >(Optional)</span
+                                    >
+                                </label>
+                                <input
+                                    id="subject_slug"
+                                    v-model="slug"
+                                    type="text"
+                                    placeholder="Auto-generated if empty"
+                                    class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+                                />
+                            </div>
                         </div>
 
                         <!-- Trackable in Study Tracker -->

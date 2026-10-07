@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { Pencil, Trash2 } from 'lucide-vue-next';
-import StatusBadge from '@/components/StatusBadge.vue';
 import SubjectIcon from '@/components/SubjectIcon.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -48,13 +47,6 @@ const handleDelete = () => {
                 >
                     {{ subject.name }}
                 </h3>
-
-                <!-- Course Badge (HSC / SSC) -->
-                <StatusBadge
-                    v-if="subject.course"
-                    :status="subject.course"
-                    size="xs"
-                />
 
                 <span
                     v-if="subject.is_trackable"

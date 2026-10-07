@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import CreateSubjectModal from '@/components/admin/CreateSubjectModal.vue';
 import SubjectCard from '@/components/admin/SubjectCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -9,16 +9,14 @@ import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
 
-const props = defineProps({
-    subjects: {
-        type: Array as () => any[],
-        default: () => [],
-    },
-});
+defineProps<{
+    subjects?: any[];
+    current_course?: string | null;
+    current_group?: string | null;
+}>();
 
 const isCreateModalOpen = ref(false);
 const editingSubject = ref<any | null>(null);
-const activeCourse = ref<'all' | 'hsc' | 'ssc'>('all');
 
 const openCreateModal = () => {
     editingSubject.value = null;
@@ -35,15 +33,9 @@ const handleModalClose = () => {
     editingSubject.value = null;
 };
 
-const filteredSubjects = computed(() => {
-    if (activeCourse.value === 'all') {
-        return props.subjects;
-    }
-
-    return props.subjects.filter(
-        (s) => s.course?.toLowerCase() === activeCourse.value.toLowerCase(),
-    );
-});
+const getFilterUrl = (course: string, group: string) => {
+    return `/admin/subjects?course=${course}&group=${group}`;
+};
 </script>
 
 <template>
@@ -81,61 +73,69 @@ const filteredSubjects = computed(() => {
             @close="handleModalClose"
         />
 
-        <!-- Filter Pills (All / HSC / SSC) -->
-        <div class="mb-4 flex items-center gap-1.5">
-            <button
-                type="button"
-                @click="activeCourse = 'all'"
-                :class="[
-                    activeCourse === 'all'
-                        ? 'bg-slate-900 text-white dark:bg-gray-100 dark:text-gray-900'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-                    'rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors',
-                ]"
-            >
-                All ({{ subjects.length }})
-            </button>
+        <!-- Filter Pills Bar (Server Query Driven, Defaults to HSC & Science) -->
+        <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <!-- Curriculum Filter Pills -->
+            <div class="flex flex-wrap items-center gap-1.5">
+                <span
+                    class="text-xs font-semibold text-slate-500 dark:text-gray-400"
+                >
+                    কারিকুলাম:
+                </span>
+                <Link
+                    v-for="c in [
+                        { key: 'hsc', label: 'HSC' },
+                        { key: 'ssc', label: 'SSC' },
+                    ]"
+                    :key="c.key"
+                    :href="getFilterUrl(c.key, current_group || 'science')"
+                    preserve-scroll
+                    class="inline-flex cursor-pointer items-center rounded-xl px-3 py-1 text-xs transition select-none"
+                    :class="[
+                        (current_course || 'hsc') === c.key
+                            ? 'bg-indigo-600 font-bold text-white shadow-2xs'
+                            : 'border border-slate-200/80 bg-white font-medium text-slate-600 hover:bg-slate-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                >
+                    <span>{{ c.label }}</span>
+                </Link>
+            </div>
 
-            <button
-                type="button"
-                @click="activeCourse = 'hsc'"
-                :class="[
-                    activeCourse === 'hsc'
-                        ? 'bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-                    'rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors',
-                ]"
-            >
-                HSC ({{
-                    subjects.filter((s) => s.course?.toLowerCase() === 'hsc')
-                        .length
-                }})
-            </button>
-
-            <button
-                type="button"
-                @click="activeCourse = 'ssc'"
-                :class="[
-                    activeCourse === 'ssc'
-                        ? 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-                    'rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors',
-                ]"
-            >
-                SSC ({{
-                    subjects.filter((s) => s.course?.toLowerCase() === 'ssc')
-                        .length
-                }})
-            </button>
+            <!-- Group Filter Pills -->
+            <div class="flex flex-wrap items-center gap-1.5">
+                <span
+                    class="text-xs font-semibold text-slate-500 dark:text-gray-400"
+                >
+                    বিভাগ:
+                </span>
+                <Link
+                    v-for="g in [
+                        { key: 'science', label: 'বিজ্ঞান' },
+                        { key: 'humanities', label: 'মানবিক' },
+                        { key: 'commerce', label: 'ব্যবসায় শিক্ষা' },
+                    ]"
+                    :key="g.key"
+                    :href="getFilterUrl(current_course || 'hsc', g.key)"
+                    preserve-scroll
+                    class="inline-flex cursor-pointer items-center rounded-xl px-3 py-1 text-xs transition select-none"
+                    :class="[
+                        (current_group || 'science') === g.key
+                            ? 'bg-indigo-600 font-bold text-white shadow-2xs'
+                            : 'border border-slate-200/80 bg-white font-medium text-slate-600 hover:bg-slate-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                >
+                    <span>{{ g.label }}</span>
+                </Link>
+            </div>
         </div>
 
         <div class="flex flex-1 flex-col">
             <div
-                v-if="filteredSubjects.length > 0"
+                v-if="subjects && subjects.length > 0"
                 class="flex flex-col gap-2.5 sm:gap-3"
             >
                 <SubjectCard
-                    v-for="subject in filteredSubjects"
+                    v-for="subject in subjects"
                     :key="subject.id || subject.name"
                     :admin="true"
                     :subject="subject"
