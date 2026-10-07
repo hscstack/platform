@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('subjects', function (Blueprint $table) {
-            $table->string('group', 32)->default('science')->after('course');
+            $table->enum('group', ['science', 'humanities', 'commerce', 'common'])->default('science')->after('course');
             $table->index(['course', 'group']);
         });
     }
