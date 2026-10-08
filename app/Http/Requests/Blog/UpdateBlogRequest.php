@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Blog;
 
-use App\Models\Blog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -11,9 +10,7 @@ class UpdateBlogRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $blog = $this->route('blog');
-
-        return $blog instanceof Blog ? (bool) $this->user()?->can('update', $blog) : true;
+        return true;
     }
 
     protected function prepareForValidation(): void
