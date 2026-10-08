@@ -28,7 +28,7 @@ class BlogController extends Controller
 
     public function edit(Blog $blog)
     {
-        
+
         return Inertia::render('admin/BlogCreateOrEdit', [
             'blog' => $blog,
         ]);
