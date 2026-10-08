@@ -70,8 +70,9 @@ Route::middleware('permission:create resources')->group(function () {
     Route::post('/resources/bulk/videos', [AdminResourceController::class, 'storeBulkVideos']);
 });
 
+Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update'])->middleware('can:update,resource');
+
 Route::middleware('permission:edit resources')->group(function () {
-    Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update']);
     Route::post('/nodes/{node}/resources/bulk-rename', [AdminResourceController::class, 'bulkRename'])->name('resources.bulk-rename');
 });
 
