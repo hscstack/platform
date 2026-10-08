@@ -9,9 +9,10 @@ import {
     Pencil,
     Trash2,
 } from 'lucide-vue-next';
-import { usePermissions } from '@/lib/usePermissions';
+import { computed } from 'vue';
+import { useAuth } from '@/lib/useAuth';
 
-const { can } = usePermissions();
+const { userId, can } = useAuth();
 
 const props = defineProps({
     resource: Object,
@@ -21,6 +22,18 @@ const props = defineProps({
 const emit = defineEmits<{
     (e: 'edit', resource: any): void;
 }>();
+
+const canEdit = computed(() => {
+    return (
+        !props.isFrozen &&
+        (can('edit resources') ||
+            (userId.value !== null && userId.value === props.resource?.user_id))
+    );
+});
+
+const canDelete = computed(() => {
+    return !props.isFrozen && can('delete resources');
+});
 
 const handleDelete = () => {
     if (confirm('Are you sure you want to delete this Resource?')) {
@@ -76,14 +89,12 @@ const handleDelete = () => {
 
         <!-- Right: Actions -->
         <div
-            v-if="
-                !isFrozen && (can('edit resources') || can('delete resources'))
-            "
+            v-if="canEdit || canDelete"
             class="flex shrink-0 items-center gap-1"
             @click.stop
         >
             <button
-                v-if="can('edit resources')"
+                v-if="canEdit"
                 type="button"
                 @click="emit('edit', resource)"
                 class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-amber-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-amber-400"
@@ -93,7 +104,7 @@ const handleDelete = () => {
             </button>
 
             <button
-                v-if="can('delete resources')"
+                v-if="canDelete"
                 type="button"
                 @click="handleDelete"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"

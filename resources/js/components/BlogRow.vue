@@ -1,16 +1,28 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { Pencil, Trash2, Eye, BookOpen } from 'lucide-vue-next';
+import { computed } from 'vue';
 import StatusBadge from '@/components/StatusBadge.vue';
-import { usePermissions } from '@/lib/usePermissions';
+import { useAuth } from '@/lib/useAuth';
 
-const { can } = usePermissions();
+const { userId, can } = useAuth();
 
 const props = defineProps({
     blog: {
         type: Object,
         required: true,
     },
+});
+
+const canEdit = computed(() => {
+    return (
+        can('edit blogs') ||
+        (userId.value !== null && userId.value === props.blog.user_id)
+    );
+});
+
+const canDelete = computed(() => {
+    return can('delete blogs');
 });
 
 const deleteBlog = () => {
@@ -76,12 +88,12 @@ const deleteBlog = () => {
 
         <!-- Right: Actions -->
         <div
-            v-if="can('edit blogs') || can('delete blogs')"
+            v-if="canEdit || canDelete"
             class="flex shrink-0 items-center gap-1"
             @click.stop
         >
             <Link
-                v-if="can('edit blogs')"
+                v-if="canEdit"
                 :href="`/admin/blogs/edit/${blog.slug}`"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                 title="Edit blog"
@@ -90,7 +102,7 @@ const deleteBlog = () => {
             </Link>
 
             <button
-                v-if="can('delete blogs')"
+                v-if="canDelete"
                 @click="deleteBlog"
                 type="button"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
