@@ -40,7 +40,7 @@ Route::middleware('permission:create blogs')->group(function () {
     Route::post('/blogs', [AdminBlogController::class, 'store'])->name('blogs.store');
 });
 
-Route::middleware('permission:edit blogs')->group(function () {
+Route::middleware('can:update,blog')->group(function () {
     Route::get('/blogs/edit/{blog}', [AdminBlogController::class, 'edit'])->name('blogs.edit');
     Route::post('/blogs/edit/{blog}/patch', [AdminBlogController::class, 'update'])->name('blogs.update');
 });

@@ -7,6 +7,7 @@ use App\Http\Requests\Blog\StoreBlogRequest;
 use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Blog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -28,6 +29,7 @@ class BlogController extends Controller
 
     public function edit(Blog $blog)
     {
+        Gate::authorize('update', $blog);
 
         return Inertia::render('admin/BlogCreateOrEdit', [
             'blog' => $blog,
@@ -54,6 +56,8 @@ class BlogController extends Controller
 
     public function update(UpdateBlogRequest $request, Blog $blog)
     {
+        Gate::authorize('update', $blog);
+
         $data = $request->validated();
 
         if ($request->hasFile('featured_image')) {
@@ -80,6 +84,8 @@ class BlogController extends Controller
 
     public function destroy(Blog $blog)
     {
+        Gate::authorize('delete', $blog);
+
         if ($blog->featured_image_path) {
 
             Storage::delete($blog->featured_image_path);
