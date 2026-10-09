@@ -20,15 +20,15 @@ class ResourceController extends Controller
     public function store(StoreResourceRequest $request)
     {
         $validated = $request->validated();
-        $filePath = $request->hasFile('file')
-            ? $request->file('file')->store("resources/{$validated['resource_type']}s")
-            : null;
+
+        if ($request->hasFile('file')) {
+            $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
+        }
 
         ResourceChangeRequest::recordCreate(
             Auth::id(),
             (int) $validated['node_id'],
-            $validated,
-            $filePath
+            $validated
         );
 
         return back()->with('success', 'Resource submitted for moderation.');
@@ -41,15 +41,15 @@ class ResourceController extends Controller
         }
 
         $validated = $request->validated();
-        $filePath = $request->hasFile('file')
-            ? $request->file('file')->store("resources/{$validated['resource_type']}s")
-            : null;
+
+        if ($request->hasFile('file')) {
+            $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
+        }
 
         ResourceChangeRequest::recordUpdate(
             Auth::id(),
             $resource,
-            $validated,
-            $filePath
+            $validated
         );
 
         return back()->with('success', 'Resource update submitted for moderation.');
@@ -74,12 +74,11 @@ class ResourceController extends Controller
 
         DB::transaction(function () use ($request, $validated, $userId, $nodeId) {
             foreach ($request->file('files') as $index => $file) {
-                $filePath = $file->store('resources/images');
-
                 ResourceChangeRequest::recordCreate($userId, $nodeId, [
                     'title' => $validated['custom_titles'][$index],
                     'resource_type' => 'image',
-                ], $filePath);
+                    'file_path' => $file->store('resources/images'),
+                ]);
             }
         });
 

@@ -68,7 +68,7 @@ class ResourceChangeRequest extends Model
     /**
      * Sanitize and whitelist only valid resource attributes.
      */
-    public static function sanitizePayload(array $data, ?string $filePath = null): array
+    public static function sanitizePayload(array $data): array
     {
         return [
             'node_id' => $data['node_id'] ?? null,
@@ -76,24 +76,28 @@ class ResourceChangeRequest extends Model
             'title' => $data['title'] ?? null,
             'content' => $data['content'] ?? null,
             'external_url' => $data['external_url'] ?? null,
-            'file_path' => $filePath ?? ($data['file_path'] ?? null),
+            'file_path' => $data['file_path'] ?? null,
         ];
     }
 
-    public static function recordCreate(int $userId, int $nodeId, array $data, ?string $filePath = null): self
+    public static function recordCreate(int $userId, int $nodeId, array $data): self
     {
         return self::create([
             'user_id' => $userId,
             'node_id' => $nodeId,
             'action_type' => 'create',
             'status' => 'pending',
-            'payload' => self::sanitizePayload($data, $filePath),
+            'payload' => self::sanitizePayload($data),
         ]);
     }
 
-    public static function recordUpdate(int $userId, Resource $resource, array $data, ?string $filePath = null): self
+    public static function recordUpdate(int $userId, Resource $resource, array $data): self
     {
-        $payload = self::sanitizePayload($data, $filePath ?? $resource->file_path);
+        if (! isset($data['file_path']) && $resource->file_path) {
+            $data['file_path'] = $resource->file_path;
+        }
+
+        $payload = self::sanitizePayload($data);
 
         return self::create([
             'user_id' => $userId,
