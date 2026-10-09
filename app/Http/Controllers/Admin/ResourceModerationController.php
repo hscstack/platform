@@ -117,21 +117,15 @@ class ResourceModerationController extends Controller
         return back()->with('success', $message);
     }
 
-    public function reject(Request $request, ?ResourceChangeRequest $changeRequest = null)
+    public function reject(Request $request)
     {
         $validated = $request->validate([
-            'ids' => ['nullable', 'array', 'min:1'],
+            'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer', 'exists:resource_change_requests,id'],
             'rejection_reason' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $ids = $validated['ids'] ?? ($changeRequest ? [$changeRequest->id] : []);
-
-        if (empty($ids)) {
-            return back()->with('error', 'No change requests selected.');
-        }
-
-        $changeRequests = ResourceChangeRequest::whereIn('id', $ids)
+        $changeRequests = ResourceChangeRequest::whereIn('id', $validated['ids'])
             ->where('status', 'pending')
             ->with('resource')
             ->get();

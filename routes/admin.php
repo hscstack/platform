@@ -84,7 +84,6 @@ Route::middleware('permission:moderate resources')->group(function () {
     Route::get('/moderation/resources', [ResourceModerationController::class, 'index'])->name('moderation.resources.index');
     Route::post('/moderation/resources/approve', [ResourceModerationController::class, 'approve'])->name('moderation.resources.approve');
     Route::post('/moderation/resources/reject', [ResourceModerationController::class, 'reject'])->name('moderation.resources.reject');
-    Route::post('/moderation/resources/{changeRequest}/reject', [ResourceModerationController::class, 'reject'])->name('moderation.resources.reject.single');
 });
 
 // Notice
