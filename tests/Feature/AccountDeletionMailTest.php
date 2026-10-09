@@ -22,7 +22,7 @@ test('account deleted mailable renders expected subject, content and legal links
         ->toContain('Privacy Policy')
         ->toContain('Terms &amp; Conditions')
         ->toContain('/privacy-policy')
-        ->toContain('/terms-conditions')
+        ->toContain('/terms-service')
         ->toContain('Resource Archive')
         ->toContain('Forum')
         ->toContain('Global Chat')
@@ -53,10 +53,4 @@ test('admin deleting a user queues account deleted mail and deletes user', funct
         return $mail->hasTo($userToDelete->email)
             && $mail->recipientName === 'Karim Hasan';
     });
-});
-
-test('terms-conditions route redirects permanently to terms-service', function () {
-    $this->get('/terms-conditions')
-        ->assertRedirect('/terms-service')
-        ->assertStatus(301);
 });

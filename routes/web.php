@@ -93,7 +93,6 @@ Route::get('/local/oauth2callback', function (Request $request) {
 Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
     Route::inertia('/terms-service', 'legal/TermsConditions');
-    Route::permanentRedirect('/terms-conditions', '/terms-service');
     Route::inertia('/content-policy', 'legal/ContentPolicy');
     Route::inertia('/donate', 'Donate')->name('donate');
     Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');

@@ -31,7 +31,7 @@ class AccountDeletedMail extends Mailable implements ShouldQueue
             with: [
                 'recipientName' => $this->recipientName,
                 'privacyPolicyUrl' => url('/privacy-policy'),
-                'termsConditionsUrl' => url('/terms-conditions'),
+                'termsConditionsUrl' => url('/terms-service'),
                 'appUrl' => config('app.url', url('/')),
             ],
         );
