@@ -58,7 +58,7 @@ class NodeController extends Controller
             'subject' => $subject,
             'nodes' => $node->children,
             'resources' => $node->resources()->with([
-                'pendingChangeRequest' => fn ($q) => $q->select('id', 'resource_id', 'action_type', 'status'),
+                'pendingChangeRequest' => fn ($q) => $q->with('user:id,name,username'),
             ])->get(),
             'pending_creates' => $pendingCreates,
             'parent' => $node->append('is_effectively_frozen'),

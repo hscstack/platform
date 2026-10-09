@@ -527,7 +527,15 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         <span
                             class="font-medium text-amber-900/80 dark:text-amber-300"
                         >
-                            Action: Create Resource
+                            Action:
+                            {{
+                                viewingPendingModal.action_type === 'update'
+                                    ? 'Edit Resource'
+                                    : viewingPendingModal.action_type ===
+                                        'delete'
+                                      ? 'Delete Resource'
+                                      : 'Create Resource'
+                            }}
                         </span>
                     </div>
 
@@ -570,6 +578,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                             >
                                 {{
                                     viewingPendingModal.payload?.title ||
+                                    viewingPendingModal.targetResource?.title ||
                                     '(Untitled)'
                                 }}
                             </h2>
@@ -579,6 +588,8 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         >
                             {{
                                 viewingPendingModal.payload?.resource_type ||
+                                viewingPendingModal.targetResource
+                                    ?.resource_type ||
                                 'Resource'
                             }}
                         </span>
@@ -818,6 +829,12 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         :resource="resource"
                         :is-frozen="isFrozen"
                         @edit="openEditResourceModal"
+                        @view-pending="
+                            (pending, res) =>
+                                (viewingPendingModal = pending
+                                    ? { ...pending, targetResource: res }
+                                    : null)
+                        "
                     />
                 </div>
             </template>
