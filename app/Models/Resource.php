@@ -18,6 +18,14 @@ class Resource extends Model
         'file_path',
         'external_url',
         'user_id',
+        'status',
+        'reviewed_by',
+        'reviewed_at',
+        'rejection_reason',
+    ];
+
+    protected $casts = [
+        'reviewed_at' => 'datetime',
     ];
 
     protected $appends = [
@@ -31,6 +39,16 @@ class Resource extends Model
                 abort(403, 'Cannot delete resources from a frozen folder.');
             }
         });
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
     }
 
     public function getFileUrlAttribute(): ?string
@@ -55,6 +73,11 @@ class Resource extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function completions()

@@ -10,7 +10,7 @@ class ResourceObserver
 {
     public function creating(Resource $resource): void
     {
-        if ($resource->node_id && $resource->user_id) {
+        if ($resource->node_id && $resource->user_id && $resource->status === 'approved') {
             $otherResourcesCount = Resource::where('node_id', $resource->node_id)->count();
 
             if ($otherResourcesCount === 0) {

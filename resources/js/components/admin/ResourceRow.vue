@@ -84,6 +84,20 @@ const handleDelete = () => {
                 >
                     {{ resource?.resource_type }}
                 </span>
+
+                <!-- Moderation Status Badges -->
+                <span
+                    v-if="resource?.status === 'pending'"
+                    class="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-600/20 ring-inset dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30"
+                >
+                    Pending Review
+                </span>
+                <span
+                    v-else-if="resource?.status === 'rejected'"
+                    class="inline-flex items-center rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 ring-1 ring-red-600/20 ring-inset dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/30"
+                >
+                    Rejected
+                </span>
             </div>
         </div>
 

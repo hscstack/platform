@@ -78,6 +78,12 @@ Route::middleware('permission:edit resources')->group(function () {
 
 Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy'])->middleware('permission:delete resources');
 
+Route::middleware('permission:approve resources')->group(function () {
+    Route::get('/resources/pending', [AdminResourceController::class, 'pending'])->name('resources.pending');
+    Route::post('/resources/approve', [AdminResourceController::class, 'approve'])->name('resources.approve');
+    Route::post('/resources/{resource}/reject', [AdminResourceController::class, 'reject'])->name('resources.reject');
+});
+
 // Notice
 Route::middleware('permission:edit notice')->group(function () {
     Route::get('/notice', [AdminNoticeController::class, 'edit'])->name('notice.edit');

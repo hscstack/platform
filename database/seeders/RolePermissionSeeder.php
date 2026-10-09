@@ -49,6 +49,7 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('create resources');
         Permission::findOrCreate('edit resources');
         Permission::findOrCreate('delete resources');
+        Permission::findOrCreate('approve resources');
 
         /*
          * Blog management

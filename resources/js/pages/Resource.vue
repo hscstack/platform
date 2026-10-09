@@ -10,6 +10,7 @@ import {
     Image as ImageIcon,
     ExternalLink,
     CheckCircle2,
+    Clock,
 } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -67,7 +68,7 @@ const backUrl = computed(() => {
     return path ? `/${subjectSlug}/${path}` : `/${subjectSlug}`;
 });
 
-const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
+const { user, can, requireAuth, showAuthModal, authModalMessage } = useAuth();
 const showCompletersModal = ref(false);
 
 const { isMobile, isHydrated: breakpointReady } = useBreakpoint(1024);
@@ -222,6 +223,61 @@ const toggleFullscreen = () => {
     <div
         class="mx-auto flex max-w-5xl flex-col justify-start px-3 pt-3 pb-24 sm:px-6"
     >
+        <!-- Under Review / Moderation Notice Banner -->
+        <div
+            v-if="resource?.status && resource?.status !== 'approved'"
+            class="mb-3.5 flex items-center justify-between gap-3 rounded-2xl border border-amber-200/90 bg-amber-50/90 p-3 text-amber-900 shadow-xs sm:p-3.5 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-200"
+        >
+            <div class="flex items-center gap-3">
+                <div
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                >
+                    <Clock class="h-4.5 w-4.5" />
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="text-xs font-bold tracking-wider text-amber-700 uppercase dark:text-amber-400"
+                        >
+                            {{
+                                resource.status === 'rejected'
+                                    ? 'Submission Rejected'
+                                    : 'Under Review'
+                            }}
+                        </span>
+                        <span
+                            class="rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-800/40 dark:text-amber-300"
+                        >
+                            Pending Approval
+                        </span>
+                    </div>
+                    <p
+                        class="text-amber-850 mt-0.5 text-xs dark:text-amber-300/80"
+                    >
+                        <template v-if="resource.status === 'rejected'">
+                            This resource was rejected by a moderator{{
+                                resource.rejection_reason
+                                    ? `: "${resource.rejection_reason}"`
+                                    : '.'
+                            }}
+                        </template>
+                        <template v-else>
+                            This content is currently under review and is only
+                            visible to you and site moderators.
+                        </template>
+                    </p>
+                </div>
+            </div>
+
+            <Link
+                v-if="can('approve resources')"
+                href="/admin/resources/pending"
+                class="hidden shrink-0 rounded-xl bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-amber-500 sm:inline-block"
+            >
+                Review Queue
+            </Link>
+        </div>
+
         <!-- Flat, Minimal Media Header -->
         <div class="mb-3 flex items-center justify-between gap-3">
             <!-- Left: Back Button + Title -->

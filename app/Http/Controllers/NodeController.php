@@ -34,14 +34,19 @@ class NodeController extends Controller
 
         $nodes = Cache::remember("node_children_{$node->id}", now()->addDay(), function () use ($node) {
             return Node::where('parent_id', $node->id)
-                ->withCount(['children', 'resources', 'upvotes', 'downvotes'])
+                ->withCount([
+                    'children',
+                    'resources' => fn ($query) => $query->where('status', 'approved'),
+                    'upvotes',
+                    'downvotes',
+                ])
                 ->orderByRaw('(upvotes_count - downvotes_count) DESC')
                 ->orderBy('sort_order')
                 ->get(['id', 'name', 'slug'])->toArray();
         });
 
         $resources = Cache::remember("node_resources_{$node->id}", now()->addDay(), function () use ($node) {
-            return $node->resources()->get()->toArray();
+            return $node->resources()->where('status', 'approved')->get()->toArray();
         });
 
         $upvotesCount = $node->upvotes()->count();

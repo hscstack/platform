@@ -12,15 +12,24 @@ class ResourceController extends Controller
 {
     public function show($id)
     {
-        $data = Cache::rememberForever("resource_{$id}", function () use ($id) {
-            $resource = Resource::with(['user', 'node.subject'])->findOrFail($id);
+        $resource = Resource::with(['user', 'node.subject'])->findOrFail($id);
 
+        if ($resource->status !== 'approved') {
+            $user = auth()->user();
+            if (! $user || ($user->id !== $resource->user_id && ! $user->can('approve resources'))) {
+                abort(404);
+            }
+        }
+
+        $loadData = function () use ($resource) {
             $previousResourceId = Resource::where('node_id', $resource->node_id)
+                ->where('status', 'approved')
                 ->where('id', '<', $resource->id)
                 ->orderByDesc('id')
                 ->value('id');
 
             $nextResourceId = Resource::where('node_id', $resource->node_id)
+                ->where('status', 'approved')
                 ->where('id', '>', $resource->id)
                 ->orderBy('id')
                 ->value('id');
@@ -31,7 +40,11 @@ class ResourceController extends Controller
                 'previousResourceId' => $previousResourceId,
                 'nextResourceId' => $nextResourceId,
             ];
-        });
+        };
+
+        $data = $resource->status === 'approved'
+            ? Cache::rememberForever("resource_{$id}", $loadData)
+            : $loadData();
 
         $isCompleted = auth()->check()
             ? ResourceCompletion::where('resource_id', $id)->where('user_id', auth()->id())->exists()
