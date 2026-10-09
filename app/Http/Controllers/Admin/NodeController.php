@@ -47,7 +47,9 @@ class NodeController extends Controller
         return Inertia::render('admin/Node', [
             'subject' => $subject,
             'nodes' => $node->children,
-            'resources' => $node->resources ?? [],
+            'resources' => $node ? $node->resources()->with([
+                'pendingChangeRequest' => fn ($q) => $q->select('id', 'resource_id', 'action_type', 'status'),
+            ])->get() : [],
             'parent' => $node ? $node->append('is_effectively_frozen') : null,
         ]);
     }

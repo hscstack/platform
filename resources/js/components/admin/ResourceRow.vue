@@ -23,9 +23,18 @@ const emit = defineEmits<{
     (e: 'edit', resource: any): void;
 }>();
 
+const hasPendingChange = computed(() => {
+    return Boolean(props.resource?.pending_change_request);
+});
+
+const pendingAction = computed(() => {
+    return props.resource?.pending_change_request?.action_type;
+});
+
 const canEdit = computed(() => {
     return (
         !props.isFrozen &&
+        !hasPendingChange.value &&
         (can('edit resources') ||
             (userId.value !== null && userId.value === props.resource?.user_id))
     );
@@ -34,13 +43,16 @@ const canEdit = computed(() => {
 const canDelete = computed(() => {
     return (
         !props.isFrozen &&
+        !hasPendingChange.value &&
         (can('delete resources') ||
             (userId.value !== null && userId.value === props.resource?.user_id))
     );
 });
 
 const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this Resource?')) {
+    if (
+        confirm('Are you sure you want to request deletion of this Resource?')
+    ) {
         router.delete(`/admin/resources/${props.resource?.id}`);
     }
 };
@@ -87,6 +99,20 @@ const handleDelete = () => {
                     class="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 uppercase ring-1 ring-amber-600/20 ring-inset dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30"
                 >
                     {{ resource?.resource_type }}
+                </span>
+
+                <!-- Pending Moderation Badge -->
+                <span
+                    v-if="hasPendingChange && pendingAction === 'update'"
+                    class="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
+                >
+                    Edit Pending
+                </span>
+                <span
+                    v-else-if="hasPendingChange && pendingAction === 'delete'"
+                    class="inline-flex items-center rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
+                >
+                    Deletion Pending
                 </span>
             </div>
         </div>
