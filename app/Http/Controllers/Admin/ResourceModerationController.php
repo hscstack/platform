@@ -61,7 +61,11 @@ class ResourceModerationController extends Controller
 
         DB::transaction(function () use ($changeRequest) {
             if ($changeRequest->action_type === 'create') {
-                $resource = Resource::create($changeRequest->payload);
+                $payload = $changeRequest->payload ?? [];
+                $payload['node_id'] = $changeRequest->node_id;
+                $payload['user_id'] = $changeRequest->user_id;
+
+                $resource = Resource::create($payload);
                 $changeRequest->resource_id = $resource->id;
             } elseif ($changeRequest->action_type === 'update') {
                 $resource = $changeRequest->resource;

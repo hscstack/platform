@@ -82,6 +82,8 @@ class ResourceChangeRequest extends Model
 
     public static function recordCreate(int $userId, int $nodeId, array $data): self
     {
+        $data['node_id'] = $nodeId;
+
         return self::create([
             'user_id' => $userId,
             'node_id' => $nodeId,
