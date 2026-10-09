@@ -5,12 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
-use App\Mail\AccountDeletedMail;
 use App\Models\User;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
@@ -159,10 +157,6 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if (! empty($user->email)) {
-            Mail::to($user->email)->queue(new AccountDeletedMail($user->name));
-        }
-
         $user->delete();
 
         return redirect()
