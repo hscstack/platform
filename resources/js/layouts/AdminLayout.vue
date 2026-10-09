@@ -43,6 +43,12 @@ watch(adminCollapsed, (v) => {
 
 const allNavigation: AdminNavItem[] = [
     { name: 'Dashboard', to: '/admin', icon: 'dashboard' },
+    {
+        name: 'Resource Moderation',
+        to: '/admin/moderation/resources',
+        icon: 'fact_check',
+        permission: 'moderate resources',
+    },
     { name: 'Manage Contents', to: '/admin/subjects', icon: 'menu_book' },
     { name: 'Manage Blogs', to: '/admin/blogs', icon: 'book' },
     {

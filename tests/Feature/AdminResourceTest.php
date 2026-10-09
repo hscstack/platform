@@ -258,3 +258,79 @@ test('resource author can submit an update for moderation while live resource is
         ->and($change->status)->toBe('pending')
         ->and($change->payload['title'])->toBe('New Proposed Title');
 });
+
+test('moderator can approve a create request to bring resource live', function () {
+    Permission::findOrCreate('moderate resources', 'web');
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $subject = Subject::create([
+        'name' => 'Math',
+        'slug' => 'math',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'calculator',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Algebra',
+        'slug' => 'algebra',
+    ]);
+
+    $changeRequest = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
+        'title' => 'Equations Note',
+        'resource_type' => 'note',
+        'content' => 'Algebra notes content',
+    ]);
+
+    expect(Resource::where('title', 'Equations Note')->exists())->toBeFalse();
+
+    $this->actingAs($moderator)
+        ->post("/admin/moderation/resources/{$changeRequest->id}/approve")
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($changeRequest->fresh()->status)->toBe('approved')
+        ->and($changeRequest->fresh()->reviewed_by)->toBe($moderator->id)
+        ->and(Resource::where('title', 'Equations Note')->exists())->toBeTrue();
+});
+
+test('moderator can reject a request with feedback reason', function () {
+    Permission::findOrCreate('moderate resources', 'web');
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Optics',
+        'slug' => 'optics',
+    ]);
+
+    $changeRequest = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
+        'title' => 'Bad Video Link',
+        'resource_type' => 'video',
+        'external_url' => 'https://youtube.com/watch?v=brokenlink11',
+    ]);
+
+    $this->actingAs($moderator)
+        ->post("/admin/moderation/resources/{$changeRequest->id}/reject", [
+            'rejection_reason' => 'The video URL is not valid.',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($changeRequest->fresh()->status)->toBe('rejected')
+        ->and($changeRequest->fresh()->rejection_reason)->toBe('The video URL is not valid.')
+        ->and(Resource::where('title', 'Bad Video Link')->exists())->toBeFalse();
+});

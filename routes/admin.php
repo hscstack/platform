@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\PeerSettingsController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
+use App\Http\Controllers\Admin\ResourceModerationController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -77,6 +78,13 @@ Route::middleware('permission:edit resources')->group(function () {
 });
 
 Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy'])->middleware('can:delete,resource');
+
+// Resource Moderation
+Route::middleware('permission:moderate resources')->group(function () {
+    Route::get('/moderation/resources', [ResourceModerationController::class, 'index'])->name('moderation.resources.index');
+    Route::post('/moderation/resources/{changeRequest}/approve', [ResourceModerationController::class, 'approve'])->name('moderation.resources.approve');
+    Route::post('/moderation/resources/{changeRequest}/reject', [ResourceModerationController::class, 'reject'])->name('moderation.resources.reject');
+});
 
 // Notice
 Route::middleware('permission:edit notice')->group(function () {
