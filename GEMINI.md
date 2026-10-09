@@ -1,8 +1,9 @@
 # Project Guidelines & Automated Checks
 
-## Formatting and Linting
+## Formatting, Linting & Builds
 - **Strict Trigger**: Do NOT run formatting, linting, or fix commands (`npm run format`, `composer lint`, `npm run lint`) during intermediate edits or regular conversational turns.
-- Only run the automated check commands when:
+- **Build Command**: Do NOT run `npm run build` during intermediate edits or conversational turns unless explicitly instructed by the user or strictly necessary for final pre-push verification.
+- Only run automated check commands when:
   1. The user explicitly instructs to `"push"` or `"commit"`.
   2. The user explicitly asks to check or fix formatting/linting issues.
 

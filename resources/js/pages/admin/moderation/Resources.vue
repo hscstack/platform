@@ -124,8 +124,8 @@ watch(
     () => props.requests,
     (newReqs) => {
         if (!newReqs) {
-return;
-}
+            return;
+        }
 
         if (loadedRequests.value.length === 0) {
             loadedRequests.value = [...(newReqs.data || [])];
@@ -833,9 +833,7 @@ const handleReject = () => {
                                         "
                                         class="py-0.2 rounded bg-amber-100/80 px-1.5 text-[10px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
                                     >
-                                        {{
-                                            getChangedFields(req).length
-                                        }}
+                                        {{ getChangedFields(req).length }}
                                         changed
                                     </span>
 
