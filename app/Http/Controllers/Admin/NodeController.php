@@ -25,7 +25,7 @@ class NodeController extends Controller
                 'subject' => $subject,
                 'nodes' => $nodes,
                 'resources' => [],
-
+                'breadcrumb' => [],
             ]);
         }
 
@@ -42,15 +42,19 @@ class NodeController extends Controller
 
         foreach (array_slice($slugs, 1) as $slug) {
             $node = $node->children()->where('slug', $slug)->first();
+            if (! $node) {
+                abort(404);
+            }
         }
 
         return Inertia::render('admin/Node', [
             'subject' => $subject,
             'nodes' => $node->children,
-            'resources' => $node ? $node->resources()->with([
+            'resources' => $node->resources()->with([
                 'pendingChangeRequest' => fn ($q) => $q->select('id', 'resource_id', 'action_type', 'status'),
-            ])->get() : [],
-            'parent' => $node ? $node->append('is_effectively_frozen') : null,
+            ])->get(),
+            'parent' => $node->append('is_effectively_frozen'),
+            'breadcrumb' => $node->breadcrumb(),
         ]);
     }
 

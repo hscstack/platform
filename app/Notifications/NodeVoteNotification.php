@@ -25,7 +25,12 @@ class NodeVoteNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         $subject = $this->node->subject;
-        $url = $subject ? url("/{$subject->slug}/{$this->node->slug}") : url('/');
+        if ($subject) {
+            $path = implode('/', array_column($this->node->breadcrumb(), 'slug'));
+            $url = url("/{$subject->slug}/{$path}");
+        } else {
+            $url = url('/');
+        }
 
         return [
             'type' => 'node_vote',

@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class ResourceChangeRequest extends Model
 {
+    use Prunable;
+
     protected $fillable = [
         'user_id',
         'resource_id',
@@ -19,6 +22,16 @@ class ResourceChangeRequest extends Model
         'reviewed_at',
         'rejection_reason',
     ];
+
+    /**
+     * Get the prunable model query.
+     * Prunes approved and rejected change requests older than 30 days.
+     */
+    public function prunable()
+    {
+        return static::whereIn('status', ['approved', 'rejected'])
+            ->where('reviewed_at', '<=', now()->subDays(30));
+    }
 
     protected $casts = [
         'payload' => 'array',
@@ -57,7 +70,7 @@ class ResourceChangeRequest extends Model
             return Storage::url($filePath);
         }
 
-        return $this->payload['external_url'] ?? null;
+        return null;
     }
 
     public function scopePending($query)

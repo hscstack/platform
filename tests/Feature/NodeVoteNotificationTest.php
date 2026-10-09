@@ -158,3 +158,40 @@ test('NodeVoteNotification is strictly database only', function () {
     $notif = new NodeVoteNotification($node, $voter);
     expect($notif->via($author))->toBe(['database']);
 });
+
+test('NodeVoteNotification constructs full nested path for child folders', function () {
+    $author = User::factory()->create();
+    $voter = User::factory()->create(['name' => 'Diligent Student']);
+    $subject = Subject::create([
+        'name' => 'Higher Math',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-emerald-500',
+        'slug' => 'hsc-hmath-1st',
+        'icon' => 'calculator',
+        'sort_order' => 1,
+    ]);
+
+    $parent = Node::create([
+        'user_id' => $author->id,
+        'subject_id' => $subject->id,
+        'name' => 'Circles',
+        'slug' => 'circles',
+        'sort_order' => 1,
+    ]);
+
+    $child = Node::create([
+        'user_id' => $author->id,
+        'subject_id' => $subject->id,
+        'parent_id' => $parent->id,
+        'name' => 'Class',
+        'slug' => 'class',
+        'sort_order' => 1,
+    ]);
+
+    $notif = new NodeVoteNotification($child, $voter);
+    $data = $notif->toArray($author);
+
+    expect($data['url'])->toBe(url('/hsc-hmath-1st/circles/class'))
+        ->and($data['title'])->toBe('Diligent Student upvoted your folder')
+        ->and($data['message'])->toBe('"Class"');
+});

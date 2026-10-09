@@ -16,7 +16,6 @@ class ResourceModerationController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status', 'pending');
-        $actionType = $request->query('action_type');
 
         $query = ResourceChangeRequest::with([
             'user:id,name,username,image_path',
@@ -29,13 +28,13 @@ class ResourceModerationController extends Controller
             $query->where('status', $status);
         }
 
-        if (in_array($actionType, ['create', 'update', 'delete'])) {
-            $query->where('action_type', $actionType);
-        }
-
         $requests = $query->latest()
-            ->paginate(15)
+            ->simplePaginate(15)
             ->withQueryString();
+
+        $requests->getCollection()->each(function ($req) {
+            $req->node?->append('breadcrumb');
+        });
 
         $counts = [
             'pending' => ResourceChangeRequest::where('status', 'pending')->count(),
@@ -48,90 +47,130 @@ class ResourceModerationController extends Controller
             'counts' => $counts,
             'filters' => [
                 'status' => $status,
-                'action_type' => $actionType,
             ],
         ]);
     }
 
-    public function approve(ResourceChangeRequest $changeRequest)
+    public function approve(Request $request)
     {
-        if ($changeRequest->status !== 'pending') {
-            return back()->with('error', 'This request has already been reviewed.');
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:resource_change_requests,id'],
+        ]);
+
+        $changeRequests = ResourceChangeRequest::whereIn('id', $validated['ids'])
+            ->where('status', 'pending')
+            ->with('resource')
+            ->get();
+
+        if ($changeRequests->isEmpty()) {
+            return back()->with('error', 'Selected requests have already been reviewed.');
         }
 
-        DB::transaction(function () use ($changeRequest) {
-            if ($changeRequest->action_type === 'create') {
-                $payload = $changeRequest->payload ?? [];
-                $payload['node_id'] = $changeRequest->node_id;
-                $payload['user_id'] = $changeRequest->user_id;
+        DB::transaction(function () use ($changeRequests) {
+            $reviewerId = Auth::id();
+            $now = now();
 
-                $resource = Resource::create($payload);
-                $changeRequest->resource_id = $resource->id;
-            } elseif ($changeRequest->action_type === 'update') {
-                $resource = $changeRequest->resource;
+            foreach ($changeRequests as $changeRequest) {
+                if ($changeRequest->action_type === 'create') {
+                    $payload = $changeRequest->payload ?? [];
+                    $payload['node_id'] = $changeRequest->node_id;
+                    $payload['user_id'] = $changeRequest->user_id;
 
-                if (! $resource) {
-                    abort(404, 'Target resource not found.');
-                }
+                    $resource = Resource::create($payload);
+                    $changeRequest->resource_id = $resource->id;
+                } elseif ($changeRequest->action_type === 'update') {
+                    $resource = $changeRequest->resource;
 
-                $newFilePath = $changeRequest->payload['file_path'] ?? null;
-                if ($newFilePath && $resource->file_path && $newFilePath !== $resource->file_path) {
-                    Storage::delete($resource->file_path);
-                }
+                    if ($resource) {
+                        $newFilePath = $changeRequest->payload['file_path'] ?? null;
+                        if ($newFilePath && $resource->file_path && $newFilePath !== $resource->file_path) {
+                            Storage::delete($resource->file_path);
+                        }
 
-                $resource->update($changeRequest->payload);
-            } elseif ($changeRequest->action_type === 'delete') {
-                $resource = $changeRequest->resource;
-
-                if ($resource) {
-                    if ($resource->file_path) {
-                        Storage::delete($resource->file_path);
+                        $resource->update($changeRequest->payload);
                     }
-                    $resource->delete();
-                }
-            }
+                } elseif ($changeRequest->action_type === 'delete') {
+                    $resource = $changeRequest->resource;
 
-            $changeRequest->update([
-                'status' => 'approved',
-                'reviewed_by' => Auth::id(),
-                'reviewed_at' => now(),
-            ]);
+                    if ($resource) {
+                        if ($resource->file_path) {
+                            Storage::delete($resource->file_path);
+                        }
+                        $resource->delete();
+                    }
+                }
+
+                $changeRequest->update([
+                    'status' => 'approved',
+                    'reviewed_by' => $reviewerId,
+                    'reviewed_at' => $now,
+                ]);
+            }
         });
 
-        return back()->with('success', 'Resource change request approved successfully.');
+        $count = $changeRequests->count();
+        $message = $count === 1
+            ? 'Resource request approved successfully.'
+            : "{$count} resource requests approved successfully.";
+
+        return back()->with('success', $message);
     }
 
-    public function reject(Request $request, ResourceChangeRequest $changeRequest)
+    public function reject(Request $request, ?ResourceChangeRequest $changeRequest = null)
     {
-        if ($changeRequest->status !== 'pending') {
-            return back()->with('error', 'This request has already been reviewed.');
-        }
-
         $validated = $request->validate([
+            'ids' => ['nullable', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:resource_change_requests,id'],
             'rejection_reason' => ['nullable', 'string', 'max:500'],
         ]);
 
-        DB::transaction(function () use ($changeRequest, $validated) {
-            $stagedFile = $changeRequest->payload['file_path'] ?? null;
+        $ids = $validated['ids'] ?? ($changeRequest ? [$changeRequest->id] : []);
 
-            if ($stagedFile) {
-                // If create action, or update action where new file is different from live resource's file
-                $isNewFile = $changeRequest->action_type === 'create'
-                    || ($changeRequest->action_type === 'update' && $stagedFile !== $changeRequest->resource?->file_path);
+        if (empty($ids)) {
+            return back()->with('error', 'No change requests selected.');
+        }
 
-                if ($isNewFile) {
-                    Storage::delete($stagedFile);
+        $changeRequests = ResourceChangeRequest::whereIn('id', $ids)
+            ->where('status', 'pending')
+            ->with('resource')
+            ->get();
+
+        if ($changeRequests->isEmpty()) {
+            return back()->with('error', 'Selected requests have already been reviewed.');
+        }
+
+        DB::transaction(function () use ($changeRequests, $validated) {
+            $reviewerId = Auth::id();
+            $now = now();
+            $reason = $validated['rejection_reason'] ?? null;
+
+            foreach ($changeRequests as $item) {
+                $stagedFile = $item->payload['file_path'] ?? null;
+
+                if ($stagedFile) {
+                    $isNewFile = $item->action_type === 'create'
+                        || ($item->action_type === 'update' && $stagedFile !== $item->resource?->file_path);
+
+                    if ($isNewFile) {
+                        Storage::delete($stagedFile);
+                    }
                 }
-            }
 
-            $changeRequest->update([
-                'status' => 'rejected',
-                'rejection_reason' => $validated['rejection_reason'] ?? null,
-                'reviewed_by' => Auth::id(),
-                'reviewed_at' => now(),
-            ]);
+                $item->update([
+                    'status' => 'rejected',
+                    'rejection_reason' => $reason,
+                    'reviewed_by' => $reviewerId,
+                    'reviewed_at' => $now,
+                ]);
+            }
         });
 
-        return back()->with('success', 'Resource change request rejected.');
+        $count = $changeRequests->count();
+        $message = $count === 1
+            ? 'Resource change request rejected.'
+            : "{$count} resource requests rejected.";
+
+        return back()->with('success', $message);
     }
 }

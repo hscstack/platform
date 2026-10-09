@@ -288,13 +288,60 @@ test('moderator can approve a create request to bring resource live', function (
     expect(Resource::where('title', 'Equations Note')->exists())->toBeFalse();
 
     $this->actingAs($moderator)
-        ->post("/admin/moderation/resources/{$changeRequest->id}/approve")
+        ->post('/admin/moderation/resources/approve', [
+            'ids' => [$changeRequest->id],
+        ])
         ->assertRedirect()
         ->assertSessionHas('success');
 
     expect($changeRequest->fresh()->status)->toBe('approved')
         ->and($changeRequest->fresh()->reviewed_by)->toBe($moderator->id)
         ->and(Resource::where('title', 'Equations Note')->exists())->toBeTrue();
+});
+
+test('moderator can bulk approve multiple requests at once', function () {
+    Permission::findOrCreate('moderate resources', 'web');
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics-bulk',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Mechanics',
+        'slug' => 'mechanics',
+    ]);
+
+    $req1 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
+        'title' => 'Bulk Note 1',
+        'resource_type' => 'note',
+        'content' => 'Content 1',
+    ]);
+
+    $req2 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
+        'title' => 'Bulk Note 2',
+        'resource_type' => 'note',
+        'content' => 'Content 2',
+    ]);
+
+    $this->actingAs($moderator)
+        ->post('/admin/moderation/resources/approve', [
+            'ids' => [$req1->id, $req2->id],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($req1->fresh()->status)->toBe('approved')
+        ->and($req2->fresh()->status)->toBe('approved')
+        ->and(Resource::where('title', 'Bulk Note 1')->exists())->toBeTrue()
+        ->and(Resource::where('title', 'Bulk Note 2')->exists())->toBeTrue();
 });
 
 test('moderator can reject a request with feedback reason', function () {
@@ -333,4 +380,103 @@ test('moderator can reject a request with feedback reason', function () {
     expect($changeRequest->fresh()->status)->toBe('rejected')
         ->and($changeRequest->fresh()->rejection_reason)->toBe('The video URL is not valid.')
         ->and(Resource::where('title', 'Bad Video Link')->exists())->toBeFalse();
+});
+
+test('moderator can bulk reject multiple requests with shared feedback', function () {
+    Permission::findOrCreate('moderate resources', 'web');
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics-bulk-reject',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Thermodynamics',
+        'slug' => 'thermodynamics',
+    ]);
+
+    $req1 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
+        'title' => 'Spam 1',
+        'resource_type' => 'note',
+    ]);
+
+    $req2 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
+        'title' => 'Spam 2',
+        'resource_type' => 'note',
+    ]);
+
+    $this->actingAs($moderator)
+        ->post('/admin/moderation/resources/reject', [
+            'ids' => [$req1->id, $req2->id],
+            'rejection_reason' => 'Duplicate spam uploads.',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($req1->fresh()->status)->toBe('rejected')
+        ->and($req1->fresh()->rejection_reason)->toBe('Duplicate spam uploads.')
+        ->and($req2->fresh()->status)->toBe('rejected')
+        ->and($req2->fresh()->rejection_reason)->toBe('Duplicate spam uploads.');
+});
+
+test('old reviewed change requests are pruned after 30 days', function () {
+    $user = User::factory()->create();
+
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics-prune',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Waves',
+        'slug' => 'waves',
+    ]);
+
+    // Old approved request (> 30 days)
+    $oldApproved = ResourceChangeRequest::create([
+        'user_id' => $user->id,
+        'node_id' => $node->id,
+        'action_type' => 'create',
+        'status' => 'approved',
+        'reviewed_by' => $user->id,
+        'reviewed_at' => now()->subDays(31),
+        'payload' => ['title' => 'Old Approved'],
+    ]);
+
+    // Recent approved request (<= 30 days)
+    $recentApproved = ResourceChangeRequest::create([
+        'user_id' => $user->id,
+        'node_id' => $node->id,
+        'action_type' => 'create',
+        'status' => 'approved',
+        'reviewed_by' => $user->id,
+        'reviewed_at' => now()->subDays(10),
+        'payload' => ['title' => 'Recent Approved'],
+    ]);
+
+    // Pending request (> 30 days old created_at, but status pending)
+    $pendingReq = ResourceChangeRequest::create([
+        'user_id' => $user->id,
+        'node_id' => $node->id,
+        'action_type' => 'create',
+        'status' => 'pending',
+        'payload' => ['title' => 'Pending Req'],
+    ]);
+
+    $this->artisan('model:prune', ['--model' => [ResourceChangeRequest::class]]);
+
+    expect(ResourceChangeRequest::where('id', $oldApproved->id)->exists())->toBeFalse()
+        ->and(ResourceChangeRequest::where('id', $recentApproved->id)->exists())->toBeTrue()
+        ->and(ResourceChangeRequest::where('id', $pendingReq->id)->exists())->toBeTrue();
 });

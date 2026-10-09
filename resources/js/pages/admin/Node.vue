@@ -5,6 +5,7 @@ import {
     FolderPlus,
     ArrowLeft,
     ChevronDown,
+    ChevronRight,
     PencilLine,
     Lock,
     Unlock,
@@ -29,6 +30,7 @@ const props = defineProps({
     nodes: Array,
     resources: Array,
     parent: Object,
+    breadcrumb: Array,
 });
 
 const isDirectlyFrozen = computed(() => Boolean(props.parent?.is_frozen));
@@ -135,6 +137,38 @@ const backUrl = computed(() => {
     return '/' + segments.join('/');
 });
 
+interface BreadcrumbItem {
+    name: string;
+    link: string;
+}
+
+const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
+    const items: BreadcrumbItem[] = [
+        {
+            name: 'Subjects',
+            link: '/admin/subjects',
+        },
+        {
+            name: (props.subject as any)?.name || 'Subject',
+            link: `/admin/subjects/${(props.subject as any)?.slug}/nodes`,
+        },
+    ];
+
+    if (props.breadcrumb && Array.isArray(props.breadcrumb)) {
+        let currentPath = `/admin/subjects/${(props.subject as any)?.slug}/nodes`;
+
+        for (const crumb of props.breadcrumb as any[]) {
+            currentPath += `/${crumb.slug}`;
+            items.push({
+                name: crumb.name,
+                link: currentPath,
+            });
+        }
+    }
+
+    return items;
+});
+
 const closeDropdowns = (e: MouseEvent) => {
     const target = e.target as Node | null;
 
@@ -163,6 +197,38 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
     <Head :title="parent?.name || subject?.name || 'Manage Nodes'" />
 
     <div class="flex w-full flex-1 flex-col">
+        <!-- Dedicated Breadcrumb Navigation Bar (Separate Row) -->
+        <div
+            v-if="adminBreadcrumbs.length > 0"
+            class="mb-3.5 flex items-center rounded-xl bg-slate-50/80 px-3 py-2 text-xs font-medium text-slate-500 sm:text-sm dark:bg-gray-800/40 dark:text-gray-400"
+        >
+            <nav
+                class="no-scrollbar flex min-w-0 flex-wrap items-center gap-1.5"
+            >
+                <template v-for="(crumb, idx) in adminBreadcrumbs" :key="idx">
+                    <ChevronRight
+                        v-if="idx > 0"
+                        class="h-3.5 w-3.5 shrink-0 stroke-[2.5] text-slate-300 dark:text-gray-600"
+                    />
+                    <span
+                        v-if="idx === adminBreadcrumbs.length - 1"
+                        class="font-bold text-slate-900 dark:text-gray-100"
+                        :title="crumb.name"
+                    >
+                        {{ crumb.name }}
+                    </span>
+                    <Link
+                        v-else
+                        :href="crumb.link"
+                        class="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                        :title="crumb.name"
+                    >
+                        {{ crumb.name }}
+                    </Link>
+                </template>
+            </nav>
+        </div>
+
         <!-- Freeze Notice Banner -->
         <div
             v-if="isFrozen"
