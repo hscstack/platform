@@ -70,6 +70,11 @@
         .content p {
             margin: 0 0 16px;
         }
+        .content a {
+            color: #4f46e5;
+            text-decoration: underline;
+            font-weight: 600;
+        }
         .action-button-container {
             margin: 28px 0 16px;
             text-align: left;
@@ -153,7 +158,7 @@
 
                 @if(!empty($lines))
                     @foreach($lines as $line)
-                        <p>{{ $line }}</p>
+                        <p>{!! $line !!}</p>
                     @endforeach
                 @endif
 
