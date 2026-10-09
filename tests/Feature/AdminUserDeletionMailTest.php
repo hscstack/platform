@@ -20,7 +20,7 @@ test('account deleted mailable renders expected subject, content and anchored li
         ->toContain('আপনার অ্যাকাউন্ট ডিলিট করা হয়েছে')
         ->toContain('আমরা আপনার অ্যাকাউন্ট ডিলিট করার অনুরোধটি পেয়েছি')
         ->toContain('Privacy Policy')
-        ->toContain('Terms &amp; Conditions')
+        ->toContain('Terms & Conditions')
         ->toContain('/privacy-policy')
         ->toContain('/terms-service')
         ->toContain('Resource Archive')
