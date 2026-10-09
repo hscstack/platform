@@ -14,11 +14,43 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 
 class ResourceController extends Controller
 {
+    /**
+     * Determine maximum allowed pending submissions for the user.
+     * Verified users: 100, Unverified users: 30.
+     */
+    protected function getMaxPendingSubmissions(): int
+    {
+        return Auth::user()?->is_verified ? 100 : 30;
+    }
+
+    /**
+     * Check if user would exceed their pending change requests quota.
+     * Throws standard ValidationException so it returns as a typed error in Inertia errors.
+     */
+    protected function ensureUnderPendingLimit(int $incomingCount = 1): void
+    {
+        $userId = Auth::id();
+        $maxLimit = $this->getMaxPendingSubmissions();
+
+        $currentPending = ResourceChangeRequest::where('user_id', $userId)
+            ->where('status', 'pending')
+            ->count();
+
+        if (($currentPending + $incomingCount) > $maxLimit) {
+            throw ValidationException::withMessages([
+                'pending_limit' => "আপনি সর্বোচ্চ {$maxLimit}টি কন্টেন্ট আপলোড করার অনুরোধ করতে পারেন। আপনার আপলোডকৃত {$currentPending}টি কন্টেন্ট বর্তমানে পর্যালোচনাধীন রয়েছে, তাই অনুগ্রহ করে অপেক্ষা করুন।",
+            ]);
+        }
+    }
+
     public function store(StoreResourceRequest $request)
     {
+        $this->ensureUnderPendingLimit(1);
+
         $validated = $request->validated();
 
         if ($request->hasFile('file')) {
@@ -39,6 +71,8 @@ class ResourceController extends Controller
         if ($resource->pendingChangeRequest()->exists()) {
             return back()->with('error', 'This resource already has a pending change request under review.');
         }
+
+        $this->ensureUnderPendingLimit(1);
 
         $validated = $request->validated();
 
@@ -61,6 +95,8 @@ class ResourceController extends Controller
             return back()->with('error', 'This resource already has a pending change request under review.');
         }
 
+        $this->ensureUnderPendingLimit(1);
+
         ResourceChangeRequest::recordDelete(Auth::id(), $resource);
 
         return redirect()->back()->with('success', 'Resource deletion request submitted for moderation.');
@@ -69,6 +105,10 @@ class ResourceController extends Controller
     public function storeBulkImages(BulkImageStoreRequest $request)
     {
         $validated = $request->validated();
+        $filesCount = count($request->file('files') ?? []);
+
+        $this->ensureUnderPendingLimit($filesCount);
+
         $userId = Auth::id();
         $nodeId = (int) $validated['node_id'];
 
@@ -152,6 +192,9 @@ class ResourceController extends Controller
 
         $userId = Auth::id();
         $nodeId = (int) $validated['node_id'];
+        $videosCount = count($videos);
+
+        $this->ensureUnderPendingLimit($videosCount);
 
         DB::transaction(function () use ($videos, $userId, $nodeId) {
             foreach ($videos as $video) {

@@ -244,6 +244,7 @@ const submitForm = async () => {
         },
         onError: (errors) => {
             errorMessage.value =
+                (errors.pending_limit as string) ||
                 Object.values(errors).flat().join(', ') ||
                 'Failed to upload images.';
         },
@@ -272,14 +273,20 @@ const submitForm = async () => {
             <!-- Error Banner -->
             <div
                 v-if="errorMessage"
-                class="m-4 mb-0 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50/80 p-3 text-xs text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300"
+                class="m-4 mb-0 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-900 shadow-2xs dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200"
             >
-                <AlertCircle
-                    class="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"
-                />
-                <div class="leading-relaxed">
-                    <span class="font-bold">Error: </span>
-                    <span>{{ errorMessage }}</span>
+                <div
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300"
+                >
+                    <AlertCircle class="h-4 w-4" />
+                </div>
+                <div class="min-w-0 flex-1 leading-relaxed">
+                    <div class="font-bold text-rose-950 dark:text-rose-100">
+                        Submission Error
+                    </div>
+                    <p class="mt-0.5 text-xs text-rose-800 dark:text-rose-300">
+                        {{ errorMessage }}
+                    </p>
                 </div>
             </div>
 
