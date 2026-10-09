@@ -131,3 +131,75 @@ test('bulk rename respects custom starting number', function () {
     expect($res1->fresh()->title)->toBe('Lecture - 05');
     expect($res2->fresh()->title)->toBe('Lecture - 06');
 });
+
+test('resource author can delete their own resource', function () {
+    Permission::findOrCreate('delete resources', 'web');
+
+    $author = User::factory()->create();
+    $author->givePermissionTo('view admin');
+
+    $subject = Subject::create([
+        'name' => 'Math',
+        'slug' => 'math',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'calculator',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Geometry',
+        'slug' => 'geometry',
+    ]);
+
+    $resource = Resource::create([
+        'user_id' => $author->id,
+        'node_id' => $node->id,
+        'resource_type' => 'video',
+        'title' => 'My Video',
+        'external_url' => 'https://youtube.com/watch?v=myvideo12345',
+    ]);
+
+    $this->actingAs($author)
+        ->delete("/admin/resources/{$resource->id}")
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect(Resource::find($resource->id))->toBeNull();
+});
+
+test('non-author without delete resources permission cannot delete another users resource', function () {
+    Permission::findOrCreate('delete resources', 'web');
+
+    $author = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $otherUser->givePermissionTo('view admin');
+
+    $subject = Subject::create([
+        'name' => 'Biology',
+        'slug' => 'biology',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'dna',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Genetics',
+        'slug' => 'genetics',
+    ]);
+
+    $resource = Resource::create([
+        'user_id' => $author->id,
+        'node_id' => $node->id,
+        'resource_type' => 'video',
+        'title' => 'Cell Division',
+        'external_url' => 'https://youtube.com/watch?v=cell12345678',
+    ]);
+
+    $this->actingAs($otherUser)
+        ->delete("/admin/resources/{$resource->id}")
+        ->assertForbidden();
+
+    expect(Resource::find($resource->id))->not->toBeNull();
+});

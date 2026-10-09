@@ -32,7 +32,11 @@ const canEdit = computed(() => {
 });
 
 const canDelete = computed(() => {
-    return !props.isFrozen && can('delete resources');
+    return (
+        !props.isFrozen &&
+        (can('delete resources') ||
+            (userId.value !== null && userId.value === props.resource?.user_id))
+    );
 });
 
 const handleDelete = () => {
