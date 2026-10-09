@@ -26,7 +26,7 @@ class AccountDeletedMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        $name = $this->recipientName ? "প্রিয় {$this->recipientName}," : 'প্রিয় শিক্ষার্থী,';
+        $name = $this->recipientName ? "Hello {$this->recipientName}," : 'প্রিয় শিক্ষার্থী,';
         $privacyUrl = url('/privacy-policy');
         $termsUrl = url('/terms-service');
         $archiveUrl = url('/');
