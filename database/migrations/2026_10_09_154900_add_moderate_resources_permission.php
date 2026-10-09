@@ -14,7 +14,6 @@ return new class extends Migration
     public function up(): void
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        Cache::flush();
 
         $permission = Permission::findOrCreate('moderate resources', 'web');
 
