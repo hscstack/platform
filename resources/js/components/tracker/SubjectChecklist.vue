@@ -44,7 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-    (e: 'require-auth'): void;
+    (e: 'require-auth', message?: string): void;
 }>();
 
 // Active completed IDs state
@@ -83,6 +83,12 @@ watch(
 );
 
 function openSwitchModal() {
+    if (!props.isAuthenticated) {
+        emit('require-auth', 'Log in to change your curriculum.');
+
+        return;
+    }
+
     pendingCurriculum.value = props.course;
     pendingGroup.value = props.group;
     showSwitchConfirmModal.value = true;
@@ -100,23 +106,6 @@ function formatGroup(groupKey: string) {
 }
 
 function confirmSwitchCurriculum() {
-    if (!props.isAuthenticated) {
-        showSwitchConfirmModal.value = false;
-        router.get(
-            '/tracker',
-            {
-                course: pendingCurriculum.value,
-                group: pendingGroup.value,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-
-        return;
-    }
-
     isSwitching.value = true;
     router.post(
         '/tracker/curriculum',
@@ -139,7 +128,7 @@ function confirmSwitchCurriculum() {
 // Optimistic node toggle
 function toggleNodeCompletion(node: TopLevelNode) {
     if (!props.isAuthenticated) {
-        emit('require-auth');
+        emit('require-auth', 'Log in to save your chapter checklist progress.');
 
         return;
     }
