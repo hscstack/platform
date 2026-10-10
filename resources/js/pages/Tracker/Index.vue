@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/useAuth';
 
 interface Props {
     course: 'hsc' | 'ssc';
+    group: 'science' | 'humanities' | 'commerce';
     subjects: SubjectItem[];
     completedNodeIds: number[];
     todaySeconds: number;
@@ -109,6 +110,7 @@ function handleAuthRequired(
             <div>
                 <SubjectChecklist
                     :course="course"
+                    :group="group"
                     :subjects="subjects"
                     :completed-node-ids="completedNodeIds"
                     :is-authenticated="isAuthenticated"

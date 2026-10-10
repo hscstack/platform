@@ -205,13 +205,14 @@ test('authenticated user can reset today study time', function () {
     expect($log->total_seconds)->toBe(0);
 });
 
-test('switching curriculum updates user profile and clears full chapter track', function () {
-    $user = User::factory()->create(['curriculum' => 'hsc']);
+test('switching curriculum updates user profile and preserves completed node track', function () {
+    $user = User::factory()->create(['curriculum' => 'hsc', 'group' => 'science']);
 
     $subject = Subject::create([
         'name' => 'Physics',
         'slug' => 'physics',
         'course' => 'hsc',
+        'group' => 'science',
         'tailwind_format' => 'bg-indigo-500',
         'icon' => 'atom',
         'is_trackable' => true,
@@ -232,11 +233,15 @@ test('switching curriculum updates user profile and clears full chapter track', 
     expect(NodeCompletion::where('user_id', $user->id)->count())->toBe(1);
 
     $this->actingAs($user)
-        ->post('/tracker/curriculum', ['curriculum' => 'ssc'])
+        ->post('/tracker/curriculum', [
+            'curriculum' => 'ssc',
+            'group' => 'commerce',
+        ])
         ->assertRedirect('/tracker');
 
     expect($user->fresh()->curriculum)->toBe('ssc');
-    expect(NodeCompletion::where('user_id', $user->id)->count())->toBe(0);
+    expect($user->fresh()->group)->toBe('commerce');
+    expect(NodeCompletion::where('user_id', $user->id)->count())->toBe(1);
 });
 
 test('tracker renders user curriculum for authenticated user', function () {

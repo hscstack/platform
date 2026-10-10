@@ -333,6 +333,7 @@ test('public profile accurately displays syllabus progress and subject breakdown
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
         ->where('syllabusProgress.overallPercent', 75)
+        ->where('syllabusProgress.group', 'science')
         ->where('syllabusProgress.completedChapters', 2)
         ->where('syllabusProgress.totalChapters', 3)
         ->has('syllabusProgress.subjects', 2)

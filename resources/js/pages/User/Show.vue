@@ -217,6 +217,7 @@ const props = defineProps<{
     };
     syllabusProgress?: {
         course: string;
+        group?: string;
         overallPercent: number;
         completedChapters: number;
         totalChapters: number;
@@ -531,6 +532,13 @@ const handleAppreciate = () => {
 };
 
 const timeAgo = formatTimeAgo;
+const formatGroupName = (group?: string) => {
+    if (!group) {
+        return '';
+    }
+
+    return group.charAt(0).toUpperCase() + group.slice(1);
+};
 </script>
 
 <template>
@@ -905,7 +913,11 @@ const timeAgo = formatTimeAgo;
                         >
                             Syllabus Completed ({{
                                 syllabusProgress.course.toUpperCase()
-                            }})
+                            }}<template v-if="syllabusProgress.group">
+                                {{
+                                    formatGroupName(syllabusProgress.group)
+                                }}</template
+                            >)
                         </span>
 
                         <span
@@ -2063,7 +2075,7 @@ const timeAgo = formatTimeAgo;
         v-if="syllabusProgress"
         :is-open="showSyllabusModal"
         :title="`${profileUser.name}'s Syllabus Progress`"
-        :description="`${syllabusProgress.overallPercent}% completed (${syllabusProgress.completedChapters}/${syllabusProgress.totalChapters} chapters in ${syllabusProgress.course.toUpperCase()})`"
+        :description="`${syllabusProgress.overallPercent}% completed (${syllabusProgress.completedChapters}/${syllabusProgress.totalChapters} chapters in ${syllabusProgress.course.toUpperCase()}${syllabusProgress.group ? ' ' + formatGroupName(syllabusProgress.group) : ''})`"
         max-width="lg"
         @close="showSyllabusModal = false"
     >
@@ -2240,8 +2252,12 @@ const timeAgo = formatTimeAgo;
         </div>
 
         <template #footer>
-            <div class="flex items-center justify-between gap-3">
+            <div
+                class="flex items-center gap-3"
+                :class="isOwnProfile ? 'justify-between' : 'justify-end'"
+            >
                 <button
+                    v-if="isOwnProfile"
                     type="button"
                     @click="showShareModal = true"
                     class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
@@ -2275,6 +2291,7 @@ const timeAgo = formatTimeAgo;
                 institution: profileUser.institution,
             },
             course: syllabusProgress.course,
+            group: syllabusProgress.group,
             overallPercent: syllabusProgress.overallPercent,
             completedChapters: syllabusProgress.completedChapters,
             totalChapters: syllabusProgress.totalChapters,

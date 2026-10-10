@@ -17,21 +17,24 @@ class StudyTrackerController extends Controller
     {
         $user = $request->user();
         $course = $user?->curriculum ?: 'hsc';
+        $group = $user?->group ?: 'science';
 
         $subjects = Subject::where('course', $course)
             ->where('is_trackable', true)
+            ->whereIn('group', [$group, 'common'])
             ->orderBy('sort_order', 'asc')
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
                     ->orderBy('sort_order', 'asc')
                     ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
-            ->get(['id', 'name', 'slug', 'course', 'sort_order'])
+            ->get(['id', 'name', 'slug', 'course', 'group', 'sort_order'])
             ->toArray();
 
         if (! $user) {
             return Inertia::render('Tracker/Index', [
                 'course' => $course,
+                'group' => $group,
                 'subjects' => $subjects,
                 'completedNodeIds' => [],
                 'todaySeconds' => 0,
@@ -59,6 +62,7 @@ class StudyTrackerController extends Controller
 
         return Inertia::render('Tracker/Index', [
             'course' => $course,
+            'group' => $group,
             'subjects' => $subjects,
             'completedNodeIds' => $completedNodeIds,
             'todaySeconds' => $todaySeconds,
@@ -140,34 +144,14 @@ class StudyTrackerController extends Controller
 
     public function updateCurriculum(Request $request)
     {
-        $user = $request->user();
-        if (! $user) {
-            return back()->with('error', 'Authentication required');
-        }
-
         $validated = $request->validate([
             'curriculum' => 'required|string|in:hsc,ssc',
+            'group' => 'required|string|in:science,humanities,commerce',
         ]);
 
-        $newCurriculum = $validated['curriculum'];
-
-        if ($user->curriculum !== $newCurriculum) {
-            $user->update([
-                'curriculum' => $newCurriculum,
-            ]);
-
-            // Clear the entire chapter completion track for the user
-            NodeCompletion::where('user_id', $user->id)->delete();
-        }
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'curriculum' => $newCurriculum,
-            ]);
-        }
+        $request->user()->update($validated);
 
         return redirect()->route('tracker.index')
-            ->with('success', 'Curriculum updated to '.strtoupper($newCurriculum).' and chapter track reset.');
+            ->with('success', 'Curriculum updated to '.strtoupper($validated['curriculum']).' ('.ucfirst($validated['group']).').');
     }
 }
