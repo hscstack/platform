@@ -68,7 +68,9 @@ class ResourceModerationController extends Controller
             return back()->with('error', 'Selected requests have already been reviewed.');
         }
 
-        DB::transaction(function () use ($changeRequests) {
+        $filesToDelete = [];
+
+        DB::transaction(function () use ($changeRequests, &$filesToDelete) {
             $reviewerId = Auth::id();
             $now = now();
 
@@ -86,7 +88,7 @@ class ResourceModerationController extends Controller
                     if ($resource) {
                         $newFilePath = $changeRequest->payload['file_path'] ?? null;
                         if ($newFilePath && $resource->file_path && $newFilePath !== $resource->file_path) {
-                            Storage::delete($resource->file_path);
+                            $filesToDelete[] = $resource->file_path;
                         }
 
                         $resource->update($changeRequest->payload);
@@ -96,7 +98,7 @@ class ResourceModerationController extends Controller
 
                     if ($resource) {
                         if ($resource->file_path) {
-                            Storage::delete($resource->file_path);
+                            $filesToDelete[] = $resource->file_path;
                         }
                         $resource->delete();
                     }
@@ -109,6 +111,10 @@ class ResourceModerationController extends Controller
                 ]);
             }
         });
+
+        foreach ($filesToDelete as $filePath) {
+            Storage::delete($filePath);
+        }
 
         $count = $changeRequests->count();
         $message = $count === 1
@@ -135,9 +141,9 @@ class ResourceModerationController extends Controller
             return back()->with('error', 'Selected requests have already been reviewed.');
         }
 
-        $reason = $validated['rejection_reason'] ?? null;
+        $filesToDelete = [];
 
-        DB::transaction(function () use ($changeRequests, $reason) {
+        DB::transaction(function () use ($changeRequests, $reason, &$filesToDelete) {
             $reviewerId = Auth::id();
             $now = now();
 
@@ -149,7 +155,7 @@ class ResourceModerationController extends Controller
                         || ($item->action_type === 'update' && $stagedFile !== $item->resource?->file_path);
 
                     if ($isNewFile) {
-                        Storage::delete($stagedFile);
+                        $filesToDelete[] = $stagedFile;
                     }
                 }
 
@@ -161,6 +167,10 @@ class ResourceModerationController extends Controller
                 ]);
             }
         });
+
+        foreach ($filesToDelete as $filePath) {
+            Storage::delete($filePath);
+        }
 
         foreach ($changeRequests as $item) {
             if ($item->user) {
