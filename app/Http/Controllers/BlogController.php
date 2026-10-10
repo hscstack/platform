@@ -17,6 +17,8 @@ class BlogController extends Controller
 {
     public function index(Request $request)
     {
+        $myBlogs = $request->boolean('mine');
+
         $blogs = Blog::query()
             ->select([
                 'id',
@@ -25,13 +27,31 @@ class BlogController extends Controller
                 'slug',
                 'excerpt',
                 'featured_image_path',
+                'is_published',
                 'is_featured',
                 'views',
                 'created_at',
             ])
             ->with('user:id,name,username')
-            ->withCount(['reactions', 'comments'])
-            ->where('is_published', true);
+            ->withCount(['reactions', 'comments']);
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            if ($myBlogs) {
+                // If filtering by "mine", show only the current user's blogs (published and drafts)
+                $blogs->where('user_id', $user->id);
+            } elseif ($user->can('manage blogs')) {
+                // Authorities with manage blogs see all blogs
+            } else {
+                // Authors see published blogs plus their own drafts
+                $blogs->where(function ($query) use ($user) {
+                    $query->where('is_published', true)
+                        ->orWhere('user_id', $user->id);
+                });
+            }
+        } else {
+            $blogs->where('is_published', true);
+        }
 
         if ($request->filled('q')) {
             $search = $request->q;
@@ -53,6 +73,10 @@ class BlogController extends Controller
 
         return Inertia::render('Blog/Index', [
             'blogs' => $blogs,
+            'filters' => [
+                'q' => $request->input('q', ''),
+                'mine' => $myBlogs,
+            ],
         ]);
     }
 
@@ -119,7 +143,7 @@ class BlogController extends Controller
     public function show(Blog $blog)
     {
         abort_unless(
-            $blog->is_published || (auth()->check() && (auth()->id() === $blog->user_id || auth()->user()->can('edit blogs'))),
+            $blog->is_published || (auth()->check() && (auth()->id() === $blog->user_id || auth()->user()->can('manage blogs'))),
             404
         );
 

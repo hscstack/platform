@@ -56,14 +56,14 @@ const canAccessAdmin = computed(() => page.props.auth?.can_access_admin);
 
 const canEdit = computed(() => {
     return (
-        can('edit blogs') ||
+        can('manage blogs') ||
         (currentUser.value?.id && currentUser.value.id === props.blog.user_id)
     );
 });
 
 const canDelete = computed(() => {
     return (
-        can('delete blogs') ||
+        can('manage blogs') ||
         (currentUser.value?.id && currentUser.value.id === props.blog.user_id)
     );
 });
@@ -292,9 +292,25 @@ const formatTimeAgo = (dateStr: string) => {
                         "
                         class="font-medium text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
-                        {{ blog.user?.name }}
+                        {{ blog.user?.name
+                        }}<span
+                            v-if="
+                                currentUser &&
+                                (currentUser.id === blog.user_id ||
+                                    currentUser.id === blog.user?.id)
+                            "
+                            class="ml-0.5 font-bold text-indigo-600 dark:text-indigo-400"
+                            >(Me)</span
+                        >
                     </Link>
                 </div>
+
+                <span
+                    v-if="blog.is_published === false"
+                    class="rounded-md border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700 dark:border-amber-800/40 dark:bg-amber-950/50 dark:text-amber-400"
+                >
+                    Unpublished
+                </span>
 
                 <div
                     v-if="formattedDate"

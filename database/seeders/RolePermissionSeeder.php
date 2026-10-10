@@ -55,8 +55,7 @@ class RolePermissionSeeder extends Seeder
          * Blog management
          */
         Permission::findOrCreate('create blogs');
-        Permission::findOrCreate('edit blogs');
-        Permission::findOrCreate('delete blogs');
+        Permission::findOrCreate('manage blogs');
 
         /*
          * Notice management

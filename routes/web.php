@@ -36,7 +36,7 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');
 
     // Blog Authoring & Management
-    Route::middleware('permission:create blogs')->group(function () {
+    Route::middleware('permission:create blogs|manage blogs')->group(function () {
         Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
         Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
     });
