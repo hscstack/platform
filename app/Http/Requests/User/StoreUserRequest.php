@@ -29,7 +29,7 @@ class StoreUserRequest extends FormRequest
             'username' => ['nullable', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_]+$/', 'unique:users,username', new CleanText],
             'email' => ['required', 'email', 'unique:users,email'],
             'is_verified' => ['sometimes', 'boolean'],
-            'onboarding_priority' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:1000000'],
+            'priority' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:1000000'],
             'role' => ['nullable', 'string'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],

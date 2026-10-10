@@ -107,7 +107,7 @@ class AuthController extends Controller
         }
 
         $suggestedContributors = User::withCount('appreciationsReceived')
-            ->orderByDesc('onboarding_priority')
+            ->orderByDesc('priority')
             ->orderByDesc('appreciations_received_count')
             ->latest('id')
             ->take(4)

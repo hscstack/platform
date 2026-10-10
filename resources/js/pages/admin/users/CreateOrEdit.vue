@@ -23,7 +23,7 @@ const form = useForm({
     username: props.user?.username || '',
     email: props.user?.email || '',
     is_verified: Boolean(props.user?.is_verified ?? false),
-    onboarding_priority: props.user?.onboarding_priority ?? 0,
+    priority: props.user?.priority ?? 0,
     role: props.user?.roles?.[0]?.name || '',
     permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
 
@@ -269,7 +269,7 @@ const submitForm = () => {
                 </p>
             </div>
 
-            <!-- Onboarding Priority Option -->
+            <!-- Feature & Suggestion Priority Option -->
             <div
                 class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition dark:border-gray-800 dark:bg-gray-800/40"
             >
@@ -284,32 +284,32 @@ const submitForm = () => {
                         </div>
                         <div>
                             <label
-                                for="onboarding_priority"
+                                for="priority"
                                 class="text-sm font-semibold text-slate-900 select-none dark:text-gray-100"
                             >
-                                Onboarding Suggestion Priority
+                                Display & Suggestion Priority
                             </label>
                             <p
                                 class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                             >
-                                Determines placement in the new user onboarding
-                                appreciation list. Higher numbers appear first
-                                (default: 0).
+                                Determines placement in onboarding appreciation
+                                suggestions and About Us team listings. Higher
+                                numbers appear first (default: 0).
                             </p>
                         </div>
                     </div>
                     <div class="w-full sm:w-28">
                         <input
                             type="number"
-                            id="onboarding_priority"
-                            v-model.number="form.onboarding_priority"
+                            id="priority"
+                            v-model.number="form.priority"
                             min="0"
                             step="1"
                             placeholder="0"
                             :disabled="form.processing"
                             class="w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 transition outline-none disabled:bg-slate-50 dark:bg-gray-900 dark:text-gray-100 dark:disabled:bg-gray-800"
                             :class="
-                                form.errors.onboarding_priority
+                                form.errors.priority
                                     ? 'border-rose-500 focus:ring-rose-500/20'
                                     : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
                             "
@@ -317,10 +317,10 @@ const submitForm = () => {
                     </div>
                 </div>
                 <p
-                    v-if="form.errors.onboarding_priority"
+                    v-if="form.errors.priority"
                     class="mt-2 text-sm text-rose-600"
                 >
-                    {{ form.errors.onboarding_priority }}
+                    {{ form.errors.priority }}
                 </p>
             </div>
 
