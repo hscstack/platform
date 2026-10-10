@@ -35,6 +35,7 @@ class UserProfileController extends Controller
             'about' => $user->about,
             'institution' => $user->institution,
             'curriculum' => $user->curriculum ?? 'hsc',
+            'group' => $user->group ?? 'science',
             'image_url' => $user->image_url,
             'facebook' => $user->facebook,
             'instagram' => $user->instagram,
@@ -391,8 +392,10 @@ class UserProfileController extends Controller
     private function getSyllabusProgress(User $user): array
     {
         $course = $user->curriculum ?: 'hsc';
+        $group = $user->group ?: 'science';
         $trackableSubjects = Subject::where('course', $course)
             ->where('is_trackable', true)
+            ->whereIn('group', [$group, 'common'])
             ->orderBy('sort_order', 'asc')
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
