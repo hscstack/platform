@@ -5,6 +5,7 @@
 - Only run the automated check commands when:
   1. The user explicitly instructs to `"push"` or `"commit"`.
   2. The user explicitly asks to check or fix formatting/linting issues.
+- **Quick Push Bypass**: When instructed with `"quick push"` or `"push direct"`, bypass all formatting and linting commands and proceed directly to commit/push.
 
 ```bash
 npm run format && composer lint && npm run lint
@@ -19,7 +20,7 @@ npm run format && composer lint && npm run lint
      ```
   2. Switch to that branch.
   3. Use atomic commits where applicable.
-  4. Run formatting and linting checks before committing:
+  4. Run formatting and linting checks before committing (unless using "quick push"):
      ```bash
      npm run format && composer lint && npm run lint
      ```
@@ -29,6 +30,7 @@ npm run format && composer lint && npm run lint
      git push -u origin <new-branch>
      ```
   7. Create a Pull Request (PR) with a clear, respective title and description linking relevant issues.
+- **No CI Monitoring / Polling**: After pushing code or opening a PR, NEVER run `gh pr checks`, sleep loops, or monitor GitHub Actions CI in the background. Stop and respond immediately once the push and PR creation steps are finished.
 
 ## Strict Code Modification & Execution Guardrail
 - **Explicit Instruction Required**: NEVER modify files, apply code edits, or execute code refactors unless the user explicitly gives direct instruction or confirmation to make the change (e.g., "do it", "apply this", "fix it", "proceed").
