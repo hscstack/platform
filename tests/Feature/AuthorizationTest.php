@@ -136,7 +136,7 @@ test('users without create subjects permission cannot create subjects via post',
 test('users without create blogs permission cannot view blog create page', function () {
     $admin = adminUserWithPermissions(['view admin']);
 
-    $response = $this->actingAs($admin)->get('/admin/blogs/create');
+    $response = $this->actingAs($admin)->get('/blogs/create');
 
     $response->assertStatus(302);
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');

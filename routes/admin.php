@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\ChatSettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailController as AdminEmailController;
@@ -32,21 +31,6 @@ Route::middleware('permission:edit subjects')->group(function () {
 });
 
 Route::delete('/subjects/{subject}', [AdminSubjectController::class, 'destroy'])->middleware('permission:delete subjects')->name('subjects.destroy');
-
-// Blogs
-Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
-
-Route::middleware('permission:create blogs')->group(function () {
-    Route::get('/blogs/create', [AdminBlogController::class, 'create'])->name('blogs.create');
-    Route::post('/blogs', [AdminBlogController::class, 'store'])->name('blogs.store');
-});
-
-Route::middleware('can:update,blog')->group(function () {
-    Route::get('/blogs/edit/{blog}', [AdminBlogController::class, 'edit'])->name('blogs.edit');
-    Route::post('/blogs/edit/{blog}/patch', [AdminBlogController::class, 'update'])->name('blogs.update');
-});
-
-Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->middleware('permission:delete blogs')->name('blogs.destroy');
 
 // Nodes (Folders)
 Route::middleware('permission:create nodes')->group(function () {

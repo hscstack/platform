@@ -2,17 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Blog\StoreBlogRequest;
+use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use App\Notifications\BlogCommentNotification;
 use App\Notifications\BlogReactionNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class BlogController extends Controller
 {
     public function index(Request $request)
     {
+        $myBlogs = $request->boolean('mine');
+
         $blogs = Blog::query()
             ->select([
                 'id',
@@ -21,13 +27,31 @@ class BlogController extends Controller
                 'slug',
                 'excerpt',
                 'featured_image_path',
+                'is_published',
                 'is_featured',
                 'views',
                 'created_at',
             ])
             ->with('user:id,name,username')
-            ->withCount(['reactions', 'comments'])
-            ->where('is_published', true);
+            ->withCount(['reactions', 'comments']);
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            if ($myBlogs) {
+                // If filtering by "mine", show only the current user's blogs (published and drafts)
+                $blogs->where('user_id', $user->id);
+            } elseif ($user->can('manage blogs')) {
+                // Authorities with manage blogs see all blogs
+            } else {
+                // Authors see published blogs plus their own drafts
+                $blogs->where(function ($query) use ($user) {
+                    $query->where('is_published', true)
+                        ->orWhere('user_id', $user->id);
+                });
+            }
+        } else {
+            $blogs->where('is_published', true);
+        }
 
         if ($request->filled('q')) {
             $search = $request->q;
@@ -49,13 +73,75 @@ class BlogController extends Controller
 
         return Inertia::render('Blog/Index', [
             'blogs' => $blogs,
+            'filters' => [
+                'q' => $request->input('q', ''),
+                'mine' => $myBlogs,
+            ],
         ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Blog/CreateOrEdit');
+    }
+
+    public function store(StoreBlogRequest $request)
+    {
+        $data = $request->validated();
+        $data['user_id'] = Auth::id();
+
+        if ($request->hasFile('featured_image')) {
+            $path = $request->file('featured_image')->store('blogs');
+            $data['featured_image_path'] = $path;
+        }
+
+        $blog = Blog::create($data);
+
+        return redirect()->route('blogs.show', $blog)->with('success', 'Blog created successfully.');
+    }
+
+    public function edit(Blog $blog)
+    {
+        return Inertia::render('Blog/CreateOrEdit', [
+            'blog' => $blog,
+        ]);
+    }
+
+    public function update(UpdateBlogRequest $request, Blog $blog)
+    {
+        $data = $request->validated();
+
+        if ($request->hasFile('featured_image')) {
+            if ($blog->featured_image_path) {
+                Storage::delete($blog->featured_image_path);
+            }
+
+            $path = $request->file('featured_image')->store('blogs');
+            $data['featured_image_path'] = $path;
+        }
+
+        $blog->update($data);
+
+        return redirect()
+            ->route('blogs.show', $blog)
+            ->with('success', 'Blog updated successfully.');
+    }
+
+    public function destroy(Blog $blog)
+    {
+        if ($blog->featured_image_path) {
+            Storage::delete($blog->featured_image_path);
+        }
+
+        $blog->delete();
+
+        return redirect()
+            ->route('blogs.index')
+            ->with('success', 'Blog deleted successfully.');
     }
 
     public function show(Blog $blog)
     {
-        abort_unless($blog->is_published, 404);
-
         $blog->load('user:id,name,username,image_path,is_verified');
         $blog->increment('views');
 

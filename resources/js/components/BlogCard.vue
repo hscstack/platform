@@ -7,6 +7,8 @@ import {
     Heart,
     MessageSquare,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { useAuth } from '@/lib/useAuth';
 import { formatTimeAgo } from '@/lib/useDate';
 
 interface User {
@@ -18,12 +20,14 @@ interface User {
 
 interface Blog {
     id: number;
+    user_id?: number;
     title: string;
     slug: string;
     excerpt?: string | null;
     category?: string | null;
     featured_image?: string | null;
     featured_image_path?: string | null;
+    is_published?: boolean;
     is_featured?: boolean;
     views?: number;
     reactions_count?: number;
@@ -32,9 +36,18 @@ interface Blog {
     user?: User;
 }
 
-defineProps<{
+const props = defineProps<{
     blog: Blog;
 }>();
+
+const { userId } = useAuth();
+const isAuthor = computed(() => {
+    return Boolean(
+        userId.value &&
+        (userId.value === props.blog.user_id ||
+            userId.value === props.blog.user?.id),
+    );
+});
 </script>
 
 <template>
@@ -60,12 +73,22 @@ defineProps<{
                 <BookOpen class="h-6 w-6 stroke-[1.8] opacity-60" />
             </div>
 
-            <!-- Desktop Category Badge (on image) -->
+            <!-- Desktop Badges (on image) -->
             <div
-                v-if="blog.category"
-                class="absolute top-2.5 left-2.5 hidden rounded-md bg-indigo-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs sm:block"
+                class="absolute top-2.5 left-2.5 hidden items-center gap-1.5 sm:flex"
             >
-                {{ blog.category }}
+                <span
+                    v-if="blog.category"
+                    class="rounded-md bg-indigo-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs"
+                >
+                    {{ blog.category }}
+                </span>
+                <span
+                    v-if="blog.is_published === false"
+                    class="rounded-md bg-amber-500/95 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs backdrop-blur-xs"
+                >
+                    Unpublished
+                </span>
             </div>
         </div>
 
@@ -84,10 +107,22 @@ defineProps<{
                     </span>
 
                     <span
+                        v-if="blog.is_published === false"
+                        class="rounded-md border border-amber-200/80 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 sm:hidden dark:border-amber-800/40 dark:bg-amber-950/50 dark:text-amber-400"
+                    >
+                        Unpublished
+                    </span>
+
+                    <span
                         v-if="blog.user?.name"
                         class="truncate font-semibold text-slate-700 dark:text-gray-300"
                     >
-                        {{ blog.user.name }}
+                        {{ blog.user.name
+                        }}<span
+                            v-if="isAuthor"
+                            class="ml-0.5 font-bold text-indigo-600 dark:text-indigo-400"
+                            >(Me)</span
+                        >
                     </span>
 
                     <template v-if="blog.created_at">

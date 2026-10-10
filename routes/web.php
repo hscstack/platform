@@ -19,6 +19,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('throttle:60,1')->get('/api/auth/status', function (Request $request) {
@@ -33,6 +34,20 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/account/delete', [ProfileController::class, 'deleteAccount'])->name('account.delete');
     Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');
+
+    // Blog Authoring & Management
+    Route::middleware('permission:create blogs|manage blogs')->group(function () {
+        Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
+        Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    });
+    Route::middleware('can:update,blog')->group(function () {
+        Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
+        Route::match(['post', 'patch'], '/blogs/{blog}/patch', [BlogController::class, 'update'])->name('blogs.update');
+    });
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])
+        ->middleware('can:delete,blog')
+        ->name('blogs.destroy');
+
     Route::post('/blogs/{blog}/react', [BlogController::class, 'toggleReaction'])->name('blogs.react');
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
@@ -113,7 +128,9 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::post('/onboarding', [AuthController::class, 'completeOnboarding'])->name('onboarding.complete');
 
     Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
-    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
+    Route::get('/blogs/{blog}', [BlogController::class, 'show'])
+        ->middleware('can:view,blog')
+        ->name('blogs.show');
     Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
     Route::get('/forum/questions/{post:slug}', [ForumController::class, 'show'])->name('forum.show');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');

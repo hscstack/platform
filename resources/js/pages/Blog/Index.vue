@@ -1,27 +1,55 @@
 <script setup lang="ts">
-import { router, Head } from '@inertiajs/vue3';
-import { Search, X, AlertTriangle } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { router, Head, Link } from '@inertiajs/vue3';
+import { Search, X, AlertTriangle, Plus } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import AdUnit from '@/components/AdUnit.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
+import { useAuth } from '@/lib/useAuth';
+import { usePermissions } from '@/lib/usePermissions';
 
-defineProps({
-    blogs: Object,
-});
+const { can } = usePermissions();
+const { user } = useAuth();
 
-const searchQuery = ref(
-    new URLSearchParams(window.location.search).get('q') || '',
-);
+const props = defineProps<{
+    blogs: any;
+    filters?: {
+        q?: string;
+        mine?: boolean;
+    };
+}>();
+
+const isMine = computed(() => Boolean(props.filters?.mine));
+const searchQuery = ref(props.filters?.q || '');
+
+const applyFilters = (newParams: Record<string, any> = {}) => {
+    const params: Record<string, any> = {
+        q: searchQuery.value.trim() || undefined,
+        mine: isMine.value ? '1' : undefined,
+        ...newParams,
+    };
+
+    Object.keys(params).forEach((k) => {
+        if (!params[k]) {
+            delete params[k];
+        }
+    });
+
+    router.get('/blogs', params, { preserveState: true, preserveScroll: true });
+};
+
+const setMine = (val: boolean) => {
+    applyFilters({ mine: val ? '1' : undefined });
+};
 
 const handleSearch = () => {
-    router.get('/blogs', { q: searchQuery.value }, { preserveState: true });
+    applyFilters({ q: searchQuery.value });
 };
 
 const clearSearch = () => {
     searchQuery.value = '';
-    router.get('/blogs', { q: '' });
+    applyFilters({ q: undefined });
 };
 </script>
 
@@ -60,11 +88,20 @@ const clearSearch = () => {
                     গুরুত্বপূর্ণ তথ্য পড়ুন।
                 </p>
             </div>
+
+            <Link
+                v-if="can('create blogs') || can('manage blogs')"
+                href="/blogs/create"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-indigo-700 sm:text-sm"
+            >
+                <Plus class="h-4 w-4 stroke-[2.2]" />
+                <span>Write Blog</span>
+            </Link>
         </div>
 
         <!-- Search Bar Row -->
-        <div class="mb-4 sm:mb-6">
-            <div class="relative w-full">
+        <div class="mb-4 flex items-center gap-2 sm:mb-6 sm:gap-3">
+            <div class="relative flex-1">
                 <div
                     class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-gray-500"
                 >
@@ -98,6 +135,22 @@ const clearSearch = () => {
                     </button>
                 </div>
             </div>
+
+            <!-- Mine Filter (only shown when logged in) -->
+            <button
+                v-if="user"
+                type="button"
+                @click="setMine(!isMine)"
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold shadow-2xs transition active:scale-95 sm:px-3.5 sm:py-2.5"
+                :class="[
+                    isMine
+                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800',
+                ]"
+                title="Show only my blogs"
+            >
+                <span>Mine</span>
+            </button>
         </div>
 
         <div
@@ -125,12 +178,20 @@ const clearSearch = () => {
             v-else
             :icon="AlertTriangle"
             variant="dashed"
-            title="আপনার অনুসন্ধানের সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি।"
-            :description="`&quot;${searchQuery}&quot;-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।`"
+            :title="
+                isMine
+                    ? 'আপনার এখনো কোনো আর্টিকেল নেই।'
+                    : 'আপনার অনুসন্ধানের সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি।'
+            "
+            :description="
+                isMine
+                    ? 'নতুন আর্টিকেল লিখতে উপরে &quot;Write Blog&quot; বাটনে ক্লিক করুন।'
+                    : `&quot;${searchQuery}&quot;-এর সাথে মিল থাকা কোনো আর্টিকেল পাওয়া যায়নি। বানান যাচাই করুন অথবা অনুসন্ধান মুছে আবার চেষ্টা করুন।`
+            "
         >
             <button
                 type="button"
-                @click="clearSearch"
+                @click="isMine ? setMine(false) : clearSearch()"
                 class="cursor-pointer rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
             >
                 সব আর্টিকেল দেখুন
