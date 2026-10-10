@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ArrowRight, ExternalLink, Layers, Users } from 'lucide-vue-next';
+import { Link, router } from '@inertiajs/vue3';
+import { ArrowRight, ExternalLink, Layers, Pencil, Trash2, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 export interface ProductItem {
@@ -18,6 +19,7 @@ export interface ProductItem {
 
 const props = defineProps<{
     product: ProductItem;
+    canManage?: boolean;
 }>();
 
 const displayImage = computed(() => {
@@ -31,6 +33,12 @@ const isBlank = computed(() => {
 const buttonLabel = computed(() => {
     return props.product.button_text || `Visit ${props.product.name}`;
 });
+
+const deleteProduct = () => {
+    if (confirm(`Are you sure you want to delete "${props.product.name}"?`)) {
+        router.delete(`/products/${props.product.id}`);
+    }
+};
 </script>
 
 <template>
@@ -95,6 +103,35 @@ const buttonLabel = computed(() => {
                 <ExternalLink v-if="isBlank" class="h-4 w-4" />
                 <ArrowRight v-else class="h-4 w-4" />
             </a>
+
+            <!-- Manage Actions (admin only) -->
+            <div
+                v-if="canManage"
+                class="mt-2.5 flex items-center gap-2"
+            >
+                <span
+                    v-if="product.is_active === false"
+                    class="rounded-md border border-amber-200/80 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-800/40 dark:bg-amber-950/50 dark:text-amber-400"
+                >
+                    Inactive
+                </span>
+                <div class="ml-auto flex items-center gap-1">
+                    <Link
+                        :href="`/products/${product.id}/edit`"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    >
+                        <Pencil class="h-3.5 w-3.5" />
+                        <span>Edit</span>
+                    </Link>
+                    <button
+                        @click="deleteProduct"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 shadow-2xs transition-colors hover:bg-rose-100 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
+                    >
+                        <Trash2 class="h-3.5 w-3.5" />
+                        <span>Delete</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>

@@ -51,12 +51,6 @@ const allNavigation: AdminNavItem[] = [
     },
     { name: 'Manage Contents', to: '/admin/subjects', icon: 'menu_book' },
     {
-        name: 'Manage Products',
-        to: '/admin/products',
-        icon: 'inventory_2',
-        permission: 'manage products',
-    },
-    {
         name: 'Manage Forum',
         to: '/admin/forums',
         icon: 'forum',
