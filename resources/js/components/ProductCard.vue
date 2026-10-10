@@ -48,7 +48,7 @@ const deleteProduct = () => {
         <div class="flex flex-1 flex-col">
             <!-- Image / Thumbnail -->
             <div
-                class="aspect-[16/9] overflow-hidden rounded-xl bg-slate-100 dark:bg-gray-800"
+                class="relative aspect-[16/9] overflow-hidden rounded-xl bg-slate-100 dark:bg-gray-800"
             >
                 <img
                     v-if="displayImage"
@@ -62,6 +62,38 @@ const deleteProduct = () => {
                     class="flex h-full w-full items-center justify-center text-slate-300 dark:text-gray-600"
                 >
                     <Layers class="h-12 w-12 stroke-[1.5]" />
+                </div>
+
+                <!-- Overlay: Unpublished badge (top-left) + Edit/Delete icons (top-right) -->
+                <div
+                    v-if="canManage"
+                    class="absolute inset-x-0 top-0 flex items-start justify-between p-2"
+                >
+                    <span
+                        v-if="product.is_active === false"
+                        class="rounded-md bg-amber-500/95 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs backdrop-blur-xs"
+                    >
+                        Unpublished
+                    </span>
+                    <span v-else />
+
+                    <div class="flex items-center gap-1" @click.stop>
+                        <Link
+                            :href="`/products/${product.id}/edit`"
+                            class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-slate-700 shadow-xs backdrop-blur-xs transition hover:bg-white hover:text-indigo-600 dark:bg-gray-900/80 dark:text-gray-200 dark:hover:bg-gray-900 dark:hover:text-indigo-400"
+                            title="Edit product"
+                        >
+                            <Pencil class="h-3.5 w-3.5" />
+                        </Link>
+                        <button
+                            @click="deleteProduct"
+                            type="button"
+                            class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-white/90 text-slate-400 shadow-xs backdrop-blur-xs transition hover:bg-rose-50 hover:text-rose-600 dark:bg-gray-900/80 dark:text-gray-400 dark:hover:bg-rose-950/60 dark:hover:text-rose-400"
+                            title="Delete product"
+                        >
+                            <Trash2 class="h-3.5 w-3.5" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -103,35 +135,6 @@ const deleteProduct = () => {
                 <ExternalLink v-if="isBlank" class="h-4 w-4" />
                 <ArrowRight v-else class="h-4 w-4" />
             </a>
-
-            <!-- Manage Actions (admin only) -->
-            <div
-                v-if="canManage"
-                class="mt-2.5 flex items-center gap-2"
-            >
-                <span
-                    v-if="product.is_active === false"
-                    class="rounded-md border border-amber-200/80 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-800/40 dark:bg-amber-950/50 dark:text-amber-400"
-                >
-                    Inactive
-                </span>
-                <div class="ml-auto flex items-center gap-1">
-                    <Link
-                        :href="`/products/${product.id}/edit`"
-                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                    >
-                        <Pencil class="h-3.5 w-3.5" />
-                        <span>Edit</span>
-                    </Link>
-                    <button
-                        @click="deleteProduct"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 shadow-2xs transition-colors hover:bg-rose-100 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
-                    >
-                        <Trash2 class="h-3.5 w-3.5" />
-                        <span>Delete</span>
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 </template>
