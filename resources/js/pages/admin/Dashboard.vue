@@ -5,7 +5,6 @@ import {
     Users,
     Eye,
     Share2,
-    Zap,
     RefreshCw,
     BarChart3,
     CheckSquare,
@@ -17,9 +16,6 @@ import {
     UserCheck,
     Radio,
     Mail,
-    FileText,
-    Boxes,
-    ArrowUpRight,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -39,7 +35,6 @@ const errorMsg = ref<string | null>(null);
 const adminTools = [
     {
         name: 'Resource Moderation',
-        description: 'Review and approve community submitted study materials',
         href: '/admin/moderation/resources',
         icon: CheckSquare,
         color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400',
@@ -47,14 +42,12 @@ const adminTools = [
     },
     {
         name: 'Manage Contents',
-        description: 'Syllabus, subjects, chapters and learning resources',
         href: '/admin/subjects',
         icon: BookOpen,
         color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400',
     },
     {
         name: 'Manage Forum',
-        description: 'Categories, pinned questions, and moderation',
         href: '/admin/forums',
         icon: MessageSquare,
         color: 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400',
@@ -62,7 +55,6 @@ const adminTools = [
     },
     {
         name: 'Support Tickets',
-        description: 'View and respond to student help tickets',
         href: '/admin/tickets',
         icon: LifeBuoy,
         color: 'text-amber-600 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400',
@@ -70,7 +62,6 @@ const adminTools = [
     },
     {
         name: 'Site Notice',
-        description: 'Broadcast system banner and maintenance alerts',
         href: '/admin/notice',
         icon: Bell,
         color: 'text-purple-600 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400',
@@ -78,7 +69,6 @@ const adminTools = [
     },
     {
         name: 'Global Chat',
-        description: 'Live chat room moderation and flagged messages',
         href: '/admin/chat',
         icon: MessageCircle,
         color: 'text-teal-600 bg-teal-50 dark:bg-teal-500/10 dark:text-teal-400',
@@ -86,7 +76,6 @@ const adminTools = [
     },
     {
         name: 'Users & Roles',
-        description: 'Directory, verification badges, and permissions',
         href: '/admin/users',
         icon: UserCheck,
         color: 'text-sky-600 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400',
@@ -94,7 +83,6 @@ const adminTools = [
     },
     {
         name: 'Peer & Pokes',
-        description: 'Community interactions and study buddy settings',
         href: '/admin/peers/settings',
         icon: Radio,
         color: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-400',
@@ -102,27 +90,10 @@ const adminTools = [
     },
     {
         name: 'Send Emails',
-        description: 'Compose announcements and system updates',
         href: '/admin/emails/send',
         icon: Mail,
         color: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 dark:text-orange-400',
         permission: 'send email',
-    },
-    {
-        name: 'Blogs & Articles',
-        description: 'Public authoring, editorial drafts, and posts',
-        href: '/blogs',
-        icon: FileText,
-        color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400',
-        permission: 'manage blogs',
-    },
-    {
-        name: 'Products & Projects',
-        description: 'Public showcase platform apps and tools',
-        href: '/products',
-        icon: Boxes,
-        color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-500/10 dark:text-cyan-400',
-        permission: 'manage products',
     },
 ];
 
@@ -168,7 +139,17 @@ const fetchAnalytics = async (refresh = false) => {
                     Dashboard
                 </h1>
                 <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
-                    Staff workspace and management portal
+                    Staff workspace &bull;
+                    <span class="font-medium text-slate-700 dark:text-gray-300">
+                        {{
+                            (
+                                stats?.total_accounts ??
+                                props.totalAccounts ??
+                                0
+                            ).toLocaleString()
+                        }}
+                        Total Accounts
+                    </span>
                 </p>
             </div>
 
@@ -197,147 +178,37 @@ const fetchAnalytics = async (refresh = false) => {
 
         <!-- Management Tools Grid -->
         <div>
-            <div class="mb-3 flex items-center justify-between">
+            <div class="mb-3">
                 <h2
                     class="text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
                 >
                     Management Tools
                 </h2>
-                <span
-                    class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-400"
-                >
-                    {{ visibleTools.length }} Available
-                </span>
             </div>
 
             <div
-                class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-3"
             >
                 <Link
                     v-for="tool in visibleTools"
                     :key="tool.href"
                     :href="tool.href"
-                    class="group relative flex flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs transition-all duration-150 hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/40"
+                    class="group flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-2xs transition-all hover:border-indigo-300 hover:shadow-xs sm:p-3 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/40"
                 >
-                    <div class="flex items-start justify-between gap-3">
-                        <div
-                            :class="[
-                                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors',
-                                tool.color,
-                            ]"
-                        >
-                            <component
-                                :is="tool.icon"
-                                class="h-5 w-5 stroke-[1.9]"
-                            />
-                        </div>
-                        <ArrowUpRight
-                            class="h-4 w-4 text-slate-400 opacity-0 transition-all duration-150 group-hover:text-indigo-600 group-hover:opacity-100 dark:text-gray-500 dark:group-hover:text-indigo-400"
-                        />
+                    <div
+                        :class="[
+                            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
+                            tool.color,
+                        ]"
+                    >
+                        <component :is="tool.icon" class="h-4 w-4 stroke-[2]" />
                     </div>
-
-                    <div class="mt-3.5">
-                        <h3
-                            class="text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
-                        >
-                            {{ tool.name }}
-                        </h3>
-                        <p
-                            class="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-gray-400"
-                        >
-                            {{ tool.description }}
-                        </p>
-                    </div>
+                    <span
+                        class="text-xs leading-tight font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 sm:text-sm dark:text-gray-200 dark:group-hover:text-indigo-400"
+                    >
+                        {{ tool.name }}
+                    </span>
                 </Link>
-            </div>
-        </div>
-
-        <!-- Overview Quick Stats -->
-        <div class="grid gap-3 sm:grid-cols-3">
-            <div
-                class="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p
-                            class="text-[11px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >
-                            Total Accounts
-                        </p>
-                        <h3
-                            class="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
-                        >
-                            {{
-                                (
-                                    stats?.total_accounts ??
-                                    props.totalAccounts ??
-                                    0
-                                ).toLocaleString()
-                            }}
-                        </h3>
-                    </div>
-                    <div
-                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                    >
-                        <Users class="h-4.5 w-4.5" />
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p
-                            class="text-[11px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >
-                            Active Now (5m)
-                        </p>
-                        <h3
-                            class="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
-                        >
-                            {{
-                                stats?.realtime_users ?? (hasFetched ? 0 : '—')
-                            }}
-                        </h3>
-                    </div>
-                    <div
-                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-                    >
-                        <Zap class="h-4.5 w-4.5" />
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
-            >
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p
-                            class="text-[11px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
-                        >
-                            Monthly Visits
-                        </p>
-                        <h3
-                            class="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
-                        >
-                            {{
-                                stats?.total_visits
-                                    ? stats.total_visits.toLocaleString()
-                                    : hasFetched
-                                      ? 0
-                                      : '—'
-                            }}
-                        </h3>
-                    </div>
-                    <div
-                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
-                    >
-                        <Eye class="h-4.5 w-4.5" />
-                    </div>
-                </div>
             </div>
         </div>
 
