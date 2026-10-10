@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { Plus } from 'lucide-vue-next';
 import AdUnit from '@/components/AdUnit.vue';
 import ProductCard from '@/components/ProductCard.vue';
 import type { ProductItem } from '@/components/ProductCard.vue';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 defineProps<{
     products: ProductItem[];
@@ -41,6 +45,16 @@ defineProps<{
         >
             Explore platforms and tools built by HSCStack
         </p>
+
+        <div v-if="can('manage products')" class="mt-5 flex justify-center">
+            <Link
+                href="/products/create"
+                class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-indigo-700"
+            >
+                <Plus class="h-4 w-4 stroke-[2.2]" />
+                <span>Add Product</span>
+            </Link>
+        </div>
     </header>
 
     <main class="mx-auto max-w-5xl px-4 pb-20 sm:px-6">
@@ -52,7 +66,10 @@ defineProps<{
                 v-for="(product, index) in products"
                 :key="product.id || product.name"
             >
-                <ProductCard :product="product" />
+                <ProductCard
+                    :product="product"
+                    :can-manage="can('manage products')"
+                />
 
                 <!-- Native Sponsored Tool / Partner Card in More From Us -->
                 <AdUnit

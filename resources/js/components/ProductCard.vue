@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { ArrowRight, ExternalLink, Layers, Users } from 'lucide-vue-next';
+import { Link, router } from '@inertiajs/vue3';
+import {
+    ArrowRight,
+    ExternalLink,
+    Layers,
+    Pencil,
+    Trash2,
+    Users,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 export interface ProductItem {
@@ -18,6 +26,7 @@ export interface ProductItem {
 
 const props = defineProps<{
     product: ProductItem;
+    canManage?: boolean;
 }>();
 
 const displayImage = computed(() => {
@@ -31,6 +40,12 @@ const isBlank = computed(() => {
 const buttonLabel = computed(() => {
     return props.product.button_text || `Visit ${props.product.name}`;
 });
+
+const deleteProduct = () => {
+    if (confirm(`Are you sure you want to delete "${props.product.name}"?`)) {
+        router.delete(`/products/${props.product.id}`);
+    }
+};
 </script>
 
 <template>
@@ -40,7 +55,7 @@ const buttonLabel = computed(() => {
         <div class="flex flex-1 flex-col">
             <!-- Image / Thumbnail -->
             <div
-                class="aspect-[16/9] overflow-hidden rounded-xl bg-slate-100 dark:bg-gray-800"
+                class="relative aspect-[16/9] overflow-hidden rounded-xl bg-slate-100 dark:bg-gray-800"
             >
                 <img
                     v-if="displayImage"
@@ -54,6 +69,38 @@ const buttonLabel = computed(() => {
                     class="flex h-full w-full items-center justify-center text-slate-300 dark:text-gray-600"
                 >
                     <Layers class="h-12 w-12 stroke-[1.5]" />
+                </div>
+
+                <!-- Overlay: Unpublished badge (top-left) + Edit/Delete icons (top-right) -->
+                <div
+                    v-if="canManage"
+                    class="absolute inset-x-0 top-0 flex items-start justify-between p-2"
+                >
+                    <span
+                        v-if="product.is_active === false"
+                        class="rounded-md bg-amber-500/95 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase shadow-xs backdrop-blur-xs"
+                    >
+                        Unpublished
+                    </span>
+                    <span v-else />
+
+                    <div class="flex items-center gap-1" @click.stop>
+                        <Link
+                            :href="`/products/${product.id}/edit`"
+                            class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-slate-700 shadow-xs backdrop-blur-xs transition hover:bg-white hover:text-indigo-600 dark:bg-gray-900/80 dark:text-gray-200 dark:hover:bg-gray-900 dark:hover:text-indigo-400"
+                            title="Edit product"
+                        >
+                            <Pencil class="h-3.5 w-3.5" />
+                        </Link>
+                        <button
+                            @click="deleteProduct"
+                            type="button"
+                            class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-white/90 text-slate-400 shadow-xs backdrop-blur-xs transition hover:bg-rose-50 hover:text-rose-600 dark:bg-gray-900/80 dark:text-gray-400 dark:hover:bg-rose-950/60 dark:hover:text-rose-400"
+                            title="Delete product"
+                        >
+                            <Trash2 class="h-3.5 w-3.5" />
+                        </button>
+                    </div>
                 </div>
             </div>
 

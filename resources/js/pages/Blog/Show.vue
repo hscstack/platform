@@ -4,6 +4,7 @@ import {
     Calendar,
     User,
     Eye,
+    ArrowLeft,
     ArrowRight,
     PenLine,
     Pencil,
@@ -274,7 +275,18 @@ const formatTimeAgo = (dateStr: string) => {
         />
     </Head>
 
-    <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <!-- Back Link -->
+        <div class="mb-4">
+            <Link
+                href="/blogs"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+            >
+                <ArrowLeft class="h-4 w-4" />
+                <span>Back to Blogs</span>
+            </Link>
+        </div>
+
         <article>
             <div
                 class="mb-6 flex flex-wrap items-center gap-4 text-xs sm:text-sm"

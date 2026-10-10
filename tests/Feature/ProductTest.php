@@ -74,39 +74,34 @@ test('products page products are cached forever and cleared on create, update, a
     expect(Cache::has('products_page_products'))->toBeFalse();
 });
 
-test('unauthorized users cannot access admin products management', function () {
+test('unauthorized users cannot access product management routes', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->get('/admin/products');
+    $response = $this->actingAs($user)->get('/products/create');
     $response->assertStatus(302);
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');
 
     $userWithAdmin = adminUserWithPermissions(['view admin']);
-    $response = $this->actingAs($userWithAdmin)->get('/admin/products');
+    $response = $this->actingAs($userWithAdmin)->get('/products/create');
     $response->assertStatus(302);
     $response->assertSessionHas('error', 'You do not have permission to perform this action.');
 });
 
-test('users with manage products permission can manage products in admin panel', function () {
+test('users with manage products permission can manage products via public authoring', function () {
     Storage::fake();
 
-    $adminUser = adminUserWithPermissions(['view admin', 'manage products']);
-
-    // List products
-    $response = $this->actingAs($adminUser)->get('/admin/products');
-    $response->assertStatus(200);
-    $response->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('admin/Product')
-        ->has('products')
-    );
+    $manager = adminUserWithPermissions(['manage products']);
 
     // Show create form
-    $this->actingAs($adminUser)->get('/admin/products/create')->assertStatus(200);
+    $this->actingAs($manager)->get('/products/create')->assertStatus(200)
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Products/CreateOrEdit')
+        );
 
     // Store product
     $file = UploadedFile::fake()->image('banner.png', 800, 450);
 
-    $storeResponse = $this->actingAs($adminUser)->post('/admin/products', [
+    $storeResponse = $this->actingAs($manager)->post('/products', [
         'name' => 'Test Product',
         'description' => 'A great new platform.',
         'image' => $file,
@@ -118,7 +113,7 @@ test('users with manage products permission can manage products in admin panel',
         'is_active' => true,
     ]);
 
-    $storeResponse->assertRedirect(route('admin.products.index'));
+    $storeResponse->assertRedirect(route('products.index'));
 
     $product = Product::where('name', 'Test Product')->first();
     expect($product)->not->toBeNull()
@@ -130,10 +125,14 @@ test('users with manage products permission can manage products in admin panel',
     Storage::assertExists($product->image_path);
 
     // Show edit form
-    $this->actingAs($adminUser)->get("/admin/products/edit/{$product->id}")->assertStatus(200);
+    $this->actingAs($manager)->get("/products/{$product->id}/edit")->assertStatus(200)
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Products/CreateOrEdit')
+            ->has('product')
+        );
 
     // Update product
-    $updateResponse = $this->actingAs($adminUser)->post("/admin/products/edit/{$product->id}/patch", [
+    $updateResponse = $this->actingAs($manager)->post("/products/{$product->id}/patch", [
         'name' => 'Updated Test Product',
         'description' => 'Updated description.',
         'users' => '2000+ Users',
@@ -144,14 +143,14 @@ test('users with manage products permission can manage products in admin panel',
         'is_active' => true,
     ]);
 
-    $updateResponse->assertRedirect(route('admin.products.index'));
+    $updateResponse->assertRedirect(route('products.index'));
     $product->refresh();
     expect($product->name)->toBe('Updated Test Product')
         ->and($product->users)->toBe('2000+ Users')
         ->and($product->open_type)->toBe('_self');
 
     // Delete product
-    $deleteResponse = $this->actingAs($adminUser)->delete("/admin/products/{$product->id}");
-    $deleteResponse->assertRedirect();
+    $deleteResponse = $this->actingAs($manager)->delete("/products/{$product->id}");
+    $deleteResponse->assertRedirect(route('products.index'));
     expect(Product::find($product->id))->toBeNull();
 });
