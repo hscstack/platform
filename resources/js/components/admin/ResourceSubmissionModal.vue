@@ -229,6 +229,7 @@ const { can } = usePermissions();
                         <a
                             :href="changeRequest.payload.external_url"
                             target="_blank"
+                            rel="noopener noreferrer"
                             class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
                         >
                             <span class="break-all">{{

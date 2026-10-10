@@ -38,10 +38,9 @@ class ResourceChangeRequest extends Model
      */
     public function pruning(): void
     {
-        $stagedFile = $this->payload['file_path'] ?? null;
-        if ($stagedFile) {
-            $isStillUsedByLiveResource = $this->resource && $this->resource->file_path === $stagedFile;
-            if (! $isStillUsedByLiveResource) {
+        if ($this->status === 'rejected') {
+            $stagedFile = $this->payload['file_path'] ?? null;
+            if ($stagedFile) {
                 Storage::delete($stagedFile);
             }
         }

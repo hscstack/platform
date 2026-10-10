@@ -648,8 +648,10 @@ test('resource moderation notification formats batch data correctly', function (
 });
 
 test('batch node creation respects should_track_top_folders parameter', function () {
+    Permission::findOrCreate('create nodes', 'web');
     $admin = User::factory()->create();
     $admin->assignRole('admin');
+    $admin->givePermissionTo('create nodes');
 
     $subject = Subject::create([
         'name' => 'Biology',
