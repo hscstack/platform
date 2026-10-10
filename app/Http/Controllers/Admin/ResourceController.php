@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ResourceController extends Controller
@@ -33,6 +34,10 @@ class ResourceController extends Controller
      */
     protected function ensureUnderPendingLimit(int $incomingCount = 1): void
     {
+        if (Auth::user()?->can('moderate resources')) {
+            return;
+        }
+
         $userId = Auth::id();
         $maxLimit = $this->getMaxPendingSubmissions();
 
@@ -42,20 +47,27 @@ class ResourceController extends Controller
 
         if (($currentPending + $incomingCount) > $maxLimit) {
             throw ValidationException::withMessages([
-                'pending_limit' => "আপনি সর্বোচ্চ {$maxLimit}টি কন্টেন্ট আপলোড করার অনুরোধ করতে পারেন। আপনার আপলোডকৃত {$currentPending}টি কন্টেন্ট বর্তমানে পর্যালোচনাধীন রয়েছে, তাই অনুগ্রহ করে অপেক্ষা করুন।",
+                'pending_limit' => "আপনি সর্বোচ্চ {$maxLimit}টি কন্টেন্ট আপলোড করার অনুরোধ করতে পারেন। আপনার আপলোডকৃত {$currentPending}টি কন্টেন্ট বর্তমানে পর্যালোচনাধীন রয়েছে, তাই অনুগ্রহ করে অপেক্ষা করুন। ",
             ]);
         }
     }
 
     public function store(StoreResourceRequest $request)
     {
-        $this->ensureUnderPendingLimit(1);
-
         $validated = $request->validated();
 
         if ($request->hasFile('file')) {
             $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
         }
+
+        if ($request->user()->can('moderate resources')) {
+            $validated['user_id'] = Auth::id();
+            Resource::create($validated);
+
+            return back()->with('success', 'Resource created successfully.');
+        }
+
+        $this->ensureUnderPendingLimit(1);
 
         ResourceChangeRequest::recordCreate(
             Auth::id(),
@@ -68,17 +80,22 @@ class ResourceController extends Controller
 
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
-        if ($resource->pendingChangeRequest()->exists()) {
-            return back()->with('error', 'This resource already has a pending change request under review.');
-        }
-
-        $this->ensureUnderPendingLimit(1);
-
         $validated = $request->validated();
 
         if ($request->hasFile('file')) {
+            if ($request->user()->can('moderate resources') && $resource->file_path) {
+                Storage::delete($resource->file_path);
+            }
             $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
         }
+
+        if ($request->user()->can('moderate resources')) {
+            $resource->update($validated);
+
+            return back()->with('success', 'Resource updated successfully.');
+        }
+
+        $this->ensureUnderPendingLimit(1);
 
         ResourceChangeRequest::recordUpdate(
             Auth::id(),
@@ -91,8 +108,13 @@ class ResourceController extends Controller
 
     public function destroy(Resource $resource)
     {
-        if ($resource->pendingChangeRequest()->exists()) {
-            return back()->with('error', 'This resource already has a pending change request under review.');
+        if (Auth::user()?->can('moderate resources')) {
+            if ($resource->file_path) {
+                Storage::delete($resource->file_path);
+            }
+            $resource->delete();
+
+            return redirect()->back()->with('success', 'Resource deleted successfully.');
         }
 
         $this->ensureUnderPendingLimit(1);
@@ -106,23 +128,41 @@ class ResourceController extends Controller
     {
         $validated = $request->validated();
         $filesCount = count($request->file('files') ?? []);
+        $isModerator = $request->user()->can('moderate resources');
 
-        $this->ensureUnderPendingLimit($filesCount);
+        if (! $isModerator) {
+            $this->ensureUnderPendingLimit($filesCount);
+        }
 
         $userId = Auth::id();
         $nodeId = (int) $validated['node_id'];
 
-        DB::transaction(function () use ($request, $validated, $userId, $nodeId) {
+        DB::transaction(function () use ($request, $validated, $userId, $nodeId, $isModerator) {
             foreach ($request->file('files') as $index => $file) {
-                ResourceChangeRequest::recordCreate($userId, $nodeId, [
-                    'title' => $validated['custom_titles'][$index],
-                    'resource_type' => 'image',
-                    'file_path' => $file->store('resources/images'),
-                ]);
+                $filePath = $file->store('resources/images');
+                $title = $validated['custom_titles'][$index];
+
+                if ($isModerator) {
+                    Resource::create([
+                        'user_id' => $userId,
+                        'node_id' => $nodeId,
+                        'title' => $title,
+                        'resource_type' => 'image',
+                        'file_path' => $filePath,
+                    ]);
+                } else {
+                    ResourceChangeRequest::recordCreate($userId, $nodeId, [
+                        'title' => $title,
+                        'resource_type' => 'image',
+                        'file_path' => $filePath,
+                    ]);
+                }
             }
         });
 
-        return back()->with('success', 'Images submitted for moderation.');
+        $message = $isModerator ? 'Images uploaded successfully.' : 'Images submitted for moderation.';
+
+        return back()->with('success', $message);
     }
 
     public function storeBulkVideos(BulkVideoStoreRequest $request)
@@ -193,22 +233,39 @@ class ResourceController extends Controller
         $userId = Auth::id();
         $nodeId = (int) $validated['node_id'];
         $videosCount = count($videos);
+        $isModerator = $request->user()->can('moderate resources');
 
-        $this->ensureUnderPendingLimit($videosCount);
+        if (! $isModerator) {
+            $this->ensureUnderPendingLimit($videosCount);
+        }
 
-        DB::transaction(function () use ($videos, $userId, $nodeId) {
+        DB::transaction(function () use ($videos, $userId, $nodeId, $isModerator) {
             foreach ($videos as $video) {
                 $finalUrl = "https://www.youtube.com/watch?v={$video['video_id']}";
 
-                ResourceChangeRequest::recordCreate($userId, $nodeId, [
-                    'title' => $video['title'],
-                    'resource_type' => 'video',
-                    'external_url' => $finalUrl,
-                ]);
+                if ($isModerator) {
+                    Resource::create([
+                        'user_id' => $userId,
+                        'node_id' => $nodeId,
+                        'title' => $video['title'],
+                        'resource_type' => 'video',
+                        'external_url' => $finalUrl,
+                    ]);
+                } else {
+                    ResourceChangeRequest::recordCreate($userId, $nodeId, [
+                        'title' => $video['title'],
+                        'resource_type' => 'video',
+                        'external_url' => $finalUrl,
+                    ]);
+                }
             }
         });
 
-        return back()->with('success', 'YouTube playlist imported and submitted for moderation.');
+        $message = $isModerator
+            ? 'YouTube playlist imported successfully.'
+            : 'YouTube playlist imported and submitted for moderation.';
+
+        return back()->with('success', $message);
     }
 
     public function bulkRename(Request $request, Node $node)

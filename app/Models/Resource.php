@@ -71,4 +71,11 @@ class Resource extends Model
     {
         return $this->hasOne(ResourceChangeRequest::class)->where('status', 'pending');
     }
+
+    public function hasPendingChangeRequest(): bool
+    {
+        return $this->relationLoaded('pendingChangeRequest')
+            ? $this->pendingChangeRequest !== null
+            : $this->pendingChangeRequest()->exists();
+    }
 }
