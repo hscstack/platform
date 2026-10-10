@@ -534,8 +534,8 @@ const handleAppreciate = () => {
 const timeAgo = formatTimeAgo;
 const formatGroupName = (group?: string) => {
     if (!group) {
-return '';
-}
+        return '';
+    }
 
     return group.charAt(0).toUpperCase() + group.slice(1);
 };
