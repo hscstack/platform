@@ -217,6 +217,7 @@ const props = defineProps<{
     };
     syllabusProgress?: {
         course: string;
+        group?: string;
         overallPercent: number;
         completedChapters: number;
         totalChapters: number;
@@ -531,6 +532,13 @@ const handleAppreciate = () => {
 };
 
 const timeAgo = formatTimeAgo;
+const formatGroupName = (group?: string) => {
+    if (!group) {
+return '';
+}
+
+    return group.charAt(0).toUpperCase() + group.slice(1);
+};
 </script>
 
 <template>
@@ -905,7 +913,11 @@ const timeAgo = formatTimeAgo;
                         >
                             Syllabus Completed ({{
                                 syllabusProgress.course.toUpperCase()
-                            }})
+                            }}<template v-if="syllabusProgress.group">
+                                {{
+                                    formatGroupName(syllabusProgress.group)
+                                }}</template
+                            >)
                         </span>
 
                         <span
@@ -2063,7 +2075,7 @@ const timeAgo = formatTimeAgo;
         v-if="syllabusProgress"
         :is-open="showSyllabusModal"
         :title="`${profileUser.name}'s Syllabus Progress`"
-        :description="`${syllabusProgress.overallPercent}% completed (${syllabusProgress.completedChapters}/${syllabusProgress.totalChapters} chapters in ${syllabusProgress.course.toUpperCase()})`"
+        :description="`${syllabusProgress.overallPercent}% completed (${syllabusProgress.completedChapters}/${syllabusProgress.totalChapters} chapters in ${syllabusProgress.course.toUpperCase()}${syllabusProgress.group ? ' ' + formatGroupName(syllabusProgress.group) : ''})`"
         max-width="lg"
         @close="showSyllabusModal = false"
     >
@@ -2279,6 +2291,7 @@ const timeAgo = formatTimeAgo;
                 institution: profileUser.institution,
             },
             course: syllabusProgress.course,
+            group: syllabusProgress.group,
             overallPercent: syllabusProgress.overallPercent,
             completedChapters: syllabusProgress.completedChapters,
             totalChapters: syllabusProgress.totalChapters,

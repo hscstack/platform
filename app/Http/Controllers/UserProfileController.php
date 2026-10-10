@@ -469,6 +469,7 @@ class UserProfileController extends Controller
 
         return [
             'course' => $course,
+            'group' => $group,
             'overallPercent' => $overallPercent,
             'completedChapters' => $completedChapters,
             'totalChapters' => $totalChapters,

@@ -22,6 +22,7 @@ export interface ShareData {
         institution?: string | null;
     };
     course: string;
+    group?: string;
     overallPercent: number;
     completedChapters: number;
     totalChapters: number;
@@ -209,7 +210,10 @@ async function downloadCard() {
                     <div
                         class="inline-flex items-center rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs font-extrabold tracking-wider text-indigo-300 uppercase"
                     >
-                        {{ data.course.toUpperCase() }}
+                        {{ data.course.toUpperCase()
+                        }}<template v-if="data.group">
+                            · {{ data.group }}</template
+                        >
                     </div>
                 </div>
 
