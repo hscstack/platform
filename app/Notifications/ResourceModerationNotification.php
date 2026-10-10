@@ -4,9 +4,10 @@ namespace App\Notifications;
 
 use App\Models\ResourceChangeRequest;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class ResourceModerationNotification extends Notification
+class ResourceModerationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
