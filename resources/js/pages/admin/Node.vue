@@ -15,6 +15,7 @@ import {
     User,
     FileText,
     FileArchive,
+    AlertCircle,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkImageModal from '@/components/admin/BulkImageModal.vue';
@@ -37,6 +38,7 @@ const props = defineProps({
     nodes: Array,
     resources: Array,
     pending_creates: Array,
+    rejected_creates: Array,
     parent: Object,
     breadcrumb: Array,
 });
@@ -129,7 +131,8 @@ const totalItemsCount = computed(
     () =>
         (props.nodes?.length ?? 0) +
         (props.resources?.length ?? 0) +
-        (props.pending_creates?.length ?? 0),
+        (props.pending_creates?.length ?? 0) +
+        (props.rejected_creates?.length ?? 0),
 );
 
 const backUrl = computed(() => {
@@ -496,6 +499,13 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             <template #header>
                 <div class="flex items-center gap-2.5">
                     <div
+                        v-if="viewingPendingModal?.status === 'rejected'"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
+                    >
+                        <AlertCircle class="h-4.5 w-4.5" />
+                    </div>
+                    <div
+                        v-else
                         class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400"
                     >
                         <Clock class="h-4.5 w-4.5 animate-pulse" />
@@ -504,10 +514,18 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         <h3
                             class="text-base font-bold text-slate-900 dark:text-gray-100"
                         >
-                            Resource Submission
+                            {{
+                                viewingPendingModal?.status === 'rejected'
+                                    ? 'Rejected Resource Submission'
+                                    : 'Resource Submission'
+                            }}
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Awaiting moderation review before public release
+                            {{
+                                viewingPendingModal?.status === 'rejected'
+                                    ? 'This submission was reviewed and rejected'
+                                    : 'Awaiting moderation review before public release'
+                            }}
                         </p>
                     </div>
                 </div>
@@ -516,6 +534,67 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             <div v-if="viewingPendingModal" class="space-y-5 p-4 sm:p-6">
                 <!-- Status & Submission Meta Banner -->
                 <div
+                    v-if="viewingPendingModal.status === 'rejected'"
+                    class="space-y-2.5 rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-xs dark:border-rose-900/50 dark:bg-rose-950/30"
+                >
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-2"
+                    >
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="inline-flex items-center rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-2xs"
+                            >
+                                Rejected
+                            </span>
+                            <span
+                                class="font-medium text-rose-900 dark:text-rose-300"
+                            >
+                                Action:
+                                {{
+                                    viewingPendingModal.action_type === 'update'
+                                        ? 'Edit Resource'
+                                        : viewingPendingModal.action_type ===
+                                            'delete'
+                                          ? 'Delete Resource'
+                                          : 'Create Resource'
+                                }}
+                            </span>
+                        </div>
+
+                        <div
+                            v-if="viewingPendingModal.reviewer?.name"
+                            class="text-slate-600 dark:text-gray-400"
+                        >
+                            Reviewed by
+                            <span
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                            >
+                                {{ viewingPendingModal.reviewer.name }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="border-t border-rose-200/60 pt-2 dark:border-rose-900/40"
+                    >
+                        <div
+                            class="font-semibold text-rose-900 dark:text-rose-200"
+                        >
+                            Feedback / Reason:
+                        </div>
+                        <p
+                            class="mt-0.5 text-sm whitespace-pre-wrap text-rose-800 dark:text-rose-300"
+                        >
+                            {{
+                                viewingPendingModal.rejection_reason ||
+                                'No specific reason provided.'
+                            }}
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    v-else
                     class="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50/60 px-4 py-3 text-xs dark:border-amber-900/40 dark:bg-amber-950/20"
                 >
                     <div class="flex items-center gap-2">
@@ -716,7 +795,10 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             <template #footer>
                 <div class="flex items-center justify-end gap-3">
                     <Link
-                        v-if="can('moderate resources')"
+                        v-if="
+                            viewingPendingModal?.status === 'pending' &&
+                            can('moderate resources')
+                        "
                         href="/admin/moderation/resources"
                         class="inline-flex items-center gap-1.5 rounded-lg border border-amber-400 bg-amber-500 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-amber-600 dark:border-amber-500 dark:bg-amber-600 dark:hover:bg-amber-700"
                     >
@@ -820,6 +902,60 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                             >
                                 Review in Queue
                             </Link>
+                        </div>
+                    </div>
+
+                    <!-- Rejected New Uploads (User's Own) -->
+                    <div
+                        v-for="rejected in rejected_creates"
+                        :key="`rejected-create-${rejected.id}`"
+                        @click="viewingPendingModal = rejected"
+                        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-rose-200/80 bg-rose-50/50 p-3 transition hover:border-rose-300 hover:bg-rose-50 sm:p-3.5 dark:border-rose-900/40 dark:bg-rose-950/20 dark:hover:border-rose-800/80"
+                    >
+                        <div class="flex min-w-0 flex-1 items-center gap-3">
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-rose-300 bg-rose-100 text-rose-700 sm:h-10 sm:w-10 dark:border-rose-800 dark:bg-rose-900/50 dark:text-rose-300"
+                            >
+                                <AlertCircle
+                                    class="h-4.5 w-4.5 text-rose-600 dark:text-rose-400"
+                                />
+                            </div>
+
+                            <div
+                                class="flex min-w-0 flex-wrap items-center gap-2"
+                            >
+                                <h3
+                                    class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-rose-700 dark:text-gray-100 dark:group-hover:text-rose-300"
+                                >
+                                    {{
+                                        rejected.payload?.title || '(Untitled)'
+                                    }}
+                                </h3>
+
+                                <span
+                                    class="inline-flex items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
+                                >
+                                    Upload Rejected
+                                </span>
+
+                                <span
+                                    v-if="rejected.rejection_reason"
+                                    class="max-w-xs truncate text-xs text-rose-600/90 dark:text-rose-400/90"
+                                >
+                                    Reason: {{ rejected.rejection_reason }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <button
+                                type="button"
+                                @click="viewingPendingModal = rejected"
+                                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                <Eye class="h-3.5 w-3.5 text-slate-500" />
+                                <span>Feedback</span>
+                            </button>
                         </div>
                     </div>
 

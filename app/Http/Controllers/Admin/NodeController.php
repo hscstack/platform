@@ -8,6 +8,7 @@ use App\Http\Requests\Node\UpdateNodeRequest;
 use App\Models\Node;
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -25,6 +26,8 @@ class NodeController extends Controller
                 'subject' => $subject,
                 'nodes' => $nodes,
                 'resources' => [],
+                'pending_creates' => [],
+                'rejected_creates' => [],
                 'breadcrumb' => [],
             ]);
         }
@@ -51,11 +54,29 @@ class NodeController extends Controller
             ->with('user:id,name,username')
             ->get();
 
+        $rejectedCreates = $node->rejectedCreateRequests()
+            ->where('user_id', Auth::id())
+            ->with(['user:id,name,username', 'reviewer:id,name,username'])
+            ->latest('reviewed_at')
+            ->take(10)
+            ->get();
+
+        $resources = $node->resources()
+            ->with([
+                'pendingChangeRequest.user:id,name,username',
+                'latestRejectedChangeRequest' => function ($query) {
+                    $query->where('user_id', Auth::id())
+                        ->with('reviewer:id,name,username');
+                },
+            ])
+            ->get();
+
         return Inertia::render('admin/Node', [
             'subject' => $subject,
             'nodes' => $node->children,
-            'resources' => $node->resources()->with('pendingChangeRequest.user:id,name,username')->get(),
+            'resources' => $resources,
             'pending_creates' => $pendingCreates,
+            'rejected_creates' => $rejectedCreates,
             'parent' => $node->append('is_effectively_frozen'),
             'breadcrumb' => $node->breadcrumb(),
         ]);

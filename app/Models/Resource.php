@@ -72,6 +72,13 @@ class Resource extends Model
         return $this->hasOne(ResourceChangeRequest::class)->where('status', 'pending');
     }
 
+    public function latestRejectedChangeRequest()
+    {
+        return $this->hasOne(ResourceChangeRequest::class)
+            ->where('status', 'rejected')
+            ->latestOfMany('reviewed_at');
+    }
+
     public function hasPendingChangeRequest(): bool
     {
         return $this->relationLoaded('pendingChangeRequest')

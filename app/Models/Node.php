@@ -138,4 +138,11 @@ class Node extends Model
             ->where('action_type', 'create')
             ->where('status', 'pending');
     }
+
+    public function rejectedCreateRequests()
+    {
+        return $this->hasMany(ResourceChangeRequest::class)
+            ->where('action_type', 'create')
+            ->where('status', 'rejected');
+    }
 }

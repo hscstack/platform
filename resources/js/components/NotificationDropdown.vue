@@ -609,14 +609,22 @@ onBeforeUnmount(() => {
                                                     item.data?.status ===
                                                         'rejected' ||
                                                     item.data?.status ===
-                                                        'locked'))
+                                                        'locked')) ||
+                                            (item.data?.type ===
+                                                'resource_moderation' &&
+                                                item.data?.status ===
+                                                    'rejected')
                                         "
-                                        class="h-4 w-4 text-amber-500"
+                                        class="h-4 w-4 text-rose-500"
                                     />
                                     <CheckCircle2
                                         v-else-if="
                                             (item.data?.type ===
                                                 'forum_status' &&
+                                                item.data?.status ===
+                                                    'approved') ||
+                                            (item.data?.type ===
+                                                'resource_moderation' &&
                                                 item.data?.status ===
                                                     'approved') ||
                                             (item.data?.type ===

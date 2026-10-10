@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Resource;
 use App\Models\ResourceChangeRequest;
+use App\Notifications\ResourceModerationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -127,17 +128,18 @@ class ResourceModerationController extends Controller
 
         $changeRequests = ResourceChangeRequest::whereIn('id', $validated['ids'])
             ->where('status', 'pending')
-            ->with('resource')
+            ->with(['resource', 'user', 'node.subject'])
             ->get();
 
         if ($changeRequests->isEmpty()) {
             return back()->with('error', 'Selected requests have already been reviewed.');
         }
 
-        DB::transaction(function () use ($changeRequests, $validated) {
+        $reason = $validated['rejection_reason'] ?? null;
+
+        DB::transaction(function () use ($changeRequests, $reason) {
             $reviewerId = Auth::id();
             $now = now();
-            $reason = $validated['rejection_reason'] ?? null;
 
             foreach ($changeRequests as $item) {
                 $stagedFile = $item->payload['file_path'] ?? null;
@@ -159,6 +161,12 @@ class ResourceModerationController extends Controller
                 ]);
             }
         });
+
+        foreach ($changeRequests as $item) {
+            if ($item->user) {
+                $item->user->notify(new ResourceModerationNotification($item, 'rejected', $reason));
+            }
+        }
 
         $count = $changeRequests->count();
         $message = $count === 1

@@ -5,6 +5,8 @@ use App\Models\Resource;
 use App\Models\ResourceChangeRequest;
 use App\Models\Subject;
 use App\Models\User;
+use App\Notifications\ResourceModerationNotification;
+use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -345,10 +347,14 @@ test('moderator can bulk approve multiple requests at once', function () {
 });
 
 test('moderator can reject a request with feedback reason', function () {
+    Notification::fake();
+
     Permission::findOrCreate('moderate resources', 'web');
 
     $moderator = User::factory()->create();
     $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $author = User::factory()->create();
 
     $subject = Subject::create([
         'name' => 'Physics',
@@ -364,7 +370,7 @@ test('moderator can reject a request with feedback reason', function () {
         'slug' => 'optics',
     ]);
 
-    $changeRequest = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
+    $changeRequest = ResourceChangeRequest::recordCreate($author->id, $node->id, [
         'title' => 'Bad Video Link',
         'resource_type' => 'video',
         'external_url' => 'https://youtube.com/watch?v=brokenlink11',
@@ -381,6 +387,12 @@ test('moderator can reject a request with feedback reason', function () {
     expect($changeRequest->fresh()->status)->toBe('rejected')
         ->and($changeRequest->fresh()->rejection_reason)->toBe('The video URL is not valid.')
         ->and(Resource::where('title', 'Bad Video Link')->exists())->toBeFalse();
+
+    Notification::assertSentTo(
+        $author,
+        ResourceModerationNotification::class,
+        fn ($notif) => $notif->status === 'rejected' && $notif->feedback === 'The video URL is not valid.'
+    );
 });
 
 test('moderator can bulk reject multiple requests with shared feedback', function () {
