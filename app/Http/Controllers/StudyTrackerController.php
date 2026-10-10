@@ -16,15 +16,8 @@ class StudyTrackerController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $course = $request->query('course') ?: ($user?->curriculum ?: 'hsc');
-        if (! in_array($course, ['hsc', 'ssc'], true)) {
-            $course = 'hsc';
-        }
-
-        $group = $request->query('group') ?: ($user?->group ?: 'science');
-        if (! in_array($group, ['science', 'humanities', 'commerce'], true)) {
-            $group = 'science';
-        }
+        $course = $user?->curriculum ?: 'hsc';
+        $group = $user?->group ?: 'science';
 
         $subjects = Subject::where('course', $course)
             ->where('is_trackable', true)
@@ -151,33 +144,14 @@ class StudyTrackerController extends Controller
 
     public function updateCurriculum(Request $request)
     {
-        $user = $request->user();
-        if (! $user) {
-            return back()->with('error', 'Authentication required');
-        }
-
         $validated = $request->validate([
             'curriculum' => 'required|string|in:hsc,ssc',
-            'group' => 'nullable|string|in:science,humanities,commerce',
+            'group' => 'required|string|in:science,humanities,commerce',
         ]);
 
-        $newCurriculum = $validated['curriculum'];
-        $newGroup = $validated['group'] ?? $user->group ?? 'science';
-
-        $user->update([
-            'curriculum' => $newCurriculum,
-            'group' => $newGroup,
-        ]);
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'curriculum' => $newCurriculum,
-                'group' => $newGroup,
-            ]);
-        }
+        $request->user()->update($validated);
 
         return redirect()->route('tracker.index')
-            ->with('success', 'Curriculum updated to '.strtoupper($newCurriculum).' ('.ucfirst($newGroup).').');
+            ->with('success', 'Curriculum updated to '.strtoupper($validated['curriculum']).' ('.ucfirst($validated['group']).').');
     }
 }
