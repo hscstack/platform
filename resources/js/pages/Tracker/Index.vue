@@ -114,11 +114,7 @@ function handleAuthRequired(
                     :subjects="subjects"
                     :completed-node-ids="completedNodeIds"
                     :is-authenticated="isAuthenticated"
-                    @require-auth="
-                        handleAuthRequired(
-                            'Log in to save your chapter checklist progress.',
-                        )
-                    "
+                    @require-auth="handleAuthRequired"
                 />
             </div>
         </div>
