@@ -31,6 +31,7 @@ return new class extends Migration
             $table->index('status');
             $table->index(['resource_id', 'status']);
             $table->index(['user_id', 'status']);
+            $table->index(['node_id', 'action_type', 'status']);
         });
     }
 
