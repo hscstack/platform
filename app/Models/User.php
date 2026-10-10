@@ -54,6 +54,7 @@ class User extends Authenticatable
         'institution',
         'activity_privacy',
         'curriculum',
+        'group',
         'allow_pokes',
         'facebook',
         'instagram',

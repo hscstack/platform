@@ -230,7 +230,7 @@ class CommerceHumanitiesSubjectSeeder extends Seeder
             DB::table('subjects')->updateOrInsert(
                 ['slug' => $subject['slug']],
                 array_merge($subject, [
-                    'is_trackable' => false,
+                    'is_trackable' => true,
                     'updated_at' => now(),
                     'created_at' => now(),
                 ])
