@@ -371,7 +371,8 @@ test('moderator can reject a request with feedback reason', function () {
     ]);
 
     $this->actingAs($moderator)
-        ->post("/admin/moderation/resources/{$changeRequest->id}/reject", [
+        ->post('/admin/moderation/resources/reject', [
+            'ids' => [$changeRequest->id],
             'rejection_reason' => 'The video URL is not valid.',
         ])
         ->assertRedirect()

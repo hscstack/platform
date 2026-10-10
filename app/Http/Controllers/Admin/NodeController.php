@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Node\StoreNodeRequest;
 use App\Http\Requests\Node\UpdateNodeRequest;
 use App\Models\Node;
-use App\Models\ResourceChangeRequest;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -48,18 +47,14 @@ class NodeController extends Controller
             }
         }
 
-        $pendingCreates = ResourceChangeRequest::where('node_id', $node->id)
-            ->where('action_type', 'create')
-            ->where('status', 'pending')
+        $pendingCreates = $node->pendingCreateRequests()
             ->with('user:id,name,username')
             ->get();
 
         return Inertia::render('admin/Node', [
             'subject' => $subject,
             'nodes' => $node->children,
-            'resources' => $node->resources()->with([
-                'pendingChangeRequest' => fn ($q) => $q->with('user:id,name,username'),
-            ])->get(),
+            'resources' => $node->resources()->with('pendingChangeRequest.user:id,name,username')->get(),
             'pending_creates' => $pendingCreates,
             'parent' => $node->append('is_effectively_frozen'),
             'breadcrumb' => $node->breadcrumb(),
