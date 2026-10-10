@@ -53,7 +53,9 @@ export function useInAppBrowser() {
             return '';
         }
 
-        const cleanUrl = window.location.href.replace(/^https?:\/\//i, '');
+        const cleanUrl = window.location.href
+            .replace(/^https?:\/\//i, '')
+            .replace('#', '%23');
 
         return `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end;`;
     };

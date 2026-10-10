@@ -18,24 +18,6 @@
                 } catch (_) {}
             })();
         </script>
-        {{-- Early external browser redirect for Facebook in-app browser on Android --}}
-        <script>
-            (function () {
-                try {
-                    var ua = navigator.userAgent || navigator.vendor || window.opera || '';
-                    var isFB = /FBAN|FBAV|FB_IAB|FB4A/i.test(ua);
-                    var isAndroid = /android/i.test(ua);
-                    if (isFB && isAndroid && !sessionStorage.getItem('fb_iab_auto_redirected')) {
-                        sessionStorage.setItem('fb_iab_auto_redirected', '1');
-                        var cleanUrl = window.location.href.replace(/^https?:\/\//i, '');
-                        window.location.href =
-                            'intent://' +
-                            cleanUrl +
-                            '#Intent;scheme=https;action=android.intent.action.VIEW;end;';
-                    }
-                } catch (_) {}
-            })();
-        </script>
         {{-- Critical background: painted before app.css loads, avoids default white/black canvas flash --}}
         <style>
             html { background-color: #f8fafc; color-scheme: light; }
