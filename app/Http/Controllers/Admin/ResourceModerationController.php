@@ -141,6 +141,7 @@ class ResourceModerationController extends Controller
             return back()->with('error', 'Selected requests have already been reviewed.');
         }
 
+        $reason = $validated['rejection_reason'] ?? null;
         $filesToDelete = [];
 
         DB::transaction(function () use ($changeRequests, $reason, &$filesToDelete) {
