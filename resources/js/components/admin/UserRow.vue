@@ -96,6 +96,14 @@ const deleteUser = (id: number) => {
                         size="xs"
                     />
 
+                    <span
+                        v-if="user.onboarding_priority > 0"
+                        class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                        :title="`Onboarding Priority: ${user.onboarding_priority}`"
+                    >
+                        Priority {{ user.onboarding_priority }}
+                    </span>
+
                     <StatusBadge
                         v-if="isBanned(user)"
                         variant="rose"

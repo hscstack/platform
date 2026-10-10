@@ -44,6 +44,7 @@ class User extends Authenticatable
         'email',
         'receive_emails',
         'is_verified',
+        'onboarding_priority',
         'google_id',
         'email_verified_at',
         'banned_until',
@@ -117,6 +118,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'receive_emails' => 'boolean',
             'is_verified' => 'boolean',
+            'onboarding_priority' => 'integer',
             'allow_pokes' => 'boolean',
         ];
     }
