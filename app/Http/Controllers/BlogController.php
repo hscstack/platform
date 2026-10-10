@@ -142,11 +142,6 @@ class BlogController extends Controller
 
     public function show(Blog $blog)
     {
-        abort_unless(
-            $blog->is_published || (auth()->check() && (auth()->id() === $blog->user_id || auth()->user()->can('manage blogs'))),
-            404
-        );
-
         $blog->load('user:id,name,username,image_path,is_verified');
         $blog->increment('views');
 
