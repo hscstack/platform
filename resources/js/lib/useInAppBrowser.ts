@@ -32,8 +32,30 @@ export function useInAppBrowser() {
         isAndroid.value = android;
         isIOS.value = ios;
 
-        // Only display if user is inside an in-app browser on a mobile platform and has not dismissed it
-        if (generalIab && (android || ios)) {
+        // Local testing override: ?preview_iab=android or ?preview_iab=ios (or ?debug_iab=...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const previewMode =
+            urlParams.get('preview_iab') || urlParams.get('debug_iab');
+
+        if (previewMode === 'android' || previewMode === 'ios') {
+            isInAppBrowser.value = true;
+            isFacebook.value = true;
+            isAndroid.value = previewMode === 'android';
+            isIOS.value = previewMode === 'ios';
+            isVisible.value = true;
+
+            return;
+        }
+
+        if (import.meta.env.DEV) {
+            // In local development, show the modal by default for inspection
+            if (!ios && !android) {
+                isAndroid.value = true;
+            }
+
+            isVisible.value = true;
+        } else if (generalIab && (android || ios)) {
+            // In production, only show if inside in-app browser on mobile and not dismissed
             try {
                 const dismissed = sessionStorage.getItem(
                     'iab_prompt_dismissed',
@@ -111,6 +133,24 @@ export function useInAppBrowser() {
 
     onMounted(() => {
         checkBrowser();
+
+        if (typeof window !== 'undefined') {
+            (
+                window as unknown as {
+                    __previewIAB?: (mode: 'android' | 'ios' | 'hide') => void;
+                }
+            ).__previewIAB = (mode: 'android' | 'ios' | 'hide') => {
+                if (mode === 'hide') {
+                    isVisible.value = false;
+                } else {
+                    isInAppBrowser.value = true;
+                    isFacebook.value = true;
+                    isAndroid.value = mode === 'android';
+                    isIOS.value = mode === 'ios';
+                    isVisible.value = true;
+                }
+            };
+        }
     });
 
     return {
