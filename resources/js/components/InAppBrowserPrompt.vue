@@ -2,8 +2,6 @@
 import { Check, Copy, ExternalLink, X } from 'lucide-vue-next';
 import { useInAppBrowser } from '@/lib/useInAppBrowser';
 
-const isDev = import.meta.env.DEV;
-
 const {
     isVisible,
     isAndroid,
@@ -13,11 +11,6 @@ const {
     copyUrl,
     dismiss,
 } = useInAppBrowser();
-
-const setMode = (mode: 'android' | 'ios') => {
-    isAndroid.value = mode === 'android';
-    isIOS.value = mode === 'ios';
-};
 </script>
 
 <template>
@@ -62,41 +55,6 @@ const setMode = (mode: 'android' | 'ios') => {
                     >
                         <X class="h-4 w-4" />
                     </button>
-
-                    <!-- Preview Mode Switcher (for local development only) -->
-                    <div
-                        v-if="isDev"
-                        class="mb-4 flex items-center justify-end pr-8"
-                    >
-                        <div
-                            class="inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-0.5 text-xs font-semibold dark:border-gray-700 dark:bg-gray-800"
-                        >
-                            <button
-                                type="button"
-                                @click="setMode('android')"
-                                :class="[
-                                    isAndroid
-                                        ? 'bg-white text-indigo-600 shadow-xs dark:bg-gray-700 dark:text-white'
-                                        : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200',
-                                ]"
-                                class="cursor-pointer rounded-lg px-2.5 py-1 transition"
-                            >
-                                Android
-                            </button>
-                            <button
-                                type="button"
-                                @click="setMode('ios')"
-                                :class="[
-                                    isIOS
-                                        ? 'bg-white text-indigo-600 shadow-xs dark:bg-gray-700 dark:text-white'
-                                        : 'text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200',
-                                ]"
-                                class="cursor-pointer rounded-lg px-2.5 py-1 transition"
-                            >
-                                iOS
-                            </button>
-                        </div>
-                    </div>
 
                     <!-- Header -->
                     <div class="flex items-start gap-3.5">
