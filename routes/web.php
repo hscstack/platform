@@ -18,6 +18,7 @@ use App\Http\Controllers\StudyTrackerController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -89,6 +90,21 @@ Route::get('/local/oauth2callback', function (Request $request) {
 
     dd($request->code);
 });
+
+if (app()->environment('local')) {
+    Route::get('/local-login/{user?}', function ($user = null) {
+        $targetUser = $user
+            ? User::where('id', $user)->orWhere('email', $user)->orWhere('username', $user)->firstOrFail()
+            : User::firstOrFail();
+
+        Illuminate\Support\Facades\Auth::login($targetUser);
+        request()->session()->regenerate();
+
+        $redirect = request()->query('redirect', '/admin');
+
+        return redirect($redirect);
+    });
+}
 
 Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
