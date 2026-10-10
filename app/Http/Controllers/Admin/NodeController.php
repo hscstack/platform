@@ -187,13 +187,16 @@ class NodeController extends Controller
 
     public function batchStore(Request $request, Subject $subject)
     {
-        $request->validate([
+        $validated = $request->validate([
             'parent_id' => 'nullable|exists:nodes,id',
             'nodes' => 'required|array|min:1',
             'nodes.*.name' => 'required|string|max:255',
             'nodes.*.slug' => 'nullable|string|max:255',
             'nodes.*.children' => 'nullable|array',
+            'should_track_top_folders' => 'nullable|boolean',
         ]);
+
+        $shouldTrackTopFolders = (bool) ($validated['should_track_top_folders'] ?? false);
 
         $parentId = $request->input('parent_id');
         $parent = null;
@@ -263,7 +266,7 @@ class NodeController extends Controller
 
         $createdCount = 0;
 
-        \DB::transaction(function () use ($inputNodes, $subject, $parent, $baseSortOrder, &$createdCount) {
+        \DB::transaction(function () use ($inputNodes, $subject, $parent, $baseSortOrder, $shouldTrackTopFolders, &$createdCount) {
             foreach ($inputNodes as $index => $nodeData) {
                 $nodeName = trim($nodeData['name']);
                 if (empty($nodeName)) {
@@ -280,6 +283,7 @@ class NodeController extends Controller
                     'name' => $nodeName,
                     'slug' => $slug,
                     'sort_order' => $baseSortOrder + $index + 1,
+                    'is_trackable' => $shouldTrackTopFolders,
                 ]);
 
                 $createdCount++;
@@ -303,6 +307,7 @@ class NodeController extends Controller
                             'name' => $childName,
                             'slug' => $childSlug,
                             'sort_order' => $childIndex,
+                            'is_trackable' => false,
                         ]);
                     }
                 }

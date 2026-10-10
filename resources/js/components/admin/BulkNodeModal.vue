@@ -37,6 +37,7 @@ const subfolderSlugsInput = ref('');
 const isSaving = ref(false);
 const errorMessage = ref('');
 const isPreviewMode = ref(false);
+const shouldTrackTopFolders = ref(true);
 
 interface ChildFolder {
     name: string;
@@ -148,6 +149,7 @@ const saveBatchNodes = () => {
         {
             parent_id: props.parent?.id || null,
             nodes: parsedNodes.value,
+            should_track_top_folders: shouldTrackTopFolders.value,
         },
         {
             preserveScroll: true,
@@ -158,6 +160,7 @@ const saveBatchNodes = () => {
                 namesInput.value = '';
                 slugsInput.value = '';
                 subfolderSlugsInput.value = '';
+                shouldTrackTopFolders.value = true;
                 emit('close');
             },
             onError: (errors) => {
@@ -301,6 +304,32 @@ const totalFoldersCount = computed(() => {
                         </div>
                     </div>
                 </div>
+
+                <!-- Trackable Option for Top-Level Folders -->
+                <div
+                    class="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4 dark:border-gray-700/80 dark:bg-gray-800/40"
+                >
+                    <label class="flex cursor-pointer items-start gap-3">
+                        <input
+                            v-model="shouldTrackTopFolders"
+                            type="checkbox"
+                            class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                        />
+                        <div class="space-y-0.5">
+                            <span
+                                class="text-xs font-bold text-slate-800 dark:text-gray-200"
+                            >
+                                Make top-level folders trackable
+                            </span>
+                            <p
+                                class="text-[11px] text-slate-500 dark:text-gray-400"
+                            >
+                                Includes these main folders in the Study Tracker
+                                checklist (sub-folders will not be trackable).
+                            </p>
+                        </div>
+                    </label>
+                </div>
             </div>
 
             <!-- Step 2: Review Preview -->
@@ -316,6 +345,18 @@ const totalFoldersCount = computed(() => {
                                 sub-folders)</span
                             >
                         </h4>
+                        <span
+                            v-if="shouldTrackTopFolders"
+                            class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400"
+                        >
+                            ✓ Main folders marked trackable in Study Tracker
+                        </span>
+                        <span
+                            v-else
+                            class="text-[10px] font-medium text-slate-400 dark:text-gray-500"
+                        >
+                            Main folders not trackable in Study Tracker
+                        </span>
                     </div>
                     <button
                         type="button"
