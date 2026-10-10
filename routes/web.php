@@ -43,7 +43,6 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::middleware('can:update,blog')->group(function () {
         Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
         Route::match(['post', 'patch'], '/blogs/{blog}/patch', [BlogController::class, 'update'])->name('blogs.update');
-        Route::patch('/blogs/{blog}', [BlogController::class, 'update']);
     });
     Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])
         ->middleware('can:delete,blog')
