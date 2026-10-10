@@ -1,9 +1,69 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import UserCard from '@/components/UserCard.vue';
 
-defineProps({
-    users: Array,
+interface Role {
+    name: string;
+}
+
+interface Member {
+    id: number;
+    name: string;
+    username?: string;
+    title?: string | null;
+    about?: string | null;
+    institution?: string | null;
+    image_url?: string | null;
+    priority?: number;
+    roles?: Role[];
+}
+
+const props = defineProps<{
+    users?: Member[];
+}>();
+
+const getRoleRank = (member: Member): number => {
+    const roles = member.roles || [];
+
+    if (roles.some((r) => r.name === 'admin')) {
+        return 1;
+    }
+
+    if (roles.some((r) => r.name === 'editor')) {
+        return 2;
+    }
+
+    if (roles.length > 0) {
+        return 3;
+    }
+
+    return 4;
+};
+
+const sortedMembers = computed(() => {
+    const list = [...(props.users || [])];
+
+    return list.sort((a, b) => {
+        const priorityA = a.priority ?? 0;
+        const priorityB = b.priority ?? 0;
+
+        // 1. Priority descending (higher first)
+        if (priorityA !== priorityB) {
+            return priorityB - priorityA;
+        }
+
+        // 2. Role rank (admin -> editor -> staff -> others)
+        const rankA = getRoleRank(a);
+        const rankB = getRoleRank(b);
+
+        if (rankA !== rankB) {
+            return rankA - rankB;
+        }
+
+        // 3. Stable tie-breaker by id ascending
+        return a.id - b.id;
+    });
 });
 </script>
 
@@ -35,8 +95,8 @@ defineProps({
             class="grid grid-cols-1 justify-center gap-8 md:grid-cols-2 lg:grid-cols-3"
         >
             <UserCard
-                v-for="member in users"
-                :key="member.name"
+                v-for="member in sortedMembers"
+                :key="member.id"
                 :member="member"
             />
 

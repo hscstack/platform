@@ -430,21 +430,16 @@ test('google auth redirects to intended url if set for existing user', function 
     $response->assertRedirect(route('profile.edit'));
 });
 
-test('onboarding passes suggested contributors to the view according to algorithm', function () {
-    $topUser1 = User::factory()->create(['name' => 'Top Appreciator 1']);
-    $topUser2 = User::factory()->create(['name' => 'Top Appreciator 2']);
+test('onboarding passes suggested contributors to the view according to priority and appreciations', function () {
+    $priorityUser = User::factory()->create(['name' => 'Priority User', 'priority' => 10]);
+    $topUser = User::factory()->create(['name' => 'Top Appreciated User', 'priority' => 0]);
     $admirer = User::factory()->create();
     UserAppreciation::create([
-        'user_id' => $topUser1->id,
-        'appreciator_id' => $admirer->id,
-    ]);
-    UserAppreciation::create([
-        'user_id' => $topUser2->id,
+        'user_id' => $topUser->id,
         'appreciator_id' => $admirer->id,
     ]);
 
-    $verifiedUser = User::factory()->create(['name' => 'Verified User', 'is_verified' => true]);
-    $randomUsers = User::factory()->count(5)->create(['is_verified' => false]);
+    User::factory()->count(4)->create(['priority' => 0]);
 
     $response = $this->withSession([
         'onboarding_user' => [
@@ -459,9 +454,8 @@ test('onboarding passes suggested contributors to the view according to algorith
     $response->assertInertia(fn ($page) => $page
         ->component('auth/Onboarding')
         ->has('suggestedContributors', 4)
-        ->where('suggestedContributors.0.id', $topUser1->id)
-        ->where('suggestedContributors.1.id', $topUser2->id)
-        ->where('suggestedContributors.2.id', $verifiedUser->id)
+        ->where('suggestedContributors.0.id', $priorityUser->id)
+        ->where('suggestedContributors.1.id', $topUser->id)
     );
 });
 

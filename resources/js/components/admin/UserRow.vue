@@ -96,6 +96,14 @@ const deleteUser = (id: number) => {
                         size="xs"
                     />
 
+                    <span
+                        v-if="user.priority > 0"
+                        class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                        :title="`Priority: ${user.priority}`"
+                    >
+                        Priority {{ user.priority }}
+                    </span>
+
                     <StatusBadge
                         v-if="isBanned(user)"
                         variant="rose"

@@ -10,9 +10,9 @@ class AboutUsController extends Controller
 {
     public function index()
     {
-        $users = Cache::rememberForever('about_us_info', function () {
+        $users = Cache::remember('about_us_info', now()->addHours(24), function () {
             return User::where('is_verified', true)
-                ->select(['id', 'name', 'username', 'title', 'about', 'institution', 'image_path'])
+                ->select(['id', 'name', 'username', 'title', 'about', 'institution', 'image_path', 'priority'])
                 ->with('roles:id,name')
                 ->get()
                 ->map(fn (User $user) => [
@@ -23,6 +23,7 @@ class AboutUsController extends Controller
                     'about' => $user->about,
                     'institution' => $user->institution,
                     'image_url' => $user->image_url,
+                    'priority' => (int) $user->priority,
                     'roles' => $user->roles->map(fn ($role) => ['name' => $role->name])->all(),
                 ])
                 ->all();

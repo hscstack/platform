@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { UserPlus, Loader2, Save, BadgeCheck } from 'lucide-vue-next';
+import { UserPlus, Loader2, Save, BadgeCheck, Sparkles } from 'lucide-vue-next';
 import { watch } from 'vue';
 
 const props = defineProps({
@@ -23,6 +23,7 @@ const form = useForm({
     username: props.user?.username || '',
     email: props.user?.email || '',
     is_verified: Boolean(props.user?.is_verified ?? false),
+    priority: props.user?.priority ?? 0,
     role: props.user?.roles?.[0]?.name || '',
     permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
 
@@ -265,6 +266,61 @@ const submitForm = () => {
                     class="mt-2 text-sm text-rose-600"
                 >
                     {{ form.errors.is_verified }}
+                </p>
+            </div>
+
+            <!-- Feature & Suggestion Priority Option -->
+            <div
+                class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition dark:border-gray-800 dark:bg-gray-800/40"
+            >
+                <div
+                    class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                        >
+                            <Sparkles class="h-5 w-5" />
+                        </div>
+                        <div>
+                            <label
+                                for="priority"
+                                class="text-sm font-semibold text-slate-900 select-none dark:text-gray-100"
+                            >
+                                Display & Suggestion Priority
+                            </label>
+                            <p
+                                class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                Determines placement in onboarding appreciation
+                                suggestions and About Us team listings. Higher
+                                numbers appear first (default: 0).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="w-full sm:w-28">
+                        <input
+                            type="number"
+                            id="priority"
+                            v-model.number="form.priority"
+                            min="0"
+                            step="1"
+                            placeholder="0"
+                            :disabled="form.processing"
+                            class="w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 transition outline-none disabled:bg-slate-50 dark:bg-gray-900 dark:text-gray-100 dark:disabled:bg-gray-800"
+                            :class="
+                                form.errors.priority
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
+                            "
+                        />
+                    </div>
+                </div>
+                <p
+                    v-if="form.errors.priority"
+                    class="mt-2 text-sm text-rose-600"
+                >
+                    {{ form.errors.priority }}
                 </p>
             </div>
 
