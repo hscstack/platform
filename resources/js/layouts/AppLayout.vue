@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue';
 import AtmosphericBackground from '@/components/AtmosphericBackground.vue';
 import FloatingShareBar from '@/components/FloatingShareBar.vue';
 import Footer from '@/components/Footer.vue';
+import InAppBrowserPrompt from '@/components/InAppBrowserPrompt.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import {
     SiteBottomNav as BottomNav,
@@ -136,5 +137,6 @@ const drawerOpen = ref(false);
         <BottomNav v-if="showBottomNav" />
         <FloatingShareBar />
         <ToastNotification />
+        <InAppBrowserPrompt />
     </div>
 </template>
