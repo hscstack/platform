@@ -14,6 +14,7 @@ class ResourceModerationNotification extends Notification
         public ResourceChangeRequest $changeRequest,
         public string $status,
         public ?string $feedback = null,
+        public int $totalCount = 1,
     ) {}
 
     /**
@@ -33,6 +34,37 @@ class ResourceModerationNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        $node = $this->changeRequest->node;
+        if ($node && $node->subject) {
+            $path = implode('/', array_column($node->breadcrumb(), 'slug'));
+            $hash = $this->status === 'rejected' ? '#rejected' : '#live';
+            $url = "/admin/subjects/{$node->subject->slug}/nodes/{$path}{$hash}";
+        } else {
+            $url = '/admin';
+        }
+
+        if ($this->totalCount > 1) {
+            $title = $this->status === 'rejected'
+                ? "{$this->totalCount} Resource Requests Rejected"
+                : "{$this->totalCount} Resource Requests Approved";
+
+            $message = $this->status === 'rejected'
+                ? ($this->feedback ? "{$this->totalCount} of your resource requests were rejected: {$this->feedback}" : "{$this->totalCount} of your resource requests were rejected.")
+                : "{$this->totalCount} of your resource requests were approved and are now live.";
+
+            return [
+                'type' => 'resource_moderation',
+                'status' => $this->status,
+                'action_type' => 'batch',
+                'title' => $title,
+                'message' => $message,
+                'url' => $url,
+                'count' => $this->totalCount,
+                'change_request_id' => $this->changeRequest->id,
+                'node_id' => $this->changeRequest->node_id,
+            ];
+        }
+
         $actionName = match ($this->changeRequest->action_type) {
             'create' => 'upload',
             'update' => 'edit',
@@ -51,14 +83,6 @@ class ResourceModerationNotification extends Notification
         $message = $this->status === 'rejected'
             ? ($this->feedback ? "\"{$resourceTitle}\": {$this->feedback}" : "Your {$actionName} for \"{$resourceTitle}\" was rejected.")
             : "Your {$actionName} for \"{$resourceTitle}\" was approved and is now live.";
-
-        $node = $this->changeRequest->node;
-        if ($node && $node->subject) {
-            $path = implode('/', array_column($node->breadcrumb(), 'slug'));
-            $url = "/admin/subjects/{$node->subject->slug}/nodes/{$path}";
-        } else {
-            $url = '/admin';
-        }
 
         return [
             'type' => 'resource_moderation',
