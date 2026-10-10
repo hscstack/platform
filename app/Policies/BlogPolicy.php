@@ -32,22 +32,4 @@ class BlogPolicy
     {
         return $user->id === $blog->user_id || $user->can('manage blogs');
     }
-
-    /**
-     * Determine whether the user can view the blog.
-     * Published blogs can be viewed by anyone.
-     * Unpublished blogs can only be viewed by the author or authorities with 'manage blogs'.
-     */
-    public function view(?User $user, Blog $blog): bool
-    {
-        if ($blog->is_published) {
-            return true;
-        }
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->id === $blog->user_id || $user->can('manage blogs');
-    }
 }

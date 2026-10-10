@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -25,7 +24,6 @@ return new class extends Migration
         Permission::whereIn('name', ['edit blogs', 'delete blogs'])->where('guard_name', 'web')->delete();
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        Cache::flush();
     }
 
     /**
@@ -46,6 +44,5 @@ return new class extends Migration
         Permission::where('name', 'manage blogs')->where('guard_name', 'web')->delete();
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        Cache::flush();
     }
 };

@@ -32,8 +32,8 @@ const applyFilters = (newParams: Record<string, any> = {}) => {
 
     Object.keys(params).forEach((k) => {
         if (!params[k]) {
-delete params[k];
-}
+            delete params[k];
+        }
     });
 
     router.get('/blogs', params, { preserveState: true, preserveScroll: true });

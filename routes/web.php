@@ -106,14 +106,6 @@ Route::get('/local/oauth2callback', function (Request $request) {
     dd($request->code);
 });
 
-Route::get('/quick-login', function () {
-    abort_unless(app()->environment('local'), 403);
-
-    Auth::loginUsingId(1);
-
-    return redirect('/');
-});
-
 Route::middleware('throttle:60,1')->group(function () {
     Route::inertia('/privacy-policy', 'legal/PrivacyPolicy');
     Route::inertia('/terms-service', 'legal/TermsConditions');
