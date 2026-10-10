@@ -2240,8 +2240,12 @@ const timeAgo = formatTimeAgo;
         </div>
 
         <template #footer>
-            <div class="flex items-center justify-between gap-3">
+            <div
+                class="flex items-center gap-3"
+                :class="isOwnProfile ? 'justify-between' : 'justify-end'"
+            >
                 <button
+                    v-if="isOwnProfile"
                     type="button"
                     @click="showShareModal = true"
                     class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"

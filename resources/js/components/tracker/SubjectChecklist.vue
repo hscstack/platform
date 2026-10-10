@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import {
-    AlertTriangle,
     BookOpen,
     Check,
     ChevronDown,
@@ -34,12 +33,15 @@ export interface SubjectItem {
 
 interface Props {
     course: 'hsc' | 'ssc';
+    group?: 'science' | 'humanities' | 'commerce';
     subjects: SubjectItem[];
     completedNodeIds: number[];
     isAuthenticated: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    group: 'science',
+});
 
 const emit = defineEmits<{
     (e: 'require-auth'): void;
@@ -68,27 +70,60 @@ function toggleExpand(subjectId: number) {
 }
 
 const showSwitchConfirmModal = ref(false);
-const pendingCurriculum = ref<'hsc' | 'ssc'>('hsc');
+const pendingCurriculum = ref<'hsc' | 'ssc'>(props.course);
+const pendingGroup = ref<'science' | 'humanities' | 'commerce'>(props.group);
 const isSwitching = ref(false);
 
-function switchCourse(newCourse: 'hsc' | 'ssc') {
-    if (!props.isAuthenticated) {
-        emit('require-auth');
-
-        return;
-    }
-
-    if (props.course !== newCourse) {
+watch(
+    () => [props.course, props.group] as const,
+    ([newCourse, newGroup]) => {
         pendingCurriculum.value = newCourse;
-        showSwitchConfirmModal.value = true;
+        pendingGroup.value = newGroup;
+    },
+);
+
+function openSwitchModal() {
+    pendingCurriculum.value = props.course;
+    pendingGroup.value = props.group;
+    showSwitchConfirmModal.value = true;
+}
+
+function formatGroup(groupKey: string) {
+    switch (groupKey) {
+        case 'humanities':
+            return 'Humanities';
+        case 'commerce':
+            return 'Commerce';
+        default:
+            return 'Science';
     }
 }
 
 function confirmSwitchCurriculum() {
+    if (!props.isAuthenticated) {
+        showSwitchConfirmModal.value = false;
+        router.get(
+            '/tracker',
+            {
+                course: pendingCurriculum.value,
+                group: pendingGroup.value,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
+
+        return;
+    }
+
     isSwitching.value = true;
     router.post(
         '/tracker/curriculum',
-        { curriculum: pendingCurriculum.value },
+        {
+            curriculum: pendingCurriculum.value,
+            group: pendingGroup.value,
+        },
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -206,12 +241,12 @@ const showShareModal = ref(false);
 const shareData = computed(() => {
     return {
         user: {
-            name: authUser.value?.name || 'HSC Student',
-            username: authUser.value?.username || 'student',
-            image_url: authUser.value?.image_url || null,
-            institution: authUser.value?.institution || null,
+            name: String(authUser.value?.name || 'HSC Student'),
+            username: String(authUser.value?.username || 'student'),
+            image_url: (authUser.value?.image_url as string | null) || null,
+            institution: (authUser.value?.institution as string | null) || null,
         },
-        course: props.course,
+        course: `${props.course.toUpperCase()} (${formatGroup(props.group)})`,
         overallPercent: overallPercentage.value,
         completedChapters: totalCompletedChapters.value,
         totalChapters: totalChapters.value,
@@ -254,8 +289,8 @@ const shareData = computed(() => {
                     </p>
                 </div>
 
-                <!-- Right: Share Button + Course Switcher Tabs -->
-                <div class="flex items-center gap-2">
+                <!-- Right: Share Button + Current Curriculum Indicator with Change Link -->
+                <div class="flex flex-wrap items-center gap-2.5">
                     <button
                         type="button"
                         @click="showShareModal = true"
@@ -268,33 +303,31 @@ const shareData = computed(() => {
                         <span>Share Progress</span>
                     </button>
 
-                    <!-- Course Switcher Tabs -->
-                    <div
-                        class="flex self-start rounded-2xl bg-slate-100 p-1 sm:self-auto dark:bg-gray-800/80"
-                    >
+                    <!-- Curriculum & Group Clickable Badges -->
+                    <div class="flex items-center gap-1.5">
                         <button
                             type="button"
-                            @click="switchCourse('hsc')"
-                            :class="[
-                                course === 'hsc'
-                                    ? 'bg-white text-indigo-600 shadow-2xs dark:bg-gray-900 dark:text-indigo-400'
-                                    : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white',
-                            ]"
-                            class="rounded-xl px-4 py-1.5 text-xs font-bold transition"
-                        >
-                            HSC
-                        </button>
-                        <button
-                            type="button"
-                            @click="switchCourse('ssc')"
-                            :class="[
+                            @click="openSwitchModal"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-black uppercase shadow-2xs transition hover:shadow-xs active:scale-95"
+                            :class="
                                 course === 'ssc'
-                                    ? 'bg-white text-indigo-600 shadow-2xs dark:bg-gray-900 dark:text-indigo-400'
-                                    : 'text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white',
-                            ]"
-                            class="rounded-xl px-4 py-1.5 text-xs font-bold transition"
+                                    ? 'border-emerald-300/80 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
+                                    : 'border-indigo-300/80 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-700/60 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/50'
+                            "
+                            title="কারিকুলাম ও বিভাগ পরিবর্তন করতে ক্লিক করুন"
                         >
-                            SSC
+                            <span>{{ course }}</span>
+                            <ChevronDown class="h-3 w-3 opacity-60" />
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="openSwitchModal"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                            title="কারিকুলাম ও বিভাগ পরিবর্তন করতে ক্লিক করুন"
+                        >
+                            <span>{{ formatGroup(group) }}</span>
+                            <ChevronDown class="h-3 w-3 opacity-60" />
                         </button>
                     </div>
                 </div>
@@ -478,38 +511,142 @@ const shareData = computed(() => {
             </div>
         </div>
 
-        <!-- Switch Curriculum Confirmation Modal -->
+        <!-- Switch Curriculum & Group Modal -->
         <BaseModal
             :is-open="showSwitchConfirmModal"
-            title="কারিকুলাম পরিবর্তন করবেন?"
-            description="সতর্কতা: আপনার সিলেবাস ট্র্যাকার রিসেট হবে"
+            title="কারিকুলাম ও বিভাগ পরিবর্তন করুন"
+            description="আপনার পড়ার কারিকুলাম লেভেল ও বিভাগ নির্বাচন করুন"
             max-width="md"
             @close="showSwitchConfirmModal = false"
         >
             <div class="space-y-4 p-5 text-slate-800 dark:text-gray-200">
-                <div
-                    class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
-                >
-                    <AlertTriangle
-                        class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
-                    />
-                    <div class="space-y-1">
-                        <p class="font-bold">সতর্কতা</p>
-                        <p class="leading-relaxed">
-                            কারিকুলাম পরিবর্তন করলে স্টাডি ট্র্যাকারের টিক দেওয়া
-                            সকল অধ্যায়ের অগ্রগতি রিসেট হয়ে যাবে।
-                        </p>
+                <!-- Curriculum Selection -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                    >
+                        কারিকুলাম লেভেল
+                    </label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button
+                            type="button"
+                            @click="pendingCurriculum = 'hsc'"
+                            :class="[
+                                pendingCurriculum === 'hsc'
+                                    ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 text-left transition"
+                        >
+                            <div>
+                                <p class="text-sm font-bold">HSC</p>
+                                <p
+                                    class="text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    Class 11–12
+                                </p>
+                            </div>
+                            <span
+                                v-if="pendingCurriculum === 'hsc'"
+                                class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white dark:bg-indigo-500"
+                            >
+                                ✓
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="pendingCurriculum = 'ssc'"
+                            :class="[
+                                pendingCurriculum === 'ssc'
+                                    ? 'border-emerald-600 bg-emerald-50/60 text-emerald-950 ring-1 ring-emerald-600 dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 text-left transition"
+                        >
+                            <div>
+                                <p class="text-sm font-bold">SSC</p>
+                                <p
+                                    class="text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    Class 9–10
+                                </p>
+                            </div>
+                            <span
+                                v-if="pendingCurriculum === 'ssc'"
+                                class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white dark:bg-emerald-500"
+                            >
+                                ✓
+                            </span>
+                        </button>
                     </div>
                 </div>
 
-                <p class="text-xs text-slate-500 dark:text-gray-400">
-                    আপনি কি নিশ্চিতভাবে কারিকুলাম
-                    <span
-                        class="font-bold text-slate-800 uppercase dark:text-gray-200"
-                        >{{ pendingCurriculum }}</span
+                <!-- Group Selection -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
                     >
-                    এ পরিবর্তন করতে চান?
-                </p>
+                        বিভাগ নির্বাচন করুন
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button
+                            type="button"
+                            @click="pendingGroup = 'science'"
+                            :class="[
+                                pendingGroup === 'science'
+                                    ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border p-3 text-center transition"
+                        >
+                            <span class="text-xs font-bold">বিজ্ঞান</span>
+                            <span
+                                class="text-[10px] text-slate-500 dark:text-gray-400"
+                            >
+                                Science
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="pendingGroup = 'humanities'"
+                            :class="[
+                                pendingGroup === 'humanities'
+                                    ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border p-3 text-center transition"
+                        >
+                            <span class="text-xs font-bold">মানবিক</span>
+                            <span
+                                class="text-[10px] text-slate-500 dark:text-gray-400"
+                            >
+                                Humanities
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="pendingGroup = 'commerce'"
+                            :class="[
+                                pendingGroup === 'commerce'
+                                    ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border p-3 text-center transition"
+                        >
+                            <span class="text-xs font-bold"
+                                >ব্যবসায় শিক্ষা</span
+                            >
+                            <span
+                                class="text-[10px] text-slate-500 dark:text-gray-400"
+                            >
+                                Commerce
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div
@@ -534,9 +671,7 @@ const shareData = computed(() => {
                         class="h-3.5 w-3.5 animate-spin"
                     />
                     <span>{{
-                        isSwitching
-                            ? 'পরিবর্তন হচ্ছে...'
-                            : 'হ্যাঁ, পরিবর্তন করুন'
+                        isSwitching ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন'
                     }}</span>
                 </button>
             </div>
