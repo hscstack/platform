@@ -112,7 +112,10 @@ class ResourceChangeRequest extends Model
             $data['file_path'] = $resource->file_path;
         }
 
-        $payload = self::sanitizePayload($data);
+        $payload = array_intersect_key(
+            self::sanitizePayload($data),
+            $data
+        );
 
         return self::create([
             'user_id' => $userId,

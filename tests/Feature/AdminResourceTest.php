@@ -481,3 +481,51 @@ test('old reviewed change requests are pruned after 30 days', function () {
         ->and(ResourceChangeRequest::where('id', $recentApproved->id)->exists())->toBeTrue()
         ->and(ResourceChangeRequest::where('id', $pendingReq->id)->exists())->toBeTrue();
 });
+
+test('approving an update preserves omitted attributes on the live resource', function () {
+    Permission::findOrCreate('moderate resources', 'web');
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $subject = Subject::create([
+        'name' => 'Math',
+        'slug' => 'math-update-preserve',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'calculator',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Calculus',
+        'slug' => 'calculus',
+    ]);
+
+    $resource = Resource::create([
+        'user_id' => $moderator->id,
+        'node_id' => $node->id,
+        'resource_type' => 'note',
+        'title' => 'Original Title',
+        'content' => 'Existing description that must not be cleared',
+        'external_url' => 'https://example.com/original',
+    ]);
+
+    $changeRequest = ResourceChangeRequest::recordUpdate($moderator->id, $resource, [
+        'node_id' => $node->id,
+        'resource_type' => 'note',
+        'title' => 'Updated Title Only',
+    ]);
+
+    $this->actingAs($moderator)
+        ->post('/admin/moderation/resources/approve', [
+            'ids' => [$changeRequest->id],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $fresh = $resource->fresh();
+    expect($fresh->title)->toBe('Updated Title Only')
+        ->and($fresh->content)->toBe('Existing description that must not be cleared')
+        ->and($fresh->external_url)->toBe('https://example.com/original');
+});
