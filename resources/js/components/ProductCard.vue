@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { ArrowRight, ExternalLink, Layers, Pencil, Trash2, Users } from 'lucide-vue-next';
+import {
+    ArrowRight,
+    ExternalLink,
+    Layers,
+    Pencil,
+    Trash2,
+    Users,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 export interface ProductItem {

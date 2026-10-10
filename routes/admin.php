@@ -148,4 +148,3 @@ Route::middleware('permission:manage peers')->group(function () {
     Route::get('/peers/settings', [PeerSettingsController::class, 'edit'])->name('peers.settings.edit');
     Route::post('/peers/settings', [PeerSettingsController::class, 'update'])->name('peers.settings.update');
 });
-

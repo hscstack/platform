@@ -3,8 +3,8 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import AdUnit from '@/components/AdUnit.vue';
 import ProductCard from '@/components/ProductCard.vue';
-import { usePermissions } from '@/lib/usePermissions';
 import type { ProductItem } from '@/components/ProductCard.vue';
+import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
 
