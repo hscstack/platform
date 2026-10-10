@@ -60,7 +60,7 @@ class Node extends Model
 
     public function breadcrumb(): array
     {
-        return Cache::remember("node_breadcrumb_{$this->id}", now()->addDays(7), function () {
+        return Cache::remember("node_breadcrumb_{$this->id}", now()->addHours(24), function () {
             $breadcrumb = [];
             $node = $this;
 
