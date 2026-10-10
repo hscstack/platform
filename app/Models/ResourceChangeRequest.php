@@ -25,12 +25,26 @@ class ResourceChangeRequest extends Model
 
     /**
      * Get the prunable model query.
-     * Prunes approved and rejected change requests older than 30 days.
+     * Prunes approved and rejected change requests older than 15 days.
      */
     public function prunable()
     {
         return static::whereIn('status', ['approved', 'rejected'])
-            ->where('reviewed_at', '<=', now()->subDays(30));
+            ->where('reviewed_at', '<=', now()->subDays(15));
+    }
+
+    /**
+     * Clean up staged files when the change request is pruned.
+     */
+    public function pruning(): void
+    {
+        $stagedFile = $this->payload['file_path'] ?? null;
+        if ($stagedFile) {
+            $isStillUsedByLiveResource = $this->resource && $this->resource->file_path === $stagedFile;
+            if (! $isStillUsedByLiveResource) {
+                Storage::delete($stagedFile);
+            }
+        }
     }
 
     protected $casts = [

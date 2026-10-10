@@ -61,7 +61,7 @@ class ResourceModerationController extends Controller
 
         $changeRequests = ResourceChangeRequest::whereIn('id', $validated['ids'])
             ->where('status', 'pending')
-            ->with('resource')
+            ->with(['resource', 'user', 'node.subject'])
             ->get();
 
         if ($changeRequests->isEmpty()) {
@@ -116,6 +116,18 @@ class ResourceModerationController extends Controller
             Storage::delete($filePath);
         }
 
+        $changeRequests->groupBy('user_id')->each(function ($userRequests) {
+            $user = $userRequests->first()->user;
+            if ($user) {
+                $user->notify(new ResourceModerationNotification(
+                    $userRequests->first(),
+                    'approved',
+                    null,
+                    $userRequests->count()
+                ));
+            }
+        });
+
         $count = $changeRequests->count();
         $message = $count === 1
             ? 'Resource request approved successfully.'
@@ -142,24 +154,12 @@ class ResourceModerationController extends Controller
         }
 
         $reason = $validated['rejection_reason'] ?? null;
-        $filesToDelete = [];
 
-        DB::transaction(function () use ($changeRequests, $reason, &$filesToDelete) {
+        DB::transaction(function () use ($changeRequests, $reason) {
             $reviewerId = Auth::id();
             $now = now();
 
             foreach ($changeRequests as $item) {
-                $stagedFile = $item->payload['file_path'] ?? null;
-
-                if ($stagedFile) {
-                    $isNewFile = $item->action_type === 'create'
-                        || ($item->action_type === 'update' && $stagedFile !== $item->resource?->file_path);
-
-                    if ($isNewFile) {
-                        $filesToDelete[] = $stagedFile;
-                    }
-                }
-
                 $item->update([
                     'status' => 'rejected',
                     'rejection_reason' => $reason,
@@ -169,15 +169,17 @@ class ResourceModerationController extends Controller
             }
         });
 
-        foreach ($filesToDelete as $filePath) {
-            Storage::delete($filePath);
-        }
-
-        foreach ($changeRequests as $item) {
-            if ($item->user) {
-                $item->user->notify(new ResourceModerationNotification($item, 'rejected', $reason));
+        $changeRequests->groupBy('user_id')->each(function ($userRequests) use ($reason) {
+            $user = $userRequests->first()->user;
+            if ($user) {
+                $user->notify(new ResourceModerationNotification(
+                    $userRequests->first(),
+                    'rejected',
+                    $reason,
+                    $userRequests->count()
+                ));
             }
-        }
+        });
 
         $count = $changeRequests->count();
         $message = $count === 1

@@ -7,6 +7,7 @@ use App\Models\Subject;
 use App\Models\User;
 use App\Notifications\ResourceModerationNotification;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -302,6 +303,8 @@ test('moderator can approve a create request to bring resource live', function (
 });
 
 test('moderator can bulk approve multiple requests at once', function () {
+    Notification::fake();
+
     Permission::findOrCreate('moderate resources', 'web');
 
     $moderator = User::factory()->create();
@@ -344,6 +347,13 @@ test('moderator can bulk approve multiple requests at once', function () {
         ->and($req2->fresh()->status)->toBe('approved')
         ->and(Resource::where('title', 'Bulk Note 1')->exists())->toBeTrue()
         ->and(Resource::where('title', 'Bulk Note 2')->exists())->toBeTrue();
+
+    Notification::assertSentToTimes($moderator, ResourceModerationNotification::class, 1);
+    Notification::assertSentTo(
+        $moderator,
+        ResourceModerationNotification::class,
+        fn ($notif) => $notif->status === 'approved' && $notif->totalCount === 2
+    );
 });
 
 test('moderator can reject a request with feedback reason', function () {
@@ -396,6 +406,8 @@ test('moderator can reject a request with feedback reason', function () {
 });
 
 test('moderator can bulk reject multiple requests with shared feedback', function () {
+    Notification::fake();
+
     Permission::findOrCreate('moderate resources', 'web');
 
     $moderator = User::factory()->create();
@@ -437,9 +449,16 @@ test('moderator can bulk reject multiple requests with shared feedback', functio
         ->and($req1->fresh()->rejection_reason)->toBe('Duplicate spam uploads.')
         ->and($req2->fresh()->status)->toBe('rejected')
         ->and($req2->fresh()->rejection_reason)->toBe('Duplicate spam uploads.');
+
+    Notification::assertSentToTimes($moderator, ResourceModerationNotification::class, 1);
+    Notification::assertSentTo(
+        $moderator,
+        ResourceModerationNotification::class,
+        fn ($notif) => $notif->status === 'rejected' && $notif->totalCount === 2 && $notif->feedback === 'Duplicate spam uploads.'
+    );
 });
 
-test('old reviewed change requests are pruned after 30 days', function () {
+test('old reviewed change requests are pruned after 15 days', function () {
     $user = User::factory()->create();
 
     $subject = Subject::create([
@@ -456,29 +475,29 @@ test('old reviewed change requests are pruned after 30 days', function () {
         'slug' => 'waves',
     ]);
 
-    // Old approved request (> 30 days)
+    // Old approved request (> 15 days)
     $oldApproved = ResourceChangeRequest::create([
         'user_id' => $user->id,
         'node_id' => $node->id,
         'action_type' => 'create',
         'status' => 'approved',
         'reviewed_by' => $user->id,
-        'reviewed_at' => now()->subDays(31),
+        'reviewed_at' => now()->subDays(16),
         'payload' => ['title' => 'Old Approved'],
     ]);
 
-    // Recent approved request (<= 30 days)
+    // Recent approved request (<= 15 days)
     $recentApproved = ResourceChangeRequest::create([
         'user_id' => $user->id,
         'node_id' => $node->id,
         'action_type' => 'create',
         'status' => 'approved',
         'reviewed_by' => $user->id,
-        'reviewed_at' => now()->subDays(10),
+        'reviewed_at' => now()->subDays(5),
         'payload' => ['title' => 'Recent Approved'],
     ]);
 
-    // Pending request (> 30 days old created_at, but status pending)
+    // Pending request (> 15 days old created_at, but status pending)
     $pendingReq = ResourceChangeRequest::create([
         'user_id' => $user->id,
         'node_id' => $node->id,
@@ -492,6 +511,54 @@ test('old reviewed change requests are pruned after 30 days', function () {
     expect(ResourceChangeRequest::where('id', $oldApproved->id)->exists())->toBeFalse()
         ->and(ResourceChangeRequest::where('id', $recentApproved->id)->exists())->toBeTrue()
         ->and(ResourceChangeRequest::where('id', $pendingReq->id)->exists())->toBeTrue();
+});
+
+test('rejecting a change request preserves the staged file until prune', function () {
+    Storage::fake();
+    Notification::fake();
+    Permission::findOrCreate('moderate resources', 'web');
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $author = User::factory()->create();
+    $subject = Subject::create([
+        'name' => 'Math',
+        'slug' => 'math-keep-staged',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'calculator',
+    ]);
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Geometry',
+        'slug' => 'geometry',
+    ]);
+
+    Storage::put('resources/geometry.png', 'png-content');
+
+    $req = ResourceChangeRequest::recordCreate($author->id, $node->id, [
+        'title' => 'Geometry Diagram',
+        'resource_type' => 'image',
+        'file_path' => 'resources/geometry.png',
+    ]);
+
+    $this->actingAs($moderator)
+        ->post('/admin/moderation/resources/reject', [
+            'ids' => [$req->id],
+            'rejection_reason' => 'Blurry image.',
+        ])
+        ->assertRedirect();
+
+    expect(Storage::exists('resources/geometry.png'))->toBeTrue()
+        ->and($req->fresh()->status)->toBe('rejected');
+
+    // Simulate 16 days passing and pruning running
+    $req->update(['reviewed_at' => now()->subDays(16)]);
+    $this->artisan('model:prune', ['--model' => [ResourceChangeRequest::class]]);
+
+    expect(ResourceChangeRequest::where('id', $req->id)->exists())->toBeFalse()
+        ->and(Storage::exists('resources/geometry.png'))->toBeFalse();
 });
 
 test('approving an update preserves omitted attributes on the live resource', function () {
@@ -540,4 +607,79 @@ test('approving an update preserves omitted attributes on the live resource', fu
     expect($fresh->title)->toBe('Updated Title Only')
         ->and($fresh->content)->toBe('Existing description that must not be cleared')
         ->and($fresh->external_url)->toBe('https://example.com/original');
+});
+
+test('resource moderation notification formats batch data correctly', function () {
+    $user = User::factory()->create();
+    $subject = Subject::create([
+        'name' => 'Chemistry',
+        'slug' => 'chem-notif',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-emerald-500',
+        'icon' => 'flask',
+    ]);
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Organic',
+        'slug' => 'organic',
+    ]);
+    $req = ResourceChangeRequest::recordCreate($user->id, $node->id, [
+        'title' => 'Sample Note',
+        'resource_type' => 'note',
+    ]);
+
+    $rejectBatch = new ResourceModerationNotification($req, 'rejected', 'Poor image resolution', 15);
+    $rejectData = $rejectBatch->toArray($user);
+
+    expect($rejectData['title'])->toBe('15 Resource Requests Rejected')
+        ->and($rejectData['message'])->toBe('15 of your resource requests were rejected: Poor image resolution')
+        ->and($rejectData['action_type'])->toBe('batch')
+        ->and($rejectData['count'])->toBe(15)
+        ->and($rejectData['status'])->toBe('rejected');
+
+    $approveBatch = new ResourceModerationNotification($req, 'approved', null, 5);
+    $approveData = $approveBatch->toArray($user);
+
+    expect($approveData['title'])->toBe('5 Resource Requests Approved')
+        ->and($approveData['message'])->toBe('5 of your resource requests were approved and are now live.')
+        ->and($approveData['action_type'])->toBe('batch')
+        ->and($approveData['count'])->toBe(5)
+        ->and($approveData['status'])->toBe('approved');
+});
+
+test('batch node creation respects should_track_top_folders parameter', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $subject = Subject::create([
+        'name' => 'Biology',
+        'slug' => 'biology-trackable',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-emerald-500',
+        'icon' => 'dna',
+    ]);
+
+    $this->actingAs($admin)
+        ->post("/admin/subjects/{$subject->id}/nodes/batch", [
+            'nodes' => [
+                [
+                    'name' => 'Chapter 1 Cell',
+                    'slug' => 'ch-1-cell',
+                    'children' => [
+                        ['name' => 'Classes', 'slug' => 'classes'],
+                    ],
+                ],
+            ],
+            'should_track_top_folders' => true,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $topNode = Node::where('slug', 'ch-1-cell')->first();
+    $subNode = Node::where('slug', 'classes')->where('parent_id', $topNode->id)->first();
+
+    expect($topNode)->not->toBeNull()
+        ->and($topNode->is_trackable)->toBeTrue()
+        ->and($subNode)->not->toBeNull()
+        ->and($subNode->is_trackable)->toBeFalse();
 });
