@@ -6,6 +6,7 @@ import {
     Eye,
     ArrowRight,
     PenLine,
+    Pencil,
     Heart,
     MessageSquare,
     Trash2,
@@ -49,8 +50,29 @@ const {
     requireAuth,
     showAuthModal,
     authModalMessage,
+    can,
 } = useAuth();
 const canAccessAdmin = computed(() => page.props.auth?.can_access_admin);
+
+const canEdit = computed(() => {
+    return (
+        can('edit blogs') ||
+        (currentUser.value?.id && currentUser.value.id === props.blog.user_id)
+    );
+});
+
+const canDelete = computed(() => {
+    return (
+        can('delete blogs') ||
+        (currentUser.value?.id && currentUser.value.id === props.blog.user_id)
+    );
+});
+
+const deleteBlog = () => {
+    if (confirm('Are you sure you want to delete this blog post?')) {
+        router.delete(`/blogs/${props.blog.slug}`);
+    }
+};
 
 // Reactors modal state
 const showReactorsModal = ref(false);
@@ -316,6 +338,29 @@ const formatTimeAgo = (dateStr: string) => {
                     />
                     <span>{{ comments.length }} comments</span>
                 </a>
+
+                <!-- Author/Admin Actions -->
+                <div
+                    v-if="canEdit || canDelete"
+                    class="ml-auto flex items-center gap-2"
+                >
+                    <Link
+                        v-if="canEdit"
+                        :href="`/blogs/${blog.slug}/edit`"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    >
+                        <Pencil class="h-3.5 w-3.5" />
+                        <span>Edit</span>
+                    </Link>
+                    <button
+                        v-if="canDelete"
+                        @click="deleteBlog"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 shadow-2xs transition-colors hover:bg-rose-100 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
+                    >
+                        <Trash2 class="h-3.5 w-3.5" />
+                        <span>Delete</span>
+                    </button>
+                </div>
             </div>
 
             <h1

@@ -50,7 +50,6 @@ const allNavigation: AdminNavItem[] = [
         permission: 'moderate resources',
     },
     { name: 'Manage Contents', to: '/admin/subjects', icon: 'menu_book' },
-    { name: 'Manage Blogs', to: '/admin/blogs', icon: 'book' },
     {
         name: 'Manage Products',
         to: '/admin/products',

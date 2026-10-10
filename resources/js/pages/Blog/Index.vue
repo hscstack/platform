@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { router, Head } from '@inertiajs/vue3';
-import { Search, X, AlertTriangle } from 'lucide-vue-next';
+import { router, Head, Link } from '@inertiajs/vue3';
+import { Search, X, AlertTriangle, Plus } from 'lucide-vue-next';
 import { ref } from 'vue';
 import AdUnit from '@/components/AdUnit.vue';
 import BlogCard from '@/components/BlogCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
+import { usePermissions } from '@/lib/usePermissions';
+
+const { can } = usePermissions();
 
 defineProps({
     blogs: Object,
@@ -60,6 +63,15 @@ const clearSearch = () => {
                     গুরুত্বপূর্ণ তথ্য পড়ুন।
                 </p>
             </div>
+
+            <Link
+                v-if="can('create blogs')"
+                href="/blogs/create"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-indigo-700 sm:text-sm"
+            >
+                <Plus class="h-4 w-4 stroke-[2.2]" />
+                <span>Write Blog</span>
+            </Link>
         </div>
 
         <!-- Search Bar Row -->

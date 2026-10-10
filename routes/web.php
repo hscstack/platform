@@ -19,6 +19,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('throttle:60,1')->get('/api/auth/status', function (Request $request) {
@@ -33,6 +34,21 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/account/delete', [ProfileController::class, 'deleteAccount'])->name('account.delete');
     Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');
+
+    // Blog Authoring & Management
+    Route::middleware('permission:create blogs')->group(function () {
+        Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
+        Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    });
+    Route::middleware('can:update,blog')->group(function () {
+        Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
+        Route::match(['post', 'patch'], '/blogs/{blog}/patch', [BlogController::class, 'update'])->name('blogs.update');
+        Route::patch('/blogs/{blog}', [BlogController::class, 'update']);
+    });
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])
+        ->middleware('can:delete,blog')
+        ->name('blogs.destroy');
+
     Route::post('/blogs/{blog}/react', [BlogController::class, 'toggleReaction'])->name('blogs.react');
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
@@ -88,6 +104,14 @@ Route::get('/local/oauth2callback', function (Request $request) {
     abort_unless(app()->environment('local'), 403);
 
     dd($request->code);
+});
+
+Route::get('/quick-login', function () {
+    abort_unless(app()->environment('local'), 403);
+
+    Auth::loginUsingId(1);
+
+    return redirect('/');
 });
 
 Route::middleware('throttle:60,1')->group(function () {

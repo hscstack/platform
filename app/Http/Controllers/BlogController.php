@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Blog\StoreBlogRequest;
+use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use App\Notifications\BlogCommentNotification;
 use App\Notifications\BlogReactionNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class BlogController extends Controller
@@ -52,9 +56,72 @@ class BlogController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('Blog/CreateOrEdit');
+    }
+
+    public function store(StoreBlogRequest $request)
+    {
+        $data = $request->validated();
+        $data['user_id'] = Auth::id();
+
+        if ($request->hasFile('featured_image')) {
+            $path = $request->file('featured_image')->store('blogs');
+            $data['featured_image_path'] = $path;
+        }
+
+        $blog = Blog::create($data);
+
+        return redirect()->route('blogs.show', $blog)->with('success', 'Blog created successfully.');
+    }
+
+    public function edit(Blog $blog)
+    {
+        return Inertia::render('Blog/CreateOrEdit', [
+            'blog' => $blog,
+        ]);
+    }
+
+    public function update(UpdateBlogRequest $request, Blog $blog)
+    {
+        $data = $request->validated();
+
+        if ($request->hasFile('featured_image')) {
+            if ($blog->featured_image_path) {
+                Storage::delete($blog->featured_image_path);
+            }
+
+            $path = $request->file('featured_image')->store('blogs');
+            $data['featured_image_path'] = $path;
+        }
+
+        $blog->update($data);
+
+        return redirect()
+            ->route('blogs.show', $blog)
+            ->with('success', 'Blog updated successfully.');
+    }
+
+    public function destroy(Blog $blog)
+    {
+        if ($blog->featured_image_path) {
+            Storage::delete($blog->featured_image_path);
+        }
+
+        $blog->delete();
+
+        return redirect()
+            ->route('blogs.index')
+            ->with('success', 'Blog deleted successfully.');
+    }
+
     public function show(Blog $blog)
     {
-        abort_unless($blog->is_published, 404);
+        abort_unless(
+            $blog->is_published || (auth()->check() && (auth()->id() === $blog->user_id || auth()->user()->can('edit blogs'))),
+            404
+        );
 
         $blog->load('user:id,name,username,image_path,is_verified');
         $blog->increment('views');
