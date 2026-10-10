@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ReportSeeder::class,
             UserAppreciationSeeder::class,
             ChatSeeder::class,
+            ResourceChangeRequestSeeder::class,
         ]);
         Blog::factory()->count(10)->create();
     }

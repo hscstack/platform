@@ -67,9 +67,7 @@ class NodeController extends Controller
                 'slug' => $node->slug,
             ],
             'nodes' => $nodes,
-            'breadcrumb' => Cache::remember("node_breadcrumb_{$node->id}", now()->addDay(), function () use ($node) {
-                return $node->breadcrumb();
-            }),
+            'breadcrumb' => $node->breadcrumb(),
             'resources' => $resources,
             'upvotesCount' => $upvotesCount,
             'downvotesCount' => $downvotesCount,

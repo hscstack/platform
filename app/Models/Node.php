@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property-read Node|null $parent
@@ -59,19 +60,26 @@ class Node extends Model
 
     public function breadcrumb(): array
     {
-        $breadcrumb = [];
-        $node = $this;
+        return Cache::remember("node_breadcrumb_{$this->id}", now()->addHours(24), function () {
+            $breadcrumb = [];
+            $node = $this;
 
-        while ($node) {
-            array_unshift($breadcrumb, [
-                'name' => $node->name,
-                'slug' => $node->slug,
-            ]);
+            while ($node) {
+                array_unshift($breadcrumb, [
+                    'name' => $node->name,
+                    'slug' => $node->slug,
+                ]);
 
-            $node = $node->parent;
-        }
+                $node = $node->parent;
+            }
 
-        return $breadcrumb;
+            return $breadcrumb;
+        });
+    }
+
+    public function getBreadcrumbAttribute(): array
+    {
+        return $this->breadcrumb();
     }
 
     public function user()
@@ -117,5 +125,24 @@ class Node extends Model
     public function completions()
     {
         return $this->hasMany(NodeCompletion::class);
+    }
+
+    public function changeRequests()
+    {
+        return $this->hasMany(ResourceChangeRequest::class);
+    }
+
+    public function pendingCreateRequests()
+    {
+        return $this->hasMany(ResourceChangeRequest::class)
+            ->where('action_type', 'create')
+            ->where('status', 'pending');
+    }
+
+    public function rejectedCreateRequests()
+    {
+        return $this->hasMany(ResourceChangeRequest::class)
+            ->where('action_type', 'create')
+            ->where('status', 'rejected');
     }
 }

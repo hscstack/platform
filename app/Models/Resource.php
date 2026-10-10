@@ -61,4 +61,28 @@ class Resource extends Model
     {
         return $this->hasMany(ResourceCompletion::class);
     }
+
+    public function changeRequests()
+    {
+        return $this->hasMany(ResourceChangeRequest::class);
+    }
+
+    public function pendingChangeRequest()
+    {
+        return $this->hasOne(ResourceChangeRequest::class)->where('status', 'pending');
+    }
+
+    public function latestRejectedChangeRequest()
+    {
+        return $this->hasOne(ResourceChangeRequest::class)
+            ->where('status', 'rejected')
+            ->latestOfMany('reviewed_at');
+    }
+
+    public function hasPendingChangeRequest(): bool
+    {
+        return $this->relationLoaded('pendingChangeRequest')
+            ? $this->pendingChangeRequest !== null
+            : $this->pendingChangeRequest()->exists();
+    }
 }

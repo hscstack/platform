@@ -8,6 +8,8 @@ import {
     FileVideo,
     Pencil,
     Trash2,
+    Eye,
+    AlertCircle,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useAuth } from '@/lib/useAuth';
@@ -21,22 +23,50 @@ const props = defineProps({
 
 const emit = defineEmits<{
     (e: 'edit', resource: any): void;
+    (e: 'view-pending', pending: any, resource: any): void;
 }>();
+
+const hasPendingChange = computed(() => {
+    return Boolean(props.resource?.pending_change_request);
+});
+
+const pendingAction = computed(() => {
+    return props.resource?.pending_change_request?.action_type;
+});
+
+const hasRejectedChange = computed(() => {
+    return (
+        !hasPendingChange.value &&
+        Boolean(props.resource?.latest_rejected_change_request)
+    );
+});
+
+const rejectedAction = computed(() => {
+    return props.resource?.latest_rejected_change_request?.action_type;
+});
 
 const canEdit = computed(() => {
     return (
         !props.isFrozen &&
+        !hasPendingChange.value &&
         (can('edit resources') ||
             (userId.value !== null && userId.value === props.resource?.user_id))
     );
 });
 
 const canDelete = computed(() => {
-    return !props.isFrozen && can('delete resources');
+    return (
+        !props.isFrozen &&
+        !hasPendingChange.value &&
+        (can('delete resources') ||
+            (userId.value !== null && userId.value === props.resource?.user_id))
+    );
 });
 
 const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this Resource?')) {
+    if (
+        confirm('Are you sure you want to request deletion of this Resource?')
+    ) {
         router.delete(`/admin/resources/${props.resource?.id}`);
     }
 };
@@ -84,15 +114,121 @@ const handleDelete = () => {
                 >
                     {{ resource?.resource_type }}
                 </span>
+
+                <!-- Pending Moderation Badge -->
+                <button
+                    v-if="hasPendingChange && pendingAction === 'update'"
+                    type="button"
+                    @click.stop="
+                        emit(
+                            'view-pending',
+                            resource.pending_change_request,
+                            resource,
+                        )
+                    "
+                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 transition hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/30"
+                    title="View proposed changes"
+                >
+                    <Eye class="h-3 w-3" />
+                    <span>Edit Pending</span>
+                </button>
+                <button
+                    v-else-if="hasPendingChange && pendingAction === 'delete'"
+                    type="button"
+                    @click.stop="
+                        emit(
+                            'view-pending',
+                            resource.pending_change_request,
+                            resource,
+                        )
+                    "
+                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
+                    title="View deletion request"
+                >
+                    <Eye class="h-3 w-3" />
+                    <span>Deletion Pending</span>
+                </button>
+
+                <!-- Rejected Moderation Badge -->
+                <button
+                    v-if="hasRejectedChange && rejectedAction === 'update'"
+                    type="button"
+                    @click.stop="
+                        emit(
+                            'view-pending',
+                            resource.latest_rejected_change_request,
+                            resource,
+                        )
+                    "
+                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
+                    title="View rejected edit feedback"
+                >
+                    <AlertCircle
+                        class="h-3 w-3 text-rose-600 dark:text-rose-400"
+                    />
+                    <span>Edit Rejected</span>
+                </button>
+                <button
+                    v-else-if="hasRejectedChange && rejectedAction === 'delete'"
+                    type="button"
+                    @click.stop="
+                        emit(
+                            'view-pending',
+                            resource.latest_rejected_change_request,
+                            resource,
+                        )
+                    "
+                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
+                    title="View rejected deletion feedback"
+                >
+                    <AlertCircle
+                        class="h-3 w-3 text-rose-600 dark:text-rose-400"
+                    />
+                    <span>Deletion Rejected</span>
+                </button>
             </div>
         </div>
 
         <!-- Right: Actions -->
         <div
-            v-if="canEdit || canDelete"
+            v-if="canEdit || canDelete || hasPendingChange || hasRejectedChange"
             class="flex shrink-0 items-center gap-1"
             @click.stop
         >
+            <button
+                v-if="hasPendingChange"
+                type="button"
+                @click="
+                    emit(
+                        'view-pending',
+                        resource.pending_change_request,
+                        resource,
+                    )
+                "
+                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+                <Eye class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
+                <span>Preview</span>
+            </button>
+
+            <button
+                v-if="hasRejectedChange"
+                type="button"
+                @click="
+                    emit(
+                        'view-pending',
+                        resource.latest_rejected_change_request,
+                        resource,
+                    )
+                "
+                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-rose-200 bg-rose-50/60 px-2.5 py-1 text-xs font-semibold text-rose-700 shadow-2xs transition hover:bg-rose-100/80 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
+            >
+                <AlertCircle
+                    class="h-3.5 w-3.5 text-rose-600 dark:text-rose-400"
+                />
+                <span>Feedback</span>
+            </button>
+
             <button
                 v-if="canEdit"
                 type="button"

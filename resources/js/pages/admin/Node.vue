@@ -5,9 +5,17 @@ import {
     FolderPlus,
     ArrowLeft,
     ChevronDown,
+    ChevronRight,
     PencilLine,
     Lock,
     Unlock,
+    Clock,
+    Eye,
+    ExternalLink,
+    User,
+    FileText,
+    FileArchive,
+    AlertCircle,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkImageModal from '@/components/admin/BulkImageModal.vue';
@@ -18,6 +26,7 @@ import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
 import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
+import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -28,7 +37,10 @@ const props = defineProps({
     subject: Object,
     nodes: Array,
     resources: Array,
+    pending_creates: Array,
+    rejected_creates: Array,
     parent: Object,
+    breadcrumb: Array,
 });
 
 const isDirectlyFrozen = computed(() => Boolean(props.parent?.is_frozen));
@@ -83,6 +95,7 @@ const isSingleModalOpen = ref(false);
 const editingNode = ref<any | null>(null);
 const isSingleResourceModalOpen = ref(false);
 const editingResource = ref<any | null>(null);
+const viewingPendingModal = ref<any | null>(null);
 
 const openCreateNodeModal = () => {
     editingNode.value = null;
@@ -115,7 +128,11 @@ const handleResourceModalClose = () => {
 };
 
 const totalItemsCount = computed(
-    () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
+    () =>
+        (props.nodes?.length ?? 0) +
+        (props.resources?.length ?? 0) +
+        (props.pending_creates?.length ?? 0) +
+        (props.rejected_creates?.length ?? 0),
 );
 
 const backUrl = computed(() => {
@@ -133,6 +150,38 @@ const backUrl = computed(() => {
     segments.pop();
 
     return '/' + segments.join('/');
+});
+
+interface BreadcrumbItem {
+    name: string;
+    link: string;
+}
+
+const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
+    const items: BreadcrumbItem[] = [
+        {
+            name: 'Subjects',
+            link: '/admin/subjects',
+        },
+        {
+            name: (props.subject as any)?.name || 'Subject',
+            link: `/admin/subjects/${(props.subject as any)?.slug}/nodes`,
+        },
+    ];
+
+    if (props.breadcrumb && Array.isArray(props.breadcrumb)) {
+        let currentPath = `/admin/subjects/${(props.subject as any)?.slug}/nodes`;
+
+        for (const crumb of props.breadcrumb as any[]) {
+            currentPath += `/${crumb.slug}`;
+            items.push({
+                name: crumb.name,
+                link: currentPath,
+            });
+        }
+    }
+
+    return items;
 });
 
 const closeDropdowns = (e: MouseEvent) => {
@@ -163,6 +212,38 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
     <Head :title="parent?.name || subject?.name || 'Manage Nodes'" />
 
     <div class="flex w-full flex-1 flex-col">
+        <!-- Dedicated Breadcrumb Navigation Bar (Separate Row) -->
+        <div
+            v-if="adminBreadcrumbs.length > 0"
+            class="mb-3.5 flex items-center rounded-xl bg-slate-50/80 px-3 py-2 text-xs font-medium text-slate-500 sm:text-sm dark:bg-gray-800/40 dark:text-gray-400"
+        >
+            <nav
+                class="no-scrollbar flex min-w-0 flex-wrap items-center gap-1.5"
+            >
+                <template v-for="(crumb, idx) in adminBreadcrumbs" :key="idx">
+                    <ChevronRight
+                        v-if="idx > 0"
+                        class="h-3.5 w-3.5 shrink-0 stroke-[2.5] text-slate-300 dark:text-gray-600"
+                    />
+                    <span
+                        v-if="idx === adminBreadcrumbs.length - 1"
+                        class="font-bold text-slate-900 dark:text-gray-100"
+                        :title="crumb.name"
+                    >
+                        {{ crumb.name }}
+                    </span>
+                    <Link
+                        v-else
+                        :href="crumb.link"
+                        class="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                        :title="crumb.name"
+                    >
+                        {{ crumb.name }}
+                    </Link>
+                </template>
+            </nav>
+        </div>
+
         <!-- Freeze Notice Banner -->
         <div
             v-if="isFrozen"
@@ -300,7 +381,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
                 <!-- Add Resource Dropdown -->
                 <div
-                    v-if="!isFrozen && parent?.id"
+                    v-if="!isFrozen && parent?.id && can('create resources')"
                     ref="resourceDropdownRef"
                     class="relative inline-block"
                 >
@@ -409,6 +490,333 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             @close="isBulkRenameModalOpen = false"
         />
 
+        <!-- Pending Resource Preview Modal -->
+        <BaseModal
+            :is-open="viewingPendingModal !== null"
+            max-width="xl"
+            @close="viewingPendingModal = null"
+        >
+            <template #header>
+                <div class="flex items-center gap-2.5">
+                    <div
+                        v-if="viewingPendingModal?.status === 'rejected'"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
+                    >
+                        <AlertCircle class="h-4.5 w-4.5" />
+                    </div>
+                    <div
+                        v-else
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400"
+                    >
+                        <Clock class="h-4.5 w-4.5 animate-pulse" />
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold text-slate-900 dark:text-gray-100"
+                        >
+                            {{
+                                viewingPendingModal?.status === 'rejected'
+                                    ? 'Rejected Resource Submission'
+                                    : 'Resource Submission'
+                            }}
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-gray-400">
+                            {{
+                                viewingPendingModal?.status === 'rejected'
+                                    ? 'This submission was reviewed and rejected'
+                                    : 'Awaiting moderation review before public release'
+                            }}
+                        </p>
+                    </div>
+                </div>
+            </template>
+
+            <div v-if="viewingPendingModal" class="space-y-5 p-4 sm:p-6">
+                <!-- Status & Submission Meta Banner -->
+                <div
+                    v-if="viewingPendingModal.status === 'rejected'"
+                    class="space-y-2.5 rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-xs dark:border-rose-900/50 dark:bg-rose-950/30"
+                >
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-2"
+                    >
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="inline-flex items-center rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-2xs"
+                            >
+                                Rejected
+                            </span>
+                            <span
+                                class="font-medium text-rose-900 dark:text-rose-300"
+                            >
+                                Action:
+                                {{
+                                    viewingPendingModal.action_type === 'update'
+                                        ? 'Edit Resource'
+                                        : viewingPendingModal.action_type ===
+                                            'delete'
+                                          ? 'Delete Resource'
+                                          : 'Create Resource'
+                                }}
+                            </span>
+                        </div>
+
+                        <div
+                            v-if="viewingPendingModal.reviewer?.name"
+                            class="text-slate-600 dark:text-gray-400"
+                        >
+                            Reviewed by
+                            <span
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                            >
+                                {{ viewingPendingModal.reviewer.name }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="border-t border-rose-200/60 pt-2 dark:border-rose-900/40"
+                    >
+                        <div
+                            class="font-semibold text-rose-900 dark:text-rose-200"
+                        >
+                            Feedback / Reason:
+                        </div>
+                        <p
+                            class="mt-0.5 text-sm whitespace-pre-wrap text-rose-800 dark:text-rose-300"
+                        >
+                            {{
+                                viewingPendingModal.rejection_reason ||
+                                'No specific reason provided.'
+                            }}
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    v-else
+                    class="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50/60 px-4 py-3 text-xs dark:border-amber-900/40 dark:bg-amber-950/20"
+                >
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="inline-flex items-center rounded-full bg-amber-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-2xs"
+                        >
+                            Pending Review
+                        </span>
+                        <span
+                            class="font-medium text-amber-900/80 dark:text-amber-300"
+                        >
+                            Action:
+                            {{
+                                viewingPendingModal.action_type === 'update'
+                                    ? 'Edit Resource'
+                                    : viewingPendingModal.action_type ===
+                                        'delete'
+                                      ? 'Delete Resource'
+                                      : 'Create Resource'
+                            }}
+                        </span>
+                    </div>
+
+                    <div
+                        v-if="viewingPendingModal.user?.name"
+                        class="flex items-center gap-1.5 text-slate-600 dark:text-gray-400"
+                    >
+                        <User class="h-3.5 w-3.5 text-slate-400" />
+                        <span>
+                            Submitted by
+                            <Link
+                                v-if="viewingPendingModal.user?.username"
+                                :href="`/u/${viewingPendingModal.user.username}`"
+                                class="font-semibold text-slate-900 transition-colors hover:text-indigo-600 hover:underline dark:text-gray-100 dark:hover:text-indigo-400"
+                            >
+                                {{ viewingPendingModal.user.name }}
+                            </Link>
+                            <strong
+                                v-else
+                                class="font-semibold text-slate-900 dark:text-gray-100"
+                            >
+                                {{ viewingPendingModal.user.name }}
+                            </strong>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Main Card: Title & Type -->
+                <div
+                    class="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900/50"
+                >
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <span
+                                class="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                                >Resource Title</span
+                            >
+                            <h2
+                                class="mt-0.5 text-lg font-bold break-words text-slate-900 dark:text-white"
+                            >
+                                {{
+                                    viewingPendingModal.payload?.title ||
+                                    viewingPendingModal.targetResource?.title ||
+                                    '(Untitled)'
+                                }}
+                            </h2>
+                        </div>
+                        <span
+                            class="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold tracking-wide text-slate-700 uppercase dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                            {{
+                                viewingPendingModal.payload?.resource_type ||
+                                viewingPendingModal.targetResource
+                                    ?.resource_type ||
+                                'Resource'
+                            }}
+                        </span>
+                    </div>
+
+                    <!-- Description / Body -->
+                    <div
+                        v-if="viewingPendingModal.payload?.content"
+                        class="mt-4 border-t border-slate-100 pt-3 dark:border-gray-800/80"
+                    >
+                        <span
+                            class="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                            >Description / Content</span
+                        >
+                        <p
+                            class="mt-1.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-gray-300"
+                        >
+                            {{ viewingPendingModal.payload.content }}
+                        </p>
+                    </div>
+
+                    <!-- External URL -->
+                    <div
+                        v-if="viewingPendingModal.payload?.external_url"
+                        class="mt-4 border-t border-slate-100 pt-3 dark:border-gray-800/80"
+                    >
+                        <span
+                            class="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                            >External URL</span
+                        >
+                        <div class="mt-1">
+                            <a
+                                :href="viewingPendingModal.payload.external_url"
+                                target="_blank"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                            >
+                                <span class="break-all">{{
+                                    viewingPendingModal.payload.external_url
+                                }}</span>
+                                <ExternalLink class="h-3.5 w-3.5 shrink-0" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attached File Media Card -->
+                <div
+                    v-if="viewingPendingModal.staged_file_url"
+                    class="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900/50"
+                >
+                    <div
+                        class="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300"
+                    >
+                        <span class="flex items-center gap-1.5 font-bold">
+                            <FileText
+                                class="h-4 w-4 text-slate-500 dark:text-gray-400"
+                            />
+                            Attached Media / File
+                        </span>
+                        <a
+                            :href="viewingPendingModal.staged_file_url"
+                            target="_blank"
+                            class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >
+                            <span>Open file in new tab</span>
+                            <ExternalLink class="h-3 w-3" />
+                        </a>
+                    </div>
+
+                    <div class="p-4">
+                        <div
+                            v-if="
+                                viewingPendingModal.payload?.resource_type ===
+                                    'image' ||
+                                viewingPendingModal.staged_file_url.match(
+                                    /\.(jpeg|jpg|gif|png|webp|svg)$/i,
+                                )
+                            "
+                            class="flex flex-col items-center justify-center rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-950/40"
+                        >
+                            <img
+                                :src="viewingPendingModal.staged_file_url"
+                                alt="Staged Preview"
+                                class="max-h-80 w-auto rounded-lg object-contain shadow-2xs"
+                            />
+                        </div>
+
+                        <div
+                            v-else
+                            class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-gray-800 dark:bg-gray-800/40"
+                        >
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+                                >
+                                    <FileArchive class="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <div
+                                        class="text-xs font-semibold text-slate-900 dark:text-white"
+                                    >
+                                        Uploaded Attachment
+                                    </div>
+                                    <div
+                                        class="text-[11px] text-slate-500 dark:text-gray-400"
+                                    >
+                                        Click to download or view file content
+                                    </div>
+                                </div>
+                            </div>
+                            <a
+                                :href="viewingPendingModal.staged_file_url"
+                                target="_blank"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                            >
+                                <ExternalLink class="h-3.5 w-3.5" />
+                                <span>Open File</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="flex items-center justify-end gap-3">
+                    <Link
+                        v-if="
+                            viewingPendingModal?.status === 'pending' &&
+                            can('moderate resources')
+                        "
+                        href="/admin/moderation/resources"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-amber-400 bg-amber-500 px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-amber-600 dark:border-amber-500 dark:bg-amber-600 dark:hover:bg-amber-700"
+                    >
+                        <span>Review in Moderation Queue</span>
+                        <ChevronRight class="h-3.5 w-3.5" />
+                    </Link>
+
+                    <button
+                        type="button"
+                        @click="viewingPendingModal = null"
+                        class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    >
+                        Close
+                    </button>
+                </div>
+            </template>
+        </BaseModal>
+
         <div class="flex flex-1 flex-col">
             <template v-if="totalItemsCount > 0">
                 <div
@@ -439,12 +847,130 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         :is-frozen="isFrozen"
                         @edit="openEditNodeModal"
                     />
+                    <!-- Pending New Uploads (Under Moderation) -->
+                    <div
+                        v-for="pending in pending_creates"
+                        :key="`pending-create-${pending.id}`"
+                        @click="viewingPendingModal = pending"
+                        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-amber-200/80 bg-amber-50/50 p-3 transition hover:border-amber-300 hover:bg-amber-50 sm:p-3.5 dark:border-amber-900/40 dark:bg-amber-950/20 dark:hover:border-amber-800/80"
+                    >
+                        <div class="flex min-w-0 flex-1 items-center gap-3">
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-300 bg-amber-100 text-amber-700 sm:h-10 sm:w-10 dark:border-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
+                            >
+                                <Clock class="h-4.5 w-4.5 animate-pulse" />
+                            </div>
+
+                            <div
+                                class="flex min-w-0 flex-wrap items-center gap-2"
+                            >
+                                <h3
+                                    class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-amber-700 dark:text-gray-100 dark:group-hover:text-amber-300"
+                                >
+                                    {{ pending.payload?.title || '(Untitled)' }}
+                                </h3>
+
+                                <span
+                                    class="inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
+                                >
+                                    Pending Approval
+                                </span>
+
+                                <span
+                                    v-if="pending.user?.name"
+                                    class="text-xs text-slate-400 dark:text-gray-500"
+                                >
+                                    by {{ pending.user.name }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <button
+                                type="button"
+                                @click="viewingPendingModal = pending"
+                                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                <Eye class="h-3.5 w-3.5 text-slate-500" />
+                                <span>Preview</span>
+                            </button>
+
+                            <Link
+                                v-if="can('moderate resources')"
+                                href="/admin/moderation/resources"
+                                class="inline-flex cursor-pointer items-center rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-amber-800 shadow-2xs hover:bg-amber-50 dark:border-amber-800 dark:bg-gray-900 dark:text-amber-300 dark:hover:bg-gray-800"
+                            >
+                                Review in Queue
+                            </Link>
+                        </div>
+                    </div>
+
+                    <!-- Rejected New Uploads (User's Own) -->
+                    <div
+                        v-for="rejected in rejected_creates"
+                        :key="`rejected-create-${rejected.id}`"
+                        @click="viewingPendingModal = rejected"
+                        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-rose-200/80 bg-rose-50/50 p-3 transition hover:border-rose-300 hover:bg-rose-50 sm:p-3.5 dark:border-rose-900/40 dark:bg-rose-950/20 dark:hover:border-rose-800/80"
+                    >
+                        <div class="flex min-w-0 flex-1 items-center gap-3">
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-rose-300 bg-rose-100 text-rose-700 sm:h-10 sm:w-10 dark:border-rose-800 dark:bg-rose-900/50 dark:text-rose-300"
+                            >
+                                <AlertCircle
+                                    class="h-4.5 w-4.5 text-rose-600 dark:text-rose-400"
+                                />
+                            </div>
+
+                            <div
+                                class="flex min-w-0 flex-wrap items-center gap-2"
+                            >
+                                <h3
+                                    class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-rose-700 dark:text-gray-100 dark:group-hover:text-rose-300"
+                                >
+                                    {{
+                                        rejected.payload?.title || '(Untitled)'
+                                    }}
+                                </h3>
+
+                                <span
+                                    class="inline-flex items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
+                                >
+                                    Upload Rejected
+                                </span>
+
+                                <span
+                                    v-if="rejected.rejection_reason"
+                                    class="max-w-xs truncate text-xs text-rose-600/90 dark:text-rose-400/90"
+                                >
+                                    Reason: {{ rejected.rejection_reason }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <button
+                                type="button"
+                                @click="viewingPendingModal = rejected"
+                                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                <Eye class="h-3.5 w-3.5 text-slate-500" />
+                                <span>Feedback</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <ResourceRow
                         v-for="resource in resources"
                         :key="`resource-${resource.id}`"
                         :resource="resource"
                         :is-frozen="isFrozen"
                         @edit="openEditResourceModal"
+                        @view-pending="
+                            (pending, res) =>
+                                (viewingPendingModal = pending
+                                    ? { ...pending, targetResource: res }
+                                    : null)
+                        "
                     />
                 </div>
             </template>
