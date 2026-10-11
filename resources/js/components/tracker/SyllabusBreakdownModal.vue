@@ -76,7 +76,9 @@ const formatGroupName = (group?: string) => {
 };
 
 function toggleChapterCompletion(subj: SyllabusSubject, chap: SyllabusChapter) {
-    if (!props.isOwnProfile) return;
+    if (!props.isOwnProfile) {
+        return;
+    }
 
     const wasCompleted = chap.is_completed;
     chap.is_completed = !wasCompleted;
@@ -90,36 +92,20 @@ function toggleChapterCompletion(subj: SyllabusSubject, chap: SyllabusChapter) {
     if (subj.chapters && subj.chapters.length > 0) {
         let totalWeight = 0;
         let completedWeight = 0;
+
         for (const c of subj.chapters) {
             const w = c.weight || 2;
             totalWeight += w;
+
             if (c.is_completed) {
                 completedWeight += w;
             }
         }
+
         subj.percent =
             totalWeight > 0
                 ? Math.round((completedWeight / totalWeight) * 100)
                 : 0;
-    }
-
-    if (props.syllabusProgress?.subjects) {
-        let validSubjectsCount = 0;
-        let totalSubjectPercents = 0;
-        let totalCompletedChapters = 0;
-        for (const s of props.syllabusProgress.subjects) {
-            totalCompletedChapters += s.completed;
-            if (s.total > 0) {
-                totalSubjectPercents += s.percent;
-                validSubjectsCount++;
-            }
-        }
-        if (validSubjectsCount > 0) {
-            props.syllabusProgress.overallPercent = Math.round(
-                totalSubjectPercents / validSubjectsCount,
-            );
-        }
-        props.syllabusProgress.completedChapters = totalCompletedChapters;
     }
 
     router.post(
@@ -276,7 +262,7 @@ function toggleChapterCompletion(subj: SyllabusSubject, chap: SyllabusChapter) {
                         class="flex items-center justify-between gap-2.5 px-3 py-2 text-xs transition"
                         :class="[
                             isOwnProfile
-                                ? 'cursor-pointer hover:bg-slate-100/70 active:bg-slate-200/50 select-none dark:hover:bg-gray-800/60 dark:active:bg-gray-800'
+                                ? 'cursor-pointer select-none hover:bg-slate-100/70 active:bg-slate-200/50 dark:hover:bg-gray-800/60 dark:active:bg-gray-800'
                                 : '',
                         ]"
                         :role="isOwnProfile ? 'button' : undefined"

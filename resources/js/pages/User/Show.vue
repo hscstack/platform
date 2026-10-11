@@ -8,7 +8,6 @@ import {
     ArrowUpRight,
     Calendar,
     CheckCircle2,
-    ChevronDown,
     ChevronRight,
     Edit3,
     Eye,
@@ -19,14 +18,12 @@ import {
     GraduationCap,
     Heart,
     HelpCircle,
-    Info,
     Instagram,
     Loader2,
     Lock,
     LogIn,
     MessageSquare,
     MessageSquareCheck,
-    Share2,
     UploadCloud,
     Users,
     X,
@@ -36,7 +33,6 @@ import { computed, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
-import SubjectIcon from '@/components/SubjectIcon.vue';
 import StudyHeatmap from '@/components/tracker/StudyHeatmap.vue';
 import type {
     HeatmapItem,
