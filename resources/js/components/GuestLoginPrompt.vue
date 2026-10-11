@@ -31,8 +31,8 @@ const isAuthRoute = computed(() => {
 
 const isDismissedInSession = (): boolean => {
     if (typeof window === 'undefined') {
-return true;
-}
+        return true;
+    }
 
     try {
         return sessionStorage.getItem(DISMISS_KEY) === 'true';
@@ -73,8 +73,8 @@ const evaluatePrompt = (isNewNavigation = false) => {
     }
 
     if (typeof window === 'undefined') {
-return;
-}
+        return;
+    }
 
     let count = 1;
 
