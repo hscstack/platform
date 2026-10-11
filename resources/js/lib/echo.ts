@@ -44,3 +44,19 @@ export function getEcho(key?: string, cluster?: string): Echo<'pusher'> | null {
 
     return echoInstance;
 }
+
+export function disconnectEcho(): void {
+    if (echoInstance) {
+        try {
+            echoInstance.disconnect();
+        } catch {
+            // Silently ignore disconnect errors
+        }
+
+        echoInstance = null;
+
+        if (typeof window !== 'undefined' && (window as any).Echo) {
+            delete (window as any).Echo;
+        }
+    }
+}

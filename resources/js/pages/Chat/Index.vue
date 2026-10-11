@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
-    Send,
-    Trash2,
-    Lock,
-    Loader2,
-    LogIn,
+    AlertCircle,
     ArrowDown,
+    AtSign,
     Ban,
-    Flag,
     Check,
     Copy,
-    X,
-    Reply,
-    Smile,
+    Flag,
     Info,
-    ShieldCheck,
-    AlertCircle,
+    Loader2,
+    Lock,
+    LogIn,
     Radio,
-    AtSign,
+    Reply,
+    Send,
+    ShieldCheck,
+    Smile,
+    Trash2,
     Users,
     UserX,
+    X,
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -29,7 +29,7 @@ import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
-import { getEcho } from '@/lib/echo';
+import { disconnectEcho, getEcho } from '@/lib/echo';
 import { useAuth } from '@/lib/useAuth';
 import { getCsrfToken } from '@/lib/useCsrf';
 import { formatDateDivider, formatTime } from '@/lib/useDate';
@@ -606,6 +606,10 @@ const fetchLatestMessages = async (force = false) => {
 let handlePusherReconnect: (() => void) | null = null;
 
 const setupRealtime = () => {
+    if (!currentUser.value) {
+        return;
+    }
+
     const echo = getEcho(
         props.chatState.pusher_key,
         props.chatState.pusher_cluster,
@@ -1457,6 +1461,22 @@ const handleDocumentClick = () => {
     showMentionSuggestions.value = false;
 };
 
+watch(currentUser, (newUser, oldUser) => {
+    if (newUser && !oldUser) {
+        setupRealtime();
+        setupPresenceChannel();
+    } else if (!newUser && oldUser) {
+        const echo = getEcho();
+
+        if (echo) {
+            echo.leave(chatChannelName.value);
+            echo.leave(presenceChannelName.value);
+        }
+
+        disconnectEcho();
+    }
+});
+
 onMounted(() => {
     initCooldown();
     setupRealtime();
@@ -1537,6 +1557,8 @@ onUnmounted(() => {
         echo.leave(chatChannelName.value);
         echo.leave(presenceChannelName.value);
     }
+
+    disconnectEcho();
 });
 </script>
 
@@ -1631,6 +1653,19 @@ onUnmounted(() => {
         <div
             class="flex h-[calc(100dvh-13.5rem)] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs sm:h-[calc(100dvh-8.5rem)] dark:border-zinc-800 dark:bg-zinc-900"
         >
+            <!-- Guest Notice Banner -->
+            <div
+                v-if="!currentUser"
+                class="flex items-center gap-2 border-b border-indigo-100 bg-indigo-50/70 px-3.5 py-2 text-xs text-indigo-900 sm:px-5 dark:border-indigo-950/60 dark:bg-indigo-950/30 dark:text-indigo-200"
+            >
+                <Radio
+                    class="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400"
+                />
+                <p class="truncate text-[11px] sm:text-xs">
+                    রিয়েলটাইম লাইভ চ্যাট দেখতে ও মেসেজ পাঠাতে লগইন করুন
+                </p>
+            </div>
+
             <!-- Scrollable Message Stream -->
             <div
                 ref="messagesContainerRef"
