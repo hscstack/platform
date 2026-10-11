@@ -1461,22 +1461,6 @@ const handleDocumentClick = () => {
     showMentionSuggestions.value = false;
 };
 
-watch(currentUser, (newUser, oldUser) => {
-    if (newUser && !oldUser) {
-        setupRealtime();
-        setupPresenceChannel();
-    } else if (!newUser && oldUser) {
-        const echo = getEcho();
-
-        if (echo) {
-            echo.leave(chatChannelName.value);
-            echo.leave(presenceChannelName.value);
-        }
-
-        disconnectEcho();
-    }
-});
-
 onMounted(() => {
     initCooldown();
     setupRealtime();
