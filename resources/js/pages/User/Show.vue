@@ -6,6 +6,7 @@ import {
     ArrowBigDown,
     ArrowRight,
     ArrowUpRight,
+    BadgeCheck,
     Calendar,
     CheckCircle2,
     ChevronDown,
@@ -32,7 +33,7 @@ import {
     X,
     Zap,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
@@ -249,6 +250,29 @@ const isOwnProfile = computed(
 
 const showSyllabusModal = ref(false);
 const showShareModal = ref(false);
+const showVerifiedPrompt = ref(false);
+const verifiedBadgeContainerRef = ref<HTMLElement | null>(null);
+
+const handleVerifiedClickOutside = (e: MouseEvent) => {
+    if (
+        showVerifiedPrompt.value &&
+        verifiedBadgeContainerRef.value &&
+        !verifiedBadgeContainerRef.value.contains(e.target as Node)
+    ) {
+        showVerifiedPrompt.value = false;
+    }
+};
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('click', handleVerifiedClickOutside);
+}
+
+onBeforeUnmount(() => {
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('click', handleVerifiedClickOutside);
+    }
+});
+
 const showAlgorithmInfo = ref(false);
 const expandedSubjects = ref<Set<number>>(new Set());
 
@@ -656,10 +680,69 @@ const formatGroupName = (group?: string) => {
                                     {{ profileUser.name }}
                                 </h1>
 
-                                <VerifiedBadge
+                                <div
                                     v-if="profileUser.is_verified"
-                                    size="h-5 w-5"
-                                />
+                                    ref="verifiedBadgeContainerRef"
+                                    class="relative inline-flex items-center"
+                                >
+                                    <button
+                                        type="button"
+                                        @click.stop="
+                                            showVerifiedPrompt =
+                                                !showVerifiedPrompt
+                                        "
+                                        class="inline-flex cursor-pointer rounded-full transition-transform hover:scale-110 focus:outline-none"
+                                        aria-label="Verified contributor details"
+                                        title="Verified Contributor"
+                                    >
+                                        <VerifiedBadge size="h-5 w-5" />
+                                    </button>
+
+                                    <!-- Floating verification card / popover -->
+                                    <Transition
+                                        enter-active-class="transition duration-150 ease-out"
+                                        enter-from-class="opacity-0 translate-y-1 scale-95"
+                                        enter-to-class="opacity-100 translate-y-0 scale-100"
+                                        leave-active-class="transition duration-100 ease-in"
+                                        leave-from-class="opacity-100 translate-y-0 scale-100"
+                                        leave-to-class="opacity-0 translate-y-1 scale-95"
+                                    >
+                                        <div
+                                            v-if="showVerifiedPrompt"
+                                            class="absolute top-full left-0 z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-md sm:w-80 dark:border-gray-800 dark:bg-gray-900 dark:shadow-2xl"
+                                        >
+                                            <div
+                                                class="flex items-start gap-2.5"
+                                            >
+                                                <div
+                                                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
+                                                >
+                                                    <BadgeCheck
+                                                        class="h-4 w-4"
+                                                    />
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p
+                                                        class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                                    >
+                                                        {{ profileUser.name }}
+                                                        একজন ভেরিফায়েড
+                                                        কন্ট্রিবিউটর
+                                                    </p>
+                                                    <p
+                                                        class="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                                                    >
+                                                        প্ল্যাটফর্মে মানসম্মত
+                                                        কন্টেন্ট ও রিসোর্স শেয়ার
+                                                        করার জন্য HSCStack
+                                                        কর্তৃক এই অ্যাকাউন্টটি
+                                                        যাচাইকৃত।
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Transition>
+                                </div>
                             </div>
 
                             <!-- Username Tag -->
