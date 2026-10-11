@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue';
 import AtmosphericBackground from '@/components/AtmosphericBackground.vue';
 import FloatingShareBar from '@/components/FloatingShareBar.vue';
 import Footer from '@/components/Footer.vue';
+import GuestLoginPrompt from '@/components/GuestLoginPrompt.vue';
 import InAppBrowserPrompt from '@/components/InAppBrowserPrompt.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import {
@@ -138,5 +139,6 @@ const drawerOpen = ref(false);
         <FloatingShareBar />
         <ToastNotification />
         <InAppBrowserPrompt />
+        <GuestLoginPrompt />
     </div>
 </template>
