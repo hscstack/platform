@@ -6,6 +6,7 @@
 - Only run automated check commands when:
   1. The user explicitly instructs to `"push"` or `"commit"`.
   2. The user explicitly asks to check or fix formatting/linting issues.
+- **Fast-Path Lint/Format Fixes**: When asked to fix linting or formatting, immediately run the automated fix commands (`npm run format && composer lint && npm run lint`) first. Do NOT spend time manually inspecting files or CI logs beforehand; only manually edit files if the automated fix commands fail and report non-autofixable errors.
 - **Quick Push Bypass**: When instructed with `"quick push"` or `"push direct"`, bypass all formatting and linting commands and proceed directly to commit/push.
 
 ```bash
