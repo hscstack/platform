@@ -33,7 +33,7 @@ import {
     X,
     Zap,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
@@ -263,13 +263,23 @@ const handleVerifiedClickOutside = (e: MouseEvent) => {
     }
 };
 
-if (typeof window !== 'undefined') {
-    window.addEventListener('click', handleVerifiedClickOutside);
-}
+const handleVerifiedKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && showVerifiedPrompt.value) {
+        showVerifiedPrompt.value = false;
+    }
+};
+
+onMounted(() => {
+    if (typeof window !== 'undefined') {
+        window.addEventListener('click', handleVerifiedClickOutside);
+        window.addEventListener('keydown', handleVerifiedKeyDown);
+    }
+});
 
 onBeforeUnmount(() => {
     if (typeof window !== 'undefined') {
         window.removeEventListener('click', handleVerifiedClickOutside);
+        window.removeEventListener('keydown', handleVerifiedKeyDown);
     }
 });
 
@@ -692,6 +702,8 @@ const formatGroupName = (group?: string) => {
                                                 !showVerifiedPrompt
                                         "
                                         class="inline-flex cursor-pointer rounded-full transition-transform hover:scale-110 focus:outline-none"
+                                        :aria-expanded="showVerifiedPrompt"
+                                        aria-haspopup="dialog"
                                         aria-label="Verified contributor details"
                                         title="Verified Contributor"
                                     >
@@ -710,6 +722,8 @@ const formatGroupName = (group?: string) => {
                                         <div
                                             v-if="showVerifiedPrompt"
                                             class="absolute top-full -left-20 z-50 mt-2 w-64 max-w-[calc(100vw-4rem)] rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl sm:left-0 sm:w-80 dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-2xl"
+                                            role="dialog"
+                                            aria-label="Verified contributor information"
                                         >
                                             <div
                                                 class="flex items-start gap-2.5"
