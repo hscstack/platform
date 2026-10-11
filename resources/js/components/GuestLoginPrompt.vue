@@ -119,12 +119,21 @@ const evaluatePrompt = (isNewNavigation = false) => {
     }
 };
 
+let lastPath = '';
+
 onMounted(() => {
+    lastPath = page.url.split('?')[0];
     evaluatePrompt(false);
 
     // Reliably catch all client-side Inertia page navigations
-    unregisterNavigate = router.on('navigate', () => {
-        evaluatePrompt(true);
+    unregisterNavigate = router.on('navigate', (event) => {
+        const nextUrl = event.detail?.page?.url || page.url;
+        const nextPath = nextUrl.split('?')[0];
+
+        if (nextPath !== lastPath) {
+            lastPath = nextPath;
+            evaluatePrompt(true);
+        }
     });
 });
 
