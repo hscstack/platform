@@ -625,7 +625,7 @@ const formatGroupName = (group?: string) => {
         <div class="mx-auto max-w-3xl space-y-4.5 sm:space-y-6">
             <!-- Profile Identity Card -->
             <div
-                class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs sm:rounded-3xl sm:p-7 dark:border-gray-800 dark:bg-gray-900"
+                class="relative rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs sm:rounded-3xl sm:p-7 dark:border-gray-800 dark:bg-gray-900"
             >
                 <div
                     class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-5"
@@ -709,7 +709,7 @@ const formatGroupName = (group?: string) => {
                                     >
                                         <div
                                             v-if="showVerifiedPrompt"
-                                            class="absolute top-full left-0 z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-md sm:w-80 dark:border-gray-800 dark:bg-gray-900 dark:shadow-2xl"
+                                            class="absolute top-full -left-20 z-50 mt-2 w-64 max-w-[calc(100vw-4rem)] rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl sm:left-0 sm:w-80 dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-2xl"
                                         >
                                             <div
                                                 class="flex items-start gap-2.5"
@@ -722,13 +722,22 @@ const formatGroupName = (group?: string) => {
                                                     />
                                                 </div>
                                                 <div class="min-w-0 flex-1">
-                                                    <p
-                                                        class="text-xs font-bold text-slate-900 dark:text-gray-100"
+                                                    <div
+                                                        class="flex items-center justify-between gap-1.5"
                                                     >
-                                                        {{ profileUser.name }}
-                                                        একজন ভেরিফায়েড
-                                                        কন্ট্রিবিউটর
-                                                    </p>
+                                                        <p
+                                                            class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                                        >
+                                                            {{
+                                                                profileUser.name
+                                                            }}
+                                                        </p>
+                                                        <span
+                                                            class="inline-flex shrink-0 items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+                                                        >
+                                                            Verified
+                                                        </span>
+                                                    </div>
                                                     <p
                                                         class="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
                                                     >
