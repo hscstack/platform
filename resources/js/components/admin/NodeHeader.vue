@@ -234,7 +234,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
                 <!-- Add Resource Dropdown -->
                 <div
-                    v-if="!isFrozen && parent?.id && can('create resources')"
+                    v-if="!isFrozen && parent?.id && can('moderate resources')"
                     ref="resourceDropdownRef"
                     class="relative inline-block"
                 >

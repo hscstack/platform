@@ -79,7 +79,7 @@ const submitForm = () => {
         is_reversed: isReversed.value,
     };
 
-    router.post('/admin/resources/bulk/videos', payload, {
+    router.post('/resources/bulk/videos', payload, {
         preserveScroll: true,
         onSuccess: () => {
             resetForm();
@@ -129,6 +129,29 @@ const submitForm = () => {
                         {{ errorMessage }}
                     </p>
                 </div>
+            </div>
+
+            <!-- Moderation Notice -->
+            <div
+                class="m-4 mb-0 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-[11px] leading-relaxed text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+            >
+                <div class="font-bold">প্লেলিস্ট সাবমিশন নির্দেশিকা:</div>
+                <ul
+                    class="mt-1 list-disc space-y-0.5 pl-4 text-[11px] text-indigo-800 dark:text-indigo-300"
+                >
+                    <li>
+                        সকল ইমপোর্টকৃত ভিডিও লিংক মডারেটর কর্তৃক পর্যালোচনার পর
+                        ওয়েবসাইটে প্রকাশিত হবে।
+                    </li>
+                    <li>
+                        কোনো রকম পাইরেটেড বা কপিরাইট লঙ্ঘনকারী কনটেন্ট
+                        গ্রহণযোগ্য নয়।
+                    </li>
+                    <li>
+                        ইউটিউব ভিডিওর ক্ষেত্রে সংশ্লিষ্ট শিক্ষক বা অফিশিয়াল
+                        চ্যানেলের উন্মুক্ত ভিডিও যুক্ত করা যাবে।
+                    </li>
+                </ul>
             </div>
 
             <div

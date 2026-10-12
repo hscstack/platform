@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowBigDown, ArrowBigUp, X } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import {
+    ArrowBigDown,
+    ArrowBigUp,
+    ChevronDown,
+    FileText,
+    Images,
+    Upload,
+    Video,
+    X,
+} from 'lucide-vue-next';
+import { onMounted, onUnmounted, computed, ref, watch } from 'vue';
 
+import BulkImageModal from '@/components/admin/BulkImageModal.vue';
+import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
+import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -205,6 +217,55 @@ const handleVote = (type: 'up' | 'down') => {
         },
     );
 };
+
+const isUploadDropdownOpen = ref(false);
+const uploadDropdownRef = ref<HTMLElement | null>(null);
+
+const isSingleModalOpen = ref(false);
+const isBulkImageModalOpen = ref(false);
+const isBulkVideoModalOpen = ref(false);
+
+const closeUploadDropdown = (e: MouseEvent) => {
+    const target = e.target as HTMLElement | null;
+
+    if (
+        uploadDropdownRef.value &&
+        target &&
+        !uploadDropdownRef.value.contains(target)
+    ) {
+        isUploadDropdownOpen.value = false;
+    }
+};
+
+onMounted(() => document.addEventListener('click', closeUploadDropdown));
+onUnmounted(() => document.removeEventListener('click', closeUploadDropdown));
+
+const handleToggleUploadDropdown = () => {
+    if (
+        !requireAuth(
+            'Login to upload your own note and contribute to the community.',
+        )
+    ) {
+        return;
+    }
+
+    isUploadDropdownOpen.value = !isUploadDropdownOpen.value;
+};
+
+const handleOpenSingle = () => {
+    isUploadDropdownOpen.value = false;
+    isSingleModalOpen.value = true;
+};
+
+const handleOpenBulkImage = () => {
+    isUploadDropdownOpen.value = false;
+    isBulkImageModalOpen.value = true;
+};
+
+const handleOpenBulkVideo = () => {
+    isUploadDropdownOpen.value = false;
+    isBulkVideoModalOpen.value = true;
+};
 </script>
 
 <template>
@@ -376,6 +437,50 @@ const handleVote = (type: 'up' | 'down') => {
                             {{ localUpvotesCount === 1 ? 'upvote' : 'upvotes' }}
                         </span>
                     </button>
+
+                    <!-- Upload Dropdown Menu -->
+                    <div ref="uploadDropdownRef" class="relative inline-block">
+                        <button
+                            type="button"
+                            @click="handleToggleUploadDropdown"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                            title="Upload notes, images, or playlists into this folder"
+                        >
+                            <Upload class="h-3.5 w-3.5 stroke-[2.2]" />
+                            <span>Upload</span>
+                            <ChevronDown class="h-3.5 w-3.5 opacity-80" />
+                        </button>
+
+                        <div
+                            v-if="isUploadDropdownOpen"
+                            class="absolute right-0 z-20 mt-1.5 w-52 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+                        >
+                            <button
+                                type="button"
+                                @click="handleOpenSingle"
+                                class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            >
+                                <FileText class="h-3.5 w-3.5 text-amber-500" />
+                                <span>Upload Single Note / Doc</span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="handleOpenBulkImage"
+                                class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            >
+                                <Images class="h-3.5 w-3.5 text-emerald-500" />
+                                <span>Upload Multiple Images</span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="handleOpenBulkVideo"
+                                class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                            >
+                                <Video class="h-3.5 w-3.5 text-rose-500" />
+                                <span>Import YouTube Playlist</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -490,4 +595,26 @@ const handleVote = (type: 'up' | 'down') => {
             </div>
         </Transition>
     </Teleport>
+
+    <!-- Upload Modals -->
+    <CreateResourceModal
+        v-if="currentNode"
+        :is-open="isSingleModalOpen"
+        :node="currentNode"
+        @close="isSingleModalOpen = false"
+    />
+
+    <BulkImageModal
+        v-if="currentNode"
+        :is-open="isBulkImageModalOpen"
+        :node="currentNode"
+        @close="isBulkImageModalOpen = false"
+    />
+
+    <BulkVideoModal
+        v-if="currentNode"
+        :is-open="isBulkVideoModalOpen"
+        :node="currentNode"
+        @close="isBulkVideoModalOpen = false"
+    />
 </template>

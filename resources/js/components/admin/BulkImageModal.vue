@@ -220,7 +220,7 @@ const submitForm = async () => {
         custom_titles: processedTitles.value,
     };
 
-    router.post('/admin/resources/bulk/images', payload, {
+    router.post('/resources/bulk/images', payload, {
         forceFormData: true,
         preserveScroll: true,
         onProgress: (progress) => {
@@ -288,6 +288,14 @@ const submitForm = async () => {
                         {{ errorMessage }}
                     </p>
                 </div>
+            </div>
+
+            <!-- Moderation Notice -->
+            <div
+                class="m-4 mb-0 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-[11px] leading-relaxed text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+            >
+                <span class="font-bold">নোট সাবমিশন:</span> সকল আপলোডকৃত ইমেজ বা
+                নোট মডারেটর কর্তৃক পর্যালোচনার পর ওয়েবসাইটে প্রকাশিত হবে।
             </div>
 
             <div

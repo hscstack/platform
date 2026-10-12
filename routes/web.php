@@ -61,6 +61,9 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
     Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
+    Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
+    Route::post('/resources/bulk/images', [ResourceController::class, 'storeBulkImages'])->name('resources.bulk.images');
+    Route::post('/resources/bulk/videos', [ResourceController::class, 'storeBulkVideos'])->name('resources.bulk.videos');
     Route::post('/tracker/nodes/{node}/toggle', [StudyTrackerController::class, 'toggleNode'])->name('tracker.nodes.toggle');
     Route::post('/tracker/log-time', [StudyTrackerController::class, 'logTime'])->name('tracker.log-time');
     Route::post('/tracker/reset-today', [StudyTrackerController::class, 'resetToday'])->name('tracker.reset-today');

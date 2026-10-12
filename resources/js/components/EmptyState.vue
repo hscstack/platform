@@ -33,7 +33,7 @@ const { can } = usePermissions();
 const isAlreadyContributor = computed(() => {
     return Boolean(
         (page.props.auth as any)?.can_access_admin ||
-        can('create resources') ||
+        can('moderate resources') ||
         can('create nodes'),
     );
 });

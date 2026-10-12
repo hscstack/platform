@@ -48,12 +48,6 @@ Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middlew
 Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
 
 // Resources
-Route::middleware('permission:create resources')->group(function () {
-    Route::post('/resources', [AdminResourceController::class, 'store']);
-    Route::post('/resources/bulk/images', [AdminResourceController::class, 'storeBulkImages']);
-    Route::post('/resources/bulk/videos', [AdminResourceController::class, 'storeBulkVideos']);
-});
-
 Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update'])->middleware('can:update,resource');
 
 Route::middleware('permission:edit resources')->group(function () {

@@ -211,7 +211,7 @@ const submitForm = () => {
             },
         });
     } else {
-        router.post('/admin/resources', payload, {
+        router.post('/resources', payload, {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
@@ -267,6 +267,18 @@ const submitForm = () => {
             <div
                 class="flex-1 space-y-4 overflow-y-auto p-4 text-slate-800 sm:p-6 dark:text-gray-200"
             >
+                <!-- Moderation Notice for non-edit submissions -->
+                <div
+                    v-if="!resource"
+                    class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-[11px] leading-relaxed text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+                >
+                    <span class="font-bold">সাবমিশন নির্দেশিকা:</span> সকল
+                    আপলোডকৃত নোট এবং রিসোর্স মডারেটর কর্তৃক পর্যালোচনার পর
+                    ওয়েবসাইটে প্রকাশিত হবে। কোনো রকম পাইরেটেড কনটেন্ট গ্রহণযোগ্য
+                    নয়; ভিডিওর ক্ষেত্রে সংশ্লিষ্ট শিক্ষকের অফিশিয়াল চ্যানেলের
+                    ভিডিও যুক্ত করুন।
+                </div>
+
                 <!-- 1. Resource Type Selector -->
                 <div class="space-y-1.5">
                     <label
