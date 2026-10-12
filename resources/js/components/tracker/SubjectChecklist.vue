@@ -63,8 +63,9 @@ const expandedSubjectIds = ref<Set<number>>(new Set());
 
 function toggleExpand(subjectId: number) {
     if (expandedSubjectIds.value.has(subjectId)) {
-        expandedSubjectIds.value.delete(subjectId);
+        expandedSubjectIds.value.clear();
     } else {
+        expandedSubjectIds.value.clear();
         expandedSubjectIds.value.add(subjectId);
     }
 }
@@ -235,7 +236,8 @@ const shareData = computed(() => {
             image_url: (authUser.value?.image_url as string | null) || null,
             institution: (authUser.value?.institution as string | null) || null,
         },
-        course: `${props.course.toUpperCase()} (${formatGroup(props.group)})`,
+        course: props.course,
+        group: formatGroup(props.group),
         overallPercent: overallPercentage.value,
         completedChapters: totalCompletedChapters.value,
         totalChapters: totalChapters.value,
@@ -254,50 +256,50 @@ const shareData = computed(() => {
     <div class="flex flex-col gap-5">
         <!-- Checklist Header Card -->
         <div
-            class="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs sm:p-6 dark:border-gray-800/90 dark:bg-gray-900"
+            class="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:rounded-3xl sm:p-6 dark:border-gray-800/90 dark:bg-gray-900"
         >
-            <div
-                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-            >
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <div class="flex items-center gap-2">
                         <span
-                            class="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-400"
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-400"
                         >
                             <BookOpen class="h-4 w-4" />
                         </span>
                         <h2
-                            class="text-base font-bold text-slate-900 sm:text-lg dark:text-white"
+                            class="truncate text-sm font-bold text-slate-900 sm:text-lg dark:text-white"
                         >
                             Syllabus Chapter Checklist
                         </h2>
                     </div>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                    <p
+                        class="mt-1 hidden text-xs text-slate-500 sm:block dark:text-gray-400"
+                    >
                         পড়া শেষ হওয়া অধ্যায়গুলোতে টিক দিয়ে সিলেবাসের অগ্রগতি
                         ট্র্যাক করুন
                     </p>
                 </div>
 
                 <!-- Right: Share Button + Current Curriculum Indicator with Change Link -->
-                <div class="flex flex-wrap items-center gap-2.5">
+                <div class="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
                     <button
                         type="button"
                         @click="showShareModal = true"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white p-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 sm:px-3 sm:py-1.5 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
                         title="Share your progress on social media"
                     >
                         <Share2
                             class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
                         />
-                        <span>Share Progress</span>
+                        <span class="hidden sm:inline">Share Progress</span>
                     </button>
 
                     <!-- Curriculum & Group Clickable Badges -->
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1 sm:gap-1.5">
                         <button
                             type="button"
                             @click="openSwitchModal"
-                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-black uppercase shadow-2xs transition hover:shadow-xs active:scale-95"
+                            class="inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-black uppercase shadow-2xs transition hover:shadow-xs active:scale-95 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs"
                             :class="
                                 course === 'ssc'
                                     ? 'border-emerald-300/80 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
@@ -306,17 +308,21 @@ const shareData = computed(() => {
                             title="কারিকুলাম ও বিভাগ পরিবর্তন করতে ক্লিক করুন"
                         >
                             <span>{{ course }}</span>
-                            <ChevronDown class="h-3 w-3 opacity-60" />
+                            <ChevronDown
+                                class="h-2.5 w-2.5 opacity-60 sm:h-3 sm:w-3"
+                            />
                         </button>
 
                         <button
                             type="button"
                             @click="openSwitchModal"
-                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                            class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200/90 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-600 active:scale-95 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
                             title="কারিকুলাম ও বিভাগ পরিবর্তন করতে ক্লিক করুন"
                         >
                             <span>{{ formatGroup(group) }}</span>
-                            <ChevronDown class="h-3 w-3 opacity-60" />
+                            <ChevronDown
+                                class="h-2.5 w-2.5 opacity-60 sm:h-3 sm:w-3"
+                            />
                         </button>
                     </div>
                 </div>
@@ -324,21 +330,34 @@ const shareData = computed(() => {
 
             <!-- Overall Progress Bar -->
             <div
-                class="mt-5 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 dark:border-gray-800/80 dark:bg-gray-800/40"
+                class="mt-3.5 rounded-xl border-0 bg-slate-50/70 p-3 sm:mt-5 sm:rounded-2xl sm:border sm:border-slate-100 sm:p-4 dark:bg-gray-800/40 dark:sm:border-gray-800/80"
             >
                 <div
                     class="flex items-center justify-between text-xs font-semibold"
                 >
                     <span class="text-slate-700 dark:text-gray-300">
-                        Total Course Completion
+                        <span class="sm:hidden">Completion</span>
+                        <span class="hidden sm:inline"
+                            >Total Course Completion</span
+                        >
                     </span>
                     <span class="text-indigo-600 dark:text-indigo-400">
-                        {{ totalCompletedChapters }} /
-                        {{ totalChapters }} Chapters ({{ overallPercentage }}%)
+                        <span class="sm:hidden"
+                            >{{ totalCompletedChapters }}/{{
+                                totalChapters
+                            }}
+                            ({{ overallPercentage }}%)</span
+                        >
+                        <span class="hidden sm:inline"
+                            >{{ totalCompletedChapters }} /
+                            {{ totalChapters }} Chapters ({{
+                                overallPercentage
+                            }}%)</span
+                        >
                     </span>
                 </div>
                 <div
-                    class="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-gray-700"
+                    class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200 sm:mt-2.5 sm:h-2.5 dark:bg-gray-700"
                 >
                     <div
                         class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500"

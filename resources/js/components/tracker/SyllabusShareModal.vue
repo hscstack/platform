@@ -127,6 +127,8 @@ async function downloadCard() {
         isGenerating.value = false;
     }
 }
+
+const cardType = ref<'detailed' | 'minimal'>('detailed');
 </script>
 
 <template>
@@ -138,6 +140,36 @@ async function downloadCard() {
         @close="emit('update:modelValue', false)"
     >
         <div class="p-4 sm:p-6">
+            <!-- Style Selector Tabs -->
+            <div
+                class="mb-4 flex items-center justify-center gap-1.5 rounded-2xl bg-slate-100 p-1 dark:bg-gray-800"
+            >
+                <button
+                    type="button"
+                    @click="cardType = 'detailed'"
+                    class="flex-1 cursor-pointer rounded-xl py-1.5 text-xs font-bold transition"
+                    :class="
+                        cardType === 'detailed'
+                            ? 'bg-white text-slate-900 shadow-xs dark:bg-gray-900 dark:text-white'
+                            : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
+                    "
+                >
+                    Detailed
+                </button>
+                <button
+                    type="button"
+                    @click="cardType = 'minimal'"
+                    class="flex-1 cursor-pointer rounded-xl py-1.5 text-xs font-bold transition"
+                    :class="
+                        cardType === 'minimal'
+                            ? 'bg-white text-slate-900 shadow-xs dark:bg-gray-900 dark:text-white'
+                            : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
+                    "
+                >
+                    Minimal
+                </button>
+            </div>
+
             <!-- Share Card Canvas Preview -->
             <div
                 ref="shareCardRef"
@@ -299,9 +331,9 @@ async function downloadCard() {
                     </div>
                 </div>
 
-                <!-- Subject Grid Breakdown (All Subjects, 2 Columns) -->
+                <!-- Subject Grid Breakdown (All Subjects, 2 Columns) - Only in Detailed Mode -->
                 <div
-                    v-if="allSubjects.length > 0"
+                    v-if="cardType === 'detailed' && allSubjects.length > 0"
                     class="relative z-10 mt-4 grid grid-cols-2 gap-2"
                 >
                     <div
