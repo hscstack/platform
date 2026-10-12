@@ -39,29 +39,32 @@ function handleAuthRequired(
 
     <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <!-- Page Header -->
-        <div
-            class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-        >
-            <div class="flex items-center gap-3">
+        <div class="mb-6 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 sm:gap-3">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-2xs dark:bg-white dark:text-slate-900"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-2xs sm:h-10 sm:w-10 dark:bg-white dark:text-slate-900"
                 >
-                    <Clock class="h-5 w-5" />
+                    <Clock class="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                 </div>
                 <div>
                     <h1
-                        class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-white"
+                        class="text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
                     >
-                        Study Tracker
+                        Study <span class="text-indigo-600">Tracker</span>
                     </h1>
-                    <p class="text-xs text-slate-500 dark:text-gray-400">
+                    <p
+                        class="text-xs text-slate-500 sm:mt-0.5 sm:text-sm dark:text-gray-400"
+                    >
                         দৈনিক পড়ার সময় ট্র্যাক করুন ও সিলেবাসের অগ্রগতি রাখুন
                     </p>
                 </div>
             </div>
 
             <!-- View Activity Link (if logged in) or Guest Prompt -->
-            <div v-if="isAuthenticated && user" class="flex items-center gap-2">
+            <div
+                v-if="isAuthenticated && user"
+                class="flex shrink-0 items-center gap-2"
+            >
                 <Link
                     :href="`/u/${user.username}`"
                     class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
@@ -72,18 +75,10 @@ function handleAuthRequired(
                     <span>View activity</span>
                 </Link>
             </div>
-            <div
-                v-else
-                class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xs sm:self-auto dark:border-gray-800 dark:bg-gray-900"
-            >
-                <span
-                    class="text-xs font-medium text-slate-600 dark:text-gray-300"
-                >
-                    Log in to save your study sessions & progress
-                </span>
+            <div v-else class="flex shrink-0 items-center gap-2">
                 <Link
                     :href="`/login?redirect=${encodeURIComponent($page.url)}`"
-                    class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
                 >
                     <span>Log in</span>
                     <ArrowRight class="h-3 w-3" />
