@@ -28,7 +28,7 @@ class SubmissionController extends Controller
 
         $status = $request->query('status');
         $query = ResourceChangeRequest::where('user_id', $user->id)
-            ->with(['node.subject', 'reviewer:id,name,username'])
+            ->with(['resource', 'node.subject'])
             ->latest();
 
         if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {
@@ -36,6 +36,10 @@ class SubmissionController extends Controller
         }
 
         $submissions = $query->paginate(15)->withQueryString();
+
+        $submissions->getCollection()->each(function ($submission) {
+            $submission->node?->append('breadcrumb');
+        });
 
         return Inertia::render('Submissions/Index', [
             'submissions' => $submissions,

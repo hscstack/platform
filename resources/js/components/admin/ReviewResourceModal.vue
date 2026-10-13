@@ -9,7 +9,9 @@ import {
     PlusCircle,
     Trash2,
 } from 'lucide-vue-next';
+import { ref } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import { formatDateTime } from '@/lib/useDate';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -95,6 +97,16 @@ const emit = defineEmits<{
 }>();
 
 const { can } = usePermissions();
+
+const isViewerOpen = ref(false);
+const viewerImageSrc = ref('');
+const viewerImageAlt = ref('');
+
+const openImageViewer = (src: string, alt = 'Resource Image') => {
+    viewerImageSrc.value = src;
+    viewerImageAlt.value = alt;
+    isViewerOpen.value = true;
+};
 
 const getNodeBreadcrumbs = (node?: Node): BreadcrumbItem[] => {
     if (!node) {
@@ -206,9 +218,9 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
         :is-open="request !== null"
         :title="
             request?.action_type === 'create'
-                ? 'Resource Submission'
+                ? 'Upload Request'
                 : request?.action_type === 'update'
-                  ? 'Proposed Changes'
+                  ? 'Change Request'
                   : 'Deletion Request'
         "
         max-width="2xl"
@@ -256,170 +268,132 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                             class="text-slate-400 dark:text-gray-600"
                             >/</span
                         >
-                        <a
+                        <Link
                             :href="crumb.url"
-                            target="_blank"
                             class="font-semibold text-slate-700 hover:text-indigo-600 hover:underline dark:text-gray-300 dark:hover:text-indigo-400"
                             :title="crumb.name"
                         >
                             {{ crumb.name }}
-                        </a>
+                        </Link>
                     </template>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2">
                     <div class="flex flex-wrap items-center gap-1">
-                        <Link
-                            v-if="can('edit users') && request.user?.id"
-                            :href="`/admin/users/edit/${request.user.id}`"
-                            target="_blank"
-                            class="inline-flex items-center gap-1 rounded text-slate-400 transition-colors hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400"
-                            title="Edit user in admin"
-                        >
-                            <span>By</span>
-                            <Pencil class="h-2.5 w-2.5" />
-                        </Link>
-                        <span v-else>By</span>
-                        <span
-                            class="font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            {{ request.user?.name }}
-                        </span>
-                        <Link
-                            v-if="request.user?.username"
-                            :href="`/u/${request.user.username}`"
-                            target="_blank"
-                            class="text-indigo-600 hover:underline dark:text-indigo-400"
-                        >
-                            (@{{ request.user.username }})
-                        </Link>
-                        • {{ formatDateTime(request.created_at) }}
+                        <template v-if="request.user?.name">
+                            <Link
+                                v-if="can('edit users') && request.user?.id"
+                                :href="`/admin/users/edit/${request.user.id}`"
+                                target="_blank"
+                                class="inline-flex items-center gap-1 rounded text-slate-400 transition-colors hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400"
+                                title="Edit user in admin"
+                            >
+                                <span>By</span>
+                                <Pencil class="h-2.5 w-2.5" />
+                            </Link>
+                            <span v-else>By</span>
+                            <span
+                                class="font-semibold text-slate-700 dark:text-gray-300"
+                            >
+                                {{ request.user.name }}
+                            </span>
+                            <Link
+                                v-if="request.user?.username"
+                                :href="`/u/${request.user.username}`"
+                                target="_blank"
+                                class="text-indigo-600 hover:underline dark:text-indigo-400"
+                            >
+                                (@{{ request.user.username }})
+                            </Link>
+                            <span>•</span>
+                        </template>
+                        <span>{{ formatDateTime(request.created_at) }}</span>
                     </div>
-
-                    <!-- Direct link to view live resource page (for edit or delete) -->
-                    <a
-                        v-if="request.resource_id"
-                        :href="`/resources/${request.resource_id}`"
-                        target="_blank"
-                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-indigo-600 shadow-2xs hover:bg-slate-50 hover:underline dark:border-gray-700 dark:bg-gray-800 dark:text-indigo-400 dark:hover:bg-gray-700"
-                        title="Open live resource page in new tab"
-                    >
-                        <ExternalLink class="h-3 w-3" />
-                        <span>View Live Page</span>
-                    </a>
                 </div>
             </div>
 
             <!-- MODAL CONTENT: CREATE -->
-            <div v-if="request.action_type === 'create'" class="space-y-3">
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div
-                        class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-800/50"
+            <div v-if="request.action_type === 'create'" class="space-y-4">
+                <!-- Header: Title & Resource Type -->
+                <div class="flex items-start justify-between gap-3">
+                    <h3
+                        class="text-base font-bold text-slate-900 sm:text-lg dark:text-white"
                     >
-                        <span
-                            class="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
-                        >
-                            Title
-                        </span>
-                        <div
-                            class="mt-1 text-sm font-semibold text-slate-900 dark:text-white"
-                        >
-                            {{ request.payload?.title || '(untitled)' }}
-                        </div>
-                    </div>
-
-                    <div
-                        class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-800/50"
-                    >
-                        <span
-                            class="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
-                        >
-                            Resource Type
-                        </span>
-                        <div
-                            class="mt-1 flex items-center gap-1.5 font-semibold text-slate-800 uppercase dark:text-gray-200"
-                        >
-                            <FileImage
-                                v-if="
-                                    request.payload?.resource_type === 'image'
-                                "
-                                class="h-4 w-4 text-amber-500"
-                            />
-                            <FileVideo
-                                v-else-if="
-                                    request.payload?.resource_type === 'video'
-                                "
-                                class="h-4 w-4 text-rose-500"
-                            />
-                            <FileText v-else class="h-4 w-4 text-indigo-500" />
-                            <span>{{ request.payload?.resource_type }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    v-if="request.payload?.content"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-800/50"
-                >
+                        {{ request.payload?.title || '(untitled)' }}
+                    </h3>
                     <span
-                        class="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
+                        v-if="request.payload?.resource_type"
+                        class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-100/80 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-700 dark:border-gray-700/80 dark:bg-gray-800 dark:text-gray-300"
                     >
-                        Body / Description
+                        <FileImage
+                            v-if="request.payload?.resource_type === 'image'"
+                            class="h-3.5 w-3.5 text-amber-500"
+                        />
+                        <FileVideo
+                            v-else-if="
+                                request.payload?.resource_type === 'video'
+                            "
+                            class="h-3.5 w-3.5 text-rose-500"
+                        />
+                        <FileText v-else class="h-3.5 w-3.5 text-indigo-500" />
+                        <span>{{ request.payload?.resource_type }}</span>
                     </span>
-                    <div
-                        class="mt-1 text-xs leading-relaxed text-slate-700 dark:text-gray-200"
-                    >
-                        {{ request.payload.content }}
-                    </div>
                 </div>
 
+                <!-- Description / Body -->
+                <p
+                    v-if="request.payload?.content"
+                    class="whitespace-pre-line text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-gray-300"
+                >
+                    {{ request.payload.content }}
+                </p>
+
+                <!-- External URL -->
                 <div
                     v-if="request.payload?.external_url"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-800/50"
+                    class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-600 dark:border-gray-800 dark:bg-gray-800/40 dark:text-gray-300"
                 >
-                    <span
-                        class="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
+                    <ExternalLink
+                        class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-gray-500"
+                    />
+                    <span class="font-medium text-slate-400 dark:text-gray-500"
+                        >URL:</span
                     >
-                        External URL
-                    </span>
-                    <div class="mt-1">
-                        <a
-                            :href="request.payload.external_url"
-                            target="_blank"
-                            class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
-                        >
-                            <span>{{ request.payload.external_url }}</span>
-                            <ExternalLink class="h-3 w-3" />
-                        </a>
-                    </div>
+                    <a
+                        :href="request.payload.external_url"
+                        target="_blank"
+                        class="truncate font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                    >
+                        {{ request.payload.external_url }}
+                    </a>
                 </div>
 
+                <!-- Staged Uploaded File -->
                 <div
                     v-if="request.staged_file_url"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-800/50"
+                    class="rounded-xl border border-slate-200/80 bg-slate-50/50 p-2.5 dark:border-gray-800 dark:bg-gray-800/30"
                 >
-                    <span
-                        class="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
+                    <img
+                        v-if="request.payload?.resource_type === 'image'"
+                        :src="request.staged_file_url"
+                        alt="Staged"
+                        class="max-h-72 w-auto max-w-full cursor-zoom-in rounded-lg object-contain transition hover:opacity-95"
+                        @click="
+                            openImageViewer(
+                                request.staged_file_url,
+                                request.payload?.title || 'Staged Image',
+                            )
+                        "
+                    />
+                    <a
+                        v-else
+                        :href="request.staged_file_url"
+                        target="_blank"
+                        class="inline-flex items-center gap-2 px-1 py-0.5 text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400"
                     >
-                        Uploaded Local File
-                    </span>
-                    <div class="mt-2">
-                        <img
-                            v-if="request.payload?.resource_type === 'image'"
-                            :src="request.staged_file_url"
-                            alt="Staged"
-                            class="max-h-64 max-w-full rounded-xl border border-slate-200 object-contain dark:border-gray-700"
-                        />
-                        <a
-                            v-else
-                            :href="request.staged_file_url"
-                            target="_blank"
-                            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:underline dark:border-gray-700 dark:bg-gray-800 dark:text-emerald-400"
-                        >
-                            <ExternalLink class="h-3.5 w-3.5" />
-                            <span>Open Staged File</span>
-                        </a>
-                    </div>
+                        <ExternalLink class="h-3.5 w-3.5" />
+                        <span>Open Staged File</span>
+                    </a>
                 </div>
             </div>
 
@@ -486,7 +460,8 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                                             <img
                                                 :src="change.oldVal"
                                                 alt="Current file"
-                                                class="max-h-48 max-w-full rounded-lg border border-slate-200 object-contain dark:border-gray-700"
+                                                class="max-h-48 max-w-full cursor-zoom-in rounded-lg border border-slate-200 object-contain transition hover:opacity-90 dark:border-gray-700"
+                                                @click="openImageViewer(change.oldVal, 'Current Image')"
                                             />
                                             <div
                                                 class="text-[11px] text-slate-400 line-through decoration-rose-400/80"
@@ -572,7 +547,8 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                                             <img
                                                 :src="change.newVal"
                                                 alt="Proposed file"
-                                                class="max-h-48 max-w-full rounded-lg border border-slate-200 object-contain dark:border-gray-700"
+                                                class="max-h-48 max-w-full cursor-zoom-in rounded-lg border border-slate-200 object-contain transition hover:opacity-90 dark:border-gray-700"
+                                                @click="openImageViewer(change.newVal, 'Proposed New Image')"
                                             />
                                             <div
                                                 class="text-[11px] font-normal text-amber-700 dark:text-amber-300"
@@ -660,15 +636,14 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                     v-if="request.status === 'approved'"
                     class="font-semibold text-emerald-600 dark:text-emerald-400"
                 >
-                    ✓ Approved by {{ request.reviewer?.name || 'Admin' }}
+                    ✓ Approved<span v-if="request.reviewer?.name"> by {{ request.reviewer.name }}</span>
                     <span v-if="request.reviewed_at">
                         on {{ formatDateTime(request.reviewed_at) }}
                     </span>
                 </div>
                 <div v-else class="space-y-1 text-rose-600 dark:text-rose-400">
                     <div class="font-semibold">
-                        ✕ Rejected by
-                        {{ request.reviewer?.name || 'Admin' }}
+                        ✕ Rejected<span v-if="request.reviewer?.name"> by {{ request.reviewer.name }}</span>
                         <span v-if="request.reviewed_at">
                             on {{ formatDateTime(request.reviewed_at) }}
                         </span>
@@ -684,7 +659,19 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
         </div>
 
         <template #footer>
-            <div class="flex items-center justify-end">
+            <div class="flex items-center justify-between">
+                <div>
+                    <a
+                        v-if="request?.resource?.id || request?.targetResource?.id || request?.resource_id"
+                        :href="`/resources/${request.resource?.id || request.targetResource?.id || request.resource_id}`"
+                        target="_blank"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                    >
+                        <span>View Live Resource</span>
+                        <ExternalLink class="h-3.5 w-3.5" />
+                    </a>
+                </div>
+
                 <button
                     type="button"
                     @click="emit('close')"
@@ -695,4 +682,12 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
             </div>
         </template>
     </BaseModal>
+
+    <!-- Fullscreen Image Viewer Modal -->
+    <ImageViewerModal
+        v-model="isViewerOpen"
+        :src="viewerImageSrc"
+        :alt="viewerImageAlt"
+        @close="isViewerOpen = false"
+    />
 </template>

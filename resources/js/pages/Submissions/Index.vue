@@ -8,11 +8,11 @@ import {
     Image as ImageIcon,
     Video,
     File,
-    Folder,
-    AlertCircle,
 } from 'lucide-vue-next';
+import { ref } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
+import ReviewResourceModal from '@/components/admin/ReviewResourceModal.vue';
 
 interface Submission {
     id: number;
@@ -31,6 +31,10 @@ interface Submission {
             name: string;
             slug: string;
         } | null;
+        breadcrumb?: Array<{
+            name: string;
+            slug?: string;
+        }>;
     } | null;
     reviewer?: {
         id: number;
@@ -65,6 +69,8 @@ defineProps<{
     currentStatus: string;
 }>();
 
+const viewingSubmission = ref<any | null>(null);
+
 const tabs = [
     { key: 'all', label: 'সবগুলো' },
     { key: 'pending', label: 'পর্যালোচনাধীন' },
@@ -76,10 +82,10 @@ const formatDate = (dateString: string) => {
     try {
         const date = new Date(dateString);
 
-        return date.toLocaleDateString('bn-BD', {
-            year: 'numeric',
+        return date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
+            year: 'numeric',
         });
     } catch {
         return dateString;
@@ -97,6 +103,56 @@ const getResourceIcon = (type?: string) => {
         default:
             return FileText;
     }
+};
+
+const getNodePath = (node?: Submission['node']): string[] => {
+    if (!node) {
+        return [];
+    }
+
+    const segments: string[] = [];
+
+    if (node.subject?.name) {
+        segments.push(node.subject.name);
+    }
+
+    if (node.breadcrumb && node.breadcrumb.length > 0) {
+        for (const crumb of node.breadcrumb) {
+            segments.push(crumb.name);
+        }
+    } else if (node.name) {
+        segments.push(node.name);
+    }
+
+    if (segments.length > 2) {
+        return [
+            '...',
+            segments[segments.length - 2],
+            segments[segments.length - 1],
+        ];
+    }
+
+    return segments;
+};
+
+const getNodeUrl = (node?: Submission['node']): string => {
+    if (!node?.subject?.slug) {
+        return '#';
+    }
+
+    let path = `/${node.subject.slug}`;
+
+    if (node.breadcrumb && node.breadcrumb.length > 0) {
+        for (const crumb of node.breadcrumb) {
+            if (crumb.slug) {
+                path += `/${crumb.slug}`;
+            }
+        }
+    } else if (node.slug) {
+        path += `/${node.slug}`;
+    }
+
+    return path;
 };
 </script>
 
@@ -218,7 +274,8 @@ const getResourceIcon = (type?: string) => {
             <div
                 v-for="item in submissions.data"
                 :key="item.id"
-                class="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs transition hover:border-slate-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+                @click="viewingSubmission = item"
+                class="cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs transition hover:border-indigo-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-700/60"
             >
                 <div
                     class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
@@ -249,7 +306,7 @@ const getResourceIcon = (type?: string) => {
                                     v-if="item.action_type === 'create'"
                                     class="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 uppercase dark:bg-emerald-950/50 dark:text-emerald-400"
                                 >
-                                    নতুন আপলোড
+                                    আপলোড
                                 </span>
                                 <span
                                     v-else-if="item.action_type === 'update'"
@@ -261,30 +318,44 @@ const getResourceIcon = (type?: string) => {
                                     v-else
                                     class="rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 uppercase dark:bg-rose-950/50 dark:text-rose-400"
                                 >
-                                    মুছে ফেলার অনুরোধ
+                                    ডিলিট
                                 </span>
                             </div>
 
                             <div
-                                class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-gray-400"
+                                class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-gray-400"
                             >
                                 <span
-                                    v-if="item.node"
-                                    class="inline-flex items-center gap-1 font-medium"
+                                    v-if="getNodePath(item.node).length > 0"
+                                    class="inline-flex flex-wrap items-center gap-1 font-medium text-slate-600 dark:text-gray-300"
                                 >
-                                    <Folder
-                                        class="h-3.5 w-3.5 text-slate-400"
-                                    />
-                                    <span>{{ item.node.name }}</span>
+                                    <span class="text-slate-400">in</span>
+                                    <Link
+                                        :href="getNodeUrl(item.node)"
+                                        class="inline-flex flex-wrap items-center gap-1 hover:text-indigo-600 hover:underline dark:hover:text-indigo-400"
+                                        @click.stop
+                                    >
+                                        <template
+                                            v-for="(seg, sIdx) in getNodePath(item.node)"
+                                            :key="sIdx"
+                                        >
+                                            <span
+                                                v-if="sIdx > 0"
+                                                class="text-slate-400 dark:text-gray-600"
+                                                >/</span
+                                            >
+                                            <span>{{ seg }}</span>
+                                        </template>
+                                    </Link>
                                 </span>
 
-                                <span>·</span>
+                                <span v-if="getNodePath(item.node).length > 0">·</span>
                                 <span>{{ formatDate(item.created_at) }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Status Pill & Actions -->
+                    <!-- Status Pill -->
                     <div
                         class="flex items-center gap-2 self-start sm:self-auto"
                     >
@@ -319,23 +390,6 @@ const getResourceIcon = (type?: string) => {
                         </template>
                     </div>
                 </div>
-
-                <!-- Rejection Reason Box -->
-                <div
-                    v-if="item.status === 'rejected'"
-                    class="mt-3.5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs text-rose-900 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200"
-                >
-                    <AlertCircle
-                        class="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"
-                    />
-                    <div>
-                        <span class="font-bold">বাতিল করার কারণ: </span>
-                        <span>{{
-                            item.rejection_reason ||
-                            'কোনো কারণ উল্লেখ করা হয়নি।'
-                        }}</span>
-                    </div>
-                </div>
             </div>
 
             <!-- Pagination -->
@@ -354,6 +408,12 @@ const getResourceIcon = (type?: string) => {
             v-else
             title="কোনো সাবমিশন পাওয়া যায়নি"
             description="আপনার কোনো কন্টেন্ট সাবমিশন এই তালিকায় নেই।"
+        />
+
+        <!-- Submission Preview & Diff Modal -->
+        <ReviewResourceModal
+            :request="viewingSubmission"
+            @close="viewingSubmission = null"
         />
     </main>
 </template>
