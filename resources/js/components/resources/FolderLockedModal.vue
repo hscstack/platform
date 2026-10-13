@@ -25,14 +25,15 @@ const emit = defineEmits<{
                 <Lock class="h-6 w-6 stroke-[2.2]" />
             </div>
 
-            <h3
-                class="text-base font-bold text-slate-900 dark:text-gray-100"
-            >
+            <h3 class="text-base font-bold text-slate-900 dark:text-gray-100">
                 ফোল্ডারটি লক করা রয়েছে
             </h3>
 
-            <p class="mt-2 text-xs leading-relaxed text-slate-600 dark:text-gray-400">
-                এই ফোল্ডারটি বর্তমানে লক করা রয়েছে। তাই এখানে কোনো কিছু আপলোড করা যাবে না।
+            <p
+                class="mt-2 text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+            >
+                এই ফোল্ডারটি বর্তমানে লক করা রয়েছে। তাই এখানে কোনো কিছু আপলোড
+                করা যাবে না।
             </p>
 
             <div class="mt-5">

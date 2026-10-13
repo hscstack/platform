@@ -115,7 +115,9 @@ const getResourceIcon = (type?: string) => {
                     class="text-xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                 >
                     My
-                    <span class="text-indigo-600 dark:text-indigo-400">Submissions</span>
+                    <span class="text-indigo-600 dark:text-indigo-400"
+                        >Submissions</span
+                    >
                 </h1>
                 <p
                     class="text-xs text-slate-500 sm:mt-1 sm:text-sm dark:text-gray-400"
@@ -149,7 +151,8 @@ const getResourceIcon = (type?: string) => {
                         class="mt-1 text-[11px] text-slate-500 dark:text-gray-400"
                     >
                         বর্তমানে পর্যালোচনাধীন কন্টেন্ট সংখ্যা কোটায় যুক্ত হয়।
-                        অনুমোদিত বা বাতিল হলে কোটা খালি হয়ে যায়। ভেরিফাইড মেম্বারদের কোটা বেশি।
+                        অনুমোদিত বা বাতিল হলে কোটা খালি হয়ে যায়। ভেরিফাইড
+                        মেম্বারদের কোটা বেশি।
                     </p>
                 </div>
 

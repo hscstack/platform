@@ -9,7 +9,7 @@ import {
     ChevronDown,
     ChevronRight,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 
 const props = defineProps<{
@@ -333,9 +333,7 @@ const submitForm = () => {
                 >
                     <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />
                     <span>{{
-                        isSaving
-                            ? 'Importing Playlist...'
-                            : 'Import Playlist'
+                        isSaving ? 'Importing Playlist...' : 'Import Playlist'
                     }}</span>
                 </button>
             </div>

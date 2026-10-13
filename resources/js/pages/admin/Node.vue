@@ -90,11 +90,6 @@ const handleNodeModalClose = () => {
     editingNode.value = null;
 };
 
-const openCreateResourceModal = () => {
-    editingResource.value = null;
-    isSingleResourceModalOpen.value = true;
-};
-
 const openEditResourceModal = (resource: any) => {
     editingResource.value = resource;
     isSingleResourceModalOpen.value = true;

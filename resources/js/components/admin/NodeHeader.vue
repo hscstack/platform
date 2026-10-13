@@ -6,7 +6,6 @@ import {
     ChevronRight,
     FolderPlus,
     Lock,
-    Plus,
     Unlock,
 } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';

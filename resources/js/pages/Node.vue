@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import {
-    ArrowBigDown,
-    ArrowBigUp,
-    X,
-} from 'lucide-vue-next';
+import { ArrowBigDown, ArrowBigUp, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import AuthModal from '@/components/AuthModal.vue';
