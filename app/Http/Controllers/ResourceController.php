@@ -102,7 +102,7 @@ class ResourceController extends Controller
         if ($user?->isBanned()) {
             $bannedUntilFormatted = $user->banned_until->diffForHumans();
             throw ValidationException::withMessages([
-                'banned' => "আপনি সাময়িকভাবে বরখাস্ত আছেন ({$bannedUntilFormatted} পর্যন্ত)। এই সময়ে কোনো রিসোর্স আপলোড বা পরিবর্তন অনুরোধ করা যাবে না।",
+                'banned' => "আপনি সাময়িকভাবে ব্যান রয়েছেন ({$bannedUntilFormatted} পর্যন্ত)। এই সময়ে কোনো রিসোর্স আপলোড বা পরিবর্তন করা যাবে না।",
             ]);
         }
 
