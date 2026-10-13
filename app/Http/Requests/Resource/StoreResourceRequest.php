@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Resource;
 
 use App\Models\Node;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,16 @@ class StoreResourceRequest extends FormRequest
     {
         $node = Node::find($this->input('node_id'));
 
-        return ! ($node?->isEffectivelyFrozen());
+        if ($node?->isEffectivelyFrozen() && ! $this->user()?->can('moderate resources')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function failedAuthorization()
+    {
+        throw new AuthorizationException('এই ফোল্ডারটি লক করা রয়েছে। অ্যাডমিন কর্তৃক কন্টেন্ট আপলোড সাময়িকভাবে বন্ধ আছে।');
     }
 
     /**
