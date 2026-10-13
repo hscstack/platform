@@ -197,7 +197,7 @@ test('frozen node rejects upload for non-moderators', function () {
     expect(ResourceChangeRequest::count())->toBe(0);
 });
 
-test('moderator can upload to frozen node', function () {
+test('frozen node rejects upload for moderators as well', function () {
     [, $node] = createTestSubjectAndNode(isFrozen: true);
 
     $moderator = User::factory()->create();
@@ -207,12 +207,12 @@ test('moderator can upload to frozen node', function () {
         ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
-            'title' => 'Moderator Bypass Frozen',
-            'content' => 'Allowed',
+            'title' => 'Moderator Cannot Bypass Frozen',
+            'content' => 'Should fail',
         ])
-        ->assertSessionHas('success', 'Resource created successfully.');
+        ->assertForbidden();
 
-    expect(Resource::count())->toBe(1);
+    expect(Resource::count())->toBe(0);
 });
 
 test('bulk image upload stages multiple change requests for non-moderator', function () {
@@ -259,7 +259,7 @@ test('my-submissions page returns list and quota', function () {
         );
 });
 
-test('moderation notification generates public url on approve and my-submissions url on reject', function () {
+test('moderation notification generates my-submissions url with status on approve and reject', function () {
     [$subject, $node] = createTestSubjectAndNode();
     $user = User::factory()->create();
 
@@ -271,7 +271,7 @@ test('moderation notification generates public url on approve and my-submissions
     // Approved notification
     $approvedNotif = new ResourceModerationNotification($cr, 'approved');
     $approvedData = $approvedNotif->toArray($user);
-    expect($approvedData['url'])->toBe("/subjects/{$subject->slug}/nodes/{$node->slug}");
+    expect($approvedData['url'])->toBe('/my-submissions?status=approved');
 
     // Rejected notification
     $rejectedNotif = new ResourceModerationNotification($cr, 'rejected', feedback: 'Irrelevant topic');

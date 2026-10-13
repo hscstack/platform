@@ -31,7 +31,7 @@ class ResourceController extends BaseResourceController
             return back()->with('success', 'Resource updated successfully.');
         }
 
-        $this->ensureUnderPendingLimit(1, false);
+        $this->ensureCanSubmit(1, false);
 
         ResourceChangeRequest::recordUpdate(
             Auth::id(),
@@ -53,7 +53,7 @@ class ResourceController extends BaseResourceController
             return redirect()->back()->with('success', 'Resource deleted successfully.');
         }
 
-        $this->ensureUnderPendingLimit(1, false);
+        $this->ensureCanSubmit(1, false);
 
         ResourceChangeRequest::recordDelete(Auth::id(), $resource);
 

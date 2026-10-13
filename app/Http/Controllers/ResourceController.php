@@ -90,9 +90,9 @@ class ResourceController extends Controller
     }
 
     /**
-     * Check if user would exceed their pending change requests quota or is blocked by age limit.
+     * Check if user is eligible to submit (account age) and within pending change requests quota.
      */
-    public function ensureUnderPendingLimit(int $incomingCount = 1, bool $checkAge = true): void
+    public function ensureCanSubmit(int $incomingCount = 1, bool $checkAge = true): void
     {
         $user = Auth::user();
         if ($user?->can('moderate resources')) {
@@ -134,7 +134,7 @@ class ResourceController extends Controller
             return back()->with('success', 'Resource created successfully.');
         }
 
-        $this->ensureUnderPendingLimit(1, true);
+        $this->ensureCanSubmit(1, true);
 
         ResourceChangeRequest::recordCreate(
             Auth::id(),
@@ -152,7 +152,7 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
 
         if (! $isModerator) {
-            $this->ensureUnderPendingLimit($filesCount, true);
+            $this->ensureCanSubmit($filesCount, true);
         }
 
         $userId = Auth::id();
@@ -257,7 +257,7 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
 
         if (! $isModerator) {
-            $this->ensureUnderPendingLimit($videosCount, true);
+            $this->ensureCanSubmit($videosCount, true);
         }
 
         DB::transaction(function () use ($videos, $userId, $nodeId, $isModerator) {
