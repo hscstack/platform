@@ -222,9 +222,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
 
                 <!-- Add Resource Dropdown -->
                 <UploadResourceDropdown
-                    v-if="
-                        parent?.id && (!isFrozen || can('moderate resources'))
-                    "
+                    v-if="parent?.id && !isFrozen"
                     :node="parent"
                     :is-frozen="isFrozen"
                 />
