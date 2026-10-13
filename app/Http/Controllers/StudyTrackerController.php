@@ -18,17 +18,32 @@ class StudyTrackerController extends Controller
         $user = $request->user();
         $course = $user?->curriculum ?: 'hsc';
         $group = $user?->group ?: 'science';
+        $excludedSubjectIds = (array) ($user?->excluded_subject_ids ?? []);
 
-        $subjects = Subject::where('course', $course)
+        $subjectsQuery = Subject::where('course', $course)
             ->where('is_trackable', true)
             ->whereIn('group', [$group, 'common'])
-            ->orderBy('sort_order', 'asc')
+            ->orderBy('sort_order', 'asc');
+
+        if (! empty($excludedSubjectIds)) {
+            $subjectsQuery->whereNotIn('id', $excludedSubjectIds);
+        }
+
+        $subjects = $subjectsQuery
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
+                    ->with('parent:id,name,sort_order')
                     ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
+                    ->select('id', 'subject_id', 'parent_id', 'name', 'slug', 'sort_order', 'weight');
             }])
-            ->get(['id', 'name', 'slug', 'course', 'group', 'sort_order'])
+            ->get(['id', 'name', 'slug', 'course', 'group', 'sort_order', 'is_optional'])
+            ->toArray();
+
+        // All trackable subjects for curriculum modal (so user can toggle optional subjects on/off)
+        $groupSubjects = Subject::where('is_trackable', true)
+            ->where('is_optional', true)
+            ->orderBy('sort_order', 'asc')
+            ->get(['id', 'name', 'course', 'group', 'is_optional'])
             ->toArray();
 
         if (! $user) {
@@ -36,6 +51,8 @@ class StudyTrackerController extends Controller
                 'course' => $course,
                 'group' => $group,
                 'subjects' => $subjects,
+                'excludedSubjectIds' => [],
+                'optionalSubjects' => $groupSubjects,
                 'completedNodeIds' => [],
                 'todaySeconds' => 0,
                 'stats' => [
@@ -64,6 +81,8 @@ class StudyTrackerController extends Controller
             'course' => $course,
             'group' => $group,
             'subjects' => $subjects,
+            'excludedSubjectIds' => $excludedSubjectIds,
+            'optionalSubjects' => $groupSubjects,
             'completedNodeIds' => $completedNodeIds,
             'todaySeconds' => $todaySeconds,
             'stats' => $studyData['stats'],
@@ -147,9 +166,15 @@ class StudyTrackerController extends Controller
         $validated = $request->validate([
             'curriculum' => 'required|string|in:hsc,ssc',
             'group' => 'required|string|in:science,humanities,commerce',
+            'excluded_subject_ids' => 'nullable|array',
+            'excluded_subject_ids.*' => 'integer|exists:subjects,id',
         ]);
 
-        $request->user()->update($validated);
+        $request->user()->update([
+            'curriculum' => $validated['curriculum'],
+            'group' => $validated['group'],
+            'excluded_subject_ids' => $validated['excluded_subject_ids'] ?? [],
+        ]);
 
         return redirect()->route('tracker.index')
             ->with('success', 'Curriculum updated to '.strtoupper($validated['curriculum']).' ('.ucfirst($validated['group']).').');

@@ -1,25 +1,33 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import {
+    ArrowUp,
     BookOpen,
     Check,
     ChevronDown,
+    ChevronRight,
     ChevronUp,
     ExternalLink,
     Loader2,
     Share2,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import SyllabusShareModal from '@/components/tracker/SyllabusShareModal.vue';
 
 export interface TopLevelNode {
     id: number;
     subject_id: number;
+    parent_id?: number | null;
     name: string;
     slug: string;
     sort_order?: number;
     weight?: number;
+    parent?: {
+        id: number;
+        name: string;
+        sort_order?: number;
+    } | null;
 }
 
 export interface SubjectItem {
@@ -31,16 +39,28 @@ export interface SubjectItem {
     nodes: TopLevelNode[];
 }
 
+export interface OptionalSubjectItem {
+    id: number;
+    name: string;
+    course: string;
+    group: string;
+    is_optional: boolean;
+}
+
 interface Props {
     course: 'hsc' | 'ssc';
     group?: 'science' | 'humanities' | 'commerce';
     subjects: SubjectItem[];
+    excludedSubjectIds?: number[];
+    optionalSubjects?: OptionalSubjectItem[];
     completedNodeIds: number[];
     isAuthenticated: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
     group: 'science',
+    excludedSubjectIds: () => [],
+    optionalSubjects: () => [],
 });
 
 const emit = defineEmits<{
@@ -63,9 +83,8 @@ const expandedSubjectIds = ref<Set<number>>(new Set());
 
 function toggleExpand(subjectId: number) {
     if (expandedSubjectIds.value.has(subjectId)) {
-        expandedSubjectIds.value.clear();
+        expandedSubjectIds.value.delete(subjectId);
     } else {
-        expandedSubjectIds.value.clear();
         expandedSubjectIds.value.add(subjectId);
     }
 }
@@ -73,15 +92,36 @@ function toggleExpand(subjectId: number) {
 const showSwitchConfirmModal = ref(false);
 const pendingCurriculum = ref<'hsc' | 'ssc'>(props.course);
 const pendingGroup = ref<'science' | 'humanities' | 'commerce'>(props.group);
+const pendingExcludedSubjectIds = ref<Set<number>>(
+    new Set(props.excludedSubjectIds),
+);
 const isSwitching = ref(false);
 
 watch(
-    () => [props.course, props.group] as const,
-    ([newCourse, newGroup]) => {
+    () => [props.course, props.group, props.excludedSubjectIds] as const,
+    ([newCourse, newGroup, newExcluded]) => {
         pendingCurriculum.value = newCourse;
         pendingGroup.value = newGroup;
+        pendingExcludedSubjectIds.value = new Set(newExcluded);
     },
 );
+
+// Optional subjects relevant to the pending curriculum and group
+const relevantOptionalSubjects = computed(() => {
+    return props.optionalSubjects.filter(
+        (s) =>
+            s.course === pendingCurriculum.value &&
+            s.group === pendingGroup.value,
+    );
+});
+
+function toggleOptionalSubject(subjId: number) {
+    if (pendingExcludedSubjectIds.value.has(subjId)) {
+        pendingExcludedSubjectIds.value.delete(subjId);
+    } else {
+        pendingExcludedSubjectIds.value.add(subjId);
+    }
+}
 
 function openSwitchModal() {
     if (!props.isAuthenticated) {
@@ -92,6 +132,7 @@ function openSwitchModal() {
 
     pendingCurriculum.value = props.course;
     pendingGroup.value = props.group;
+    pendingExcludedSubjectIds.value = new Set(props.excludedSubjectIds);
     showSwitchConfirmModal.value = true;
 }
 
@@ -113,6 +154,7 @@ function confirmSwitchCurriculum() {
         {
             curriculum: pendingCurriculum.value,
             group: pendingGroup.value,
+            excluded_subject_ids: Array.from(pendingExcludedSubjectIds.value),
         },
         {
             preserveScroll: true,
@@ -224,6 +266,105 @@ function getSubjectProgress(subject: SubjectItem) {
     return { completed: completedCount, total, percent };
 }
 
+export interface NodeGroup {
+    name: string | null;
+    nodes: TopLevelNode[];
+}
+
+function getSubjectGroups(subject: SubjectItem): NodeGroup[] {
+    const nodes = subject.nodes || [];
+    const hasAnyParent = nodes.some((n) => n.parent_id && n.parent?.name);
+
+    if (!hasAnyParent) {
+        return [{ name: null, nodes }];
+    }
+
+    const groupsMap = new Map<
+        string,
+        { sort: number; nodes: TopLevelNode[] }
+    >();
+    const noParentNodes: TopLevelNode[] = [];
+
+    for (const node of nodes) {
+        if (node.parent?.name) {
+            const parentName = node.parent.name;
+            const parentSort = node.parent.sort_order ?? 999;
+
+            if (!groupsMap.has(parentName)) {
+                groupsMap.set(parentName, { sort: parentSort, nodes: [] });
+            }
+
+            groupsMap.get(parentName)!.nodes.push(node);
+        } else {
+            noParentNodes.push(node);
+        }
+    }
+
+    const result: NodeGroup[] = Array.from(groupsMap.entries())
+        .sort((a, b) => a[1].sort - b[1].sort)
+        .map(([name, data]) => ({ name, nodes: data.nodes }));
+
+    if (noParentNodes.length > 0) {
+        result.push({ name: 'অন্যান্য অধ্যায়', nodes: noParentNodes });
+    }
+
+    return result;
+}
+
+// Collapsed state for sub-groups with names (default: 1st group expanded (index 0), others collapsed)
+const collapsedSubgroups = ref<Set<string>>(new Set());
+
+function isSubgroupExpanded(
+    subjectId: number,
+    groupIndex: number,
+    groupName: string | null,
+): boolean {
+    if (!groupName) {
+        return true;
+    }
+
+    const key = `${subjectId}_${groupName}`;
+
+    if (collapsedSubgroups.value.has(key)) {
+        return false;
+    }
+
+    // Initially expand 1st group (index 0), others collapsed
+    if (groupIndex === 0) {
+        return true;
+    }
+
+    const explicitExpandedKey = `exp_${key}`;
+
+    return collapsedSubgroups.value.has(explicitExpandedKey);
+}
+
+function toggleSubgroup(
+    subjectId: number,
+    groupIndex: number,
+    groupName: string | null,
+) {
+    if (!groupName) {
+        return;
+    }
+
+    const key = `${subjectId}_${groupName}`;
+    const explicitExpandedKey = `exp_${key}`;
+    const currentlyExpanded = isSubgroupExpanded(
+        subjectId,
+        groupIndex,
+        groupName,
+    );
+
+    if (currentlyExpanded) {
+        collapsedSubgroups.value.add(key);
+        collapsedSubgroups.value.delete(explicitExpandedKey);
+    } else {
+        collapsedSubgroups.value.delete(key);
+        collapsedSubgroups.value.add(explicitExpandedKey);
+    }
+}
+
 const page = usePage();
 const authUser = computed(() => page.props.auth?.user);
 const showShareModal = ref(false);
@@ -249,6 +390,35 @@ const shareData = computed(() => {
             percent: getSubjectProgress(s).percent,
         })),
     };
+});
+
+// Floating scroll-to-top button
+const showScrollTop = ref(false);
+
+function handleScroll() {
+    const scrollPos =
+        window.scrollY ||
+        document.documentElement?.scrollTop ||
+        document.body?.scrollTop ||
+        0;
+    showScrollTop.value = scrollPos > 250;
+}
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+    });
+}
+
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Run once on mount in case already scrolled
+    handleScroll();
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
 });
 </script>
 
@@ -444,7 +614,7 @@ const shareData = computed(() => {
                 <!-- Chapters List (Accordion Content) -->
                 <div
                     v-if="expandedSubjectIds.has(subject.id)"
-                    class="divide-y divide-slate-100 border-t border-slate-100 px-4.5 py-3 sm:px-5 dark:divide-gray-800/60 dark:border-gray-800/80"
+                    class="border-t border-slate-100 px-4.5 py-3 sm:px-5 dark:border-gray-800/80"
                 >
                     <div
                         v-if="subject.nodes.length === 0"
@@ -454,66 +624,121 @@ const shareData = computed(() => {
                     </div>
 
                     <div
-                        v-for="node in subject.nodes"
-                        :key="node.id"
-                        class="group flex items-center justify-between py-2.5 transition"
+                        v-for="(group, gIdx) in getSubjectGroups(subject)"
+                        :key="gIdx"
+                        class="space-y-1"
+                        :class="{
+                            'mt-3 border-t border-slate-100/80 pt-3 dark:border-gray-800/60':
+                                gIdx > 0,
+                        }"
                     >
-                        <!-- Checkbox & Chapter Name -->
+                        <!-- Sub-group Header (collapsible if grouped) -->
                         <div
-                            @click="toggleNodeCompletion(node)"
-                            class="flex flex-1 cursor-pointer items-center gap-3 pr-2 select-none"
+                            v-if="group.name"
+                            @click="
+                                toggleSubgroup(subject.id, gIdx, group.name)
+                            "
+                            class="mb-1.5 flex cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-xs font-bold text-slate-600 transition select-none hover:bg-slate-100/70 dark:text-gray-300 dark:hover:bg-gray-800/60"
                         >
-                            <!-- Custom Checkbox -->
-                            <div
-                                :class="[
-                                    completedIds.has(node.id)
-                                        ? 'border-emerald-600 bg-emerald-600 text-white'
-                                        : 'border-slate-300 bg-white hover:border-slate-400 dark:border-gray-700 dark:bg-gray-800',
-                                ]"
-                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition duration-150"
-                            >
-                                <Check
-                                    v-if="completedIds.has(node.id)"
-                                    class="h-3.5 w-3.5 stroke-[3]"
+                            <div class="flex items-center gap-2">
+                                <component
+                                    :is="
+                                        isSubgroupExpanded(
+                                            subject.id,
+                                            gIdx,
+                                            group.name,
+                                        )
+                                            ? ChevronDown
+                                            : ChevronRight
+                                    "
+                                    class="h-3.5 w-3.5 text-slate-400 dark:text-gray-500"
                                 />
+                                <span>{{ group.name }}</span>
                             </div>
-
-                            <!-- Title + Size Text in Bracket -->
-                            <div class="flex flex-wrap items-center gap-1.5">
-                                <span
-                                    :class="[
-                                        completedIds.has(node.id)
-                                            ? 'text-slate-400 line-through dark:text-gray-500'
-                                            : 'text-slate-800 dark:text-gray-200',
-                                    ]"
-                                    class="text-xs font-medium transition sm:text-sm"
-                                >
-                                    {{ node.name }}
-                                </span>
-
-                                <span
-                                    class="text-[11px] font-normal text-slate-400 dark:text-gray-500"
-                                >
-                                    ({{
-                                        node.weight === 3
-                                            ? 'Large Chapter'
-                                            : node.weight === 1
-                                              ? 'Small Chapter'
-                                              : 'Normal Chapter'
-                                    }})
-                                </span>
-                            </div>
+                            <span
+                                class="text-[11px] font-normal text-slate-400 dark:text-gray-500"
+                            >
+                                {{
+                                    group.nodes.filter((n) =>
+                                        completedIds.has(n.id),
+                                    ).length
+                                }}/{{ group.nodes.length }}
+                            </span>
                         </div>
 
-                        <!-- Link to Subject Resources -->
-                        <Link
-                            :href="`/${subject.slug}`"
-                            target="_blank"
-                            title="Open subject folder"
-                            class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 opacity-80 transition group-hover:opacity-100 hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                        <!-- Chapters under group -->
+                        <div
+                            v-if="
+                                isSubgroupExpanded(subject.id, gIdx, group.name)
+                            "
+                            class="divide-y divide-slate-100 dark:divide-gray-800/60"
+                            :class="{ 'pl-2 sm:pl-3': group.name }"
                         >
-                            <ExternalLink class="h-3.5 w-3.5" />
-                        </Link>
+                            <div
+                                v-for="node in group.nodes"
+                                :key="node.id"
+                                class="group flex items-center justify-between py-2.5 transition"
+                            >
+                                <!-- Checkbox & Chapter Name -->
+                                <div
+                                    @click="toggleNodeCompletion(node)"
+                                    class="flex flex-1 cursor-pointer items-center gap-3 pr-2 select-none"
+                                >
+                                    <!-- Custom Checkbox -->
+                                    <div
+                                        :class="[
+                                            completedIds.has(node.id)
+                                                ? 'border-emerald-600 bg-emerald-600 text-white'
+                                                : 'border-slate-300 bg-white hover:border-slate-400 dark:border-gray-700 dark:bg-gray-800',
+                                        ]"
+                                        class="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition duration-150"
+                                    >
+                                        <Check
+                                            v-if="completedIds.has(node.id)"
+                                            class="h-3.5 w-3.5 stroke-[3]"
+                                        />
+                                    </div>
+
+                                    <!-- Title + Size Text in Bracket -->
+                                    <div
+                                        class="flex flex-wrap items-center gap-1.5"
+                                    >
+                                        <span
+                                            :class="[
+                                                completedIds.has(node.id)
+                                                    ? 'text-slate-400 line-through dark:text-gray-500'
+                                                    : 'text-slate-800 dark:text-gray-200',
+                                            ]"
+                                            class="text-xs font-medium transition sm:text-sm"
+                                        >
+                                            {{ node.name }}
+                                        </span>
+
+                                        <span
+                                            class="text-[11px] font-normal text-slate-400 dark:text-gray-500"
+                                        >
+                                            ({{
+                                                node.weight === 3
+                                                    ? 'Large Chapter'
+                                                    : node.weight === 1
+                                                      ? 'Small Chapter'
+                                                      : 'Normal Chapter'
+                                            }})
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Link to Subject Resources -->
+                                <Link
+                                    :href="`/${subject.slug}`"
+                                    target="_blank"
+                                    title="Open subject folder"
+                                    class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 opacity-80 transition group-hover:opacity-100 hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                                >
+                                    <ExternalLink class="h-3.5 w-3.5" />
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -524,7 +749,7 @@ const shareData = computed(() => {
             :is-open="showSwitchConfirmModal"
             title="কারিকুলাম ও বিভাগ পরিবর্তন করুন"
             description="আপনার পড়ার কারিকুলাম লেভেল ও বিভাগ নির্বাচন করুন"
-            max-width="md"
+            max-width="lg"
             @close="showSwitchConfirmModal = false"
         >
             <div class="space-y-4 p-5 text-slate-800 dark:text-gray-200">
@@ -655,6 +880,64 @@ const shareData = computed(() => {
                         </button>
                     </div>
                 </div>
+
+                <!-- Optional Subjects Selection (only if relevant optional subjects exist) -->
+                <div v-if="relevantOptionalSubjects.length > 0">
+                    <div class="mb-2">
+                        <label
+                            class="block text-xs font-bold text-slate-700 dark:text-gray-300"
+                        >
+                            ঐচ্ছিক বিষয়সমূহ (Optional Subjects)
+                        </label>
+                        <p
+                            class="text-[11px] text-slate-500 dark:text-gray-400"
+                        >
+                            যে বিষয়গুলো আপনার সিলেবাসে নেই, সেগুলোর টিক চিহ্ন
+                            তুলে দিন
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <button
+                            v-for="subj in relevantOptionalSubjects"
+                            :key="subj.id"
+                            type="button"
+                            @click="toggleOptionalSubject(subj.id)"
+                            :class="[
+                                !pendingExcludedSubjectIds.has(subj.id)
+                                    ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-400 opacity-60 hover:bg-slate-50 hover:text-slate-600 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-400',
+                            ]"
+                            class="flex cursor-pointer items-center justify-between rounded-xl border p-2.5 px-3 text-left transition"
+                        >
+                            <span
+                                class="line-clamp-1 text-xs leading-tight font-semibold"
+                                :class="[
+                                    pendingExcludedSubjectIds.has(subj.id)
+                                        ? 'line-through'
+                                        : '',
+                                ]"
+                            >
+                                {{ subj.name }}
+                            </span>
+                            <span
+                                class="flex h-4 w-4 shrink-0 items-center justify-center rounded text-[10px] font-bold transition"
+                                :class="[
+                                    !pendingExcludedSubjectIds.has(subj.id)
+                                        ? 'bg-indigo-600 text-white dark:bg-indigo-500'
+                                        : 'border border-slate-300 bg-transparent text-transparent dark:border-gray-600',
+                                ]"
+                            >
+                                <Check
+                                    v-if="
+                                        !pendingExcludedSubjectIds.has(subj.id)
+                                    "
+                                    class="h-3 w-3 stroke-[3]"
+                                />
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div
@@ -687,5 +970,17 @@ const shareData = computed(() => {
 
         <!-- Social Syllabus Share Modal -->
         <SyllabusShareModal v-model="showShareModal" :data="shareData" />
+
+        <!-- Floating Scroll to Top Button -->
+        <button
+            v-if="showScrollTop"
+            type="button"
+            @click="scrollToTop"
+            title="Scroll to top"
+            aria-label="Scroll to top"
+            class="fixed right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.5rem)] z-50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg ring-1 ring-black/10 backdrop-blur-xs transition duration-150 hover:scale-105 hover:bg-indigo-600 active:scale-95 sm:right-6 sm:bottom-6 sm:h-9.5 sm:w-9.5 dark:bg-gray-800/90 dark:text-gray-100 dark:ring-white/10 dark:hover:bg-indigo-600 dark:hover:text-white"
+        >
+            <ArrowUp class="h-4 w-4 stroke-[2.2]" />
+        </button>
     </div>
 </template>

@@ -59,6 +59,7 @@ class User extends Authenticatable
         'facebook',
         'instagram',
         'github',
+        'excluded_subject_ids',
         'last_active_at',
         'last_seen_at',
     ];
@@ -121,6 +122,7 @@ class User extends Authenticatable
             'is_verified' => 'boolean',
             'priority' => 'integer',
             'allow_pokes' => 'boolean',
+            'excluded_subject_ids' => 'array',
         ];
     }
 

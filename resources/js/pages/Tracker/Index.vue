@@ -12,6 +12,14 @@ interface Props {
     course: 'hsc' | 'ssc';
     group: 'science' | 'humanities' | 'commerce';
     subjects: SubjectItem[];
+    excludedSubjectIds?: number[];
+    optionalSubjects?: Array<{
+        id: number;
+        name: string;
+        course: string;
+        group: string;
+        is_optional: boolean;
+    }>;
     completedNodeIds: number[];
     todaySeconds: number;
 }
@@ -107,6 +115,8 @@ function handleAuthRequired(
                     :course="course"
                     :group="group"
                     :subjects="subjects"
+                    :excluded-subject-ids="excludedSubjectIds"
+                    :optional-subjects="optionalSubjects"
                     :completed-node-ids="completedNodeIds"
                     :is-authenticated="isAuthenticated"
                     @require-auth="handleAuthRequired"

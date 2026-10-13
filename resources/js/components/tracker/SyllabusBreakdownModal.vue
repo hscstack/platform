@@ -17,6 +17,12 @@ export interface SyllabusChapter {
     name: string;
     weight: number;
     is_completed: boolean;
+    parent_id?: number | null;
+    parent?: {
+        id: number;
+        name: string;
+        sort_order?: number;
+    } | null;
 }
 
 export interface SyllabusSubject {
@@ -30,6 +36,11 @@ export interface SyllabusSubject {
     total: number;
     percent: number;
     chapters?: SyllabusChapter[];
+}
+
+export interface SyllabusChapterGroup {
+    name: string | null;
+    chapters: SyllabusChapter[];
 }
 
 export interface SyllabusProgressData {
@@ -66,6 +77,102 @@ const toggleSubjectExpanded = (subjId: number) => {
         expandedSubjects.value.add(subjId);
     }
 };
+
+function getSubjectChapterGroups(
+    subj: SyllabusSubject,
+): SyllabusChapterGroup[] {
+    const chapters = subj.chapters || [];
+    const hasAnyParent = chapters.some((c) => c.parent_id && c.parent?.name);
+
+    if (!hasAnyParent) {
+        return [{ name: null, chapters }];
+    }
+
+    const groupsMap = new Map<
+        string,
+        { sort: number; chapters: SyllabusChapter[] }
+    >();
+    const noParentChapters: SyllabusChapter[] = [];
+
+    for (const chap of chapters) {
+        if (chap.parent?.name) {
+            const parentName = chap.parent.name;
+            const parentSort = chap.parent.sort_order ?? 999;
+
+            if (!groupsMap.has(parentName)) {
+                groupsMap.set(parentName, { sort: parentSort, chapters: [] });
+            }
+
+            groupsMap.get(parentName)!.chapters.push(chap);
+        } else {
+            noParentChapters.push(chap);
+        }
+    }
+
+    const result: SyllabusChapterGroup[] = Array.from(groupsMap.entries())
+        .sort((a, b) => a[1].sort - b[1].sort)
+        .map(([name, data]) => ({ name, chapters: data.chapters }));
+
+    if (noParentChapters.length > 0) {
+        result.push({ name: 'অন্যান্য অধ্যায়', chapters: noParentChapters });
+    }
+
+    return result;
+}
+
+// Collapsed state for sub-groups with names (default: 1st group expanded (index 0), others collapsed)
+const collapsedModalSubgroups = ref<Set<string>>(new Set());
+
+function isModalSubgroupExpanded(
+    subjId: number,
+    groupIndex: number,
+    groupName: string | null,
+): boolean {
+    if (!groupName) {
+        return true;
+    }
+
+    const key = `${subjId}_${groupName}`;
+
+    if (collapsedModalSubgroups.value.has(key)) {
+        return false;
+    }
+
+    // Initially expand 1st group (index 0), others collapsed
+    if (groupIndex === 0) {
+        return true;
+    }
+
+    const explicitExpandedKey = `exp_${key}`;
+
+    return collapsedModalSubgroups.value.has(explicitExpandedKey);
+}
+
+function toggleModalSubgroup(
+    subjId: number,
+    groupIndex: number,
+    groupName: string | null,
+) {
+    if (!groupName) {
+        return;
+    }
+
+    const key = `${subjId}_${groupName}`;
+    const explicitExpandedKey = `exp_${key}`;
+    const currentlyExpanded = isModalSubgroupExpanded(
+        subjId,
+        groupIndex,
+        groupName,
+    );
+
+    if (currentlyExpanded) {
+        collapsedModalSubgroups.value.add(key);
+        collapsedModalSubgroups.value.delete(explicitExpandedKey);
+    } else {
+        collapsedModalSubgroups.value.delete(key);
+        collapsedModalSubgroups.value.add(explicitExpandedKey);
+    }
+}
 
 const formatGroupName = (group?: string) => {
     if (!group) {
@@ -242,84 +349,136 @@ function toggleChapterCompletion(subj: SyllabusSubject, chap: SyllabusChapter) {
                     />
                 </div>
 
-                <!-- Expanded Chapters List -->
+                <!-- Expanded Chapters List (Accordion Content) -->
                 <div
                     v-if="
                         expandedSubjects.has(subj.id) &&
                         subj.chapters &&
                         subj.chapters.length > 0
                     "
-                    class="mt-3 divide-y divide-slate-200/60 rounded-xl border border-slate-200/60 bg-white/70 pt-0.5 dark:divide-gray-700/50 dark:border-gray-700/50 dark:bg-gray-900/40"
+                    class="mt-3 space-y-2.5"
                 >
                     <div
-                        v-for="chap in subj.chapters"
-                        :key="chap.id"
-                        @click="
-                            isOwnProfile
-                                ? toggleChapterCompletion(subj, chap)
-                                : null
-                        "
-                        class="flex items-center justify-between gap-2.5 px-3 py-2 text-xs transition"
-                        :class="[
-                            isOwnProfile
-                                ? 'cursor-pointer select-none hover:bg-slate-100/70 active:bg-slate-200/50 dark:hover:bg-gray-800/60 dark:active:bg-gray-800'
-                                : '',
-                        ]"
-                        :role="isOwnProfile ? 'button' : undefined"
-                        :tabindex="isOwnProfile ? 0 : undefined"
-                        @keydown.enter="
-                            isOwnProfile
-                                ? toggleChapterCompletion(subj, chap)
-                                : null
-                        "
-                        @keydown.space.prevent="
-                            isOwnProfile
-                                ? toggleChapterCompletion(subj, chap)
-                                : null
-                        "
+                        v-for="(group, gIdx) in getSubjectChapterGroups(subj)"
+                        :key="gIdx"
+                        class="rounded-xl border border-slate-200/60 bg-white/70 p-1.5 dark:border-gray-700/50 dark:bg-gray-900/40"
                     >
-                        <div class="flex min-w-0 items-center gap-2">
-                            <span
-                                :class="[
-                                    chap.is_completed
-                                        ? 'text-emerald-600 dark:text-emerald-400'
-                                        : 'text-slate-300 dark:text-gray-600',
-                                    'shrink-0 transition-colors',
-                                ]"
-                            >
-                                <CheckCircle2
-                                    v-if="chap.is_completed"
-                                    class="h-4 w-4 fill-emerald-100 stroke-[2.2] dark:fill-emerald-950"
+                        <!-- Sub-group Header (collapsible if grouped) -->
+                        <div
+                            v-if="group.name"
+                            @click="
+                                toggleModalSubgroup(subj.id, gIdx, group.name)
+                            "
+                            class="mb-1 flex cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-xs font-bold text-slate-600 transition select-none hover:bg-slate-100/70 dark:text-gray-300 dark:hover:bg-gray-800/60"
+                        >
+                            <div class="flex items-center gap-1.5">
+                                <component
+                                    :is="
+                                        isModalSubgroupExpanded(
+                                            subj.id,
+                                            gIdx,
+                                            group.name,
+                                        )
+                                            ? ChevronDown
+                                            : ChevronRight
+                                    "
+                                    class="h-3.5 w-3.5 text-slate-400 dark:text-gray-500"
                                 />
-                                <div
-                                    v-else
-                                    class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 transition-colors dark:border-gray-600"
-                                />
-                            </span>
-
+                                <span>{{ group.name }}</span>
+                            </div>
                             <span
-                                :class="[
-                                    chap.is_completed
-                                        ? 'font-medium text-slate-900 dark:text-gray-100'
-                                        : 'text-slate-500 dark:text-gray-400',
-                                    'truncate',
-                                ]"
+                                class="text-[11px] font-normal text-slate-400 dark:text-gray-500"
                             >
-                                {{ chap.name }}
+                                {{
+                                    group.chapters.filter((c) => c.is_completed)
+                                        .length
+                                }}/{{ group.chapters.length }}
                             </span>
                         </div>
 
-                        <span
-                            class="shrink-0 text-[10px] text-slate-400 dark:text-gray-500"
+                        <!-- Chapters under group -->
+                        <div
+                            v-if="
+                                isModalSubgroupExpanded(
+                                    subj.id,
+                                    gIdx,
+                                    group.name,
+                                )
+                            "
+                            class="divide-y divide-slate-100 dark:divide-gray-800/60"
+                            :class="{ 'pl-1.5 sm:pl-2': group.name }"
                         >
-                            {{
-                                chap.weight === 3
-                                    ? '(Large Chapter)'
-                                    : chap.weight === 1
-                                      ? '(Small Chapter)'
-                                      : '(Normal Chapter)'
-                            }}
-                        </span>
+                            <div
+                                v-for="chap in group.chapters"
+                                :key="chap.id"
+                                @click="
+                                    isOwnProfile
+                                        ? toggleChapterCompletion(subj, chap)
+                                        : null
+                                "
+                                class="flex items-center justify-between gap-2.5 rounded-lg px-2.5 py-2 text-xs transition"
+                                :class="[
+                                    isOwnProfile
+                                        ? 'cursor-pointer select-none hover:bg-slate-100/70 active:bg-slate-200/50 dark:hover:bg-gray-800/60 dark:active:bg-gray-800'
+                                        : '',
+                                ]"
+                                :role="isOwnProfile ? 'button' : undefined"
+                                :tabindex="isOwnProfile ? 0 : undefined"
+                                @keydown.enter="
+                                    isOwnProfile
+                                        ? toggleChapterCompletion(subj, chap)
+                                        : null
+                                "
+                                @keydown.space.prevent="
+                                    isOwnProfile
+                                        ? toggleChapterCompletion(subj, chap)
+                                        : null
+                                "
+                            >
+                                <div class="flex min-w-0 items-center gap-2">
+                                    <span
+                                        :class="[
+                                            chap.is_completed
+                                                ? 'text-emerald-600 dark:text-emerald-400'
+                                                : 'text-slate-300 dark:text-gray-600',
+                                            'shrink-0 transition-colors',
+                                        ]"
+                                    >
+                                        <CheckCircle2
+                                            v-if="chap.is_completed"
+                                            class="h-4 w-4 fill-emerald-100 stroke-[2.2] dark:fill-emerald-950"
+                                        />
+                                        <div
+                                            v-else
+                                            class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 transition-colors dark:border-gray-600"
+                                        />
+                                    </span>
+
+                                    <span
+                                        :class="[
+                                            chap.is_completed
+                                                ? 'font-medium text-slate-900 dark:text-gray-100'
+                                                : 'text-slate-500 dark:text-gray-400',
+                                            'truncate',
+                                        ]"
+                                    >
+                                        {{ chap.name }}
+                                    </span>
+                                </div>
+
+                                <span
+                                    class="shrink-0 text-[10px] text-slate-400 dark:text-gray-500"
+                                >
+                                    {{
+                                        chap.weight === 3
+                                            ? '(Large Chapter)'
+                                            : chap.weight === 1
+                                              ? '(Small Chapter)'
+                                              : '(Normal Chapter)'
+                                    }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
