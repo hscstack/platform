@@ -145,7 +145,7 @@ class ResourceController extends Controller
             $validated
         );
 
-        return back()->with('success', 'Resource submitted for moderation.');
+        return redirect()->route('submissions.index')->with('success', 'Resource submitted for moderation.');
     }
 
     public function storeBulkImages(BulkImageStoreRequest $request)
@@ -184,9 +184,11 @@ class ResourceController extends Controller
             }
         });
 
-        $message = $isModerator ? 'Images uploaded successfully.' : 'Images submitted for moderation.';
+        if ($isModerator) {
+            return back()->with('success', 'Images uploaded successfully.');
+        }
 
-        return back()->with('success', $message);
+        return redirect()->route('submissions.index')->with('success', 'Images submitted for moderation.');
     }
 
     public function storeBulkVideos(BulkVideoStoreRequest $request)
@@ -294,10 +296,10 @@ class ResourceController extends Controller
             }
         });
 
-        $message = $isModerator
-            ? 'YouTube playlist imported successfully.'
-            : 'YouTube playlist imported and submitted for moderation.';
+        if ($isModerator) {
+            return back()->with('success', 'YouTube playlist imported successfully.');
+        }
 
-        return back()->with('success', $message);
+        return redirect()->route('submissions.index')->with('success', 'YouTube playlist imported and submitted for moderation.');
     }
 }

@@ -65,6 +65,7 @@ test('public authenticated user older than 24h stages resource into change reque
             'title' => 'My Community Note',
             'content' => 'Some useful content',
         ])
+        ->assertRedirect(route('submissions.index'))
         ->assertSessionHas('success', 'Resource submitted for moderation.');
 
     expect(Resource::count())->toBe(0);
@@ -231,6 +232,7 @@ test('bulk image upload stages multiple change requests for non-moderator', func
             'files' => [$file1, $file2],
             'custom_titles' => ['Image Page 1', 'Image Page 2'],
         ])
+        ->assertRedirect(route('submissions.index'))
         ->assertSessionHas('success', 'Images submitted for moderation.');
 
     expect(Resource::count())->toBe(0);
