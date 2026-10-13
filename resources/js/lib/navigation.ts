@@ -69,6 +69,13 @@ export const primaryNavItems: NavItem[] = [
 
 export const overflowNavItems: NavItem[] = [
     {
+        label: 'Leaderboard',
+        labelBn: 'লিডারবোর্ড',
+        href: '/leaderboard',
+        icon: 'leaderboard',
+        match: (url) => url.startsWith('/leaderboard'),
+    },
+    {
         label: 'Support Center',
         href: '/support',
         icon: 'help',

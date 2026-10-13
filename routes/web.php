@@ -7,6 +7,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ForumAnswerController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumVoteController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeerController;
@@ -154,6 +155,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/peers', [PeerController::class, 'index'])->name('peers.index');
     Route::get('/tracker', [StudyTrackerController::class, 'index'])->name('tracker.index');
+    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard.index');
     Route::get('/u/{user}/appreciators', [UserProfileController::class, 'appreciators'])->name('user.appreciators');
     Route::get('/u/{user}/appreciating', [UserProfileController::class, 'appreciating'])->name('user.appreciating');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
