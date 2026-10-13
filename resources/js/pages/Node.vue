@@ -8,6 +8,7 @@ import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import NodeRow from '@/components/NodeRow.vue';
 import ResourceRow from '@/components/ResourceRow.vue';
+import UploadResourceDropdown from '@/components/resources/UploadResourceDropdown.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import { useAuth } from '@/lib/useAuth';
 
@@ -384,10 +385,14 @@ const handleVote = (type: 'up' | 'down') => {
             class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
         >
             <div
-                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-3.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
+                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-2.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
             >
                 <span>Name</span>
-                <span class="hidden sm:inline">Type</span>
+                <UploadResourceDropdown
+                    v-if="currentNode"
+                    :node="currentNode as any"
+                    :is-frozen="Boolean(currentNode.is_frozen)"
+                />
             </div>
 
             <div class="flex-1 divide-y divide-slate-100 dark:divide-gray-800">
@@ -407,7 +412,6 @@ const handleVote = (type: 'up' | 'down') => {
                     v-else
                     title="কোনো রিসোর্স পাওয়া যায়নি"
                     description="শীঘ্রই এখানে নতুন স্টাডি ম্যাটেরিয়াল ও নোট আপলোড করা হবে।"
-                    :show-cta="true"
                 />
             </div>
         </div>

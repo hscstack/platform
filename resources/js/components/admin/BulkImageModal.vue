@@ -220,7 +220,7 @@ const submitForm = async () => {
         custom_titles: processedTitles.value,
     };
 
-    router.post('/admin/resources/bulk/images', payload, {
+    router.post('/resources/bulk/images', payload, {
         forceFormData: true,
         preserveScroll: true,
         onProgress: (progress) => {
@@ -245,6 +245,7 @@ const submitForm = async () => {
         onError: (errors) => {
             errorMessage.value =
                 (errors.pending_limit as string) ||
+                (errors.account_age as string) ||
                 Object.values(errors).flat().join(', ') ||
                 'Failed to upload images.';
         },
@@ -270,6 +271,19 @@ const submitForm = async () => {
             @submit.prevent="submitForm"
             class="flex flex-1 flex-col overflow-hidden"
         >
+            <!-- Submission Notice -->
+            <div
+                class="m-4 mb-0 flex items-start gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+            >
+                <AlertCircle
+                    class="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400"
+                />
+                <span
+                    >আপনার আপলোডকৃত ছবিগুলো অ্যাডমিন পর্যালোচনার পর ওয়েবসাইটে
+                    দৃশ্যমান হবে।</span
+                >
+            </div>
+
             <!-- Error Banner -->
             <div
                 v-if="errorMessage"

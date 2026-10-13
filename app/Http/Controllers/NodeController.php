@@ -65,6 +65,7 @@ class NodeController extends Controller
                 'id' => $node->id,
                 'name' => $node->name,
                 'slug' => $node->slug,
+                'is_frozen' => $node->isEffectivelyFrozen(),
             ],
             'nodes' => $nodes,
             'breadcrumb' => $node->breadcrumb(),

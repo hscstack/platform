@@ -6,10 +6,10 @@ import {
     ChevronRight,
     FolderPlus,
     Lock,
-    Plus,
     Unlock,
 } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';
+import UploadResourceDropdown from '@/components/resources/UploadResourceDropdown.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 defineProps<{
@@ -27,28 +27,15 @@ const emit = defineEmits<{
     (e: 'toggle-freeze'): void;
     (e: 'create-single-folder'): void;
     (e: 'create-bulk-folder'): void;
-    (e: 'create-single-resource'): void;
-    (e: 'create-bulk-image'): void;
-    (e: 'create-bulk-video'): void;
 }>();
 
 const { can } = usePermissions();
 
-const isResourceDropdownOpen = ref(false);
 const isFolderDropdownOpen = ref(false);
-const resourceDropdownRef = ref<HTMLElement | null>(null);
 const folderDropdownRef = ref<HTMLElement | null>(null);
 
 const closeDropdowns = (e: MouseEvent) => {
     const target = e.target as Node | null;
-
-    if (
-        resourceDropdownRef.value &&
-        target &&
-        !resourceDropdownRef.value.contains(target)
-    ) {
-        isResourceDropdownOpen.value = false;
-    }
 
     if (
         folderDropdownRef.value &&
@@ -233,62 +220,11 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                 </div>
 
                 <!-- Add Resource Dropdown -->
-                <div
-                    v-if="!isFrozen && parent?.id && can('create resources')"
-                    ref="resourceDropdownRef"
-                    class="relative inline-block"
-                >
-                    <button
-                        type="button"
-                        @click="
-                            isResourceDropdownOpen = !isResourceDropdownOpen
-                        "
-                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700 sm:gap-1.5 sm:px-3"
-                    >
-                        <Plus class="h-3.5 w-3.5" :stroke-width="2.2" />
-                        <span
-                            ><span class="hidden sm:inline">Add </span
-                            >Resource</span
-                        >
-                        <ChevronDown class="h-3.5 w-3.5" />
-                    </button>
-
-                    <div
-                        v-if="isResourceDropdownOpen"
-                        class="absolute right-0 z-10 mt-1.5 w-48 rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
-                    >
-                        <button
-                            type="button"
-                            @click="
-                                isResourceDropdownOpen = false;
-                                emit('create-single-resource');
-                            "
-                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                        >
-                            Upload Single Resource
-                        </button>
-                        <button
-                            type="button"
-                            @click="
-                                isResourceDropdownOpen = false;
-                                emit('create-bulk-image');
-                            "
-                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                        >
-                            Upload Multiple Images
-                        </button>
-                        <button
-                            type="button"
-                            @click="
-                                isResourceDropdownOpen = false;
-                                emit('create-bulk-video');
-                            "
-                            class="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                        >
-                            Upload Multiple Videos
-                        </button>
-                    </div>
-                </div>
+                <UploadResourceDropdown
+                    v-if="parent?.id && !isFrozen"
+                    :node="parent"
+                    :is-frozen="isFrozen"
+                />
             </div>
         </div>
     </div>

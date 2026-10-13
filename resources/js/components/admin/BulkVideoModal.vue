@@ -79,7 +79,7 @@ const submitForm = () => {
         is_reversed: isReversed.value,
     };
 
-    router.post('/admin/resources/bulk/videos', payload, {
+    router.post('/resources/bulk/videos', payload, {
         preserveScroll: true,
         onSuccess: () => {
             resetForm();
@@ -88,6 +88,7 @@ const submitForm = () => {
         onError: (errors) => {
             errorMessage.value =
                 (errors.pending_limit as string) ||
+                (errors.account_age as string) ||
                 Object.values(errors).flat().join(', ') ||
                 'Failed to import playlist.';
         },
@@ -111,6 +112,20 @@ const submitForm = () => {
             @submit.prevent="submitForm"
             class="flex flex-1 flex-col overflow-hidden"
         >
+            <!-- Submission Notice -->
+            <div
+                class="m-4 mb-0 flex items-start gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+            >
+                <AlertCircle
+                    class="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400"
+                />
+                <span
+                    >শুধুমাত্র ভেরিফাইড শিক্ষকদের অফিশিয়াল চ্যানেলের ভিডিও যুক্ত
+                    করা যাবে। কোনো ধরনের আনলিস্টেড কিংবা পাইরেটেড ভিডিও অনুমোদিত
+                    নয়।</span
+                >
+            </div>
+
             <!-- Error Banner -->
             <div
                 v-if="errorMessage"

@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import BulkImageModal from '@/components/admin/BulkImageModal.vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
 import BulkRenameModal from '@/components/admin/BulkRenameModal.vue';
-import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
 import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import NodeHeader from '@/components/admin/NodeHeader.vue';
@@ -12,7 +10,7 @@ import NodeRow from '@/components/admin/NodeRow.vue';
 import NodeTabsHeader from '@/components/admin/NodeTabsHeader.vue';
 import PendingSubmissionRow from '@/components/admin/PendingSubmissionRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
-import ResourceSubmissionModal from '@/components/admin/ResourceSubmissionModal.vue';
+import ReviewResourceModal from '@/components/admin/ReviewResourceModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -70,8 +68,6 @@ const toggleFreeze = () => {
 };
 
 const isBulkModalOpen = ref(false);
-const isBulkImageModalOpen = ref(false);
-const isBulkVideoModalOpen = ref(false);
 const isBulkRenameModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
 const editingNode = ref<any | null>(null);
@@ -92,11 +88,6 @@ const openEditNodeModal = (node: any) => {
 const handleNodeModalClose = () => {
     isSingleModalOpen.value = false;
     editingNode.value = null;
-};
-
-const openCreateResourceModal = () => {
-    editingResource.value = null;
-    isSingleResourceModalOpen.value = true;
 };
 
 const openEditResourceModal = (resource: any) => {
@@ -257,9 +248,6 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
             @toggle-freeze="toggleFreeze"
             @create-single-folder="openCreateNodeModal"
             @create-bulk-folder="isBulkModalOpen = true"
-            @create-single-resource="openCreateResourceModal"
-            @create-bulk-image="isBulkImageModalOpen = true"
-            @create-bulk-video="isBulkVideoModalOpen = true"
         />
 
         <!-- Modals -->
@@ -286,20 +274,6 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
             @close="isBulkModalOpen = false"
         />
 
-        <BulkImageModal
-            v-if="parent"
-            :is-open="isBulkImageModalOpen"
-            :node="parent"
-            @close="isBulkImageModalOpen = false"
-        />
-
-        <BulkVideoModal
-            v-if="parent"
-            :is-open="isBulkVideoModalOpen"
-            :node="parent"
-            @close="isBulkVideoModalOpen = false"
-        />
-
         <BulkRenameModal
             v-if="parent"
             :is-open="isBulkRenameModalOpen"
@@ -309,8 +283,8 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
         />
 
         <!-- Pending / Rejected Resource Preview Modal -->
-        <ResourceSubmissionModal
-            :change-request="viewingPendingModal"
+        <ReviewResourceModal
+            :request="viewingPendingModal"
             @close="viewingPendingModal = null"
         />
 
