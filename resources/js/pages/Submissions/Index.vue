@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     Clock,
     CheckCircle2,
     XCircle,
-    Trash2,
     FileText,
     Image as ImageIcon,
     Video,
     File,
     Folder,
     AlertCircle,
-    BadgeCheck,
 } from 'lucide-vue-next';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
@@ -74,14 +72,6 @@ const tabs = [
     { key: 'rejected', label: 'বাতিলকৃত' },
 ] as const;
 
-const cancelSubmission = (id: number) => {
-    if (confirm('আপনি কি এই সাবমিশনটি প্রত্যাহার করতে চান?')) {
-        router.delete(`/my-submissions/${id}`, {
-            preserveScroll: true,
-        });
-    }
-};
-
 const formatDate = (dateString: string) => {
     try {
         const date = new Date(dateString);
@@ -111,91 +101,78 @@ const getResourceIcon = (type?: string) => {
 </script>
 
 <template>
-    <Head title="আমার সাবমিশনসমূহ - HSCStack" />
+    <Head title="My Submissions - HSCStack" />
 
-    <div
-        class="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 font-sans text-slate-700 selection:bg-indigo-50 sm:px-6 md:py-12 dark:text-gray-300 dark:selection:bg-indigo-500/30"
+    <main
+        class="mx-auto max-w-5xl px-3.5 py-4 font-sans text-slate-700 selection:bg-indigo-50 sm:px-6 sm:py-8 lg:px-8 dark:text-gray-300 dark:selection:bg-indigo-500/30"
     >
         <!-- Header -->
-        <header class="mb-6">
-            <h1
-                class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-gray-100"
-            >
-                আমার সাবমিশনসমূহ
-            </h1>
-            <p
-                class="mt-1.5 text-sm font-semibold text-slate-400 dark:text-gray-500"
-            >
-                আপনার আপলোডকৃত কন্টেন্ট, মডারেশন স্ট্যাটাস ও কোটা ট্র্যাকার
-            </p>
+        <header
+            class="mb-3.5 flex items-center justify-between gap-3 sm:mb-6 sm:border-b sm:border-slate-100 sm:pb-5 dark:sm:border-gray-800"
+        >
+            <div>
+                <h1
+                    class="text-xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                >
+                    My
+                    <span class="text-indigo-600 dark:text-indigo-400">Submissions</span>
+                </h1>
+                <p
+                    class="text-xs text-slate-500 sm:mt-1 sm:text-sm dark:text-gray-400"
+                >
+                    আপনার আপলোডকৃত কন্টেন্ট, মডারেশন স্ট্যাটাস ও কোটা ট্র্যাকার
+                </p>
+            </div>
         </header>
 
-        <!-- Quota Status Card -->
+        <!-- Quota Usage Card -->
         <div
-            class="mb-8 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            class="mb-6 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs sm:p-5 dark:border-gray-800 dark:bg-gray-900"
         >
             <div
-                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
             >
                 <div>
                     <div class="flex items-center gap-2">
-                        <h2
-                            class="text-sm font-bold text-slate-900 dark:text-gray-100"
-                        >
-                            সক্রিয় সাবমিশন কোটা
-                        </h2>
                         <span
-                            v-if="quota.is_verified"
-                            class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                            class="text-xs font-bold text-slate-700 dark:text-gray-300"
                         >
-                            <BadgeCheck class="h-3.5 w-3.5" />
-                            ভেরিফাইড (১০০ লিমিট)
+                            পর্যালোচনাধীন কোটা
                         </span>
                         <span
-                            v-else
-                            class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-400"
+                            class="rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400"
                         >
-                            সাধারণ (৩০ লিমিট)
+                            {{ quota.used }} / {{ quota.max }}
                         </span>
                     </div>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                    <p
+                        class="mt-1 text-[11px] text-slate-500 dark:text-gray-400"
+                    >
                         বর্তমানে পর্যালোচনাধীন কন্টেন্ট সংখ্যা কোটায় যুক্ত হয়।
-                        অনুমোদিত বা বাতিল হলে কোটা খালি হয়ে যায়।
+                        অনুমোদিত বা বাতিল হলে কোটা খালি হয়ে যায়। ভেরিফাইড মেম্বারদের কোটা বেশি।
                     </p>
                 </div>
 
-                <div class="text-right sm:shrink-0">
-                    <span
-                        class="text-2xl font-black"
-                        :class="
-                            quota.used >= quota.max
-                                ? 'text-rose-600 dark:text-rose-400'
-                                : 'text-indigo-600 dark:text-indigo-400'
-                        "
+                <!-- Progress Bar -->
+                <div class="w-full sm:w-48">
+                    <div
+                        class="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-gray-800"
                     >
-                        {{ quota.used }}
-                    </span>
-                    <span class="text-xs font-semibold text-slate-400">
-                        / {{ quota.max }}
-                    </span>
+                        <div
+                            class="h-full rounded-full transition-all duration-300"
+                            :class="
+                                quota.used >= quota.max
+                                    ? 'bg-rose-500'
+                                    : quota.used > quota.max * 0.7
+                                      ? 'bg-amber-500'
+                                      : 'bg-indigo-600'
+                            "
+                            :style="{
+                                width: `${Math.min(100, (quota.used / quota.max) * 100)}%`,
+                            }"
+                        />
+                    </div>
                 </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div
-                class="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-gray-800"
-            >
-                <div
-                    class="h-full rounded-full transition-all duration-300"
-                    :class="
-                        quota.used >= quota.max
-                            ? 'bg-rose-500'
-                            : 'bg-indigo-600 dark:bg-indigo-500'
-                    "
-                    :style="{
-                        width: `${Math.min(100, (quota.used / quota.max) * 100)}%`,
-                    }"
-                ></div>
             </div>
         </div>
 
@@ -316,16 +293,6 @@ const getResourceIcon = (type?: string) => {
                                 <Clock class="h-3.5 w-3.5" />
                                 পর্যালোচনাধীন
                             </span>
-
-                            <button
-                                type="button"
-                                @click="cancelSubmission(item.id)"
-                                class="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1 text-xs font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50 active:scale-95 dark:border-gray-800 dark:text-rose-400 dark:hover:bg-rose-950/50"
-                                title="সাবমিশন প্রত্যাহার করুন"
-                            >
-                                <Trash2 class="h-3.5 w-3.5" />
-                                <span>বাতিল</span>
-                            </button>
                         </template>
 
                         <!-- Approved -->
@@ -385,5 +352,5 @@ const getResourceIcon = (type?: string) => {
             title="কোনো সাবমিশন পাওয়া যায়নি"
             description="আপনার কোনো কন্টেন্ট সাবমিশন এই তালিকায় নেই।"
         />
-    </div>
+    </main>
 </template>

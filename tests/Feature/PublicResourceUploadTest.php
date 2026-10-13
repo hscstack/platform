@@ -259,45 +259,6 @@ test('my-submissions page returns list and quota', function () {
         );
 });
 
-test('user can cancel their pending submission', function () {
-    [, $node] = createTestSubjectAndNode();
-
-    $user = User::factory()->create();
-    $cr = ResourceChangeRequest::recordCreate($user->id, $node->id, [
-        'title' => 'To Cancel',
-        'resource_type' => 'note',
-    ]);
-
-    $this->actingAs($user)
-        ->delete("/my-submissions/{$cr->id}")
-        ->assertSessionHas('success', 'Submission cancelled successfully.');
-
-    expect(ResourceChangeRequest::count())->toBe(0);
-});
-
-test('user cannot cancel approved submission or another users submission', function () {
-    [, $node] = createTestSubjectAndNode();
-
-    $userA = User::factory()->create();
-    $userB = User::factory()->create();
-
-    $crA = ResourceChangeRequest::recordCreate($userA->id, $node->id, [
-        'title' => 'Resource A',
-        'resource_type' => 'note',
-    ]);
-
-    // User B tries to cancel user A's submission
-    $this->actingAs($userB)
-        ->delete("/my-submissions/{$crA->id}")
-        ->assertForbidden();
-
-    // Approved submission cannot be cancelled
-    $crA->update(['status' => 'approved']);
-    $this->actingAs($userA)
-        ->delete("/my-submissions/{$crA->id}")
-        ->assertSessionHas('error', 'Only pending submissions can be cancelled.');
-});
-
 test('moderation notification generates public url on approve and my-submissions url on reject', function () {
     [$subject, $node] = createTestSubjectAndNode();
     $user = User::factory()->create();

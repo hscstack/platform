@@ -70,7 +70,6 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
 
     // My Submissions
     Route::get('/my-submissions', [SubmissionController::class, 'index'])->name('submissions.index');
-    Route::delete('/my-submissions/{changeRequest}', [SubmissionController::class, 'destroy'])->name('submissions.destroy');
     Route::post('/tracker/nodes/{node}/toggle', [StudyTrackerController::class, 'toggleNode'])->name('tracker.nodes.toggle');
     Route::post('/tracker/log-time', [StudyTrackerController::class, 'logTime'])->name('tracker.log-time');
     Route::post('/tracker/reset-today', [StudyTrackerController::class, 'resetToday'])->name('tracker.reset-today');

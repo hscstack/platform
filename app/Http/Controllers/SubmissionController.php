@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\ResourceChangeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class SubmissionController extends Controller
@@ -53,25 +52,5 @@ class SubmissionController extends Controller
             ],
             'currentStatus' => $status ?? 'all',
         ]);
-    }
-
-    public function destroy(ResourceChangeRequest $changeRequest)
-    {
-        if ($changeRequest->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        if ($changeRequest->status !== 'pending') {
-            return back()->with('error', 'Only pending submissions can be cancelled.');
-        }
-
-        $filePath = $changeRequest->payload['file_path'] ?? null;
-        if ($filePath) {
-            Storage::delete($filePath);
-        }
-
-        $changeRequest->delete();
-
-        return back()->with('success', 'Submission cancelled successfully.');
     }
 }
