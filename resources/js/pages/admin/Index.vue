@@ -147,7 +147,6 @@ const getFilterUrl = (course: string, group: string) => {
                 v-else
                 title="No subjects found"
                 description="No subjects have been created in this category yet."
-                :show-cta="false"
             />
         </div>
     </div>

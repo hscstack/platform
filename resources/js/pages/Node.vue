@@ -416,7 +416,6 @@ const handleVote = (type: 'up' | 'down') => {
                     v-else
                     title="কোনো রিসোর্স পাওয়া যায়নি"
                     description="শীঘ্রই এখানে নতুন স্টাডি ম্যাটেরিয়াল ও নোট আপলোড করা হবে।"
-                    :show-cta="false"
                 />
             </div>
         </div>
