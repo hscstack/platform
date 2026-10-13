@@ -393,16 +393,25 @@ class UserProfileController extends Controller
     {
         $course = $user->curriculum ?: 'hsc';
         $group = $user->group ?: 'science';
-        $excludedSubjectIds = (array) ($user->excluded_subject_ids ?? []);
+        $optionalSubjectIds = (array) ($user->optional_subject_ids ?? []);
 
         $subjectsQuery = Subject::where('course', $course)
             ->where('is_trackable', true)
-            ->whereIn('group', [$group, 'common'])
-            ->orderBy('sort_order', 'asc');
+            ->where(function ($query) use ($group, $optionalSubjectIds) {
+                $query->where(function ($q) use ($group) {
+                    $q->where('is_optional', false)
+                        ->whereIn('group', [$group, 'common']);
+                });
 
-        if (! empty($excludedSubjectIds)) {
-            $subjectsQuery->whereNotIn('id', $excludedSubjectIds);
-        }
+                if (! empty($optionalSubjectIds)) {
+                    $query->orWhere(function ($q) use ($group, $optionalSubjectIds) {
+                        $q->where('is_optional', true)
+                            ->whereIn('group', [$group, 'common'])
+                            ->whereIn('id', $optionalSubjectIds);
+                    });
+                }
+            })
+            ->orderBy('sort_order', 'asc');
 
         $trackableSubjects = $subjectsQuery
             ->with(['nodes' => function ($query) {

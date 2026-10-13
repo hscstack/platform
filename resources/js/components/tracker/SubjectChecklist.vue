@@ -51,7 +51,7 @@ interface Props {
     course: 'hsc' | 'ssc';
     group?: 'science' | 'humanities' | 'commerce';
     subjects: SubjectItem[];
-    excludedSubjectIds?: number[];
+    optionalSubjectIds?: number[];
     optionalSubjects?: OptionalSubjectItem[];
     completedNodeIds: number[];
     isAuthenticated: boolean;
@@ -59,7 +59,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
     group: 'science',
-    excludedSubjectIds: () => [],
+    optionalSubjectIds: () => [],
     optionalSubjects: () => [],
 });
 
@@ -92,17 +92,17 @@ function toggleExpand(subjectId: number) {
 const showSwitchConfirmModal = ref(false);
 const pendingCurriculum = ref<'hsc' | 'ssc'>(props.course);
 const pendingGroup = ref<'science' | 'humanities' | 'commerce'>(props.group);
-const pendingExcludedSubjectIds = ref<Set<number>>(
-    new Set(props.excludedSubjectIds),
+const pendingOptionalSubjectIds = ref<Set<number>>(
+    new Set(props.optionalSubjectIds),
 );
 const isSwitching = ref(false);
 
 watch(
-    () => [props.course, props.group, props.excludedSubjectIds] as const,
-    ([newCourse, newGroup, newExcluded]) => {
+    () => [props.course, props.group, props.optionalSubjectIds] as const,
+    ([newCourse, newGroup, newOptionals]) => {
         pendingCurriculum.value = newCourse;
         pendingGroup.value = newGroup;
-        pendingExcludedSubjectIds.value = new Set(newExcluded);
+        pendingOptionalSubjectIds.value = new Set(newOptionals);
     },
 );
 
@@ -116,10 +116,10 @@ const relevantOptionalSubjects = computed(() => {
 });
 
 function toggleOptionalSubject(subjId: number) {
-    if (pendingExcludedSubjectIds.value.has(subjId)) {
-        pendingExcludedSubjectIds.value.delete(subjId);
+    if (pendingOptionalSubjectIds.value.has(subjId)) {
+        pendingOptionalSubjectIds.value.delete(subjId);
     } else {
-        pendingExcludedSubjectIds.value.add(subjId);
+        pendingOptionalSubjectIds.value.add(subjId);
     }
 }
 
@@ -132,7 +132,7 @@ function openSwitchModal() {
 
     pendingCurriculum.value = props.course;
     pendingGroup.value = props.group;
-    pendingExcludedSubjectIds.value = new Set(props.excludedSubjectIds);
+    pendingOptionalSubjectIds.value = new Set(props.optionalSubjectIds);
     showSwitchConfirmModal.value = true;
 }
 
@@ -154,7 +154,7 @@ function confirmSwitchCurriculum() {
         {
             curriculum: pendingCurriculum.value,
             group: pendingGroup.value,
-            excluded_subject_ids: Array.from(pendingExcludedSubjectIds.value),
+            optional_subject_ids: Array.from(pendingOptionalSubjectIds.value),
         },
         {
             preserveScroll: true,
@@ -887,13 +887,12 @@ onUnmounted(() => {
                         <label
                             class="block text-xs font-bold text-slate-700 dark:text-gray-300"
                         >
-                            ঐচ্ছিক বিষয়সমূহ (Optional Subjects)
+                            অতিরিক্ত বিষয়সমূহ
                         </label>
                         <p
                             class="text-[11px] text-slate-500 dark:text-gray-400"
                         >
-                            যে বিষয়গুলো আপনার সিলেবাসে নেই, সেগুলোর টিক চিহ্ন
-                            তুলে দিন
+                            যে বিষয়গুলো আপনার গ্রুপে আছে সেগুলো নির্বাচন করুন
                         </p>
                     </div>
 
@@ -904,33 +903,28 @@ onUnmounted(() => {
                             type="button"
                             @click="toggleOptionalSubject(subj.id)"
                             :class="[
-                                !pendingExcludedSubjectIds.has(subj.id)
+                                pendingOptionalSubjectIds.has(subj.id)
                                     ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                                    : 'border-slate-200 bg-white text-slate-400 opacity-60 hover:bg-slate-50 hover:text-slate-600 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-400',
+                                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
                             ]"
                             class="flex cursor-pointer items-center justify-between rounded-xl border p-2.5 px-3 text-left transition"
                         >
                             <span
                                 class="line-clamp-1 text-xs leading-tight font-semibold"
-                                :class="[
-                                    pendingExcludedSubjectIds.has(subj.id)
-                                        ? 'line-through'
-                                        : '',
-                                ]"
                             >
                                 {{ subj.name }}
                             </span>
                             <span
                                 class="flex h-4 w-4 shrink-0 items-center justify-center rounded text-[10px] font-bold transition"
                                 :class="[
-                                    !pendingExcludedSubjectIds.has(subj.id)
+                                    pendingOptionalSubjectIds.has(subj.id)
                                         ? 'bg-indigo-600 text-white dark:bg-indigo-500'
                                         : 'border border-slate-300 bg-transparent text-transparent dark:border-gray-600',
                                 ]"
                             >
                                 <Check
                                     v-if="
-                                        !pendingExcludedSubjectIds.has(subj.id)
+                                        pendingOptionalSubjectIds.has(subj.id)
                                     "
                                     class="h-3 w-3 stroke-[3]"
                                 />
