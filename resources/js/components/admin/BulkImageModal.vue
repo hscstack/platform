@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import {
     Upload,
     Trash2,
@@ -12,7 +12,6 @@ import {
 import { ref, computed, watch, onUnmounted } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import { compressImagesSequentially } from '@/lib/imageCompression';
-import { usePermissions } from '@/lib/usePermissions';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -25,14 +24,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
-
-const page = usePage();
-const { can } = usePermissions();
-const isModerator = computed(() => {
-    return Boolean(
-        can('moderate resources') || (page.props.auth as any)?.can_access_admin,
-    );
-});
 
 const selectedFiles = ref<{ id: string; file: File; previewUrl: string }[]>([]);
 const isDragging = ref(false);
@@ -280,9 +271,8 @@ const submitForm = async () => {
             @submit.prevent="submitForm"
             class="flex flex-1 flex-col overflow-hidden"
         >
-            <!-- Submission Notice for Non-Moderators -->
+            <!-- Submission Notice -->
             <div
-                v-if="!isModerator"
                 class="m-4 mb-0 flex items-start gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
             >
                 <AlertCircle
@@ -611,9 +601,7 @@ const submitForm = async () => {
                             ? isProcessingServer
                                 ? 'Saving to server...'
                                 : `Uploading (${uploadProgress}%)`
-                            : isModerator
-                              ? `Upload ${selectedFiles.length || ''} Images`
-                              : `Submit ${selectedFiles.length || ''} Images for Review`
+                            : `Upload ${selectedFiles.length || ''} Images`
                     }}</span>
                 </button>
             </div>

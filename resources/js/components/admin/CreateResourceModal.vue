@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import {
     FileText,
     File,
@@ -13,7 +13,6 @@ import {
 import { ref, computed, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import { compressImage } from '@/lib/imageCompression';
-import { usePermissions } from '@/lib/usePermissions';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -35,14 +34,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
-
-const page = usePage();
-const { can } = usePermissions();
-const isModerator = computed(() => {
-    return Boolean(
-        can('moderate resources') || (page.props.auth as any)?.can_access_admin,
-    );
-});
 
 const resourceTypes = [
     {
@@ -254,9 +245,9 @@ const submitForm = () => {
             @submit.prevent="submitForm"
             class="flex flex-1 flex-col overflow-hidden"
         >
-            <!-- Submission Notice for Non-Moderators -->
+            <!-- Submission Notice -->
             <div
-                v-if="!isModerator && !resource"
+                v-if="!resource"
                 class="m-4 mb-0 flex items-start gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
             >
                 <AlertCircle
@@ -475,12 +466,8 @@ const submitForm = () => {
                         isSaving
                             ? 'Saving...'
                             : resource
-                              ? isModerator
-                                  ? 'Update Resource'
-                                  : 'Submit Update for Review'
-                              : isModerator
-                                ? 'Create Resource'
-                                : 'Submit for Review'
+                              ? 'Update Resource'
+                              : 'Create Resource'
                     }}</span>
                 </button>
             </div>
