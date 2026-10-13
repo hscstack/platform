@@ -47,7 +47,9 @@ function handleAuthRequired(
 
     <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <!-- Page Header -->
-        <div class="mb-6 flex items-center justify-between gap-3">
+        <div
+            class="mb-6 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between"
+        >
             <div class="flex items-center gap-2.5 sm:gap-3">
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-2xs sm:h-10 sm:w-10 dark:bg-white dark:text-slate-900"
@@ -69,7 +71,7 @@ function handleAuthRequired(
             </div>
 
             <!-- Header Actions: Leaderboard + User Profile -->
-            <div class="flex shrink-0 items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <Link
                     href="/leaderboard"
                     class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-amber-200/80 bg-amber-50/70 px-2.5 py-1.5 text-xs font-bold text-amber-800 shadow-2xs transition hover:bg-amber-100 sm:px-3 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/50"
@@ -84,7 +86,7 @@ function handleAuthRequired(
                 <Link
                     v-if="isAuthenticated && user"
                     :href="`/u/${user.username}`"
-                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-3 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                 >
                     <UserIcon
                         class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400"

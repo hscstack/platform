@@ -12,15 +12,13 @@ class LeaderboardController extends Controller
 {
     public function index(Request $request): Response
     {
-        $tab = $request->input('tab');
-        if (! in_array($tab, ['students', 'contributors'], true)) {
-            $tab = 'students';
-        }
+        $tab = in_array($request->input('tab'), ['students', 'contributors'], true)
+            ? $request->input('tab')
+            : 'students';
 
-        $timeframe = $request->input('timeframe');
-        if (! in_array($timeframe, ['this_week', 'this_month', 'all_time'], true)) {
-            $timeframe = 'this_week';
-        }
+        $timeframe = in_array($request->input('timeframe'), ['this_week', 'this_month', 'all_time'], true)
+            ? $request->input('timeframe')
+            : 'this_week';
 
         $dateFilter = match ($timeframe) {
             'this_week' => Carbon::now()->startOfWeek()->toDateString(),
@@ -28,166 +26,9 @@ class LeaderboardController extends Controller
             'all_time' => null,
         };
 
-        $currentUser = $request->user();
-        $currentUserRank = null;
-
-        if ($tab === 'contributors') {
-            $query = User::query()
-                ->select([
-                    'users.id',
-                    'users.name',
-                    'users.username',
-                    'users.image_path',
-                    'users.institution',
-                    'users.is_verified',
-                    'users.title',
-                ])
-                ->where(function ($q) {
-                    $q->whereNull('banned_until')->orWhere('banned_until', '<=', now());
-                })
-                ->whereHas('resources', function ($q) use ($dateFilter) {
-                    $q->when($dateFilter, fn ($sq) => $sq->where('created_at', '>=', $dateFilter));
-                })
-                ->withCount(['resources' => function ($q) use ($dateFilter) {
-                    $q->when($dateFilter, fn ($sq) => $sq->where('created_at', '>=', $dateFilter));
-                }])
-                ->orderByDesc('resources_count')
-                ->latest('users.id');
-
-            $leaderboard = $query->take(50)->get()->map(function ($u, $index) {
-                return [
-                    'rank' => $index + 1,
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'username' => $u->username,
-                    'image_url' => $u->image_url,
-                    'institution' => $u->institution,
-                    'title' => $u->title,
-                    'is_verified' => $u->is_verified,
-                    'score' => (int) $u->resources_count,
-                ];
-            });
-
-            if ($currentUser) {
-                $myScore = (int) $currentUser->resources()
-                    ->when($dateFilter, fn ($sq) => $sq->where('created_at', '>=', $dateFilter))
-                    ->count();
-
-                if ($myScore > 0) {
-                    // Check if user is in the fetched top 50
-                    $found = $leaderboard->firstWhere('id', $currentUser->id);
-                    if ($found) {
-                        $currentUserRank = [
-                            'rank' => $found['rank'],
-                            'score' => $myScore,
-                        ];
-                    } else {
-                        $higherCount = User::query()
-                            ->where(function ($q) {
-                                $q->whereNull('banned_until')->orWhere('banned_until', '<=', now());
-                            })
-                            ->whereHas('resources', function ($q) use ($dateFilter) {
-                                $q->when($dateFilter, fn ($sq) => $sq->where('created_at', '>=', $dateFilter));
-                            })
-                            ->withCount(['resources' => function ($q) use ($dateFilter) {
-                                $q->when($dateFilter, fn ($sq) => $sq->where('created_at', '>=', $dateFilter));
-                            }])
-                            ->having('resources_count', '>', $myScore)
-                            ->count();
-
-                        $currentUserRank = [
-                            'rank' => $higherCount + 1,
-                            'score' => $myScore,
-                        ];
-                    }
-                }
-            }
-        } else {
-            // Students: Ranked by total study time
-            $query = User::query()
-                ->select([
-                    'users.id',
-                    'users.name',
-                    'users.username',
-                    'users.image_path',
-                    'users.institution',
-                    'users.is_verified',
-                    'users.title',
-                    'users.curriculum',
-                    'users.group',
-                ])
-                ->where(function ($q) {
-                    $q->whereNull('banned_until')->orWhere('banned_until', '<=', now());
-                })
-                ->where(function ($q) {
-                    $q->whereNull('activity_privacy')->orWhere('activity_privacy', '!=', 'private');
-                })
-                ->whereHas('dailyStudyLogs', function ($q) use ($dateFilter) {
-                    $q->when($dateFilter, fn ($sq) => $sq->where('study_date', '>=', $dateFilter))
-                        ->where('total_seconds', '>', 0);
-                })
-                ->withSum(['dailyStudyLogs as total_study_seconds' => function ($q) use ($dateFilter) {
-                    $q->when($dateFilter, fn ($sq) => $sq->where('study_date', '>=', $dateFilter));
-                }], 'total_seconds')
-                ->withCount('nodeCompletions')
-                ->orderByDesc('total_study_seconds')
-                ->latest('users.id');
-
-            $leaderboard = $query->take(50)->get()->map(function ($u, $index) {
-                return [
-                    'rank' => $index + 1,
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'username' => $u->username,
-                    'image_url' => $u->image_url,
-                    'institution' => $u->institution,
-                    'title' => $u->title,
-                    'curriculum' => $u->curriculum,
-                    'group' => $u->group,
-                    'is_verified' => $u->is_verified,
-                    'score' => (int) $u->total_study_seconds,
-                    'completed_chapters_count' => (int) $u->node_completions_count,
-                ];
-            });
-
-            if ($currentUser) {
-                $myScore = (int) $currentUser->dailyStudyLogs()
-                    ->when($dateFilter, fn ($sq) => $sq->where('study_date', '>=', $dateFilter))
-                    ->sum('total_seconds');
-
-                if ($myScore > 0) {
-                    $found = $leaderboard->firstWhere('id', $currentUser->id);
-                    if ($found) {
-                        $currentUserRank = [
-                            'rank' => $found['rank'],
-                            'score' => $myScore,
-                        ];
-                    } else {
-                        $higherCount = User::query()
-                            ->where(function ($q) {
-                                $q->whereNull('banned_until')->orWhere('banned_until', '<=', now());
-                            })
-                            ->where(function ($q) {
-                                $q->whereNull('activity_privacy')->orWhere('activity_privacy', '!=', 'private');
-                            })
-                            ->whereHas('dailyStudyLogs', function ($q) use ($dateFilter) {
-                                $q->when($dateFilter, fn ($sq) => $sq->where('study_date', '>=', $dateFilter))
-                                    ->where('total_seconds', '>', 0);
-                            })
-                            ->withSum(['dailyStudyLogs as total_study_seconds' => function ($q) use ($dateFilter) {
-                                $q->when($dateFilter, fn ($sq) => $sq->where('study_date', '>=', $dateFilter));
-                            }], 'total_seconds')
-                            ->having('total_study_seconds', '>', $myScore)
-                            ->count();
-
-                        $currentUserRank = [
-                            'rank' => $higherCount + 1,
-                            'score' => $myScore,
-                        ];
-                    }
-                }
-            }
-        }
+        [$leaderboard, $currentUserRank] = $tab === 'contributors'
+            ? $this->getContributors($request->user(), $dateFilter)
+            : $this->getStudents($request->user(), $dateFilter);
 
         return Inertia::render('Leaderboard/Index', [
             'tab' => $tab,
@@ -195,5 +36,83 @@ class LeaderboardController extends Controller
             'leaderboard' => $leaderboard,
             'currentUserRank' => $currentUserRank,
         ]);
+    }
+
+    private function getContributors(?User $user, ?string $dateFilter): array
+    {
+        $users = User::query()
+            ->select(['id', 'name', 'username', 'image_path', 'institution', 'is_verified', 'title'])
+            ->where(fn ($q) => $q->whereNull('banned_until')->orWhere('banned_until', '<=', now()))
+            ->whereHas('resources', fn ($q) => $q->when($dateFilter, fn ($sq) => $sq->where('created_at', '>=', $dateFilter)))
+            ->withCount(['resources' => fn ($q) => $q->when($dateFilter, fn ($sq) => $sq->where('created_at', '>=', $dateFilter))])
+            ->orderByDesc('resources_count')
+            ->latest('id')
+            ->take(50)
+            ->get();
+
+        $myScore = $user ? (int) $user->resources()->when($dateFilter, fn ($q) => $q->where('created_at', '>=', $dateFilter))->count() : 0;
+
+        return $this->formatLeaderboard($users, 'resources_count', $user, $myScore);
+    }
+
+    private function getStudents(?User $user, ?string $dateFilter): array
+    {
+        $users = User::query()
+            ->select(['id', 'name', 'username', 'image_path', 'institution', 'is_verified', 'title', 'curriculum', 'group'])
+            ->where(fn ($q) => $q->whereNull('banned_until')->orWhere('banned_until', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('activity_privacy')->orWhere('activity_privacy', '!=', 'private'))
+            ->whereHas('dailyStudyLogs', fn ($q) => $q->when($dateFilter, fn ($sq) => $sq->where('study_date', '>=', $dateFilter))->where('total_seconds', '>', 0))
+            ->withSum(['dailyStudyLogs as total_study_seconds' => fn ($q) => $q->when($dateFilter, fn ($sq) => $sq->where('study_date', '>=', $dateFilter))], 'total_seconds')
+            ->orderByDesc('total_study_seconds')
+            ->latest('id')
+            ->take(50)
+            ->get();
+
+        $myScore = $user ? (int) $user->dailyStudyLogs()->when($dateFilter, fn ($q) => $q->where('study_date', '>=', $dateFilter))->sum('total_seconds') : 0;
+
+        return $this->formatLeaderboard($users, 'total_study_seconds', $user, $myScore);
+    }
+
+    private function formatLeaderboard($users, string $scoreKey, ?User $currentUser, int $myScore): array
+    {
+        $leaderboard = [];
+        $currentRank = 1;
+        $prevScore = null;
+
+        foreach ($users as $index => $u) {
+            $score = (int) $u->{$scoreKey};
+            if ($prevScore !== null && $score === $prevScore) {
+                $rank = $currentRank;
+            } else {
+                $currentRank = $index + 1;
+                $rank = $currentRank;
+                $prevScore = $score;
+            }
+
+            $leaderboard[] = [
+                'rank' => $rank,
+                'id' => $u->id,
+                'name' => $u->name,
+                'username' => $u->username,
+                'image_url' => $u->image_url,
+                'institution' => $u->institution,
+                'title' => $u->title,
+                'curriculum' => $u->curriculum ?? null,
+                'group' => $u->group ?? null,
+                'is_verified' => (bool) $u->is_verified,
+                'score' => $score,
+            ];
+        }
+
+        $currentUserRank = null;
+        if ($currentUser && $myScore > 0) {
+            $found = collect($leaderboard)->firstWhere('id', $currentUser->id);
+            $currentUserRank = [
+                'rank' => $found ? $found['rank'] : '50+',
+                'score' => $myScore,
+            ];
+        }
+
+        return [$leaderboard, $currentUserRank];
     }
 }
