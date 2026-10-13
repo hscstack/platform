@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import BulkImageModal from '@/components/admin/BulkImageModal.vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
 import BulkRenameModal from '@/components/admin/BulkRenameModal.vue';
-import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
 import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import NodeHeader from '@/components/admin/NodeHeader.vue';
@@ -70,8 +68,6 @@ const toggleFreeze = () => {
 };
 
 const isBulkModalOpen = ref(false);
-const isBulkImageModalOpen = ref(false);
-const isBulkVideoModalOpen = ref(false);
 const isBulkRenameModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
 const editingNode = ref<any | null>(null);
@@ -257,9 +253,6 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
             @toggle-freeze="toggleFreeze"
             @create-single-folder="openCreateNodeModal"
             @create-bulk-folder="isBulkModalOpen = true"
-            @create-single-resource="openCreateResourceModal"
-            @create-bulk-image="isBulkImageModalOpen = true"
-            @create-bulk-video="isBulkVideoModalOpen = true"
         />
 
         <!-- Modals -->
@@ -284,20 +277,6 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
             :subject="subject"
             :parent="parent"
             @close="isBulkModalOpen = false"
-        />
-
-        <BulkImageModal
-            v-if="parent"
-            :is-open="isBulkImageModalOpen"
-            :node="parent"
-            @close="isBulkImageModalOpen = false"
-        />
-
-        <BulkVideoModal
-            v-if="parent"
-            :is-open="isBulkVideoModalOpen"
-            :node="parent"
-            @close="isBulkVideoModalOpen = false"
         />
 
         <BulkRenameModal
