@@ -122,19 +122,22 @@ class ResourceController extends Controller
     public function store(StoreResourceRequest $request)
     {
         $validated = $request->validated();
+        $isModerator = $request->user()->can('moderate resources');
+
+        if (! $isModerator) {
+            $this->ensureCanSubmit(1, true);
+        }
 
         if ($request->hasFile('file')) {
             $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
         }
 
-        if ($request->user()->can('moderate resources')) {
+        if ($isModerator) {
             $validated['user_id'] = Auth::id();
             Resource::create($validated);
 
             return back()->with('success', 'Resource created successfully.');
         }
-
-        $this->ensureCanSubmit(1, true);
 
         ResourceChangeRequest::recordCreate(
             Auth::id(),
@@ -189,6 +192,11 @@ class ResourceController extends Controller
     public function storeBulkVideos(BulkVideoStoreRequest $request)
     {
         $validated = $request->validated();
+        $isModerator = $request->user()->can('moderate resources');
+
+        if (! $isModerator) {
+            $this->ensureCanSubmit(1, true);
+        }
 
         $playlistUrl = $validated['playlist_url'];
 
@@ -225,6 +233,10 @@ class ResourceController extends Controller
                     'video_id' => $item['snippet']['resourceId']['videoId'],
                     'position' => $item['snippet']['position'],
                 ];
+            }
+
+            if (! $isModerator && count($videos) >= $this->getMaxPendingSubmissions()) {
+                break;
             }
 
             $pageToken = $data['nextPageToken'] ?? null;

@@ -10,9 +10,9 @@ import {
     File,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import ReviewResourceModal from '@/components/admin/ReviewResourceModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
-import ReviewResourceModal from '@/components/admin/ReviewResourceModal.vue';
 
 interface Submission {
     id: number;
@@ -336,7 +336,9 @@ const getNodeUrl = (node?: Submission['node']): string => {
                                         @click.stop
                                     >
                                         <template
-                                            v-for="(seg, sIdx) in getNodePath(item.node)"
+                                            v-for="(seg, sIdx) in getNodePath(
+                                                item.node,
+                                            )"
                                             :key="sIdx"
                                         >
                                             <span
@@ -349,7 +351,9 @@ const getNodeUrl = (node?: Submission['node']): string => {
                                     </Link>
                                 </span>
 
-                                <span v-if="getNodePath(item.node).length > 0">·</span>
+                                <span v-if="getNodePath(item.node).length > 0"
+                                    >·</span
+                                >
                                 <span>{{ formatDate(item.created_at) }}</span>
                             </div>
                         </div>

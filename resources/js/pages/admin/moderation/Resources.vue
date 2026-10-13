@@ -301,7 +301,6 @@ const getNodeBreadcrumbs = (node?: Node): BreadcrumbItem[] => {
     return items;
 };
 
-
 const handleBulkApprove = () => {
     if (selectedIds.value.length === 0) {
         return;

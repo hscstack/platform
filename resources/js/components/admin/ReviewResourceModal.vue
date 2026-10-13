@@ -323,7 +323,7 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                     </h3>
                     <span
                         v-if="request.payload?.resource_type"
-                        class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-100/80 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-700 dark:border-gray-700/80 dark:bg-gray-800 dark:text-gray-300"
+                        class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-100/80 px-2.5 py-1 text-xs font-semibold tracking-wider text-slate-700 uppercase dark:border-gray-700/80 dark:bg-gray-800 dark:text-gray-300"
                     >
                         <FileImage
                             v-if="request.payload?.resource_type === 'image'"
@@ -343,7 +343,7 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                 <!-- Description / Body -->
                 <p
                     v-if="request.payload?.content"
-                    class="whitespace-pre-line text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-gray-300"
+                    class="text-xs leading-relaxed whitespace-pre-line text-slate-600 sm:text-sm dark:text-gray-300"
                 >
                     {{ request.payload.content }}
                 </p>
@@ -461,7 +461,12 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                                                 :src="change.oldVal"
                                                 alt="Current file"
                                                 class="max-h-48 max-w-full cursor-zoom-in rounded-lg border border-slate-200 object-contain transition hover:opacity-90 dark:border-gray-700"
-                                                @click="openImageViewer(change.oldVal, 'Current Image')"
+                                                @click="
+                                                    openImageViewer(
+                                                        change.oldVal,
+                                                        'Current Image',
+                                                    )
+                                                "
                                             />
                                             <div
                                                 class="text-[11px] text-slate-400 line-through decoration-rose-400/80"
@@ -548,7 +553,12 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                                                 :src="change.newVal"
                                                 alt="Proposed file"
                                                 class="max-h-48 max-w-full cursor-zoom-in rounded-lg border border-slate-200 object-contain transition hover:opacity-90 dark:border-gray-700"
-                                                @click="openImageViewer(change.newVal, 'Proposed New Image')"
+                                                @click="
+                                                    openImageViewer(
+                                                        change.newVal,
+                                                        'Proposed New Image',
+                                                    )
+                                                "
                                             />
                                             <div
                                                 class="text-[11px] font-normal text-amber-700 dark:text-amber-300"
@@ -636,14 +646,18 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                     v-if="request.status === 'approved'"
                     class="font-semibold text-emerald-600 dark:text-emerald-400"
                 >
-                    ✓ Approved<span v-if="request.reviewer?.name"> by {{ request.reviewer.name }}</span>
+                    ✓ Approved<span v-if="request.reviewer?.name">
+                        by {{ request.reviewer.name }}</span
+                    >
                     <span v-if="request.reviewed_at">
                         on {{ formatDateTime(request.reviewed_at) }}
                     </span>
                 </div>
                 <div v-else class="space-y-1 text-rose-600 dark:text-rose-400">
                     <div class="font-semibold">
-                        ✕ Rejected<span v-if="request.reviewer?.name"> by {{ request.reviewer.name }}</span>
+                        ✕ Rejected<span v-if="request.reviewer?.name">
+                            by {{ request.reviewer.name }}</span
+                        >
                         <span v-if="request.reviewed_at">
                             on {{ formatDateTime(request.reviewed_at) }}
                         </span>
@@ -662,7 +676,11 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
             <div class="flex items-center justify-between">
                 <div>
                     <a
-                        v-if="request?.resource?.id || request?.targetResource?.id || request?.resource_id"
+                        v-if="
+                            request?.resource?.id ||
+                            request?.targetResource?.id ||
+                            request?.resource_id
+                        "
                         :href="`/resources/${request.resource?.id || request.targetResource?.id || request.resource_id}`"
                         target="_blank"
                         class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
