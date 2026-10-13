@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import {
     FileText,
     File,
@@ -13,6 +13,7 @@ import {
 import { ref, computed, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import { compressImage } from '@/lib/imageCompression';
+import { usePermissions } from '@/lib/usePermissions';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -34,6 +35,14 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
+
+const page = usePage();
+const { can } = usePermissions();
+const isModerator = computed(() => {
+    return Boolean(
+        can('moderate resources') || (page.props.auth as any)?.can_access_admin,
+    );
+});
 
 const resourceTypes = [
     {
@@ -211,7 +220,7 @@ const submitForm = () => {
             },
         });
     } else {
-        router.post('/admin/resources', payload, {
+        router.post('/resources', payload, {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
@@ -220,6 +229,7 @@ const submitForm = () => {
             onError: (errors) => {
                 errorMessage.value =
                     (errors.pending_limit as string) ||
+                    (errors.account_age as string) ||
                     Object.values(errors).flat().join(', ') ||
                     'Failed to create resource.';
             },
@@ -244,6 +254,20 @@ const submitForm = () => {
             @submit.prevent="submitForm"
             class="flex flex-1 flex-col overflow-hidden"
         >
+            <!-- Submission Notice for Non-Moderators -->
+            <div
+                v-if="!isModerator && !resource"
+                class="m-4 mb-0 flex items-start gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+            >
+                <AlertCircle
+                    class="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400"
+                />
+                <span
+                    >আপনার আপলোডকৃত কন্টেন্টটি অ্যাডমিন পর্যালোচনার পর ওয়েবসাইটে
+                    দৃশ্যমান হবে।</span
+                >
+            </div>
+
             <!-- Error Banner -->
             <div
                 v-if="errorMessage"
@@ -451,8 +475,12 @@ const submitForm = () => {
                         isSaving
                             ? 'Saving...'
                             : resource
-                              ? 'Update Resource'
-                              : 'Create Resource'
+                              ? isModerator
+                                  ? 'Update Resource'
+                                  : 'Submit Update for Review'
+                              : isModerator
+                                ? 'Create Resource'
+                                : 'Submit for Review'
                     }}</span>
                 </button>
             </div>

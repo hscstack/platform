@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { Check, AlertCircle, Info, X } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface Toast {
     id: number;
@@ -25,6 +25,25 @@ const addToast = (message: string, type: 'success' | 'error' | 'info') => {
 const removeToast = (id: number) => {
     toasts.value = toasts.value.filter((t) => t.id !== id);
 };
+
+const handleCustomToast = (event: Event) => {
+    const customEvent = event as CustomEvent<{
+        message: string;
+        type?: 'success' | 'error' | 'info';
+    }>;
+
+    if (customEvent.detail?.message) {
+        addToast(customEvent.detail.message, customEvent.detail.type || 'info');
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('app-toast', handleCustomToast);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('app-toast', handleCustomToast);
+});
 
 // Watch Inertia page flash props for new messages
 watch(

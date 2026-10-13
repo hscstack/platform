@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import {
     Youtube,
     FileSpreadsheet,
@@ -9,8 +9,9 @@ import {
     ChevronDown,
     ChevronRight,
 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import { usePermissions } from '@/lib/usePermissions';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -23,6 +24,14 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
+
+const page = usePage();
+const { can } = usePermissions();
+const isModerator = computed(() => {
+    return Boolean(
+        can('moderate resources') || (page.props.auth as any)?.can_access_admin,
+    );
+});
 
 const playlistUrl = ref('');
 const namingStrategy = ref<'serial' | 'youtube'>('serial');
@@ -79,7 +88,7 @@ const submitForm = () => {
         is_reversed: isReversed.value,
     };
 
-    router.post('/admin/resources/bulk/videos', payload, {
+    router.post('/resources/bulk/videos', payload, {
         preserveScroll: true,
         onSuccess: () => {
             resetForm();
@@ -88,6 +97,7 @@ const submitForm = () => {
         onError: (errors) => {
             errorMessage.value =
                 (errors.pending_limit as string) ||
+                (errors.account_age as string) ||
                 Object.values(errors).flat().join(', ') ||
                 'Failed to import playlist.';
         },
@@ -111,6 +121,20 @@ const submitForm = () => {
             @submit.prevent="submitForm"
             class="flex flex-1 flex-col overflow-hidden"
         >
+            <!-- Submission Notice for Non-Moderators -->
+            <div
+                v-if="!isModerator"
+                class="m-4 mb-0 flex items-start gap-2.5 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+            >
+                <AlertCircle
+                    class="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400"
+                />
+                <span
+                    >আপনার ইম্পোর্টকৃত প্লেলিস্টটি অ্যাডমিন পর্যালোচনার পর
+                    ওয়েবসাইটে দৃশ্যমান হবে।</span
+                >
+            </div>
+
             <!-- Error Banner -->
             <div
                 v-if="errorMessage"
@@ -319,7 +343,11 @@ const submitForm = () => {
                 >
                     <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />
                     <span>{{
-                        isSaving ? 'Importing Playlist...' : 'Import Playlist'
+                        isSaving
+                            ? 'Importing Playlist...'
+                            : isModerator
+                              ? 'Import Playlist'
+                              : 'Submit Playlist for Review'
                     }}</span>
                 </button>
             </div>
