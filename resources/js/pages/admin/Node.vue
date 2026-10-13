@@ -10,7 +10,7 @@ import NodeRow from '@/components/admin/NodeRow.vue';
 import NodeTabsHeader from '@/components/admin/NodeTabsHeader.vue';
 import PendingSubmissionRow from '@/components/admin/PendingSubmissionRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
-import ResourceSubmissionModal from '@/components/admin/ResourceSubmissionModal.vue';
+import ReviewResourceModal from '@/components/admin/ReviewResourceModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -283,8 +283,8 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
         />
 
         <!-- Pending / Rejected Resource Preview Modal -->
-        <ResourceSubmissionModal
-            :change-request="viewingPendingModal"
+        <ReviewResourceModal
+            :request="viewingPendingModal"
             @close="viewingPendingModal = null"
         />
 

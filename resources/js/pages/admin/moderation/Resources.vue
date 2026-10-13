@@ -301,45 +301,6 @@ const getNodeBreadcrumbs = (node?: Node): BreadcrumbItem[] => {
     return items;
 };
 
-const handleApprove = (req: ChangeRequest) => {
-    const actionLabel =
-        req.action_type === 'create'
-            ? 'new upload'
-            : req.action_type === 'update'
-              ? 'edited resource'
-              : 'resource deletion';
-
-    if (confirm(`Approve this ${actionLabel}?`)) {
-        isProcessing.value = true;
-        processingId.value = req.id;
-        router.post(
-            '/admin/moderation/resources/approve',
-            { ids: [req.id] },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    if (props.filters.status === 'pending') {
-                        loadedRequests.value = loadedRequests.value.filter(
-                            (r) => r.id !== req.id,
-                        );
-                    }
-
-                    selectedIds.value = selectedIds.value.filter(
-                        (id) => id !== req.id,
-                    );
-
-                    if (viewingRequest.value?.id === req.id) {
-                        viewingRequest.value = null;
-                    }
-                },
-                onFinish: () => {
-                    isProcessing.value = false;
-                    processingId.value = null;
-                },
-            },
-        );
-    }
-};
 
 const handleBulkApprove = () => {
     if (selectedIds.value.length === 0) {
@@ -997,12 +958,7 @@ const handleReject = () => {
     <!-- 1. Dedicated Review / Diff Modal -->
     <ReviewResourceModal
         :request="viewingRequest"
-        :is-processing="isProcessing"
-        :processing-id="processingId"
-        :can-moderate="true"
         @close="viewingRequest = null"
-        @reject="openRejectModal"
-        @approve="handleApprove"
     />
 
     <!-- 2. Clean Rejection Feedback Modal -->

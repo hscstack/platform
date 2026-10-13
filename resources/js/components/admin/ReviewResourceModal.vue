@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import {
-    Check,
     ExternalLink,
     FileImage,
     FileText,
     FileVideo,
-    Loader2,
     Pencil,
     PlusCircle,
     Trash2,
@@ -88,24 +86,12 @@ export interface BreadcrumbItem {
     url: string;
 }
 
-withDefaults(
-    defineProps<{
-        request: ChangeRequest | null;
-        isProcessing?: boolean;
-        processingId?: number | null;
-        canModerate?: boolean;
-    }>(),
-    {
-        isProcessing: false,
-        processingId: null,
-        canModerate: true,
-    },
-);
+defineProps<{
+    request: ChangeRequest | null;
+}>();
 
 const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'reject', request: ChangeRequest): void;
-    (e: 'approve', request: ChangeRequest): void;
 }>();
 
 const { can } = usePermissions();
@@ -145,12 +131,13 @@ const getNodeBreadcrumbs = (node?: Node): BreadcrumbItem[] => {
 };
 
 const getChangedFields = (req: ChangeRequest): ChangedField[] => {
-    if (req.action_type !== 'update' || !req.resource || !req.payload) {
+    const live = req.resource || req.targetResource;
+
+    if (req.action_type !== 'update' || !live || !req.payload) {
         return [];
     }
 
     const changes: ChangedField[] = [];
-    const live = req.resource;
     const proposed = req.payload;
 
     if (proposed.title !== undefined && proposed.title !== live.title) {
@@ -219,10 +206,10 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
         :is-open="request !== null"
         :title="
             request?.action_type === 'create'
-                ? 'Review New Upload'
+                ? 'Resource Submission'
                 : request?.action_type === 'update'
-                  ? 'Compare Proposed Changes'
-                  : 'Review Deletion Request'
+                  ? 'Proposed Changes'
+                  : 'Deletion Request'
         "
         max-width="2xl"
         @close="emit('close')"
@@ -649,7 +636,9 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                             class="text-base font-bold text-rose-950 dark:text-rose-200"
                         >
                             Target: "{{
-                                request.resource?.title || 'Resource'
+                                request.resource?.title ||
+                                request.targetResource?.title ||
+                                'Resource'
                             }}"
                         </h4>
                         <p
@@ -695,7 +684,7 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
         </div>
 
         <template #footer>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-end">
                 <button
                     type="button"
                     @click="emit('close')"
@@ -703,34 +692,6 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                 >
                     Close
                 </button>
-
-                <div
-                    v-if="canModerate && request?.status === 'pending'"
-                    class="flex items-center gap-2"
-                >
-                    <button
-                        type="button"
-                        @click="emit('reject', request)"
-                        :disabled="isProcessing"
-                        class="cursor-pointer rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-rose-950/40"
-                    >
-                        Reject
-                    </button>
-
-                    <button
-                        type="button"
-                        @click="emit('approve', request)"
-                        :disabled="isProcessing"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-500 disabled:opacity-50"
-                    >
-                        <Loader2
-                            v-if="isProcessing && processingId === request?.id"
-                            class="h-3.5 w-3.5 animate-spin"
-                        />
-                        <Check v-else class="h-3.5 w-3.5" />
-                        <span>Approve</span>
-                    </button>
-                </div>
             </div>
         </template>
     </BaseModal>
