@@ -10,6 +10,7 @@ import {
     ExternalLink,
     Loader2,
     Share2,
+    SlidersHorizontal,
 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
@@ -112,6 +113,29 @@ const relevantOptionalSubjects = computed(() => {
         (s) =>
             s.course === pendingCurriculum.value &&
             s.group === pendingGroup.value,
+    );
+});
+
+const selectedOptionalSubjectsCount = computed(() => {
+    return (props.optionalSubjectIds || []).length;
+});
+
+const selectedOptionalSubjectNames = computed(() => {
+    const set = new Set(props.optionalSubjectIds || []);
+
+    return props.optionalSubjects
+        .filter(
+            (s) =>
+                s.course === props.course &&
+                s.group === props.group &&
+                set.has(s.id),
+        )
+        .map((s) => s.name);
+});
+
+const hasAvailableOptionalSubjects = computed(() => {
+    return props.optionalSubjects.some(
+        (s) => s.course === props.course && s.group === props.group,
     );
 });
 
@@ -535,6 +559,75 @@ onUnmounted(() => {
                     />
                 </div>
             </div>
+        </div>
+
+        <!-- Optional Subjects Callout Banner -->
+        <div
+            v-if="
+                hasAvailableOptionalSubjects &&
+                selectedOptionalSubjectsCount === 0
+            "
+            class="flex flex-col gap-3 rounded-2xl border border-indigo-200/90 bg-gradient-to-r from-indigo-50/90 via-white to-indigo-50/60 p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-4.5 dark:border-indigo-900/60 dark:bg-gradient-to-r dark:from-indigo-950/40 dark:via-gray-900 dark:to-indigo-950/20"
+        >
+            <div class="flex items-start gap-3 sm:items-center">
+                <span
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-2xs dark:bg-indigo-500"
+                >
+                    <SlidersHorizontal class="h-4.5 w-4.5" />
+                </span>
+                <div>
+                    <h3
+                        class="text-xs font-bold text-slate-900 sm:text-sm dark:text-white"
+                    >
+                        অতিরিক্ত বিষয় নির্বাচন করুন
+                    </h3>
+                    <p
+                        class="mt-0.5 text-[11px] text-slate-600 sm:text-xs dark:text-gray-400"
+                    >
+                        আপনার গ্রুপের ঐচ্ছিক বিষয়গুলো সিলেবাসে যুক্ত করতে
+                        নির্বাচন করুন
+                    </p>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                @click="openSwitchModal"
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+            >
+                <span>বিষয় নির্বাচন করুন</span>
+                <ChevronRight class="h-3.5 w-3.5" />
+            </button>
+        </div>
+
+        <div
+            v-else-if="
+                hasAvailableOptionalSubjects &&
+                selectedOptionalSubjectsCount > 0
+            "
+            class="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <div class="flex min-w-0 items-center gap-2">
+                <span
+                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                >
+                    <Check class="h-3.5 w-3.5 stroke-[2.5]" />
+                </span>
+                <span class="truncate text-slate-600 dark:text-gray-300">
+                    <strong class="font-semibold text-slate-900 dark:text-white"
+                        >অতিরিক্ত বিষয়:</strong
+                    >
+                    {{ selectedOptionalSubjectNames.join(', ') }}
+                </span>
+            </div>
+            <button
+                type="button"
+                @click="openSwitchModal"
+                class="ml-2 inline-flex shrink-0 cursor-pointer items-center gap-1 font-semibold text-indigo-600 transition hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+            >
+                <span>পরিবর্তন করুন</span>
+                <ChevronRight class="h-3 w-3" />
+            </button>
         </div>
 
         <!-- Subjects & Chapters List -->
