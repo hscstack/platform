@@ -35,15 +35,9 @@ class ResourceModerationNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
-        $node = $this->changeRequest->node;
-        if ($this->status === 'rejected') {
-            $url = '/my-submissions?status=rejected';
-        } elseif ($node && $node->subject) {
-            $path = implode('/', array_column($node->breadcrumb(), 'slug'));
-            $url = "/subjects/{$node->subject->slug}/nodes/{$path}";
-        } else {
-            $url = '/my-submissions';
-        }
+        $url = $this->status === 'rejected'
+            ? '/my-submissions?status=rejected'
+            : '/my-submissions?status=approved';
 
         if ($this->totalCount > 1) {
             $title = $this->status === 'rejected'
