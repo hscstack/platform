@@ -13,6 +13,7 @@ import {
 import { ref, computed, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import { compressImage } from '@/lib/imageCompression';
+import { usePermissions } from '@/lib/usePermissions';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -34,6 +35,9 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
+
+const { can } = usePermissions();
+const isModerator = computed(() => can('moderate resources'));
 
 const resourceTypes = [
     {
@@ -464,7 +468,9 @@ const submitForm = () => {
                             ? 'Saving...'
                             : resource
                               ? 'Update Resource'
-                              : 'Create Resource'
+                              : isModerator
+                                ? 'Create Resource'
+                                : 'Submit for Review'
                     }}</span>
                 </button>
             </div>

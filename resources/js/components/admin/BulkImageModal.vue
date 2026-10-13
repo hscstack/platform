@@ -301,6 +301,15 @@ const submitForm = async () => {
             <div
                 class="flex-1 space-y-4 overflow-y-auto p-4 text-slate-800 sm:p-6 dark:text-gray-200"
             >
+                <!-- Moderation Notice -->
+                <div
+                    class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-[11px] leading-relaxed text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200"
+                >
+                    <span class="font-bold">সাবমিশন নির্দেশিকা:</span> আপলোডকৃত
+                    ছবি ও লেকচার নোট মডারেটর কর্তৃক পর্যালোচনার পর ওয়েবসাইটে
+                    প্রকাশিত হবে। স্পষ্ট ও পাঠযোগ্য ছবি আপলোড করুন।
+                </div>
+
                 <!-- Dropzone Section -->
                 <div class="space-y-1.5">
                     <div class="flex items-center justify-between text-xs">

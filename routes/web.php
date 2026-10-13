@@ -16,6 +16,7 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\StudyTrackerController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Http\Request;
@@ -64,6 +65,8 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
     Route::post('/resources/bulk/images', [ResourceController::class, 'storeBulkImages'])->name('resources.bulk.images');
     Route::post('/resources/bulk/videos', [ResourceController::class, 'storeBulkVideos'])->name('resources.bulk.videos');
+    Route::get('/my-submissions', [SubmissionController::class, 'index'])->name('submissions.index');
+    Route::delete('/my-submissions/{changeRequest}', [SubmissionController::class, 'destroy'])->name('submissions.destroy');
     Route::post('/tracker/nodes/{node}/toggle', [StudyTrackerController::class, 'toggleNode'])->name('tracker.nodes.toggle');
     Route::post('/tracker/log-time', [StudyTrackerController::class, 'logTime'])->name('tracker.log-time');
     Route::post('/tracker/reset-today', [StudyTrackerController::class, 'resetToday'])->name('tracker.reset-today');

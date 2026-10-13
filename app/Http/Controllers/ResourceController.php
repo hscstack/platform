@@ -31,7 +31,7 @@ class ResourceController extends Controller
      * Check if user would exceed their pending change requests quota or fails eligibility.
      * Throws standard ValidationException so it returns as a typed error in Inertia errors.
      */
-    protected function ensureUnderPendingLimit(int $incomingCount = 1): void
+    protected function ensureUnderPendingLimit(int $incomingCount = 1, bool $checkAge = true): void
     {
         if (Auth::user()?->can('moderate resources')) {
             return;
@@ -39,7 +39,7 @@ class ResourceController extends Controller
 
         $user = Auth::user();
 
-        if ($user && $user->created_at && $user->created_at->isAfter(now()->subDay())) {
+        if ($checkAge && $user && $user->created_at && $user->created_at->isAfter(now()->subDay())) {
             throw ValidationException::withMessages([
                 'pending_limit' => 'নোট বা রিসোর্স আপলোড করার জন্য আপনার অ্যাকাউন্টের বয়স কমপক্ষে ২৪ ঘণ্টা হতে হবে।',
             ]);

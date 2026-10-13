@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import {
     ArrowBigDown,
     ArrowBigUp,
@@ -240,12 +240,22 @@ const closeUploadDropdown = (e: MouseEvent) => {
 onMounted(() => document.addEventListener('click', closeUploadDropdown));
 onUnmounted(() => document.removeEventListener('click', closeUploadDropdown));
 
+const page = usePage();
+
 const handleToggleUploadDropdown = () => {
     if (
         !requireAuth(
             'Login to upload your own note and contribute to the community.',
         )
     ) {
+        return;
+    }
+
+    if (props.currentNode?.is_frozen) {
+        (page.props as any).flash = {
+            error: 'এই ফোল্ডারটি লক করা রয়েছে। অ্যাডমিন কর্তৃক কন্টেন্ট আপলোড সাময়িকভাবে বন্ধ আছে।',
+        };
+
         return;
     }
 
@@ -512,8 +522,19 @@ const handleOpenBulkVideo = () => {
                     v-else
                     title="কোনো রিসোর্স পাওয়া যায়নি"
                     description="শীঘ্রই এখানে নতুন স্টাডি ম্যাটেরিয়াল ও নোট আপলোড করা হবে।"
-                    :show-cta="true"
-                />
+                    :show-cta="false"
+                >
+                    <template #actions>
+                        <button
+                            type="button"
+                            @click="handleToggleUploadDropdown"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                        >
+                            <Upload class="h-3.5 w-3.5 stroke-[2.2]" />
+                            <span>প্রথম রিসোর্সটি আপলোড করুন</span>
+                        </button>
+                    </template>
+                </EmptyState>
             </div>
         </div>
     </div>

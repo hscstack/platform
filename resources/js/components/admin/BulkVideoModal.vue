@@ -9,8 +9,9 @@ import {
     ChevronDown,
     ChevronRight,
 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
+import { usePermissions } from '@/lib/usePermissions';
 
 const props = defineProps<{
     isOpen: boolean;
@@ -23,6 +24,9 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
 }>();
+
+const { can } = usePermissions();
+const isModerator = computed(() => can('moderate resources'));
 
 const playlistUrl = ref('');
 const namingStrategy = ref<'serial' | 'youtube'>('serial');
@@ -342,7 +346,11 @@ const submitForm = () => {
                 >
                     <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />
                     <span>{{
-                        isSaving ? 'Importing Playlist...' : 'Import Playlist'
+                        isSaving
+                            ? 'Importing Playlist...'
+                            : isModerator
+                              ? 'Import Playlist'
+                              : 'Submit Playlist for Review'
                     }}</span>
                 </button>
             </div>

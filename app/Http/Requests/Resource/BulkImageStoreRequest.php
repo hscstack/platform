@@ -15,7 +15,11 @@ class BulkImageStoreRequest extends FormRequest
     {
         $node = Node::find($this->input('node_id'));
 
-        return ! ($node?->isEffectivelyFrozen());
+        if ($node?->isEffectivelyFrozen() && ! $this->user()?->can('moderate resources')) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
