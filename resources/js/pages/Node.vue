@@ -254,11 +254,6 @@ const handleVote = (type: 'up' | 'down') => {
                     v-if="currentNode"
                     class="flex flex-wrap items-center gap-3"
                 >
-                    <!-- Upload Resource Dropdown -->
-                    <UploadResourceDropdown
-                        :node="currentNode as any"
-                        :is-frozen="Boolean(currentNode.is_frozen)"
-                    />
                     <!-- Upvote & Downvote Button Group -->
                     <div
                         class="flex items-center rounded-2xl border border-slate-200/90 bg-white p-1 shadow-xs dark:border-gray-800 dark:bg-gray-900"
@@ -394,10 +389,14 @@ const handleVote = (type: 'up' | 'down') => {
             class="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
         >
             <div
-                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-3.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
+                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-2.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
             >
                 <span>Name</span>
-                <span class="hidden sm:inline">Type</span>
+                <UploadResourceDropdown
+                    v-if="currentNode"
+                    :node="currentNode as any"
+                    :is-frozen="Boolean(currentNode.is_frozen)"
+                />
             </div>
 
             <div class="flex-1 divide-y divide-slate-100 dark:divide-gray-800">
@@ -418,19 +417,7 @@ const handleVote = (type: 'up' | 'down') => {
                     title="কোনো রিসোর্স পাওয়া যায়নি"
                     description="শীঘ্রই এখানে নতুন স্টাডি ম্যাটেরিয়াল ও নোট আপলোড করা হবে।"
                     :show-cta="false"
-                >
-                    <template #actions>
-                        <button
-                            v-if="currentNode"
-                            type="button"
-                            @click="handleUploadClick('single')"
-                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95"
-                        >
-                            <Plus class="h-4 w-4 stroke-[2.2]" />
-                            <span>আপলোড করুন</span>
-                        </button>
-                    </template>
-                </EmptyState>
+                />
             </div>
         </div>
     </div>
