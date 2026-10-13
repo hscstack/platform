@@ -92,14 +92,14 @@ class ResourceController extends Controller
     /**
      * Check if user is eligible to submit (account age) and within pending change requests quota.
      */
-    public function ensureCanSubmit(int $incomingCount = 1, bool $checkAge = true): void
+    public function ensureCanSubmit(int $incomingCount = 1): void
     {
         $user = Auth::user();
         if ($user?->can('moderate resources')) {
             return;
         }
 
-        if ($checkAge && $user?->created_at && $user->created_at->diffInHours(now()) < 24) {
+        if ($user?->created_at && $user->created_at->diffInHours(now()) < 24) {
             throw ValidationException::withMessages([
                 'account_age' => 'আপনার অ্যাকাউন্টটি নতুন। স্প্যাম রোধে অ্যাকাউন্ট তৈরির ২৪ ঘণ্টা পর রিসোর্স আপলোড করা যাবে।',
             ]);
@@ -125,7 +125,7 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
 
         if (! $isModerator) {
-            $this->ensureCanSubmit(1, true);
+            $this->ensureCanSubmit(1);
         }
 
         if ($request->hasFile('file')) {
@@ -155,7 +155,7 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
 
         if (! $isModerator) {
-            $this->ensureCanSubmit($filesCount, true);
+            $this->ensureCanSubmit($filesCount);
         }
 
         $userId = Auth::id();
@@ -195,7 +195,7 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
 
         if (! $isModerator) {
-            $this->ensureCanSubmit(1, true);
+            $this->ensureCanSubmit(1);
         }
 
         $playlistUrl = $validated['playlist_url'];
@@ -269,7 +269,7 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
 
         if (! $isModerator) {
-            $this->ensureCanSubmit($videosCount, true);
+            $this->ensureCanSubmit($videosCount);
         }
 
         DB::transaction(function () use ($videos, $userId, $nodeId, $isModerator) {

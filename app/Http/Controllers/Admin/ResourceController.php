@@ -18,20 +18,24 @@ class ResourceController extends BaseResourceController
     {
         $validated = $request->validated();
 
+        $isModerator = $request->user()->can('moderate resources');
+
+        if (! $isModerator) {
+            $this->ensureCanSubmit(1);
+        }
+
         if ($request->hasFile('file')) {
-            if ($request->user()->can('moderate resources') && $resource->file_path) {
+            if ($isModerator && $resource->file_path) {
                 Storage::delete($resource->file_path);
             }
             $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
         }
 
-        if ($request->user()->can('moderate resources')) {
+        if ($isModerator) {
             $resource->update($validated);
 
             return back()->with('success', 'Resource updated successfully.');
         }
-
-        $this->ensureCanSubmit(1, false);
 
         ResourceChangeRequest::recordUpdate(
             Auth::id(),
@@ -53,7 +57,7 @@ class ResourceController extends BaseResourceController
             return redirect()->back()->with('success', 'Resource deleted successfully.');
         }
 
-        $this->ensureCanSubmit(1, false);
+        $this->ensureCanSubmit(1);
 
         ResourceChangeRequest::recordDelete(Auth::id(), $resource);
 
