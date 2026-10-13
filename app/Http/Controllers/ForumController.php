@@ -65,8 +65,9 @@ class ForumController extends Controller
         }
 
         $subjects = Cache::remember('forum_filter_subjects', now()->addDay(), function () {
-            return Subject::select('id', 'name', 'course', 'slug')
-                ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
+            return Subject::where('is_trackable', true)
+                ->select('id', 'name', 'course', 'slug')
+                ->with(['nodes' => fn ($q) => $q->where('is_trackable', true)->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
                 ->orderBy('sort_order')
                 ->get()
                 ->toArray();
@@ -182,8 +183,9 @@ class ForumController extends Controller
         }
 
         $subjects = Cache::remember('forum_filter_subjects', now()->addDay(), function () {
-            return Subject::select('id', 'name', 'course', 'slug')
-                ->with(['nodes' => fn ($q) => $q->whereNull('parent_id')->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
+            return Subject::where('is_trackable', true)
+                ->select('id', 'name', 'course', 'slug')
+                ->with(['nodes' => fn ($q) => $q->where('is_trackable', true)->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
                 ->orderBy('sort_order')
                 ->get()
                 ->toArray();
