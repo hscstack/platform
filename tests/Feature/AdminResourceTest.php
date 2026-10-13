@@ -139,7 +139,9 @@ test('bulk rename respects custom starting number', function () {
 test('resource author can submit a deletion request for moderation', function () {
     Permission::findOrCreate('delete resources', 'web');
 
-    $author = User::factory()->create();
+    $author = User::factory()->create([
+        'created_at' => now()->subHours(25),
+    ]);
     $author->givePermissionTo('view admin');
 
     $subject = Subject::create([
@@ -182,7 +184,9 @@ test('resource author can submit a deletion request for moderation', function ()
 test('non-author without delete resources permission cannot submit deletion request', function () {
     Permission::findOrCreate('delete resources', 'web');
 
-    $author = User::factory()->create();
+    $author = User::factory()->create([
+        'created_at' => now()->subHours(25),
+    ]);
     $otherUser = User::factory()->create();
     $otherUser->givePermissionTo('view admin');
 
@@ -216,7 +220,9 @@ test('non-author without delete resources permission cannot submit deletion requ
 });
 
 test('resource author can submit an update for moderation while live resource is unchanged', function () {
-    $author = User::factory()->create();
+    $author = User::factory()->create([
+        'created_at' => now()->subHours(25),
+    ]);
     $author->givePermissionTo('view admin');
 
     $subject = Subject::create([
