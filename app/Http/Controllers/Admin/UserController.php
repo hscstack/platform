@@ -37,7 +37,7 @@ class UserController extends Controller
                 $query->has('roles');
             } elseif ($role === 'student') {
                 $query->doesntHave('roles');
-            } elseif (in_array($role, ['admin', 'editor', 'manager'])) {
+            } elseif (in_array($role, ['admin', 'editor'])) {
                 $query->whereHas('roles', fn ($q) => $q->where('name', $role));
             }
         }

@@ -10,7 +10,6 @@ beforeEach(function () {
     Permission::findOrCreate('view users', 'web');
     $adminRole = Role::findOrCreate('admin', 'web');
     $editorRole = Role::findOrCreate('editor', 'web');
-    $managerRole = Role::findOrCreate('manager', 'web');
     $adminRole->syncPermissions(Permission::all());
 });
 
@@ -37,17 +36,17 @@ test('admin can filter user list to show only staff members', function () {
     $admin->assignRole('admin');
     $student1 = User::factory()->create(['name' => 'Student Alice']);
     $student2 = User::factory()->create(['name' => 'Student Charlie']);
-    $editor = User::factory()->create(['name' => 'Editor Dave']);
-    $editor->assignRole('editor');
-    $manager = User::factory()->create(['name' => 'Manager Eve']);
-    $manager->assignRole('manager');
+    $editor1 = User::factory()->create(['name' => 'Editor Dave']);
+    $editor1->assignRole('editor');
+    $editor2 = User::factory()->create(['name' => 'Editor Eve']);
+    $editor2->assignRole('editor');
 
     $response = $this->actingAs($admin)->get('/admin/users?role=staff');
 
     $response->assertStatus(200);
     $response->assertInertia(fn (Assert $page) => $page
         ->component('admin/users/Index')
-        ->has('users.data', 3) // admin + editor + manager
+        ->has('users.data', 3) // admin + editor1 + editor2
         ->where('filters.role', 'staff')
         ->where('counts.staff', 3)
         ->where('counts.all', 5)

@@ -14,7 +14,6 @@ const roles = [
     { value: '', label: 'Student (No Role)' },
     { value: 'admin', label: 'Admin' },
     { value: 'editor', label: 'Editor' },
-    { value: 'manager', label: 'Manager' },
 ];
 
 const form = useForm({
@@ -611,17 +610,6 @@ const submitForm = () => {
                         >
                             Customizable access. Permissions can be
                             checked/unchecked explicitly above.
-                        </div>
-                    </div>
-                    <div class="space-y-1 border-l-2 border-amber-500 pl-3">
-                        <div class="text-xs font-bold text-amber-700">
-                            Manager
-                        </div>
-                        <div
-                            class="text-xs leading-relaxed text-slate-600 dark:text-gray-400"
-                        >
-                            Dashboard view. Basic view access with no
-                            modification capabilities.
                         </div>
                     </div>
                 </div>

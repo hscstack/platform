@@ -30,7 +30,6 @@ const PRESETS: Record<string, PresetConfig> = {
     // Roles
     admin: { variant: 'rose', label: 'Admin' },
     editor: { variant: 'purple', label: 'Editor' },
-    manager: { variant: 'amber', label: 'Staff' },
     staff: { variant: 'amber', label: 'Staff' },
 
     // Blogs

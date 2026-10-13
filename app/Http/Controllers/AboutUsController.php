@@ -13,7 +13,6 @@ class AboutUsController extends Controller
         $users = Cache::remember('about_us_info', now()->addHours(24), function () {
             return User::where('is_verified', true)
                 ->select(['id', 'name', 'username', 'title', 'about', 'institution', 'image_path', 'priority'])
-                ->with('roles:id,name')
                 ->get()
                 ->map(fn (User $user) => [
                     'id' => $user->id,
@@ -24,7 +23,6 @@ class AboutUsController extends Controller
                     'institution' => $user->institution,
                     'image_url' => $user->image_url,
                     'priority' => (int) $user->priority,
-                    'roles' => $user->roles->map(fn ($role) => ['name' => $role->name])->all(),
                 ])
                 ->all();
         });
