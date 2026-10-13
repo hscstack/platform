@@ -348,7 +348,7 @@ const podiumUsers = computed(() => {
                         <!-- Place Badge -->
                         <div class="mb-2">
                             <span
-                                v-if="place === 1"
+                                v-if="pUser.rank === 1"
                                 class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-black text-amber-800 shadow-2xs dark:bg-amber-950/60 dark:text-amber-300"
                             >
                                 <Crown
@@ -357,20 +357,26 @@ const podiumUsers = computed(() => {
                                 <span>১ম স্থান</span>
                             </span>
                             <span
-                                v-else-if="place === 2"
+                                v-else-if="pUser.rank === 2"
                                 class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
                             >
                                 <Medal class="h-3.5 w-3.5 text-slate-400" />
                                 <span>২য় স্থান</span>
                             </span>
                             <span
-                                v-else
+                                v-else-if="pUser.rank === 3"
                                 class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 dark:bg-amber-950/40 dark:text-amber-400"
                             >
                                 <Award
                                     class="h-3.5 w-3.5 text-amber-600 dark:text-amber-500"
                                 />
                                 <span>৩য় স্থান</span>
+                            </span>
+                            <span
+                                v-else
+                                class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-gray-800 dark:text-gray-300"
+                            >
+                                <span>#{{ pUser.rank }}</span>
                             </span>
                         </div>
 

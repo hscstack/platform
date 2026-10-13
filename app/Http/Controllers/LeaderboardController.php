@@ -54,9 +54,23 @@ class LeaderboardController extends Controller
                 ->orderByDesc('resources_count')
                 ->latest('users.id');
 
-            $leaderboard = $query->take(50)->get()->map(function ($u, $index) {
-                return [
-                    'rank' => $index + 1,
+            $rawUsers = $query->take(50)->get();
+            $leaderboard = [];
+            $currentRank = 1;
+            $prevScore = null;
+
+            foreach ($rawUsers as $index => $u) {
+                $score = (int) $u->resources_count;
+                if ($prevScore !== null && $score === $prevScore) {
+                    $rank = $currentRank;
+                } else {
+                    $currentRank = $index + 1;
+                    $rank = $currentRank;
+                    $prevScore = $score;
+                }
+
+                $leaderboard[] = [
+                    'rank' => $rank,
                     'id' => $u->id,
                     'name' => $u->name,
                     'username' => $u->username,
@@ -64,9 +78,9 @@ class LeaderboardController extends Controller
                     'institution' => $u->institution,
                     'title' => $u->title,
                     'is_verified' => $u->is_verified,
-                    'score' => (int) $u->resources_count,
+                    'score' => $score,
                 ];
-            });
+            }
 
             if ($currentUser) {
                 $myScore = (int) $currentUser->resources()
@@ -75,7 +89,7 @@ class LeaderboardController extends Controller
 
                 if ($myScore > 0) {
                     // Check if user is in the fetched top 50
-                    $found = $leaderboard->firstWhere('id', $currentUser->id);
+                    $found = collect($leaderboard)->firstWhere('id', $currentUser->id);
                     if ($found) {
                         $currentUserRank = [
                             'rank' => $found['rank'],
@@ -133,9 +147,23 @@ class LeaderboardController extends Controller
                 ->orderByDesc('total_study_seconds')
                 ->latest('users.id');
 
-            $leaderboard = $query->take(50)->get()->map(function ($u, $index) {
-                return [
-                    'rank' => $index + 1,
+            $rawUsers = $query->take(50)->get();
+            $leaderboard = [];
+            $currentRank = 1;
+            $prevScore = null;
+
+            foreach ($rawUsers as $index => $u) {
+                $score = (int) $u->total_study_seconds;
+                if ($prevScore !== null && $score === $prevScore) {
+                    $rank = $currentRank;
+                } else {
+                    $currentRank = $index + 1;
+                    $rank = $currentRank;
+                    $prevScore = $score;
+                }
+
+                $leaderboard[] = [
+                    'rank' => $rank,
                     'id' => $u->id,
                     'name' => $u->name,
                     'username' => $u->username,
@@ -145,10 +173,10 @@ class LeaderboardController extends Controller
                     'curriculum' => $u->curriculum,
                     'group' => $u->group,
                     'is_verified' => $u->is_verified,
-                    'score' => (int) $u->total_study_seconds,
+                    'score' => $score,
                     'completed_chapters_count' => (int) $u->node_completions_count,
                 ];
-            });
+            }
 
             if ($currentUser) {
                 $myScore = (int) $currentUser->dailyStudyLogs()
@@ -156,7 +184,7 @@ class LeaderboardController extends Controller
                     ->sum('total_seconds');
 
                 if ($myScore > 0) {
-                    $found = $leaderboard->firstWhere('id', $currentUser->id);
+                    $found = collect($leaderboard)->firstWhere('id', $currentUser->id);
                     if ($found) {
                         $currentUserRank = [
                             'rank' => $found['rank'],
