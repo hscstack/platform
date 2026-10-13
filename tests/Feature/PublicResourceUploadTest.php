@@ -79,6 +79,27 @@ test('public authenticated user older than 24h stages resource into change reque
         ->and($cr->payload['title'])->toBe('My Community Note');
 });
 
+test('banned user cannot upload resources', function () {
+    [, $node] = createTestSubjectAndNode();
+
+    $user = User::factory()->create([
+        'created_at' => now()->subDays(5),
+        'banned_until' => now()->addDays(7),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'note',
+            'title' => 'Banned User Note',
+            'content' => 'Test',
+        ]);
+
+    $response->assertSessionHasErrors('banned');
+
+    expect(ResourceChangeRequest::count())->toBe(0);
+});
+
 test('accounts less than 24h old are blocked with Bangla message', function () {
     [, $node] = createTestSubjectAndNode();
 
