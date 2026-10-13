@@ -3,27 +3,18 @@ import { Head, router } from '@inertiajs/vue3';
 import {
     ArrowBigDown,
     ArrowBigUp,
-    ChevronDown,
-    FileText,
-    Image as ImageIcon,
-    Plus,
     X,
-    Youtube,
 } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
-import BulkImageModal from '@/components/admin/BulkImageModal.vue';
-import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
-import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import NodeRow from '@/components/NodeRow.vue';
 import ResourceRow from '@/components/ResourceRow.vue';
+import UploadResourceDropdown from '@/components/resources/UploadResourceDropdown.vue';
 import UserListItem from '@/components/UserListItem.vue';
-import { showToast } from '@/lib/toast';
 import { useAuth } from '@/lib/useAuth';
-import { usePermissions } from '@/lib/usePermissions';
 
 const props = defineProps({
     subject: {
@@ -219,57 +210,6 @@ const handleVote = (type: 'up' | 'down') => {
         },
     );
 };
-
-const { can } = usePermissions();
-const isResourceDropdownOpen = ref(false);
-const resourceDropdownRef = ref<HTMLElement | null>(null);
-const isCreateResourceModalOpen = ref(false);
-const isBulkImageModalOpen = ref(false);
-const isBulkVideoModalOpen = ref(false);
-
-const toggleResourceDropdown = () => {
-    isResourceDropdownOpen.value = !isResourceDropdownOpen.value;
-};
-
-const handleUploadClick = (type: 'single' | 'images' | 'videos') => {
-    isResourceDropdownOpen.value = false;
-
-    if (!requireAuth('Please sign in to upload resources.')) {
-        return;
-    }
-
-    if (props.currentNode?.is_frozen && !can('moderate resources')) {
-        showToast(
-            'এই ফোল্ডারটি লক করা রয়েছে। অ্যাডমিন কর্তৃক কন্টেন্ট আপলোড সাময়িকভাবে বন্ধ আছে।',
-            'error',
-        );
-
-        return;
-    }
-
-    if (type === 'single') {
-        isCreateResourceModalOpen.value = true;
-    } else if (type === 'images') {
-        isBulkImageModalOpen.value = true;
-    } else if (type === 'videos') {
-        isBulkVideoModalOpen.value = true;
-    }
-};
-
-const closeResourceDropdown = (e: MouseEvent) => {
-    const target = e.target as Node | null;
-
-    if (
-        resourceDropdownRef.value &&
-        target &&
-        !resourceDropdownRef.value.contains(target)
-    ) {
-        isResourceDropdownOpen.value = false;
-    }
-};
-
-onMounted(() => document.addEventListener('click', closeResourceDropdown));
-onUnmounted(() => document.removeEventListener('click', closeResourceDropdown));
 </script>
 
 <template>
@@ -315,56 +255,10 @@ onUnmounted(() => document.removeEventListener('click', closeResourceDropdown));
                     class="flex flex-wrap items-center gap-3"
                 >
                     <!-- Upload Resource Dropdown -->
-                    <div
-                        ref="resourceDropdownRef"
-                        class="relative inline-block"
-                    >
-                        <button
-                            type="button"
-                            @click="toggleResourceDropdown"
-                            class="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition select-none hover:bg-indigo-700 active:scale-95"
-                        >
-                            <Plus class="h-4 w-4 stroke-[2.5]" />
-                            <span>আপলোড করুন</span>
-                            <ChevronDown class="h-3.5 w-3.5 opacity-80" />
-                        </button>
-
-                        <div
-                            v-if="isResourceDropdownOpen"
-                            class="absolute right-0 z-20 mt-1.5 w-48 rounded-xl border border-slate-200/90 bg-white p-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <button
-                                type="button"
-                                @click="handleUploadClick('single')"
-                                class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                            >
-                                <FileText
-                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                                />
-                                <span>সিঙ্গেল কন্টেন্ট</span>
-                            </button>
-                            <button
-                                type="button"
-                                @click="handleUploadClick('images')"
-                                class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                            >
-                                <ImageIcon
-                                    class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
-                                />
-                                <span>একাধিক ছবি</span>
-                            </button>
-                            <button
-                                type="button"
-                                @click="handleUploadClick('videos')"
-                                class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                            >
-                                <Youtube
-                                    class="h-4 w-4 text-rose-600 dark:text-rose-400"
-                                />
-                                <span>ইউটিউব প্লেলিস্ট</span>
-                            </button>
-                        </div>
-                    </div>
+                    <UploadResourceDropdown
+                        :node="currentNode as any"
+                        :is-frozen="Boolean(currentNode.is_frozen)"
+                    />
                     <!-- Upvote & Downvote Button Group -->
                     <div
                         class="flex items-center rounded-2xl border border-slate-200/90 bg-white p-1 shadow-xs dark:border-gray-800 dark:bg-gray-900"
@@ -618,26 +512,4 @@ onUnmounted(() => document.removeEventListener('click', closeResourceDropdown));
             </div>
         </Transition>
     </Teleport>
-
-    <!-- Resource Upload Modals -->
-    <CreateResourceModal
-        v-if="currentNode"
-        :is-open="isCreateResourceModalOpen"
-        :node="currentNode as any"
-        @close="isCreateResourceModalOpen = false"
-    />
-
-    <BulkImageModal
-        v-if="currentNode"
-        :is-open="isBulkImageModalOpen"
-        :node="currentNode as any"
-        @close="isBulkImageModalOpen = false"
-    />
-
-    <BulkVideoModal
-        v-if="currentNode"
-        :is-open="isBulkVideoModalOpen"
-        :node="currentNode as any"
-        @close="isBulkVideoModalOpen = false"
-    />
 </template>

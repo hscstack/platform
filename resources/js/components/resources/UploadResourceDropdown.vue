@@ -12,6 +12,8 @@ import BulkVideoModal from '@/components/admin/BulkVideoModal.vue';
 import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import FolderLockedModal from '@/components/resources/FolderLockedModal.vue';
 
+import { useAuth } from '@/lib/useAuth';
+
 const props = defineProps<{
     node: {
         id: number;
@@ -19,6 +21,8 @@ const props = defineProps<{
     };
     isFrozen: boolean;
 }>();
+
+const { requireAuth } = useAuth();
 
 const dropdownRef = ref<HTMLElement | null>(null);
 const isDropdownOpen = ref(false);
@@ -35,11 +39,19 @@ const handleTriggerClick = () => {
         return;
     }
 
+    if (!requireAuth('Please sign in to upload resources.')) {
+        return;
+    }
+
     isDropdownOpen.value = !isDropdownOpen.value;
 };
 
 const openModal = (type: 'single' | 'images' | 'videos') => {
     isDropdownOpen.value = false;
+
+    if (!requireAuth('Please sign in to upload resources.')) {
+        return;
+    }
 
     if (type === 'single') {
         isCreateModalOpen.value = true;
