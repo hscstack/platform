@@ -17,11 +17,7 @@ class StoreResourceRequest extends FormRequest
     {
         $node = Node::find($this->input('node_id'));
 
-        if ($node?->isEffectivelyFrozen() && ! $this->user()?->can('moderate resources')) {
-            return false;
-        }
-
-        return true;
+        return ! ($node?->isEffectivelyFrozen());
     }
 
     protected function failedAuthorization()
