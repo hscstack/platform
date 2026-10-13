@@ -14,17 +14,15 @@ class SubmissionController extends Controller
         $user = Auth::user();
 
         $maxLimit = $user->is_verified ? 100 : 30;
-        $pendingCount = ResourceChangeRequest::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->count();
+        $counts = ResourceChangeRequest::where('user_id', $user->id)
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        $totalCount = ResourceChangeRequest::where('user_id', $user->id)->count();
-        $approvedCount = ResourceChangeRequest::where('user_id', $user->id)
-            ->where('status', 'approved')
-            ->count();
-        $rejectedCount = ResourceChangeRequest::where('user_id', $user->id)
-            ->where('status', 'rejected')
-            ->count();
+        $pendingCount = (int) $counts->get('pending', 0);
+        $approvedCount = (int) $counts->get('approved', 0);
+        $rejectedCount = (int) $counts->get('rejected', 0);
+        $totalCount = (int) $counts->sum();
 
         $status = $request->query('status');
         $query = ResourceChangeRequest::where('user_id', $user->id)
