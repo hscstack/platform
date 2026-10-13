@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage, useRemember } from '@inertiajs/vue3';
-import { Search, X, Users, Heart, Loader2 } from 'lucide-vue-next';
+import { Search, X, Users, Heart, Loader2, Trophy } from 'lucide-vue-next';
 import { computed, onUnmounted, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
@@ -230,6 +230,16 @@ const togglePeerAppreciation = (peer: Peer) => {
                         </p>
                     </div>
                 </div>
+
+                <Link
+                    href="/leaderboard"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-1.5 text-xs font-bold text-amber-800 shadow-2xs transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/50"
+                >
+                    <Trophy
+                        class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
+                    />
+                    <span>Leaderboard</span>
+                </Link>
             </div>
 
             <!-- Search & Sort Controls Bar -->
