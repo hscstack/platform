@@ -387,7 +387,7 @@ class ChatController extends Controller
 
         if ($autoBanEnabled && ! empty($reportedUserId) && $threshold > 0) {
             $reportedUser = User::find($reportedUserId);
-            if ($reportedUser && ! $reportedUser->can('view admin')) {
+            if ($reportedUser && ! $reportedUser->is_verified) {
                 // Count reports keyed to the specific resolved message (or content snapshot)
                 $totalReportsForMessage = Report::where('reported_user_id', $reportedUser->id)
                     ->where('reportable_type', ChatMessage::class)
