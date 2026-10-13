@@ -29,7 +29,7 @@ export interface LeaderboardUser {
 }
 
 export interface CurrentUserRank {
-    rank: number;
+    rank: number | string;
     score: number;
 }
 
@@ -258,7 +258,7 @@ const podiumUsers = computed(() => {
                     </div>
                     <span
                         v-if="currentUserRank"
-                        class="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-black text-white shadow-xs"
+                        class="absolute -right-1 -bottom-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-black text-white shadow-xs"
                     >
                         #{{ currentUserRank.rank }}
                     </span>
