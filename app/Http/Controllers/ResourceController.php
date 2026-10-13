@@ -99,6 +99,13 @@ class ResourceController extends Controller
             return;
         }
 
+        if ($user?->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+            throw ValidationException::withMessages([
+                'banned' => "আপনি সাময়িকভাবে ব্যান রয়েছেন ({$bannedUntilFormatted} পর্যন্ত)। এই সময়ে কোনো রিসোর্স আপলোড বা পরিবর্তন করা যাবে না।",
+            ]);
+        }
+
         if ($user?->created_at && $user->created_at->diffInHours(now()) < 24) {
             throw ValidationException::withMessages([
                 'account_age' => 'আপনার অ্যাকাউন্টটি নতুন। স্প্যাম রোধে অ্যাকাউন্ট তৈরির ২৪ ঘণ্টা পর রিসোর্স আপলোড করা যাবে।',

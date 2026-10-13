@@ -112,6 +112,41 @@ test('auto ban is not triggered when disabled in admin settings', function () {
     expect($targetUser->fresh()->isBanned())->toBeFalse();
 });
 
+test('auto ban is not triggered for verified users', function () {
+    AppSetting::set('global_chat_auto_ban_enabled', true, 'boolean');
+    AppSetting::set('global_chat_auto_ban_reports_threshold', 2, 'integer');
+
+    $verifiedUser = User::factory()->create(['is_verified' => true]);
+    $reporter1 = User::factory()->create();
+    $reporter2 = User::factory()->create();
+
+    $this->actingAs($reporter1)->postJson(route('chat.reports.store'), [
+        'reported_user_id' => $verifiedUser->id,
+        'message_content' => 'some reportable text',
+    ])->assertStatus(201);
+
+    $this->actingAs($reporter2)->postJson(route('chat.reports.store'), [
+        'reported_user_id' => $verifiedUser->id,
+        'message_content' => 'some reportable text',
+    ])->assertStatus(201);
+
+    expect($verifiedUser->fresh()->isBanned())->toBeFalse();
+});
+
+test('verified accounts cannot be manually suspended', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $verifiedUser = User::factory()->create(['is_verified' => true]);
+
+    $response = $this->actingAs($admin)->post(route('admin.chat.users.ban', $verifiedUser), [
+        'banned_until' => now()->addDays(3)->toDateString(),
+    ]);
+
+    $response->assertSessionHas('error', 'Verified accounts cannot be suspended.');
+    expect($verifiedUser->fresh()->isBanned())->toBeFalse();
+});
+
 test('profanity filter allows legitimate words containing substrings while blocking actual banned words and obfuscations', function () {
     AppSetting::set('global_chat_profanity_filter_enabled', true, 'boolean');
     AppSetting::set('global_chat_banned_words', 'badword, toxic, spammer');

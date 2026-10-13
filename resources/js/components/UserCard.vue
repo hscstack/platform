@@ -2,7 +2,6 @@
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, GraduationCap } from 'lucide-vue-next';
 import { computed } from 'vue';
-import StatusBadge from '@/components/StatusBadge.vue';
 
 const props = defineProps<{
     member: {
@@ -13,7 +12,6 @@ const props = defineProps<{
         about?: string | null;
         institution?: string | null;
         image_url?: string | null;
-        roles?: Array<{ name: string }>;
     };
 }>();
 
@@ -59,14 +57,6 @@ const profileUrl = computed(() => {
                     >
                         {{ member.name }}
                     </Link>
-                </div>
-
-                <!-- Role Pill -->
-                <div class="flex items-center justify-center pt-0.5">
-                    <StatusBadge
-                        :status="member.roles?.[0]?.name || 'staff'"
-                        size="xs"
-                    />
                 </div>
 
                 <!-- Title / Tagline -->

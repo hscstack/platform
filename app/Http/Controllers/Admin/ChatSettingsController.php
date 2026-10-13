@@ -192,8 +192,8 @@ class ChatSettingsController extends Controller
 
     public function updateUserBan(Request $request, User $user)
     {
-        if ($user->can('view admin')) {
-            return back()->with('error', 'Staff and Admin accounts cannot be suspended.');
+        if ($user->is_verified) {
+            return back()->with('error', 'Verified accounts cannot be suspended.');
         }
 
         $validated = $request->validate([

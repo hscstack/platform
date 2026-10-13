@@ -20,7 +20,6 @@ class RolePermissionSeeder extends Seeder
 
         $admin = Role::findOrCreate('admin');
         $editor = Role::findOrCreate('editor');
-        $manager = Role::findOrCreate('manager');
 
         /*
          * Grants access to the admin panel.
@@ -113,12 +112,5 @@ class RolePermissionSeeder extends Seeder
         ]);
         // Editors can access the admin panel by default.
         // Content-specific permissions are assigned individually to each editor.
-
-        $manager->syncPermissions([
-            'view admin',
-        ]);
-        // Managers can access the admin panel.
-        // Additional manager permissions can be added here in the future if needed.
-
     }
 }

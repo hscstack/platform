@@ -3,10 +3,6 @@ import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import UserCard from '@/components/UserCard.vue';
 
-interface Role {
-    name: string;
-}
-
 interface Member {
     id: number;
     name: string;
@@ -16,30 +12,11 @@ interface Member {
     institution?: string | null;
     image_url?: string | null;
     priority?: number;
-    roles?: Role[];
 }
 
 const props = defineProps<{
     users?: Member[];
 }>();
-
-const getRoleRank = (member: Member): number => {
-    const roles = member.roles || [];
-
-    if (roles.some((r) => r.name === 'admin')) {
-        return 1;
-    }
-
-    if (roles.some((r) => r.name === 'editor')) {
-        return 2;
-    }
-
-    if (roles.length > 0) {
-        return 3;
-    }
-
-    return 4;
-};
 
 const sortedMembers = computed(() => {
     const list = [...(props.users || [])];
@@ -53,15 +30,7 @@ const sortedMembers = computed(() => {
             return priorityB - priorityA;
         }
 
-        // 2. Role rank (admin -> editor -> staff -> others)
-        const rankA = getRoleRank(a);
-        const rankB = getRoleRank(b);
-
-        if (rankA !== rankB) {
-            return rankA - rankB;
-        }
-
-        // 3. Stable tie-breaker by id ascending
+        // 2. Stable tie-breaker by id ascending
         return a.id - b.id;
     });
 });
