@@ -58,6 +58,14 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Leaderboard',
+        labelBn: 'লিডারবোর্ড',
+        href: '/leaderboard',
+        icon: 'leaderboard',
+        match: (url) => url.startsWith('/leaderboard'),
+        showInBottom: false,
+    },
+    {
         label: 'AI',
         labelBn: 'HSCStack AI',
         href: '/ai',
@@ -68,13 +76,6 @@ export const primaryNavItems: NavItem[] = [
 ];
 
 export const overflowNavItems: NavItem[] = [
-    {
-        label: 'Leaderboard',
-        labelBn: 'লিডারবোর্ড',
-        href: '/leaderboard',
-        icon: 'leaderboard',
-        match: (url) => url.startsWith('/leaderboard'),
-    },
     {
         label: 'Support Center',
         href: '/support',

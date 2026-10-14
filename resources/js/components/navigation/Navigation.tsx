@@ -221,7 +221,7 @@ export const SiteRail = defineComponent({
         const canAccessAdmin = computed(() => staffAccess(page.props.auth));
         const currentUrl = computed(() => String(page.url));
 
-        const { theme, toggle, setTheme } = useDarkMode();
+        const { theme, toggle } = useDarkMode();
         const showLogoutModal = ref(false);
         const notifRowRef = ref<HTMLElement | null>(null);
         const { deferredPrompt, isInstalled, promptInstall } = usePwa();
@@ -727,71 +727,13 @@ export const SiteRail = defineComponent({
                         ) : (
                             /* Expanded footer (w-[264px]) */
                             <div class="w-[264px] space-y-1.5 overflow-hidden">
-                                {/* Appearance */}
-                                <div class="transition-opacity duration-300">
-                                    <p class="mb-1.5 px-2 text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-                                        Appearance
-                                    </p>
-                                    <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-                                        <button
-                                            type="button"
-                                            onClick={() => setTheme('light')}
-                                            class={[
-                                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                                theme.value === 'light'
-                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                            ]}
-                                        >
-                                            <MaterialIcon
-                                                name="light_mode"
-                                                size={16}
-                                            />
-                                            Light
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setTheme('dark')}
-                                            class={[
-                                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                                theme.value === 'dark'
-                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                            ]}
-                                        >
-                                            <MaterialIcon
-                                                name="dark_mode"
-                                                size={16}
-                                            />
-                                            Dark
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setTheme('system')}
-                                            class={[
-                                                'flex items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition-all',
-                                                theme.value === 'system'
-                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
-                                            ]}
-                                        >
-                                            <MaterialIcon
-                                                name="computer"
-                                                size={16}
-                                            />
-                                            System
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Notifications */}
+                                {/* Notifications & Theme Toggle (Inline) */}
                                 {user.value && (
                                     <div
                                         ref={notifRowRef}
-                                        class="flex h-11 w-full items-center justify-start gap-2.5 px-3"
+                                        class="flex h-11 w-full items-center justify-between gap-1 rounded-xl px-2.5 transition-colors hover:bg-slate-100/70 dark:hover:bg-slate-800/50"
                                     >
-                                        <NotificationDropdown plain dropUp />
-                                        <span
+                                        <div
                                             role="button"
                                             tabindex={0}
                                             onClick={(e: MouseEvent) =>
@@ -811,10 +753,36 @@ export const SiteRail = defineComponent({
                                                     );
                                                 }
                                             }}
-                                            class="flex-1 cursor-pointer truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                                            class="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5"
                                         >
-                                            Notifications
-                                        </span>
+                                            <NotificationDropdown
+                                                plain
+                                                dropUp
+                                            />
+                                            <span class="truncate text-left text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+                                                Notifications
+                                            </span>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={toggle}
+                                            class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/80 dark:hover:text-slate-100"
+                                            title={`Current theme: ${theme.value}. Click to switch.`}
+                                            aria-label="Toggle theme"
+                                        >
+                                            <MaterialIcon
+                                                name={
+                                                    theme.value === 'dark'
+                                                        ? 'dark_mode'
+                                                        : theme.value ===
+                                                            'light'
+                                                          ? 'light_mode'
+                                                          : 'computer'
+                                                }
+                                                size={18}
+                                            />
+                                        </button>
                                     </div>
                                 )}
 
@@ -837,17 +805,38 @@ export const SiteRail = defineComponent({
                                 {/* Auth */}
                                 <div class="pt-1">
                                     {!user.value ? (
-                                        <Link
-                                            href="/login"
-                                            aria-label="Login"
-                                            class="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-transparent bg-indigo-600 px-3 text-[13px] font-bold text-white shadow-sm transition-all duration-150 hover:border-indigo-700 hover:bg-indigo-700 hover:shadow-md dark:border-transparent dark:bg-indigo-500 dark:hover:border-indigo-400 dark:hover:bg-indigo-400"
-                                        >
-                                            <MaterialIcon
-                                                name="login"
-                                                size={20}
-                                            />
-                                            <span>Login</span>
-                                        </Link>
+                                        <div class="flex items-center gap-2">
+                                            <Link
+                                                href="/login"
+                                                aria-label="Login"
+                                                class="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-transparent bg-indigo-600 px-3 text-[13px] font-bold text-white shadow-sm transition-all duration-150 hover:border-indigo-700 hover:bg-indigo-700 hover:shadow-md dark:border-transparent dark:bg-indigo-500 dark:hover:border-indigo-400 dark:hover:bg-indigo-400"
+                                            >
+                                                <MaterialIcon
+                                                    name="login"
+                                                    size={20}
+                                                />
+                                                <span>Login</span>
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={toggle}
+                                                class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 active:scale-95 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                                                title={`Current theme: ${theme.value}. Click to switch.`}
+                                                aria-label="Toggle theme"
+                                            >
+                                                <MaterialIcon
+                                                    name={
+                                                        theme.value === 'dark'
+                                                            ? 'dark_mode'
+                                                            : theme.value ===
+                                                                'light'
+                                                              ? 'light_mode'
+                                                              : 'computer'
+                                                    }
+                                                    size={20}
+                                                />
+                                            </button>
+                                        </div>
                                     ) : (
                                         <div class="flex items-center justify-between gap-3 rounded-xl border bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                                             <Link
