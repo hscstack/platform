@@ -18,10 +18,10 @@ class LeaderboardController extends Controller
 
         $timeframe = in_array($request->input('timeframe'), ['this_week', 'this_month', 'all_time'], true)
             ? $request->input('timeframe')
-            : 'this_week';
+            : 'this_month';
 
         $dateFilter = match ($timeframe) {
-            'this_week' => Carbon::now()->startOfWeek()->toDateString(),
+            'this_week' => Carbon::now()->startOfWeek(Carbon::SATURDAY)->toDateString(),
             'this_month' => Carbon::now()->startOfMonth()->toDateString(),
             'all_time' => null,
         };

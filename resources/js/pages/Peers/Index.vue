@@ -211,32 +211,32 @@ const togglePeerAppreciation = (peer: Peer) => {
     <div class="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
         <!-- Header -->
         <div class="mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-2.5">
                     <div
-                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
                     >
                         <Users class="h-5 w-5" />
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <h1
                             class="text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-gray-100"
                         >
                             Find Peers
                         </h1>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            সহপাঠী ও অন্য প্রতিষ্ঠানের শিক্ষার্থীদের সাথে যুক্ত
-                            হোন
+                            সহপাঠী ও অন্য শিক্ষার্থীদের সাথে যুক্ত হোন
                         </p>
                     </div>
                 </div>
 
                 <Link
                     href="/leaderboard"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-1.5 text-xs font-bold text-amber-800 shadow-2xs transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/50"
+                    class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-amber-200/80 bg-amber-50/70 px-2.5 py-1.5 text-xs font-bold text-amber-800 shadow-2xs transition hover:bg-amber-100 sm:px-3 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/50"
+                    title="Community Leaderboard"
                 >
                     <Trophy
-                        class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
+                        class="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400"
                     />
                     <span>Leaderboard</span>
                 </Link>
