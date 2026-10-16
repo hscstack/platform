@@ -807,6 +807,15 @@ onBeforeUnmount(() => {
                     <li>
                         <strong
                             class="font-semibold text-slate-800 dark:text-gray-200"
+                            >ফেয়ার-প্লে পলিসি:</strong
+                        >
+                        অস্বাভাবিক বা সন্দেহজনক কোনো লগিং কার্যকলাপ পরিলক্ষিত
+                        হলে সংশ্লিষ্ট ব্যবহারকারীকে স্বয়ংক্রিয়ভাবে লিডারবোর্ড
+                        র‍্যাঙ্কিং থেকে বাদ দেওয়া হবে।
+                    </li>
+                    <li>
+                        <strong
+                            class="font-semibold text-slate-800 dark:text-gray-200"
                             >প্রাইভেসি সেটিং:</strong
                         >
                         প্রোফাইল থেকে Activity Privacy ‘Private’ করা থাকলে
