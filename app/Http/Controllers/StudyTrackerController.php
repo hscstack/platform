@@ -130,7 +130,7 @@ class StudyTrackerController extends Controller
         }
 
         $validated = $request->validate([
-            'seconds' => 'required|integer|min:1|max:86400',
+            'seconds' => 'required|integer|min:1|max:'.DailyStudyLog::MAX_DAILY_SECONDS,
             'date' => 'nullable|date_format:Y-m-d|before_or_equal:today',
         ]);
 
@@ -146,7 +146,7 @@ class StudyTrackerController extends Controller
             ]
         );
 
-        $maxAllowed = max(0, 86400 - (int) $log->total_seconds);
+        $maxAllowed = max(0, DailyStudyLog::MAX_DAILY_SECONDS - (int) $log->total_seconds);
         if ($maxAllowed > 0) {
             $secondsToAdd = min((int) $validated['seconds'], $maxAllowed);
             $log->increment('total_seconds', $secondsToAdd);

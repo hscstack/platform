@@ -140,6 +140,37 @@ test('authenticated user can log study time cumulatively for today', function ()
     ]);
 });
 
+test('logging study time cannot exceed daily max cap of 16 hours', function () {
+    $user = User::factory()->create();
+
+    // Rejects request exceeding max daily limit in single call
+    $this->actingAs($user)
+        ->post('/tracker/log-time', ['seconds' => DailyStudyLog::MAX_DAILY_SECONDS + 1])
+        ->assertSessionHasErrors('seconds');
+
+    // Allows logging up to max daily limit
+    $this->actingAs($user)
+        ->post('/tracker/log-time', ['seconds' => DailyStudyLog::MAX_DAILY_SECONDS])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('daily_study_logs', [
+        'user_id' => $user->id,
+        'study_date' => Carbon::today()->format('Y-m-d'),
+        'total_seconds' => DailyStudyLog::MAX_DAILY_SECONDS,
+    ]);
+
+    // Subsequent logs within the same day are capped at max
+    $this->actingAs($user)
+        ->post('/tracker/log-time', ['seconds' => 600])
+        ->assertRedirect();
+
+    $log = DailyStudyLog::where('user_id', $user->id)
+        ->where('study_date', Carbon::today()->format('Y-m-d'))
+        ->first();
+
+    expect($log->total_seconds)->toBe(DailyStudyLog::MAX_DAILY_SECONDS);
+});
+
 test('tracker only includes trackable subjects and trackable nodes flatly', function () {
     $trackableSubject = Subject::create([
         'name' => 'Trackable Subject',
