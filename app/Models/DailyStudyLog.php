@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DailyStudyLog extends Model
 {
+    public const MAX_DAILY_SECONDS = 57600; // 16 hours
+
     protected $fillable = [
         'user_id',
         'study_date',

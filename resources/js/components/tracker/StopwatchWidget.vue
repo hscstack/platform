@@ -166,14 +166,19 @@ function resetTimer() {
     localStorage.removeItem(STORAGE_KEY_ACCUMULATED);
 }
 
+const MAX_DAILY_SECONDS = 57600; // 16 hours max per calendar day
+
 const maxMinutesAllowedForToday = computed(() => {
-    const remainingSeconds = Math.max(0, 86400 - props.todaySeconds);
+    const remainingSeconds = Math.max(
+        0,
+        MAX_DAILY_SECONDS - props.todaySeconds,
+    );
 
     return Math.floor(remainingSeconds / 60);
 });
 
 const isDayMaxReached = computed(() => {
-    return props.todaySeconds >= 86400;
+    return props.todaySeconds >= MAX_DAILY_SECONDS;
 });
 
 function triggerStopwatchSave() {
@@ -187,7 +192,10 @@ function triggerStopwatchSave() {
         return;
     }
 
-    const remainingAllowed = Math.max(0, 86400 - props.todaySeconds);
+    const remainingAllowed = Math.max(
+        0,
+        MAX_DAILY_SECONDS - props.todaySeconds,
+    );
     const secondsToLog = Math.min(elapsedSeconds.value, remainingAllowed);
 
     if (secondsToLog <= 0) {
@@ -212,7 +220,10 @@ function triggerQuickLog(minutes: number) {
     }
 
     const requestedSeconds = minutes * 60;
-    const remainingAllowed = Math.max(0, 86400 - props.todaySeconds);
+    const remainingAllowed = Math.max(
+        0,
+        MAX_DAILY_SECONDS - props.todaySeconds,
+    );
     const secondsToLog = Math.min(requestedSeconds, remainingAllowed);
 
     if (secondsToLog <= 0) {
@@ -639,7 +650,7 @@ const todayFormatted = computed(() => {
                             class="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400"
                         >
                             You can log a maximum of
-                            {{ maxMinutesAllowedForToday }} minutes today (24h
+                            {{ maxMinutesAllowedForToday }} minutes today (16h
                             daily limit).
                         </p>
                     </div>
