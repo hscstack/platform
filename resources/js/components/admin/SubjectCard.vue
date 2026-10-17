@@ -49,6 +49,38 @@ const handleDelete = () => {
                 </h3>
 
                 <span
+                    v-if="subject.group"
+                    class="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold ring-1 ring-inset"
+                    :class="{
+                        'bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-950/50 dark:text-sky-300 dark:ring-sky-500/30':
+                            subject.group === 'common',
+                        'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-950/50 dark:text-blue-300 dark:ring-blue-500/30':
+                            subject.group === 'science',
+                        'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-950/50 dark:text-purple-300 dark:ring-purple-500/30':
+                            subject.group === 'humanities',
+                        'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-500/30':
+                            subject.group === 'commerce',
+                    }"
+                >
+                    {{
+                        subject.group === 'common'
+                            ? 'Common'
+                            : subject.group === 'humanities'
+                              ? 'Arts'
+                              : subject.group === 'commerce'
+                                ? 'Commerce'
+                                : 'Science'
+                    }}
+                </span>
+
+                <span
+                    v-if="subject.is_optional"
+                    class="inline-flex items-center rounded-md bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700 ring-1 ring-orange-600/20 ring-inset dark:bg-orange-950/50 dark:text-orange-300 dark:ring-orange-500/30"
+                >
+                    Optional
+                </span>
+
+                <span
                     v-if="subject.is_trackable"
                     class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
                 >

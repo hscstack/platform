@@ -70,6 +70,8 @@ const getFilterUrl = (course: string, group: string) => {
         <CreateSubjectModal
             :is-open="isCreateModalOpen"
             :subject="editingSubject"
+            :default-course="current_course || 'hsc'"
+            :default-group="current_group || 'science'"
             @close="handleModalClose"
         />
 

@@ -12,21 +12,30 @@ import BaseModal from '@/components/BaseModal.vue';
 import SubjectIcon from '@/components/SubjectIcon.vue';
 import { SUBJECT_ICON_LIST } from '@/lib/subjectIcons';
 
-const props = defineProps<{
-    isOpen: boolean;
-    subject?: {
-        id: number;
-        name: string;
-        slug: string;
-        course: string;
-        group?: string;
-        tailwind_format: string;
-        icon: string;
-        sort_order: number;
-        is_trackable?: boolean;
-        is_disabled?: boolean;
-    } | null;
-}>();
+const props = withDefaults(
+    defineProps<{
+        isOpen: boolean;
+        subject?: {
+            id: number;
+            name: string;
+            slug: string;
+            course: string;
+            group?: string;
+            tailwind_format: string;
+            icon: string;
+            sort_order: number;
+            is_trackable?: boolean;
+            is_optional?: boolean;
+            is_disabled?: boolean;
+        } | null;
+        defaultCourse?: string;
+        defaultGroup?: string;
+    }>(),
+    {
+        defaultCourse: 'hsc',
+        defaultGroup: 'science',
+    },
+);
 
 const emit = defineEmits<{
     (e: 'close'): void;
@@ -59,29 +68,32 @@ const tailwindFormat = ref('bg-indigo-50 text-indigo-600');
 const icon = ref('BookOpen');
 const sortOrder = ref(0);
 const isTrackable = ref(false);
+const isOptional = ref(false);
 const isDisabled = ref(false);
 
 const initForm = () => {
     if (props.subject) {
         name.value = props.subject.name || '';
         slug.value = props.subject.slug || '';
-        course.value = props.subject.course || 'hsc';
-        group.value = props.subject.group || 'science';
+        course.value = props.subject.course || props.defaultCourse || 'hsc';
+        group.value = props.subject.group || props.defaultGroup || 'science';
         tailwindFormat.value =
             props.subject.tailwind_format || 'bg-indigo-50 text-indigo-600';
         icon.value = props.subject.icon || 'BookOpen';
         sortOrder.value = props.subject.sort_order ?? 0;
         isTrackable.value = Boolean(props.subject.is_trackable);
+        isOptional.value = Boolean(props.subject.is_optional);
         isDisabled.value = Boolean(props.subject.is_disabled);
     } else {
         name.value = '';
         slug.value = '';
-        course.value = 'hsc';
-        group.value = 'science';
+        course.value = props.defaultCourse || 'hsc';
+        group.value = props.defaultGroup || 'science';
         tailwindFormat.value = 'bg-indigo-50 text-indigo-600';
         icon.value = 'BookOpen';
         sortOrder.value = 0;
         isTrackable.value = false;
+        isOptional.value = false;
         isDisabled.value = false;
     }
 
@@ -89,14 +101,11 @@ const initForm = () => {
     showAdvanced.value = false;
 };
 
-watch(
-    () => props.isOpen,
-    (open) => {
-        if (open) {
-            initForm();
-        }
-    },
-);
+watch([() => props.isOpen, () => props.subject], ([open]) => {
+    if (open) {
+        initForm();
+    }
+});
 
 const handleClose = () => {
     if (isSaving.value) {
@@ -123,6 +132,7 @@ const submitForm = () => {
         icon: icon.value,
         sort_order: sortOrder.value,
         is_trackable: isTrackable.value,
+        is_optional: isOptional.value,
         is_disabled: isDisabled.value,
     };
 
@@ -239,7 +249,7 @@ const submitForm = () => {
                                 for="subject_group"
                                 class="block text-xs font-bold text-slate-700 dark:text-gray-300"
                             >
-                                Group (বিভাগ)
+                                Subject Type / Group (বিষয় প্রকার / বিভাগ)
                                 <span class="text-rose-500">*</span>
                             </label>
                             <select
@@ -247,16 +257,19 @@ const submitForm = () => {
                                 v-model="group"
                                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             >
+                                <option value="common">
+                                    Common / Compulsory (আবশ্যিক / কমন)
+                                </option>
                                 <option value="science">
                                     Science (বিজ্ঞান)
                                 </option>
                                 <option value="humanities">
-                                    Humanities (মানবিক)
+                                    Humanities / Arts (মানবিক / আর্টস)
                                 </option>
                                 <option value="commerce">
-                                    Commerce (ব্যবসায় শিক্ষা)
+                                    Commerce / Business Studies (ব্যবসায়
+                                    শিক্ষা)
                                 </option>
-                                <option value="common">Common (আবশ্যিক)</option>
                             </select>
                         </div>
                     </div>
@@ -434,6 +447,33 @@ const submitForm = () => {
                                     >
                                         Enable this subject to appear in the
                                         Study Tracker for students.
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Optional / 4th Subject -->
+                        <div class="pt-1">
+                            <label
+                                class="flex cursor-pointer items-start gap-2.5 select-none"
+                            >
+                                <input
+                                    type="checkbox"
+                                    v-model="isOptional"
+                                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:focus:ring-offset-gray-900"
+                                />
+                                <div class="text-xs">
+                                    <span
+                                        class="font-semibold text-slate-700 dark:text-gray-200"
+                                    >
+                                        Optional / 4th Subject (ঐচ্ছিক বিষয়)
+                                    </span>
+                                    <p
+                                        class="text-[11px] text-slate-500 dark:text-gray-400"
+                                    >
+                                        Mark as an optional 4th subject in Study
+                                        Tracker (e.g. Higher Math, Biology,
+                                        Finance).
                                     </p>
                                 </div>
                             </label>

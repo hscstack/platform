@@ -44,6 +44,7 @@ class StoreSubjectRequest extends FormRequest
             'course' => ['required', 'string', 'in:ssc,hsc'],
             'group' => ['sometimes', 'string', 'in:science,humanities,commerce,common'],
             'is_trackable' => ['sometimes', 'boolean'],
+            'is_optional' => ['sometimes', 'boolean'],
             'is_disabled' => ['sometimes', 'boolean'],
         ];
     }

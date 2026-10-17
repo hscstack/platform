@@ -279,3 +279,40 @@ test('disabled subjects return 404 for regular users but accessible to admins wi
         ->get('/hidden-subject')
         ->assertInertia(fn ($page) => $page->component('Node'));
 });
+
+test('admin can define and edit subject type group and optional status', function () {
+    $admin = adminUserWithPermissions(['view admin', 'create subjects', 'edit subjects']);
+
+    // Create a common subject
+    $response = $this->actingAs($admin)->post('/admin/subjects', [
+        'name' => 'Bangla 1st Paper',
+        'course' => 'hsc',
+        'group' => 'common',
+        'tailwind_format' => 'bg-emerald-50 text-emerald-600',
+        'icon' => 'BookOpen',
+        'sort_order' => 1,
+        'is_optional' => false,
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('subjects', [
+        'name' => 'Bangla 1st Paper',
+        'group' => 'common',
+        'is_optional' => false,
+    ]);
+
+    $subject = Subject::where('name', 'Bangla 1st Paper')->first();
+
+    // Edit to humanities (arts) and mark as optional
+    $response = $this->actingAs($admin)->patch("/admin/subjects/edit/{$subject->id}", [
+        'group' => 'humanities',
+        'is_optional' => true,
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('subjects', [
+        'id' => $subject->id,
+        'group' => 'humanities',
+        'is_optional' => true,
+    ]);
+});
