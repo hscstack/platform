@@ -188,3 +188,94 @@ test('admin can create subjects with same name in different courses', function (
         'group' => 'science',
     ]);
 });
+
+test('admin can toggle disable on a subject', function () {
+    $admin = adminUserWithPermissions(['view admin', 'create subjects', 'edit subjects']);
+
+    $response = $this->actingAs($admin)->post('/admin/subjects', [
+        'name' => 'Disabled Subject',
+        'course' => 'hsc',
+        'group' => 'science',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+        'is_disabled' => true,
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('subjects', [
+        'name' => 'Disabled Subject',
+        'is_disabled' => 1,
+    ]);
+
+    $subject = Subject::where('name', 'Disabled Subject')->first();
+
+    $response = $this->actingAs($admin)->patch("/admin/subjects/edit/{$subject->id}", [
+        'is_disabled' => false,
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('subjects', [
+        'id' => $subject->id,
+        'is_disabled' => 0,
+    ]);
+});
+
+test('disabled subjects are hidden from home page', function () {
+    $this->withoutVite();
+
+    $enabledSubject = Subject::create([
+        'name' => 'Enabled Subject',
+        'slug' => 'enabled-subject',
+        'course' => 'hsc',
+        'group' => 'science',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+        'is_disabled' => false,
+    ]);
+
+    $disabledSubject = Subject::create([
+        'name' => 'Disabled Subject',
+        'slug' => 'disabled-subject',
+        'course' => 'hsc',
+        'group' => 'science',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 2,
+        'is_disabled' => true,
+    ]);
+
+    $response = $this->get('/?group=science');
+    $response->assertOk();
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('Home')
+        ->where('subjects', fn ($subjects) => collect($subjects)->pluck('id')->contains($enabledSubject->id)
+            && ! collect($subjects)->pluck('id')->contains($disabledSubject->id)
+        )
+    );
+});
+
+test('disabled subjects return 404 for regular users but accessible to admins with permission', function () {
+    $this->withoutVite();
+
+    $disabledSubject = Subject::create([
+        'name' => 'Hidden Subject',
+        'slug' => 'hidden-subject',
+        'course' => 'hsc',
+        'group' => 'science',
+        'tailwind_format' => 'bg-slate-500',
+        'icon' => 'book-open',
+        'sort_order' => 1,
+        'is_disabled' => true,
+    ]);
+
+    $this->get('/hidden-subject')
+        ->assertInertia(fn ($page) => $page->component('errors/404'));
+
+    $admin = adminUserWithPermissions(['edit subjects']);
+    $this->actingAs($admin)
+        ->get('/hidden-subject')
+        ->assertInertia(fn ($page) => $page->component('Node'));
+});

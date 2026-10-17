@@ -24,6 +24,7 @@ const props = defineProps<{
         icon: string;
         sort_order: number;
         is_trackable?: boolean;
+        is_disabled?: boolean;
     } | null;
 }>();
 
@@ -58,6 +59,7 @@ const tailwindFormat = ref('bg-indigo-50 text-indigo-600');
 const icon = ref('BookOpen');
 const sortOrder = ref(0);
 const isTrackable = ref(false);
+const isDisabled = ref(false);
 
 const initForm = () => {
     if (props.subject) {
@@ -70,6 +72,7 @@ const initForm = () => {
         icon.value = props.subject.icon || 'BookOpen';
         sortOrder.value = props.subject.sort_order ?? 0;
         isTrackable.value = Boolean(props.subject.is_trackable);
+        isDisabled.value = Boolean(props.subject.is_disabled);
     } else {
         name.value = '';
         slug.value = '';
@@ -79,6 +82,7 @@ const initForm = () => {
         icon.value = 'BookOpen';
         sortOrder.value = 0;
         isTrackable.value = false;
+        isDisabled.value = false;
     }
 
     errorMessage.value = '';
@@ -119,6 +123,7 @@ const submitForm = () => {
         icon: icon.value,
         sort_order: sortOrder.value,
         is_trackable: isTrackable.value,
+        is_disabled: isDisabled.value,
     };
 
     if (props.subject) {
@@ -429,6 +434,32 @@ const submitForm = () => {
                                     >
                                         Enable this subject to appear in the
                                         Study Tracker for students.
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Disable Subject (Hide from Home) -->
+                        <div class="pt-1">
+                            <label
+                                class="flex cursor-pointer items-start gap-2.5 select-none"
+                            >
+                                <input
+                                    type="checkbox"
+                                    v-model="isDisabled"
+                                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 dark:border-gray-700 dark:bg-gray-800 dark:focus:ring-offset-gray-900"
+                                />
+                                <div class="text-xs">
+                                    <span
+                                        class="font-semibold text-slate-700 dark:text-gray-200"
+                                    >
+                                        Disable Subject (Hide from Home)
+                                    </span>
+                                    <p
+                                        class="text-[11px] text-slate-500 dark:text-gray-400"
+                                    >
+                                        Hide this subject from the home page for
+                                        students.
                                     </p>
                                 </div>
                             </label>

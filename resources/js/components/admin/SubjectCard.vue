@@ -54,6 +54,13 @@ const handleDelete = () => {
                 >
                     Trackable
                 </span>
+
+                <span
+                    v-if="subject.is_disabled"
+                    class="inline-flex items-center rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-rose-600/20 ring-inset dark:bg-rose-950/50 dark:text-rose-300 dark:ring-rose-500/30"
+                >
+                    Disabled
+                </span>
             </div>
         </div>
 

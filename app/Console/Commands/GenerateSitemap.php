@@ -48,7 +48,7 @@ class GenerateSitemap extends Command
         }
 
         // 2. Subjects
-        Subject::orderBy('name')->get()->each(function ($subject) use ($sitemap) {
+        Subject::where('is_disabled', false)->orderBy('name')->get()->each(function ($subject) use ($sitemap) {
             $sitemap->add(
                 Url::create(url($subject->slug))
                     ->setLastModificationDate($subject->updated_at)
