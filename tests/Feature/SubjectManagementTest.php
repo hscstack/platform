@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Node;
 use App\Models\Subject;
 
 test('admin can create a subject', function () {
@@ -271,12 +272,27 @@ test('disabled subjects return 404 for regular users but accessible to admins wi
         'is_disabled' => true,
     ]);
 
+    $chapter = Node::create([
+        'subject_id' => $disabledSubject->id,
+        'name' => 'Chapter 1',
+        'slug' => 'chapter-1',
+    ]);
+
+    // Root subject page
     $this->get('/hidden-subject')
+        ->assertInertia(fn ($page) => $page->component('errors/404'));
+
+    // Nested node page
+    $this->get('/hidden-subject/chapter-1')
         ->assertInertia(fn ($page) => $page->component('errors/404'));
 
     $admin = adminUserWithPermissions(['edit subjects']);
     $this->actingAs($admin)
         ->get('/hidden-subject')
+        ->assertInertia(fn ($page) => $page->component('Node'));
+
+    $this->actingAs($admin)
+        ->get('/hidden-subject/chapter-1')
         ->assertInertia(fn ($page) => $page->component('Node'));
 });
 
