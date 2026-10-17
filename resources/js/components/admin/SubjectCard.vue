@@ -49,10 +49,24 @@ const handleDelete = () => {
                 </h3>
 
                 <span
+                    v-if="subject.is_optional"
+                    class="inline-flex items-center rounded-md bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700 ring-1 ring-orange-600/20 ring-inset dark:bg-orange-950/50 dark:text-orange-300 dark:ring-orange-500/30"
+                >
+                    Optional
+                </span>
+
+                <span
                     v-if="subject.is_trackable"
                     class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
                 >
                     Trackable
+                </span>
+
+                <span
+                    v-if="subject.is_disabled"
+                    class="inline-flex items-center rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-rose-600/20 ring-inset dark:bg-rose-950/50 dark:text-rose-300 dark:ring-rose-500/30"
+                >
+                    Disabled
                 </span>
             </div>
         </div>

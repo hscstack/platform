@@ -13,6 +13,7 @@ class Subject extends Model
         return [
             'is_trackable' => 'boolean',
             'is_optional' => 'boolean',
+            'is_disabled' => 'boolean',
         ];
     }
 

@@ -27,7 +27,8 @@ class SubjectController extends Controller
         }
 
         $subjects = Cache::rememberForever("home_page_subjects_{$course}_{$group}", function () use ($course, $group) {
-            return Subject::orderBy('sort_order', 'asc')
+            return Subject::where('is_disabled', false)
+                ->orderBy('sort_order', 'asc')
                 ->where('course', $course)
                 ->whereIn('group', [$group, 'common'])
                 ->withCount([
@@ -96,6 +97,10 @@ class SubjectController extends Controller
 
     public function show(Subject $subject)
     {
+        if ($subject->is_disabled) {
+            abort(404);
+        }
+
         $nodes = Cache::rememberForever("subject_page_{$subject->id}", function () use ($subject) {
             return Node::where('subject_id', $subject->id)
                 ->whereNull('parent_id')

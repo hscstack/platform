@@ -169,6 +169,8 @@ class ResourceController extends Controller
         $nodeId = (int) $validated['node_id'];
 
         DB::transaction(function () use ($request, $validated, $userId, $nodeId, $isModerator) {
+            $content = $validated['content'] ?? null;
+
             foreach ($request->file('files') as $index => $file) {
                 $filePath = $file->store('resources/images');
                 $title = $validated['custom_titles'][$index];
@@ -178,12 +180,14 @@ class ResourceController extends Controller
                         'user_id' => $userId,
                         'node_id' => $nodeId,
                         'title' => $title,
+                        'content' => $content,
                         'resource_type' => 'image',
                         'file_path' => $filePath,
                     ]);
                 } else {
                     ResourceChangeRequest::recordCreate($userId, $nodeId, [
                         'title' => $title,
+                        'content' => $content,
                         'resource_type' => 'image',
                         'file_path' => $filePath,
                     ]);

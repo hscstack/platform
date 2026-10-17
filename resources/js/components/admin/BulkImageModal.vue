@@ -8,6 +8,7 @@ import {
     Loader2,
     AlertCircle,
     X,
+    ChevronDown,
 } from 'lucide-vue-next';
 import { ref, computed, watch, onUnmounted } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
@@ -38,6 +39,8 @@ const isProcessingServer = ref(false);
 const namingStrategy = ref<'serial' | 'original'>('serial');
 const namingPrefix = ref('image');
 const startNumber = ref(1);
+const showMoreOptions = ref(false);
+const content = ref('');
 
 const MAX_IMAGES = 20;
 
@@ -138,6 +141,8 @@ const clearAll = () => {
     compressionStatusText.value = '';
     uploadProgress.value = null;
     isProcessingServer.value = false;
+    content.value = '';
+    showMoreOptions.value = false;
 };
 
 const handleClose = () => {
@@ -218,6 +223,7 @@ const submitForm = async () => {
         start_number: startNumber.value,
         files: filesToUpload,
         custom_titles: processedTitles.value,
+        content: content.value.trim() ? content.value.trim() : null,
     };
 
     router.post('/resources/bulk/images', payload, {
@@ -462,6 +468,44 @@ const submitForm = async () => {
                                 class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                             />
                         </div>
+                    </div>
+                </div>
+
+                <!-- More Options Toggle (Collapsible Note / Content) -->
+                <div
+                    class="border-t border-slate-200/60 pt-3 dark:border-gray-700/60"
+                >
+                    <button
+                        type="button"
+                        @click="showMoreOptions = !showMoreOptions"
+                        class="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        <ChevronDown
+                            class="h-3.5 w-3.5 transition-transform duration-200"
+                            :class="{ '-rotate-90': !showMoreOptions }"
+                        />
+                        <span>More Options</span>
+                    </button>
+
+                    <div v-show="showMoreOptions" class="mt-3 space-y-1.5">
+                        <label
+                            for="bulk_img_content"
+                            class="block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Note / Content
+                            <span
+                                class="font-normal text-slate-400 dark:text-gray-500"
+                            >
+                                (Optional note applied to all uploaded images)
+                            </span>
+                        </label>
+                        <textarea
+                            id="bulk_img_content"
+                            v-model="content"
+                            rows="3"
+                            placeholder="Type optional descriptions, lecture overview, or note contents..."
+                            class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+                        />
                     </div>
                 </div>
 
