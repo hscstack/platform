@@ -13,7 +13,7 @@ class NodeController extends Controller
 {
     public function show(Subject $subject, $path)
     {
-        if ($subject->is_disabled && ! auth()->user()?->can('edit subjects')) {
+        if ($subject->is_disabled) {
             abort(404);
         }
 

@@ -258,7 +258,7 @@ test('disabled subjects are hidden from home page', function () {
     );
 });
 
-test('disabled subjects return 404 for regular users but accessible to admins with permission', function () {
+test('disabled subjects return 404 for everyone including admins', function () {
     $this->withoutVite();
 
     $disabledSubject = Subject::create([
@@ -278,22 +278,22 @@ test('disabled subjects return 404 for regular users but accessible to admins wi
         'slug' => 'chapter-1',
     ]);
 
-    // Root subject page
+    // Guest / Regular user
     $this->get('/hidden-subject')
         ->assertInertia(fn ($page) => $page->component('errors/404'));
 
-    // Nested node page
     $this->get('/hidden-subject/chapter-1')
         ->assertInertia(fn ($page) => $page->component('errors/404'));
 
+    // Admin user with permissions also gets 404
     $admin = adminUserWithPermissions(['edit subjects']);
     $this->actingAs($admin)
         ->get('/hidden-subject')
-        ->assertInertia(fn ($page) => $page->component('Node'));
+        ->assertInertia(fn ($page) => $page->component('errors/404'));
 
     $this->actingAs($admin)
         ->get('/hidden-subject/chapter-1')
-        ->assertInertia(fn ($page) => $page->component('Node'));
+        ->assertInertia(fn ($page) => $page->component('errors/404'));
 });
 
 test('admin can define and edit subject type group and optional status', function () {

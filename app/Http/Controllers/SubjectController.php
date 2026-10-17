@@ -97,7 +97,7 @@ class SubjectController extends Controller
 
     public function show(Subject $subject)
     {
-        if ($subject->is_disabled && ! auth()->user()?->can('edit subjects')) {
+        if ($subject->is_disabled) {
             abort(404);
         }
 
