@@ -252,6 +252,7 @@ test('bulk image upload stages multiple change requests for non-moderator', func
             'node_id' => $node->id,
             'files' => [$file1, $file2],
             'custom_titles' => ['Image Page 1', 'Image Page 2'],
+            'content' => 'Shared note for these images',
         ])
         ->assertRedirect(route('submissions.index'))
         ->assertSessionHas('success', 'Images submitted for moderation.');
@@ -259,6 +260,32 @@ test('bulk image upload stages multiple change requests for non-moderator', func
     expect(Resource::count())->toBe(0);
     expect(ResourceChangeRequest::count())->toBe(2);
     expect(ResourceChangeRequest::pluck('status')->all())->toBe(['pending', 'pending']);
+    expect(ResourceChangeRequest::first()->payload['content'])->toBe('Shared note for these images');
+});
+
+test('bulk image upload with content directly creates resources for moderator', function () {
+    [, $node] = createTestSubjectAndNode();
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo('moderate resources');
+
+    $file1 = UploadedFile::fake()->create('page1.png', 100, 'image/png');
+    $file2 = UploadedFile::fake()->create('page2.png', 100, 'image/png');
+
+    $this->actingAs($moderator)
+        ->post('/resources/bulk/images', [
+            'node_id' => $node->id,
+            'files' => [$file1, $file2],
+            'custom_titles' => ['Image Page 1', 'Image Page 2'],
+            'content' => 'Batch lecture slides note',
+        ])
+        ->assertSessionHas('success', 'Images uploaded successfully.');
+
+    expect(Resource::count())->toBe(2);
+    expect(Resource::pluck('content')->all())->toBe([
+        'Batch lecture slides note',
+        'Batch lecture slides note',
+    ]);
 });
 
 test('my-submissions page returns list and quota', function () {

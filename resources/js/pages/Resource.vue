@@ -515,6 +515,21 @@ const toggleFullscreen = () => {
                     >.
                 </p>
             </div>
+
+            <!-- Resource Content / Description (For videos, images, and other resources if provided) -->
+            <div
+                v-if="resource.content && resource.resource_type !== 'note'"
+                class="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-xs leading-relaxed text-slate-700 sm:text-sm dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-300"
+            >
+                <span class="font-bold text-slate-900 dark:text-gray-200"
+                    >Note:</span
+                >
+                <div
+                    class="prose mt-1 max-w-none text-xs leading-relaxed whitespace-pre-line text-slate-800 sm:text-sm dark:text-gray-200"
+                >
+                    {{ resource.content }}
+                </div>
+            </div>
         </div>
     </div>
 

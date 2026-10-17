@@ -31,6 +31,7 @@ class BulkImageStoreRequest extends FormRequest
             'custom_titles.*' => 'required|string|max:100',
             'files' => 'required|array|min:1|max:20',
             'files.*' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'content' => 'nullable|string',
         ];
     }
 }
