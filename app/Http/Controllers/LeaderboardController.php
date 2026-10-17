@@ -20,14 +20,26 @@ class LeaderboardController extends Controller
             ? $request->input('timeframe')
             : 'this_month';
 
+        $tz = 'Asia/Dhaka';
+        $now = Carbon::now($tz);
+
+        $startOfWeek = $now->copy()->startOfWeek(Carbon::SATURDAY)->startOfDay();
+        $startOfMonth = $now->copy()->startOfMonth()->startOfDay();
+
         $dateFilter = match ($timeframe) {
-            'this_week' => Carbon::now()->startOfWeek(Carbon::SATURDAY)->toDateString(),
-            'this_month' => Carbon::now()->startOfMonth()->toDateString(),
+            'this_week' => $startOfWeek->toDateString(),
+            'this_month' => $startOfMonth->toDateString(),
+            'all_time' => null,
+        };
+
+        $utcDateFilter = match ($timeframe) {
+            'this_week' => $startOfWeek->copy()->setTimezone('UTC')->toDateTimeString(),
+            'this_month' => $startOfMonth->copy()->setTimezone('UTC')->toDateTimeString(),
             'all_time' => null,
         };
 
         [$leaderboard, $currentUserRank] = $tab === 'contributors'
-            ? $this->getContributors($request->user(), $dateFilter)
+            ? $this->getContributors($request->user(), $utcDateFilter)
             : $this->getStudents($request->user(), $dateFilter);
 
         return Inertia::render('Leaderboard/Index', [
