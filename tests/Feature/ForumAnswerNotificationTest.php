@@ -13,7 +13,7 @@ beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
 });
 
-test('answering a forum post sends ForumAnswerNotification to post author with mail channel if opted in', function () {
+test('answering a forum post sends ForumAnswerNotification to post author', function () {
     Notification::fake();
 
     $author = User::factory()->create(['receive_emails' => true]);
@@ -46,8 +46,7 @@ test('answering a forum post sends ForumAnswerNotification to post author with m
 
         return $notification->post->id === $post->id
             && $notification->isReply === false
-            && in_array('database', $channels, true)
-            && in_array('mail', $channels, true);
+            && $channels === ['database'];
     });
 });
 
@@ -80,7 +79,7 @@ test('sub-reply notification is strictly database only and does not send mail', 
     expect($replyNotification->via($author))->toBe(['database']);
 
     $answerNotification = new ForumAnswerNotification($post, $answer, isReply: false);
-    expect($answerNotification->via($author))->toBe(['database', 'mail']);
+    expect($answerNotification->via($author))->toBe(['database']);
 });
 
 test('author answering own post does not trigger notification', function () {

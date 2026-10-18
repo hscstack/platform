@@ -40,27 +40,40 @@ test('author reacting to own blog does not trigger BlogReactionNotification', fu
     Notification::assertNothingSent();
 });
 
-test('BlogReactionNotification delivers to mail only on milestone count and when opted in', function () {
-    $authorSubscribed = User::factory()->create(['receive_emails' => true]);
-    $authorUnsubscribed = User::factory()->create(['receive_emails' => false]);
+test('BlogReactionNotification delivers to database channel only', function () {
+    $author = User::factory()->create();
     $reactor = User::factory()->create();
-    $blog = Blog::factory()->create(['user_id' => $authorSubscribed->id]);
+    $blog = Blog::factory()->create(['user_id' => $author->id]);
 
-    // 1st reaction (milestone: 1) -> database + mail
-    $notif1 = new BlogReactionNotification($blog, $reactor, 1);
-    expect($notif1->isMilestone())->toBeTrue()
-        ->and($notif1->via($authorSubscribed))->toContain('database', 'mail')
-        ->and($notif1->via($authorUnsubscribed))->toBe(['database']);
+    $notif = new BlogReactionNotification($blog, $reactor, 1);
+    expect($notif->via($author))->toBe(['database']);
+});
 
-    // 2nd reaction (not milestone) -> database only
-    $notif2 = new BlogReactionNotification($blog, $reactor, 2);
-    expect($notif2->isMilestone())->toBeFalse()
-        ->and($notif2->via($authorSubscribed))->toBe(['database']);
+test('multiple reactions on a blog aggregate into a single unread notification with rolled up titles', function () {
+    $author = User::factory()->create();
+    $reactor1 = User::factory()->create(['name' => 'Alice']);
+    $reactor2 = User::factory()->create(['name' => 'Bob']);
+    $blog = Blog::factory()->create([
+        'user_id' => $author->id,
+        'title' => 'Calculus Basics',
+        'is_published' => true,
+    ]);
 
-    // 10th reaction (milestone: 10) -> database + mail
-    $notif10 = new BlogReactionNotification($blog, $reactor, 10);
-    expect($notif10->isMilestone())->toBeTrue()
-        ->and($notif10->via($authorSubscribed))->toContain('database', 'mail');
+    // 1st reaction
+    $this->actingAs($reactor1)->post("/blogs/{$blog->slug}/react");
+    expect($author->unreadNotifications()->count())->toBe(1);
+
+    $notif = $author->unreadNotifications()->first();
+    expect($notif->data['title'])->toBe('Alice loved your blog post')
+        ->and($notif->data['count'])->toBe(1);
+
+    // 2nd reaction
+    $this->actingAs($reactor2)->post("/blogs/{$blog->slug}/react");
+    expect($author->unreadNotifications()->count())->toBe(1);
+
+    $notif->refresh();
+    expect($notif->data['title'])->toBe('Bob and 1 other person loved your blog post')
+        ->and($notif->data['count'])->toBe(2);
 });
 
 test('commenting on a blog triggers BlogCommentNotification to the blog author', function () {

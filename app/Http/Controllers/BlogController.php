@@ -185,7 +185,7 @@ class BlogController extends Controller
             $blog->reactions()->create(['user_id' => $user->id]);
 
             if ($blog->user_id !== $user->id) {
-                $blog->user->notify(new BlogReactionNotification($blog, $user, $blog->reactions()->count()));
+                BlogReactionNotification::sendTo($blog->user, $blog, $user, $blog->reactions()->count());
             }
         }
 

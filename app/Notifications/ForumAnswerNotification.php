@@ -6,7 +6,6 @@ use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
@@ -27,36 +26,7 @@ class ForumAnswerNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        // Only send email for direct answers to questions (not sub-replies), if user is opted in
-        if (! $this->isReply && ! empty($notifiable->email) && ($notifiable->receive_emails ?? true)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
-    {
-        $authorName = $this->answer->user?->name ?? 'A student';
-        $snippet = Str::limit(strip_tags($this->answer->body), 150);
-
-        return (new MailMessage)
-            ->subject("New answer to your question: \"{$this->post->title}\" 💬")
-            ->view('emails.default', [
-                'subject' => "New answer on \"{$this->post->title}\"",
-                'greeting' => "Hello {$notifiable->name},",
-                'lines' => [
-                    "{$authorName} just answered your question \"{$this->post->title}\":",
-                    "\"{$snippet}\"",
-                ],
-                'actionText' => 'View Answer',
-                'actionUrl' => route('forum.show', $this->post->slug),
-            ]);
+        return ['database'];
     }
 
     /**

@@ -15,12 +15,18 @@ import {
     Trash2,
     Download,
     ChevronDown,
+    Bell,
+    Megaphone,
 } from 'lucide-vue-next';
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import HTMLEditor from '@/components/HTMLEditor.vue';
 
 defineProps({
+    allUsersCount: {
+        type: Number,
+        default: 0,
+    },
     recipientCount: {
         type: Number,
         default: 0,
@@ -52,6 +58,9 @@ const form = useForm({
     subject: '',
     body: '',
     image: null as File | null,
+    send_email: true,
+    send_in_app: false,
+    action_url: '',
 });
 
 const formattedCurrentDate = computed(() => {
@@ -149,7 +158,9 @@ const handleRemoveImage = () => {
 };
 
 // Import helper
-const importSubscribers = async (type: 'all' | 'students' | 'staff') => {
+const importSubscribers = async (
+    type: 'subscribers' | 'all' | 'students' | 'staff',
+) => {
     if (isImporting.value) {
         return;
     }
@@ -191,6 +202,14 @@ const cleanAndFormatRecipients = () => {
 };
 
 const handleSendClick = () => {
+    if (!form.send_email && !form.send_in_app) {
+        alert(
+            'Please select at least one delivery channel (Email or In-App Notification).',
+        );
+
+        return;
+    }
+
     if (recipientStats.value.validEmails.length === 0) {
         form.setError(
             'recipients',
@@ -280,6 +299,124 @@ const submitForm = () => {
         </div>
 
         <form @submit.prevent="handleSendClick" class="space-y-6">
+            <!-- Delivery Channels Selection Card -->
+            <div
+                class="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs sm:p-6 dark:border-gray-800 dark:bg-gray-950"
+            >
+                <div class="mb-4">
+                    <label
+                        class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+                    >
+                        Delivery Channels
+                    </label>
+                    <p class="mt-0.5 text-xs text-slate-400 dark:text-gray-500">
+                        Choose whether to broadcast this message via Email,
+                        In-App Notification (Bell icon), or both.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <!-- Send Email Option -->
+                    <label
+                        class="relative flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition"
+                        :class="
+                            form.send_email
+                                ? 'border-indigo-600 bg-indigo-50/30 dark:border-indigo-500 dark:bg-indigo-950/20'
+                                : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900/40'
+                        "
+                    >
+                        <input
+                            type="checkbox"
+                            v-model="form.send_email"
+                            class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                        />
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <Mail
+                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                />
+                                <span
+                                    class="text-sm font-semibold text-slate-900 dark:text-gray-100"
+                                >
+                                    Email Broadcast
+                                </span>
+                            </div>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                Send rich HTML announcement directly to
+                                recipients' email inboxes.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Send In-App Bell Notification Option -->
+                    <label
+                        class="relative flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition"
+                        :class="
+                            form.send_in_app
+                                ? 'border-indigo-600 bg-indigo-50/30 dark:border-indigo-500 dark:bg-indigo-950/20'
+                                : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900/40'
+                        "
+                    >
+                        <input
+                            type="checkbox"
+                            v-model="form.send_in_app"
+                            class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                        />
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <Bell
+                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                />
+                                <span
+                                    class="text-sm font-semibold text-slate-900 dark:text-gray-100"
+                                >
+                                    In-App Notification
+                                </span>
+                            </div>
+                            <p
+                                class="text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                Push announcement to users' notification bells
+                                with an interactive modal details view.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- In-App Specific Optional Configurations -->
+                <div
+                    v-if="form.send_in_app"
+                    class="mt-4 rounded-2xl border border-indigo-100 bg-indigo-50/30 p-3.5 dark:border-indigo-950 dark:bg-indigo-950/10"
+                >
+                    <div
+                        class="mb-2 flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300"
+                    >
+                        <Megaphone class="h-3.5 w-3.5" />
+                        <span>Optional In-App Action Link</span>
+                    </div>
+
+                    <div>
+                        <input
+                            v-model="form.action_url"
+                            type="url"
+                            id="action_url"
+                            placeholder="https://example.com/campaign or /blogs (Optional)"
+                            maxlength="255"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 transition placeholder:text-slate-400 focus:border-indigo-600 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                        />
+                        <p
+                            class="mt-1 text-[11px] text-slate-400 dark:text-gray-500"
+                        >
+                            If left blank, clicking the bell notification opens
+                            the full announcement details in an interactive
+                            modal.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Recipients Box with Import Dropdown Toolbar -->
             <div
                 class="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs sm:p-6 dark:border-gray-800 dark:bg-gray-950"
@@ -333,17 +470,16 @@ const submitForm = () => {
                                 v-if="isImportDropdownOpen"
                                 class="absolute right-0 z-30 mt-1.5 w-60 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-gray-800 dark:bg-gray-900"
                             >
+                                <!-- Option 1: All Subscribed -->
                                 <button
                                     type="button"
                                     :disabled="recipientCount === 0"
-                                    @click="importSubscribers('all')"
+                                    @click="importSubscribers('subscribers')"
                                     class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
                                 >
                                     <div class="flex items-center gap-2">
-                                        <Users
-                                            class="h-4 w-4 text-indigo-500"
-                                        />
-                                        <span>All Subscribed</span>
+                                        <Mail class="h-4 w-4 text-indigo-500" />
+                                        <span>All Subscribers</span>
                                     </div>
                                     <span
                                         class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
@@ -352,6 +488,27 @@ const submitForm = () => {
                                     </span>
                                 </button>
 
+                                <!-- Option 2: All Registered Users -->
+                                <button
+                                    type="button"
+                                    :disabled="allUsersCount === 0"
+                                    @click="importSubscribers('all')"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <Users
+                                            class="h-4 w-4 text-indigo-500"
+                                        />
+                                        <span>All Registered Users</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                    >
+                                        {{ allUsersCount }}
+                                    </span>
+                                </button>
+
+                                <!-- Option 3: All Students -->
                                 <button
                                     type="button"
                                     :disabled="studentsCount === 0"
@@ -362,7 +519,7 @@ const submitForm = () => {
                                         <GraduationCap
                                             class="h-4 w-4 text-indigo-500"
                                         />
-                                        <span>Students (Non-Staff)</span>
+                                        <span>All Students</span>
                                     </div>
                                     <span
                                         class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
@@ -371,6 +528,7 @@ const submitForm = () => {
                                     </span>
                                 </button>
 
+                                <!-- Option 4: All Staff -->
                                 <button
                                     type="button"
                                     :disabled="staffCount === 0"
@@ -381,7 +539,7 @@ const submitForm = () => {
                                         <ShieldCheck
                                             class="h-4 w-4 text-indigo-500"
                                         />
-                                        <span>Staff Members</span>
+                                        <span>All Staff</span>
                                     </div>
                                     <span
                                         class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
@@ -632,8 +790,8 @@ const submitForm = () => {
                 class="flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
             >
                 <p class="text-xs text-slate-400 dark:text-gray-500">
-                    Emails are queued and delivered asynchronously. Duplicates
-                    and invalid addresses are automatically stripped.
+                    Broadcasts are queued and delivered asynchronously.
+                    Duplicates and invalid addresses are automatically handled.
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -650,6 +808,7 @@ const submitForm = () => {
                         type="submit"
                         :disabled="
                             form.processing ||
+                            (!form.send_email && !form.send_in_app) ||
                             recipientStats.validEmails.length === 0
                         "
                         class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-600/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
@@ -901,16 +1060,23 @@ const submitForm = () => {
                         <h3
                             class="text-base font-bold text-slate-900 dark:text-gray-100"
                         >
-                            Confirm Email Queue
+                            Confirm Broadcast Queue
                         </h3>
                         <p class="text-xs text-slate-500 dark:text-gray-400">
-                            Dispatching to
-                            {{ recipientStats.validEmails.length }} unique
-                            recipient{{
-                                recipientStats.validEmails.length === 1
-                                    ? ''
-                                    : 's'
-                            }}
+                            <span v-if="form.send_email && form.send_in_app">
+                                Email & In-App Notification
+                            </span>
+                            <span v-else-if="form.send_email">
+                                Email Only ({{
+                                    recipientStats.validEmails.length
+                                }}
+                                recipient{{
+                                    recipientStats.validEmails.length === 1
+                                        ? ''
+                                        : 's'
+                                }})
+                            </span>
+                            <span v-else> In-App Bell Notification Only </span>
                         </p>
                     </div>
                 </div>
@@ -918,10 +1084,12 @@ const submitForm = () => {
                 <p
                     class="mb-5 text-xs leading-relaxed text-slate-600 dark:text-gray-300"
                 >
-                    Are you sure you want to send this broadcast? The emails
-                    will be queued asynchronously.
+                    Are you sure you want to send this broadcast? The broadcast
+                    will be queued and delivered asynchronously.
                     <span
-                        v-if="recipientStats.duplicateCount > 0"
+                        v-if="
+                            form.send_email && recipientStats.duplicateCount > 0
+                        "
                         class="mt-1 block font-medium text-slate-400"
                     >
                         ({{ recipientStats.duplicateCount }} duplicates were

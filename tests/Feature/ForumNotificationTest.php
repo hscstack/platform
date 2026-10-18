@@ -194,13 +194,12 @@ test('auto unpublishing a question on report threshold sends ForumStatusNotifica
 
         return $notification->post->id === $post->id
             && $notification->status === 'flagged'
-            && in_array('mail', $channels, true);
+            && $channels === ['database'];
     });
 });
 
-test('ForumStatusNotification delivers to mail for approval, flagged, rejected and database only for locked', function () {
+test('ForumStatusNotification delivers to database channel only', function () {
     $author = User::factory()->create(['receive_emails' => true]);
-    $optOutAuthor = User::factory()->create(['receive_emails' => false]);
     $subject = Subject::create([
         'name' => 'Physics',
         'course' => 'hsc',
@@ -219,14 +218,13 @@ test('ForumStatusNotification delivers to mail for approval, flagged, rejected a
     ]);
 
     $approvedNotif = new ForumStatusNotification($post, 'approved');
-    expect($approvedNotif->via($author))->toBe(['database', 'mail'])
-        ->and($approvedNotif->via($optOutAuthor))->toBe(['database']);
+    expect($approvedNotif->via($author))->toBe(['database']);
 
     $flaggedNotif = new ForumStatusNotification($post, 'flagged');
-    expect($flaggedNotif->via($author))->toBe(['database', 'mail']);
+    expect($flaggedNotif->via($author))->toBe(['database']);
 
     $rejectedNotif = new ForumStatusNotification($post, 'rejected');
-    expect($rejectedNotif->via($author))->toBe(['database', 'mail']);
+    expect($rejectedNotif->via($author))->toBe(['database']);
 
     $lockedNotif = new ForumStatusNotification($post, 'locked');
     expect($lockedNotif->via($author))->toBe(['database']);
