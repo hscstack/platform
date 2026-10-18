@@ -39,9 +39,9 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');
 
     // Signed Account Deletion by User
-    Route::middleware(['signed', 'throttle:6,1'])->withoutMiddleware(['auth'])->group(function () {
+    Route::withoutMiddleware(['auth'])->middleware(['throttle:6,1'])->group(function () {
         Route::get('/account/delete/verify/{user}', [AccountDeletionController::class, 'showConfirm'])->name('account.delete.verify');
-        Route::post('/account/delete/verify/{user}', [AccountDeletionController::class, 'confirmDelete'])->name('account.delete.confirm');
+        Route::post('/account/delete/verify/{user}', [AccountDeletionController::class, 'confirmDelete'])->middleware('signed')->name('account.delete.confirm');
     });
 
     // Blog Authoring & Management

@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
-import { AlertTriangle, Trash2, ArrowLeft, ShieldAlert } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import {
+    AlertTriangle,
+    Trash2,
+    ArrowLeft,
+    ShieldAlert,
+    Link2Off,
+    Home,
+    LifeBuoy,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface UserInfo {
@@ -9,14 +17,26 @@ interface UserInfo {
     email?: string;
 }
 
-const props = defineProps<{
-    user: UserInfo;
-    confirmUrl: string;
-}>();
+const props = withDefaults(
+    defineProps<{
+        isValid?: boolean;
+        user?: UserInfo | null;
+        confirmUrl?: string;
+    }>(),
+    {
+        isValid: true,
+        user: null,
+        confirmUrl: '',
+    },
+);
 
 const isProcessing = ref(false);
 
 const handleConfirmDelete = () => {
+    if (!props.confirmUrl) {
+        return;
+    }
+
     isProcessing.value = true;
     router.post(
         props.confirmUrl,
@@ -37,7 +57,52 @@ const handleConfirmDelete = () => {
         class="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
     >
         <div class="w-full max-w-lg">
+            <!-- INVALID / EXPIRED LINK STATE -->
             <div
+                v-if="!isValid"
+                class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 text-center shadow-xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div
+                    class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-inner dark:bg-amber-950/40 dark:text-amber-400"
+                >
+                    <Link2Off class="h-7 w-7" />
+                </div>
+                <h1
+                    class="mt-4 text-lg font-bold text-slate-900 sm:text-xl dark:text-white"
+                >
+                    লিংকটি সঠিক নয় বা মেয়াদ উত্তীর্ণ হয়েছে
+                </h1>
+                <p
+                    class="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-gray-400"
+                >
+                    অ্যাকাউন্ট মুছে ফেলার এই কনফার্মেশন লিংকটির মেয়াদ শেষ হয়ে
+                    গেছে অথবা লিংকটি পরিবর্তিত হয়েছে। নতুন লিংকের জন্য পুনরায়
+                    আবেদন জমা দিন বা আমাদের সাপোর্টে যোগাযোগ করুন।
+                </p>
+
+                <div
+                    class="mt-6 flex flex-col-reverse items-center justify-center gap-3 sm:flex-row"
+                >
+                    <Link
+                        href="/"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                    >
+                        <Home class="h-4 w-4" />
+                        <span>হোমে ফিরে যান</span>
+                    </Link>
+                    <Link
+                        href="/support"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 sm:w-auto dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                    >
+                        <LifeBuoy class="h-4 w-4" />
+                        <span>সাপোর্ট সেন্টার</span>
+                    </Link>
+                </div>
+            </div>
+
+            <!-- VALID CONFIRMATION MODAL -->
+            <div
+                v-else
                 class="overflow-hidden rounded-2xl border border-rose-200/80 bg-white shadow-xl dark:border-rose-900/40 dark:bg-gray-900"
             >
                 <!-- Header / Warning Banner -->

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\AccountDeletedMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class AccountDeletionController extends Controller
@@ -16,11 +14,19 @@ class AccountDeletionController extends Controller
      */
     public function showConfirm(Request $request, User $user)
     {
-        if (! hash_equals(sha1($user->email), (string) $request->query('hash'))) {
-            abort(403, 'Invalid deletion token.');
+        $hasValidSignature = $request->hasValidSignature();
+        $hasValidHash = ! empty($user->email) && hash_equals(sha1($user->email), (string) $request->query('hash'));
+
+        if (! $hasValidSignature || ! $hasValidHash) {
+            return Inertia::render('Account/ConfirmDeletion', [
+                'isValid' => false,
+                'user' => null,
+                'confirmUrl' => '',
+            ]);
         }
 
         return Inertia::render('Account/ConfirmDeletion', [
+            'isValid' => true,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -45,8 +51,6 @@ class AccountDeletionController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
         }
-
-        Mail::to($user->email)->queue(new AccountDeletedMail($user->name));
 
         $user->delete();
 

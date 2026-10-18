@@ -116,6 +116,8 @@ class AccountDeletionSignedUrlTest extends TestCase
 
     public function test_access_denied_with_tampered_or_invalid_signature(): void
     {
+        $this->withoutVite();
+
         $signedUrl = URL::temporarySignedRoute(
             'account.delete.verify',
             now()->addHours(24),
@@ -129,11 +131,17 @@ class AccountDeletionSignedUrlTest extends TestCase
         $tamperedUrl = $signedUrl.'&extra=bad';
 
         $response = $this->get($tamperedUrl);
-        $response->assertStatus(403);
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Account/ConfirmDeletion')
+            ->where('isValid', false)
+        );
     }
 
     public function test_access_denied_with_expired_signature(): void
     {
+        $this->withoutVite();
+
         $expiredUrl = URL::temporarySignedRoute(
             'account.delete.verify',
             now()->subHour(),
@@ -144,11 +152,17 @@ class AccountDeletionSignedUrlTest extends TestCase
         );
 
         $response = $this->get($expiredUrl);
-        $response->assertStatus(403);
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Account/ConfirmDeletion')
+            ->where('isValid', false)
+        );
     }
 
     public function test_access_denied_with_mismatched_hash(): void
     {
+        $this->withoutVite();
+
         $signedUrl = URL::temporarySignedRoute(
             'account.delete.verify',
             now()->addHours(24),
@@ -159,7 +173,11 @@ class AccountDeletionSignedUrlTest extends TestCase
         );
 
         $response = $this->get($signedUrl);
-        $response->assertStatus(403);
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Account/ConfirmDeletion')
+            ->where('isValid', false)
+        );
     }
 
     public function test_user_can_permanently_delete_account_via_signed_post(): void
@@ -186,9 +204,7 @@ class AccountDeletionSignedUrlTest extends TestCase
 
         $this->assertGuest();
 
-        Mail::assertQueued(AccountDeletedMail::class, function ($mail) {
-            return $mail->hasTo('target@example.com');
-        });
+        Mail::assertNothingQueued();
     }
 
     public function test_admin_instant_hard_delete_still_works(): void
