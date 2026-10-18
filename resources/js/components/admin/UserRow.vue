@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { LogIn, Pencil, Trash2, Ban } from 'lucide-vue-next';
+import { LogIn, Pencil, Trash2, Ban, Mail } from 'lucide-vue-next';
 import { ref } from 'vue';
+import BaseModal from '@/components/BaseModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
@@ -16,6 +17,8 @@ defineProps({
 const page = usePage();
 const userId = page.props.auth.user.id;
 const isBanModalOpen = ref(false);
+const isDeleteModalOpen = ref(false);
+const isSendingDeleteLink = ref(false);
 
 const isBanned = (user: any) => {
     const banUntil = user?.banned_until;
@@ -41,10 +44,41 @@ const loginAsUser = (targetUser: any) => {
     }
 };
 
-const deleteUser = (id: number) => {
-    if (confirm('Are you sure you want to delete this user?')) {
+const openDeleteModal = () => {
+    isDeleteModalOpen.value = true;
+};
+
+const handleHardDelete = (id: number) => {
+    if (
+        confirm(
+            'Are you absolutely sure you want to permanently delete this user now? This action cannot be undone.',
+        )
+    ) {
+        isDeleteModalOpen.value = false;
         router.delete(`/admin/users/${id}`);
     }
+};
+
+const handleSendDeleteLink = (id: number) => {
+    if (
+        !confirm(
+            'Are you sure you want to send a signed account deletion link to this user? They will receive an email to confirm deletion.',
+        )
+    ) {
+        return;
+    }
+
+    isSendingDeleteLink.value = true;
+    router.post(
+        `/admin/users/${id}/send-delete-link`,
+        {},
+        {
+            onFinish: () => {
+                isSendingDeleteLink.value = false;
+                isDeleteModalOpen.value = false;
+            },
+        },
+    );
 };
 </script>
 
@@ -178,7 +212,7 @@ const deleteUser = (id: number) => {
 
             <button
                 v-if="user.id !== userId && can('delete users')"
-                @click="deleteUser(user.id)"
+                @click="openDeleteModal"
                 type="button"
                 class="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 title="Delete user"
@@ -193,5 +227,116 @@ const deleteUser = (id: number) => {
             :user="user"
             @close="isBanModalOpen = false"
         />
+
+        <!-- Account Deletion Action Modal -->
+        <BaseModal
+            :is-open="isDeleteModalOpen"
+            title="Delete User Account"
+            description="Choose how you want to handle the deletion of this account."
+            maxWidth="md"
+            @close="isDeleteModalOpen = false"
+        >
+            <div class="space-y-4 p-4 sm:p-6">
+                <div
+                    class="rounded-xl border border-slate-100 bg-slate-50 p-3.5 dark:border-gray-800 dark:bg-gray-800/50"
+                >
+                    <p
+                        class="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-gray-400"
+                    >
+                        Target User
+                    </p>
+                    <p
+                        class="text-sm font-semibold text-slate-900 dark:text-white"
+                    >
+                        {{ user.name }}
+                    </p>
+                    <p
+                        v-if="user.email"
+                        class="font-mono text-xs text-slate-600 dark:text-gray-400"
+                    >
+                        {{ user.email }}
+                    </p>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Option 1: Send Deletion Link -->
+                    <button
+                        type="button"
+                        :disabled="!user.email || isSendingDeleteLink"
+                        @click="handleSendDeleteLink(user.id)"
+                        class="group flex w-full items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3.5 text-left transition hover:border-indigo-300 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-indigo-950/50 dark:bg-indigo-950/20 dark:hover:border-indigo-800"
+                    >
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400"
+                        >
+                            <Mail class="h-5 w-5" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-sm font-bold text-indigo-950 dark:text-indigo-200"
+                                    >Send Deletion Link to User</span
+                                >
+                                <span
+                                    class="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 uppercase dark:bg-indigo-900/60 dark:text-indigo-300"
+                                    >Recommended</span
+                                >
+                            </div>
+                            <p
+                                class="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
+                                Sends a secure, 7-day signed authorization link
+                                to their email address. The user confirms and
+                                deletes the account themselves.
+                            </p>
+                            <p
+                                v-if="!user.email"
+                                class="mt-1 text-[11px] font-medium text-amber-600 dark:text-amber-400"
+                            >
+                                User has no email address configured.
+                            </p>
+                        </div>
+                    </button>
+
+                    <!-- Option 2: Delete Instantly (Hard Delete) -->
+                    <button
+                        type="button"
+                        @click="handleHardDelete(user.id)"
+                        class="group flex w-full items-start gap-3 rounded-xl border border-rose-100 bg-rose-50/50 p-3.5 text-left transition hover:border-rose-300 hover:bg-rose-50 dark:border-rose-950/50 dark:bg-rose-950/20 dark:hover:border-rose-800"
+                    >
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 group-hover:bg-rose-200 dark:bg-rose-900/40 dark:text-rose-400"
+                        >
+                            <Trash2 class="h-5 w-5" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <span
+                                class="text-sm font-bold text-rose-950 dark:text-rose-200"
+                                >Delete Instantly (Hard Delete)</span
+                            >
+                            <p
+                                class="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-gray-400"
+                            >
+                                Permanently wipe the account and all associated
+                                data immediately. Sends a farewell notification
+                                email if email is present.
+                            </p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="flex justify-end">
+                    <button
+                        type="button"
+                        @click="isDeleteModalOpen = false"
+                        class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </template>
+        </BaseModal>
     </div>
 </template>

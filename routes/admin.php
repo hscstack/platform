@@ -89,6 +89,7 @@ Route::middleware('permission:edit users')->group(function () {
 });
 
 Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->middleware('permission:delete users')->name('users.destroy');
+Route::post('/users/{user}/send-delete-link', [AdminUserController::class, 'sendDeleteLink'])->middleware('permission:delete users')->name('users.send-delete-link');
 Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->middleware('permission:impersonate users')->name('users.login-as');
 
 // Emails
