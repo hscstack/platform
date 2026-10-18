@@ -5,8 +5,8 @@ namespace App\Notifications;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Cache;
 
 class UserAppreciationNotification extends Notification implements ShouldQueue
 {
@@ -18,14 +18,38 @@ class UserAppreciationNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * Determine if this count represents an achievement milestone.
+     * Send or roll up an appreciation notification to the target user.
      */
-    public function isMilestone(): bool
+    public static function sendTo(User $targetUser, User $appreciator, int $totalAppreciations): void
     {
-        $milestones = [1, 10, 25, 50, 100, 250, 500, 1000];
+        if ($targetUser->id === $appreciator->id) {
+            return;
+        }
 
-        return in_array($this->totalAppreciations, $milestones, true)
-            || ($this->totalAppreciations > 1000 && $this->totalAppreciations % 500 === 0);
+        $unread = $targetUser->unreadNotifications()
+            ->where('type', self::class)
+            ->first();
+
+        if ($unread) {
+            $data = $unread->data;
+            $count = ($data['count'] ?? 1) + 1;
+            $others = $count - 1;
+            $othersText = $others === 1 ? '1 other person' : "{$others} other people";
+
+            $data['count'] = $count;
+            $data['title'] = "{$appreciator->name} and {$othersText} appreciated you!";
+            $data['message'] = "You have {$totalAppreciations} community appreciations.";
+            $data['total_appreciations'] = $totalAppreciations;
+
+            $unread->update([
+                'data' => $data,
+                'created_at' => now(),
+            ]);
+
+            Cache::forever("user:{$targetUser->id}:has_unread_notifs", true);
+        } else {
+            $targetUser->notify(new self($appreciator, $totalAppreciations));
+        }
     }
 
     /**
@@ -35,37 +59,7 @@ class UserAppreciationNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if ($this->isMilestone() && ! empty($notifiable->email) && ($notifiable->receive_emails ?? true)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
-    {
-        $subject = $this->totalAppreciations === 1
-            ? '🎉 You received your first community appreciation!'
-            : "⭐ Milestone: {$this->totalAppreciations} students appreciated your profile!";
-
-        return (new MailMessage)
-            ->subject($subject)
-            ->view('emails.default', [
-                'subject' => $subject,
-                'greeting' => "Hello {$notifiable->name},",
-                'lines' => [
-                    "{$this->appreciator->name} (@{$this->appreciator->username}) just appreciated your contributions on HSCStack!",
-                    "You have now received a total of {$this->totalAppreciations} appreciation".($this->totalAppreciations === 1 ? '' : 's').' from the community.',
-                    'Thank you for your active participation and helpful presence.',
-                ],
-                'actionText' => 'View Profile',
-                'actionUrl' => route('user.profile', $notifiable->username),
-            ]);
+        return ['database'];
     }
 
     /**
@@ -82,6 +76,7 @@ class UserAppreciationNotification extends Notification implements ShouldQueue
             'url' => route('user.profile', $notifiable->username),
             'appreciator_id' => $this->appreciator->id,
             'total_appreciations' => $this->totalAppreciations,
+            'count' => 1,
         ];
     }
 }

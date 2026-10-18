@@ -16,6 +16,8 @@ import {
     Clock,
     LifeBuoy,
     Zap,
+    Megaphone,
+    X,
 } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { getCsrfToken } from '@/lib/useCsrf';
@@ -53,6 +55,8 @@ const notifications = ref<NotificationItem[]>([]);
 const hasMore = ref(false);
 const currentPage = ref(1);
 const dropdownRef = ref<HTMLElement | null>(null);
+const showAnnouncementModal = ref(false);
+const activeAnnouncement = ref<NotificationItem | null>(null);
 
 // Get initial unread state from Inertia shared prop
 const hasUnread = ref<boolean>(
@@ -255,6 +259,19 @@ const markAsRead = async (notification: NotificationItem) => {
 
     closeDropdown();
 
+    if (
+        notification.data?.full_content ||
+        (!notification.data?.url &&
+            (notification.data?.image_url ||
+                notification.data?.type === 'system_announcement' ||
+                notification.data?.type === 'system_notice'))
+    ) {
+        activeAnnouncement.value = notification;
+        showAnnouncementModal.value = true;
+
+        return;
+    }
+
     if (notification.data?.url) {
         router.visit(notification.data.url);
     }
@@ -367,7 +384,7 @@ onBeforeUnmount(() => {
         <!-- Bell Trigger Button (plain blends into rail rows) -->
         <button
             ref="triggerButtonRef"
-            @click="toggleDropdown"
+            @click.stop="toggleDropdown"
             type="button"
             :class="
                 plain
@@ -569,6 +586,14 @@ onBeforeUnmount(() => {
                                         "
                                         class="h-4 w-4 text-indigo-500"
                                     />
+                                    <Megaphone
+                                        v-else-if="
+                                            item.data?.type ===
+                                                'system_announcement' ||
+                                            item.data?.type === 'system_notice'
+                                        "
+                                        class="h-4 w-4 text-amber-500"
+                                    />
                                     <HeartHandshake
                                         v-else-if="
                                             item.data?.type ===
@@ -726,6 +751,106 @@ onBeforeUnmount(() => {
                                 </button>
                             </div>
                         </template>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- System Announcement Detail Modal -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition duration-100 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+            >
+                <div
+                    v-if="showAnnouncementModal && activeAnnouncement"
+                    class="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+                    @click.self="showAnnouncementModal = false"
+                >
+                    <div
+                        class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+                        role="dialog"
+                        aria-modal="true"
+                    >
+                        <div
+                            v-if="activeAnnouncement.data?.image_url"
+                            class="relative max-h-60 w-full overflow-hidden bg-slate-100 dark:bg-gray-800"
+                        >
+                            <img
+                                :src="activeAnnouncement.data.image_url"
+                                :alt="
+                                    activeAnnouncement.data.title ||
+                                    'Announcement'
+                                "
+                                class="h-full w-full object-cover"
+                            />
+                        </div>
+
+                        <div class="p-6">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400"
+                                    >
+                                        <Megaphone class="h-3.5 w-3.5" />
+                                        Announcement
+                                    </span>
+                                    <span
+                                        class="text-[11px] text-slate-400 dark:text-gray-500"
+                                    >
+                                        {{
+                                            activeAnnouncement.created_at_human
+                                        }}
+                                    </span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="showAnnouncementModal = false"
+                                    class="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                    aria-label="Close"
+                                >
+                                    <X class="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            <h3
+                                class="mt-3 text-base font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                {{ activeAnnouncement.data?.title }}
+                            </h3>
+
+                            <div
+                                class="mt-3 max-h-72 overflow-y-auto text-sm leading-relaxed text-slate-600 dark:text-gray-300"
+                                v-html="
+                                    activeAnnouncement.data?.full_content ||
+                                    activeAnnouncement.data?.message
+                                "
+                            />
+
+                            <div
+                                class="mt-6 flex items-center justify-end gap-2.5 border-t border-slate-100 pt-4 dark:border-gray-800"
+                            >
+                                <a
+                                    v-if="activeAnnouncement.data?.url"
+                                    :href="activeAnnouncement.data.url"
+                                    class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700"
+                                >
+                                    View Link &rarr;
+                                </a>
+                                <button
+                                    type="button"
+                                    @click="showAnnouncementModal = false"
+                                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </Transition>

@@ -97,6 +97,10 @@ function openNotificationsFromLabel(
     e: MouseEvent | KeyboardEvent,
     scope: Ref<HTMLElement | null>,
 ) {
+    if ((e.target as HTMLElement | null)?.closest('button')) {
+        return;
+    }
+
     e.stopPropagation();
     e.preventDefault();
     scope.value?.querySelector('button')?.click();

@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Cache;
 
 class ForumVoteNotification extends Notification implements ShouldQueue
 {
@@ -17,6 +18,48 @@ class ForumVoteNotification extends Notification implements ShouldQueue
         public ForumPost|ForumAnswer $item,
         public User $voter,
     ) {}
+
+    /**
+     * Send or roll up a forum vote notification to the author.
+     */
+    public static function sendTo(User $targetUser, ForumPost|ForumAnswer $item, User $voter): void
+    {
+        if ($targetUser->id === $voter->id) {
+            return;
+        }
+
+        $isQuestion = $item instanceof ForumPost;
+        $targetType = $isQuestion ? 'question' : 'answer';
+        $itemId = $item->id;
+        $itemType = $isQuestion ? 'post' : 'answer';
+
+        $unread = $targetUser->unreadNotifications()
+            ->where('type', self::class)
+            ->get()
+            ->first(fn ($n) => ($n->data['item_type'] ?? null) === $itemType && ($n->data['item_id'] ?? null) === $itemId);
+
+        if ($unread) {
+            $data = $unread->data;
+            $count = ($data['count'] ?? 1) + 1;
+            $others = $count - 1;
+            $othersText = $others === 1 ? '1 other person' : "{$others} other people";
+
+            $title = $isQuestion ? $item->title : $item->post->title;
+
+            $data['count'] = $count;
+            $data['title'] = "{$voter->name} and {$othersText} upvoted your {$targetType}";
+            $data['message'] = "\"{$title}\"";
+
+            $unread->update([
+                'data' => $data,
+                'created_at' => now(),
+            ]);
+
+            Cache::forever("user:{$targetUser->id}:has_unread_notifs", true);
+        } else {
+            $targetUser->notify(new self($item, $voter));
+        }
+    }
 
     public function via(object $notifiable): array
     {
@@ -34,6 +77,9 @@ class ForumVoteNotification extends Notification implements ShouldQueue
             'title' => "{$this->voter->name} upvoted your ".($isQuestion ? 'question' : 'answer'),
             'message' => "\"{$title}\"",
             'url' => route('forum.show', $slug),
+            'item_type' => $isQuestion ? 'post' : 'answer',
+            'item_id' => $this->item->id,
+            'count' => 1,
         ];
     }
 }

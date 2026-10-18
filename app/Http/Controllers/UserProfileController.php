@@ -367,7 +367,7 @@ class UserProfileController extends Controller
             ]);
 
             $totalAppreciations = $user->appreciationsReceived()->count();
-            $user->notify(new UserAppreciationNotification($currentAuthUser, $totalAppreciations));
+            UserAppreciationNotification::sendTo($user, $currentAuthUser, $totalAppreciations);
         }
 
         return back();

@@ -36,33 +36,49 @@ test('admin can fetch subscriber emails for import', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $student = User::factory()->create(['email' => 'student@example.com', 'receive_emails' => true]);
-    $staff = User::factory()->create(['email' => 'staff@example.com', 'receive_emails' => true]);
-    $editorRole = Role::findOrCreate('editor', 'web');
-    $staff->assignRole($editorRole);
+    $student = User::factory()->create([
+        'email' => 'student@example.com',
+        'receive_emails' => true,
+        'is_verified' => false,
+    ]);
+    $staff = User::factory()->create([
+        'email' => 'staff@example.com',
+        'receive_emails' => true,
+        'is_verified' => true,
+    ]);
 
-    $unsubscribed = User::factory()->create(['email' => 'unsub@example.com', 'receive_emails' => false]);
+    $unsubscribed = User::factory()->create([
+        'email' => 'unsub@example.com',
+        'receive_emails' => false,
+        'is_verified' => false,
+    ]);
 
     // All subscribed
+    $responseSubscribers = $this->actingAs($admin)->get(route('admin.emails.recipients', ['type' => 'subscribers']));
+    $responseSubscribers->assertOk();
+    $dataSubscribers = $responseSubscribers->json();
+    expect($dataSubscribers['emails'])->toContain('student@example.com', 'staff@example.com')
+        ->and($dataSubscribers['emails'])->not->toContain('unsub@example.com');
+
+    // All registered users
     $responseAll = $this->actingAs($admin)->get(route('admin.emails.recipients', ['type' => 'all']));
     $responseAll->assertOk();
     $dataAll = $responseAll->json();
-    expect($dataAll['emails'])->toContain('student@example.com', 'staff@example.com')
-        ->and($dataAll['emails'])->not->toContain('unsub@example.com');
+    expect($dataAll['emails'])->toContain('student@example.com', 'staff@example.com', 'unsub@example.com');
 
-    // Students only
+    // Students only (is_verified = false)
     $responseStudents = $this->actingAs($admin)->get(route('admin.emails.recipients', ['type' => 'students']));
     $responseStudents->assertOk();
     $dataStudents = $responseStudents->json();
-    expect($dataStudents['emails'])->toContain('student@example.com')
+    expect($dataStudents['emails'])->toContain('student@example.com', 'unsub@example.com')
         ->and($dataStudents['emails'])->not->toContain('staff@example.com');
 
-    // Staff only
+    // Staff only (is_verified = true)
     $responseStaff = $this->actingAs($admin)->get(route('admin.emails.recipients', ['type' => 'staff']));
     $responseStaff->assertOk();
     $dataStaff = $responseStaff->json();
     expect($dataStaff['emails'])->toContain('staff@example.com')
-        ->and($dataStaff['emails'])->not->toContain('student@example.com');
+        ->and($dataStaff['emails'])->not->toContain('student@example.com', 'unsub@example.com');
 });
 
 test('admin can send email to custom and platform emails with automatic deduplication', function () {
@@ -125,7 +141,7 @@ test('admin can upload cover image and attach url to queued mail', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $image = UploadedFile::fake()->image('banner.jpg', 600, 300);
+    $image = UploadedFile::fake()->create('banner.jpg', 100, 'image/jpeg');
 
     $response = $this->actingAs($admin)->post(route('admin.emails.store'), [
         'recipients' => 'student@example.com',

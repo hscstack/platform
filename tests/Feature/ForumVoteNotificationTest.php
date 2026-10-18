@@ -183,3 +183,43 @@ test('repeatedly toggling or switching vote does not trigger spam notifications'
     $this->actingAs($voter)->post(route('forum.posts.vote', $post->id), ['value' => 1]);
     Notification::assertSentToTimes($author, ForumVoteNotification::class, 1);
 });
+
+test('multiple upvotes on a question aggregate into a single unread notification with rolled up titles', function () {
+    $author = User::factory()->create();
+    $voter1 = User::factory()->create(['name' => 'Alice']);
+    $voter2 = User::factory()->create(['name' => 'Bob']);
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-blue-500',
+        'slug' => 'physics-forum-rollup',
+        'icon' => 'atom',
+        'sort_order' => 1,
+    ]);
+
+    $post = ForumPost::create([
+        'user_id' => $author->id,
+        'subject_id' => $subject->id,
+        'curriculum' => 'hsc',
+        'title' => 'Thermodynamics Problem',
+        'body' => 'Question body here',
+        'moderation_status' => 'approved',
+        'is_locked' => false,
+    ]);
+
+    // 1st upvote
+    $this->actingAs($voter1)->post(route('forum.posts.vote', $post->id), ['value' => 1]);
+    expect($author->unreadNotifications()->count())->toBe(1);
+
+    $notif = $author->unreadNotifications()->first();
+    expect($notif->data['title'])->toBe('Alice upvoted your question')
+        ->and($notif->data['count'])->toBe(1);
+
+    // 2nd upvote
+    $this->actingAs($voter2)->post(route('forum.posts.vote', $post->id), ['value' => 1]);
+    expect($author->unreadNotifications()->count())->toBe(1);
+
+    $notif->refresh();
+    expect($notif->data['title'])->toBe('Bob and 1 other person upvoted your question')
+        ->and($notif->data['count'])->toBe(2);
+});

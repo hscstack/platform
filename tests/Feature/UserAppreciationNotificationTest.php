@@ -51,24 +51,89 @@ test('appreciating own profile does not trigger notification', function () {
     Notification::assertNothingSent();
 });
 
-test('UserAppreciationNotification delivers to mail only on milestone count and when opted in', function () {
-    $targetUserSubscribed = User::factory()->create(['username' => 'target1', 'receive_emails' => true]);
-    $targetUserUnsubscribed = User::factory()->create(['username' => 'target2', 'receive_emails' => false]);
+test('UserAppreciationNotification delivers to database channel', function () {
+    $targetUser = User::factory()->create(['username' => 'target1']);
     $appreciator = User::factory()->create(['username' => 'fan']);
 
-    // 1st appreciation (milestone: 1) -> database + mail
-    $notif1 = new UserAppreciationNotification($appreciator, 1);
-    expect($notif1->isMilestone())->toBeTrue()
-        ->and($notif1->via($targetUserSubscribed))->toContain('database', 'mail')
-        ->and($notif1->via($targetUserUnsubscribed))->toBe(['database']);
+    $notif = new UserAppreciationNotification($appreciator, 1);
+    expect($notif->via($targetUser))->toBe(['database']);
+});
 
-    // 2nd appreciation (not milestone) -> database only
-    $notif2 = new UserAppreciationNotification($appreciator, 2);
-    expect($notif2->isMilestone())->toBeFalse()
-        ->and($notif2->via($targetUserSubscribed))->toBe(['database']);
+test('multiple appreciations aggregate into a single unread notification with rolled up titles', function () {
+    $targetUser = User::factory()->create(['username' => 'popular_creator']);
+    $user1 = User::factory()->create(['name' => 'Alice', 'username' => 'alice']);
+    $user2 = User::factory()->create(['name' => 'Bob', 'username' => 'bob']);
+    $user3 = User::factory()->create(['name' => 'Charlie', 'username' => 'charlie']);
+    $user4 = User::factory()->create(['name' => 'David', 'username' => 'david']);
 
-    // 10th appreciation (milestone: 10) -> database + mail
-    $notif10 = new UserAppreciationNotification($appreciator, 10);
-    expect($notif10->isMilestone())->toBeTrue()
-        ->and($notif10->via($targetUserSubscribed))->toContain('database', 'mail');
+    // 1st appreciation by Alice
+    $this->actingAs($user1)->post(route('user.appreciate', $targetUser->id));
+    expect($targetUser->unreadNotifications()->count())->toBe(1);
+
+    $notif = $targetUser->unreadNotifications()->first();
+    expect($notif->data['title'])->toBe('Alice appreciated you!')
+        ->and($notif->data['count'])->toBe(1);
+
+    // 2nd appreciation by Bob
+    $this->actingAs($user2)->post(route('user.appreciate', $targetUser->id));
+    expect($targetUser->unreadNotifications()->count())->toBe(1);
+
+    $notif->refresh();
+    expect($notif->data['title'])->toBe('Bob and 1 other person appreciated you!')
+        ->and($notif->data['count'])->toBe(2);
+
+    // 3rd appreciation by Charlie
+    $this->actingAs($user3)->post(route('user.appreciate', $targetUser->id));
+    expect($targetUser->unreadNotifications()->count())->toBe(1);
+
+    $notif->refresh();
+    expect($notif->data['title'])->toBe('Charlie and 2 other people appreciated you!')
+        ->and($notif->data['count'])->toBe(3);
+
+    // 4th appreciation by David
+    $this->actingAs($user4)->post(route('user.appreciate', $targetUser->id));
+    expect($targetUser->unreadNotifications()->count())->toBe(1);
+
+    $notif->refresh();
+    expect($notif->data['title'])->toBe('David and 3 other people appreciated you!')
+        ->and($notif->data['count'])->toBe(4);
+});
+
+test('reading the notification starts a fresh aggregation on subsequent appreciation', function () {
+    $targetUser = User::factory()->create(['username' => 'popular_creator']);
+    $user1 = User::factory()->create(['name' => 'Alice', 'username' => 'alice']);
+    $user2 = User::factory()->create(['name' => 'Bob', 'username' => 'bob']);
+
+    // Alice appreciates
+    $this->actingAs($user1)->post(route('user.appreciate', $targetUser->id));
+    expect($targetUser->unreadNotifications()->count())->toBe(1);
+
+    // Target user marks all notifications as read
+    $targetUser->unreadNotifications()->update(['read_at' => now()]);
+    expect($targetUser->unreadNotifications()->count())->toBe(0);
+
+    // Bob appreciates -> creates new unread notification
+    $this->actingAs($user2)->post(route('user.appreciate', $targetUser->id));
+    expect($targetUser->unreadNotifications()->count())->toBe(1);
+
+    $newNotif = $targetUser->unreadNotifications()->first();
+    expect($newNotif->data['title'])->toBe('Bob appreciated you!')
+        ->and($newNotif->data['count'])->toBe(1);
+});
+
+test('100 appreciations roll up into title with 99 other people', function () {
+    $targetUser = User::factory()->create(['username' => 'superstar']);
+    $users = User::factory()->count(100)->create();
+
+    foreach ($users as $u) {
+        $this->actingAs($u)->post(route('user.appreciate', $targetUser->id));
+    }
+
+    expect($targetUser->unreadNotifications()->count())->toBe(1);
+
+    $notif = $targetUser->unreadNotifications()->first();
+    $lastUser = $users[99];
+
+    expect($notif->data['count'])->toBe(100)
+        ->and($notif->data['title'])->toBe("{$lastUser->name} and 99 other people appreciated you!");
 });

@@ -109,7 +109,7 @@ class NodeController extends Controller
         }
 
         if ($isFirstTimeUpvote && $node->user_id && $node->user_id !== $user->id) {
-            $node->user->notify(new NodeVoteNotification($node, $user));
+            NodeVoteNotification::sendTo($node->user, $node, $user);
         }
 
         return back();

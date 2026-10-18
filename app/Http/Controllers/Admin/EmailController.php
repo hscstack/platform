@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\BulkAnnouncementMail;
 use App\Models\User;
+use App\Notifications\SystemAnnouncementNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,43 +23,32 @@ class EmailController extends Controller
      */
     public function create(): Response
     {
-        $allSubscribersCount = User::where('receive_emails', true)
-            ->whereNotNull('email')
-            ->count();
-
-        $studentsCount = User::where('receive_emails', true)
-            ->whereNotNull('email')
-            ->doesntHave('roles')
-            ->count();
-
-        $staffCount = User::where('receive_emails', true)
-            ->whereNotNull('email')
-            ->has('roles')
-            ->count();
-
         return Inertia::render('admin/EmailSend', [
-            'recipientCount' => $allSubscribersCount,
-            'studentsCount' => $studentsCount,
-            'staffCount' => $staffCount,
+            'allUsersCount' => User::count(),
+            'recipientCount' => User::where('receive_emails', true)->count(),
+            'studentsCount' => User::where('is_verified', false)->count(),
+            'staffCount' => User::where('is_verified', true)->count(),
         ]);
     }
 
     /**
-     * Fetch raw subscribed email list for importing into the editor.
+     * Fetch raw email list for importing into the editor.
      */
     public function recipients(Request $request): JsonResponse
     {
-        $type = $request->query('type', 'all');
+        $type = $request->query('type', 'subscribers');
 
-        $query = User::where('receive_emails', true)->whereNotNull('email');
+        $query = User::query();
 
-        if ($type === 'students') {
-            $query->doesntHave('roles');
+        if ($type === 'subscribers') {
+            $query->where('receive_emails', true);
+        } elseif ($type === 'students') {
+            $query->where('is_verified', false);
         } elseif ($type === 'staff') {
-            $query->has('roles');
+            $query->where('is_verified', true);
         }
 
-        $emails = $query->pluck('email')->unique()->values();
+        $emails = $query->pluck('email');
 
         return response()->json([
             'emails' => $emails,
@@ -65,7 +57,7 @@ class EmailController extends Controller
     }
 
     /**
-     * Dispatch emails to a list of raw recipient emails.
+     * Dispatch emails and/or in-app announcements.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -74,7 +66,19 @@ class EmailController extends Controller
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
             'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'send_email' => ['sometimes', 'boolean'],
+            'send_in_app' => ['sometimes', 'boolean'],
+            'action_url' => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
+
+        $sendEmail = $request->boolean('send_email', true);
+        $sendInApp = $request->boolean('send_in_app', false);
+
+        if (! $sendEmail && ! $sendInApp) {
+            return redirect()
+                ->route('admin.emails.create')
+                ->with('error', 'Please select at least one delivery channel (Email or In-App Notification).');
+        }
 
         $subject = $validated['subject'];
         $body = $validated['body'];
@@ -95,7 +99,7 @@ class EmailController extends Controller
         if (empty($uniqueEmails)) {
             return redirect()
                 ->route('admin.emails.create')
-                ->with('error', 'No valid recipient email addresses found in the list.');
+                ->withErrors(['recipients' => 'Please provide at least one valid recipient email in the list.']);
         }
 
         $imageUrl = null;
@@ -105,29 +109,37 @@ class EmailController extends Controller
             $imageUrl = str_starts_with($relativeUrl, 'http') ? $relativeUrl : url($relativeUrl);
         }
 
-        // Fetch known user names in bulk for personalization
-        $usersMap = User::whereIn('email', $uniqueEmails)
-            ->pluck('name', 'email')
-            ->toArray();
+        $targetUsers = User::whereIn('email', $uniqueEmails)->get();
 
-        foreach ($uniqueEmails as $email) {
-            $recipientName = $usersMap[$email] ?? null;
+        if ($sendEmail) {
+            $usersMap = $targetUsers->pluck('name', 'email');
 
-            Mail::to($email)->queue(
-                new BulkAnnouncementMail(
-                    mailSubject: $subject,
-                    mailContent: $body,
-                    recipientName: $recipientName,
-                    imageUrl: $imageUrl,
-                )
-            );
+            foreach ($uniqueEmails as $email) {
+                Mail::to($email)->queue(
+                    new BulkAnnouncementMail(
+                        mailSubject: $subject,
+                        mailContent: $body,
+                        recipientName: $usersMap[$email] ?? null,
+                        imageUrl: $imageUrl,
+                    )
+                );
+            }
         }
 
-        $totalCount = count($uniqueEmails);
-        $emailPlural = $totalCount === 1 ? 'recipient' : 'recipients';
+        if ($sendInApp && $targetUsers->isNotEmpty()) {
+            $announcement = new SystemAnnouncementNotification(
+                title: $subject,
+                snippet: Str::limit(strip_tags($body), 120),
+                fullContent: $body,
+                imageUrl: $imageUrl,
+                url: $validated['action_url'] ?? null,
+            );
+
+            Notification::send($targetUsers, $announcement);
+        }
 
         return redirect()
             ->route('admin.emails.create')
-            ->with('success', "Email successfully queued for {$totalCount} unique {$emailPlural}.");
+            ->with('success', 'Announcement successfully dispatched.');
     }
 }

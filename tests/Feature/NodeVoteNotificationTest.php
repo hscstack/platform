@@ -195,3 +195,41 @@ test('NodeVoteNotification constructs full nested path for child folders', funct
         ->and($data['title'])->toBe('Diligent Student upvoted your folder')
         ->and($data['message'])->toBe('"Class"');
 });
+
+test('multiple upvotes on a node aggregate into a single unread notification with rolled up titles', function () {
+    $author = User::factory()->create();
+    $voter1 = User::factory()->create(['name' => 'Alice']);
+    $voter2 = User::factory()->create(['name' => 'Bob']);
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-blue-500',
+        'slug' => 'physics-rollup',
+        'icon' => 'atom',
+        'sort_order' => 1,
+    ]);
+
+    $node = Node::create([
+        'user_id' => $author->id,
+        'subject_id' => $subject->id,
+        'name' => 'Electromagnetism',
+        'slug' => 'electromagnetism',
+        'sort_order' => 1,
+    ]);
+
+    // 1st upvote
+    $this->actingAs($voter1)->post(route('nodes.vote', $node->id), ['type' => 'up']);
+    expect($author->unreadNotifications()->count())->toBe(1);
+
+    $notif = $author->unreadNotifications()->first();
+    expect($notif->data['title'])->toBe('Alice upvoted your folder')
+        ->and($notif->data['count'])->toBe(1);
+
+    // 2nd upvote
+    $this->actingAs($voter2)->post(route('nodes.vote', $node->id), ['type' => 'up']);
+    expect($author->unreadNotifications()->count())->toBe(1);
+
+    $notif->refresh();
+    expect($notif->data['title'])->toBe('Bob and 1 other person upvoted your folder')
+        ->and($notif->data['count'])->toBe(2);
+});

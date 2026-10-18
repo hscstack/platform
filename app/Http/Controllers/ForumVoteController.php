@@ -64,7 +64,7 @@ class ForumVoteController extends Controller
         });
 
         if ($isFirstTimeUpvote && $post->user_id !== $userId) {
-            $post->user->notify(new ForumVoteNotification($post, $user));
+            ForumVoteNotification::sendTo($post->user, $post, $user);
         }
 
         return back();
@@ -123,7 +123,7 @@ class ForumVoteController extends Controller
         });
 
         if ($isFirstTimeUpvote && $answer->user_id !== $userId) {
-            $answer->user->notify(new ForumVoteNotification($answer, $user));
+            ForumVoteNotification::sendTo($answer->user, $answer, $user);
         }
 
         return back();

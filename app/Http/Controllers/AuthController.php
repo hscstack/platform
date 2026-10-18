@@ -220,7 +220,7 @@ class AuthController extends Controller
                         ]);
 
                         $totalAppreciations = $targetUser->appreciationsReceived()->count();
-                        $targetUser->notify(new UserAppreciationNotification($user, $totalAppreciations));
+                        UserAppreciationNotification::sendTo($targetUser, $user, $totalAppreciations);
                     }
                 }
             }
