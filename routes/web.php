@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutUsController;
+use App\Http\Controllers\AccountDeletionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
@@ -36,6 +37,12 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/account/delete', [ProfileController::class, 'deleteAccount'])->name('account.delete');
     Route::post('/api/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store');
+
+    // Signed Account Deletion by User
+    Route::middleware(['signed', 'throttle:6,1'])->withoutMiddleware(['auth'])->group(function () {
+        Route::get('/account/delete/verify/{user}', [AccountDeletionController::class, 'showConfirm'])->name('account.delete.verify');
+        Route::post('/account/delete/verify/{user}', [AccountDeletionController::class, 'confirmDelete'])->name('account.delete.confirm');
+    });
 
     // Blog Authoring & Management
     Route::middleware('permission:create blogs|manage blogs')->group(function () {

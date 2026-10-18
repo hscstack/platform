@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Mail\AccountDeletedMail;
+use App\Mail\AccountDeletionLinkMail;
 use App\Models\User;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 
@@ -168,6 +170,29 @@ class UserController extends Controller
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
+    }
+
+    /**
+     * Send a temporary signed account deletion link to the user.
+     */
+    public function sendDeleteLink(User $user)
+    {
+        if (empty($user->email)) {
+            return back()->with('error', 'This user does not have an email address.');
+        }
+
+        $signedUrl = URL::temporarySignedRoute(
+            'account.delete.verify',
+            now()->addDays(7),
+            [
+                'user' => $user->id,
+                'hash' => sha1($user->email),
+            ]
+        );
+
+        Mail::to($user->email)->queue(new AccountDeletionLinkMail($user, $signedUrl));
+
+        return back()->with('success', "Deletion link sent successfully to {$user->email}.");
     }
 
     /**
