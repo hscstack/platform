@@ -46,12 +46,7 @@ class AccountDeletionController extends Controller
             $request->session()->regenerateToken();
         }
 
-        $email = $user->email;
-        $name = $user->name;
-
-        if (! empty($email)) {
-            Mail::to($email)->queue(new AccountDeletedMail($name));
-        }
+        Mail::to($user->email)->queue(new AccountDeletedMail($user->name));
 
         $user->delete();
 
