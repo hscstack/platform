@@ -167,7 +167,7 @@ const handleSubmit = () => {
 
                 <!-- Before & After Preview Card -->
                 <div
-                    class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-gray-800 dark:bg-gray-800/40"
+                    class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-slate-800/60 dark:bg-gray-800/40"
                 >
                     <div
                         class="mb-2.5 flex items-center justify-between text-[11px] font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
@@ -222,7 +222,7 @@ const handleSubmit = () => {
 
             <!-- Footer -->
             <div
-                class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/60"
+                class="flex items-center justify-end gap-2 border-t border-slate-200/60 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-slate-800/60 dark:bg-gray-900/60"
             >
                 <button
                     type="button"

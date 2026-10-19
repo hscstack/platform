@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import AtmosphericBackground from '@/components/AtmosphericBackground.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -11,8 +11,11 @@ import {
     SiteRail as SideRail,
 } from '@/components/navigation/Navigation';
 import ToastNotification from '@/components/ToastNotification.vue';
+import { installAdminFormGuard } from '@/lib/adminFormGuard';
 import { useBreakpoint } from '@/lib/useBreakpoint';
 import { useOrientation } from '@/lib/useOrientation';
+
+onMounted(() => installAdminFormGuard());
 
 const page = usePage();
 const isDashboard = computed(() => {
@@ -93,19 +96,24 @@ const drawerOpen = ref(false);
                     ]"
                 >
                     <!-- Top back button on admin sub-pages -->
-                    <div v-if="!isDashboard" class="mb-3.5">
+                    <div v-if="!isDashboard" class="mb-5">
                         <Link
                             href="/admin"
-                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                            class="inline-flex items-center gap-1.5 rounded-full bg-white/60 px-3 py-1.5 text-xs font-semibold text-slate-500 ring-1 ring-slate-200/60 backdrop-blur transition-colors hover:bg-white/90 hover:text-indigo-600 dark:bg-slate-900/50 dark:text-gray-400 dark:ring-slate-800/60 dark:hover:bg-slate-900/80 dark:hover:text-indigo-400"
                         >
-                            <ArrowLeft class="h-4 w-4" />
+                            <ArrowLeft class="h-3.5 w-3.5" />
                             <span>Back to Dashboard</span>
                         </Link>
                     </div>
 
-                    <div
-                        class="flex w-full flex-1 flex-col rounded-2xl border border-slate-200/90 bg-white p-4.5 shadow-2xs sm:p-7 md:p-8 dark:border-gray-800 dark:bg-gray-900"
-                    >
+                    <!--
+                        Pages render directly on the atmospheric background.
+                        There is deliberately no wrapper card here: surfaces
+                        are provided by each page's own glass sections, one
+                        level deep, so the admin floats like the rest of the
+                        site instead of sitting in an opaque box.
+                    -->
+                    <div class="flex w-full flex-1 flex-col">
                         <slot />
                     </div>
                 </main>

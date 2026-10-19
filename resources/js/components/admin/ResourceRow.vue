@@ -75,7 +75,7 @@ const handleDelete = () => {
 <template>
     <div
         @click="router.visit(`/resources/${resource?.id}`)"
-        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-amber-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-amber-500/30 dark:hover:bg-gray-800/40"
+        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-white/70 p-3 ring-1 ring-slate-200/60 backdrop-blur-xl transition-colors duration-150 hover:bg-white/85 hover:ring-amber-300/70 sm:p-3.5 dark:bg-slate-900/60 dark:ring-slate-800/60 dark:hover:bg-slate-900/75 dark:hover:ring-amber-500/40"
     >
         <!-- Left: Resource Icon + Full Title -->
         <div class="flex min-w-0 flex-1 items-center gap-3">
@@ -110,7 +110,7 @@ const handleDelete = () => {
 
                 <!-- Resource Type Badge -->
                 <span
-                    class="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 uppercase ring-1 ring-amber-600/20 ring-inset dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30"
+                    class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 uppercase ring-1 ring-amber-600/20 ring-inset dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30"
                 >
                     {{ resource?.resource_type }}
                 </span>
@@ -126,7 +126,7 @@ const handleDelete = () => {
                             resource,
                         )
                     "
-                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 transition hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/30"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 transition hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/30"
                     title="View proposed changes"
                 >
                     <Eye class="h-3 w-3" />
@@ -142,7 +142,7 @@ const handleDelete = () => {
                             resource,
                         )
                     "
-                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
                     title="View deletion request"
                 >
                     <Eye class="h-3 w-3" />
@@ -160,7 +160,7 @@ const handleDelete = () => {
                             resource,
                         )
                     "
-                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
                     title="View rejected edit feedback"
                 >
                     <AlertCircle
@@ -178,7 +178,7 @@ const handleDelete = () => {
                             resource,
                         )
                     "
-                    class="inline-flex cursor-pointer items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 transition hover:bg-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
                     title="View rejected deletion feedback"
                 >
                     <AlertCircle
@@ -205,7 +205,7 @@ const handleDelete = () => {
                         resource,
                     )
                 "
-                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                class="inline-flex h-7 cursor-pointer items-center gap-1 rounded-[10px] bg-white/70 px-2.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 backdrop-blur transition-colors hover:bg-white/90 hover:text-slate-900 dark:bg-slate-900/60 dark:text-gray-300 dark:ring-slate-800/60 dark:hover:bg-slate-900/85"
             >
                 <Eye class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
                 <span>Preview</span>
@@ -221,7 +221,7 @@ const handleDelete = () => {
                         resource,
                     )
                 "
-                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-rose-200 bg-rose-50/60 px-2.5 py-1 text-xs font-semibold text-rose-700 shadow-2xs transition hover:bg-rose-100/80 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
+                class="inline-flex h-7 cursor-pointer items-center gap-1 rounded-[10px] bg-rose-50/80 px-2.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-200/70 backdrop-blur transition-colors hover:bg-rose-100/80 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/25 dark:hover:bg-rose-500/15"
             >
                 <AlertCircle
                     class="h-3.5 w-3.5 text-rose-600 dark:text-rose-400"

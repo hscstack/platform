@@ -80,9 +80,20 @@ function preferredHomeHref(currentUrl: string): string {
     return currentUrl.startsWith('/ssc') ? '/ssc' : '/';
 }
 
+/**
+ * Matches /admin against the dashboard, its query string, and all subpages.
+ * Other destinations use a plain URL prefix match.
+ */
 function isActiveAdminRoute(to: string, currentUrl: string): boolean {
     if (to === '/admin') {
-        return currentUrl === '/admin' || currentUrl.startsWith('/admin?');
+        // Highlight the admin rail entry for every admin surface
+        // (e.g. /admin/users, /admin/tickets?status=open) so users on a
+        // deep admin page still see which section they're in.
+        return (
+            currentUrl === '/admin' ||
+            currentUrl.startsWith('/admin/') ||
+            currentUrl.startsWith('/admin?')
+        );
     }
 
     return currentUrl.startsWith(to);

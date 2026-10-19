@@ -250,7 +250,7 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
         <div v-if="request" class="space-y-4 p-4 sm:p-6">
             <!-- Modal Header Meta (Location, Submitter, Live Link) -->
             <div
-                class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 text-xs text-slate-500 dark:border-gray-800 dark:text-gray-400"
+                class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-3 text-xs text-slate-500 dark:border-slate-800/60 dark:text-gray-400"
             >
                 <div
                     v-if="getNodeBreadcrumbs(request.node).length > 0"
@@ -351,7 +351,7 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                 <!-- External URL -->
                 <div
                     v-if="request.payload?.external_url"
-                    class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-600 dark:border-gray-800 dark:bg-gray-800/40 dark:text-gray-300"
+                    class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-600 dark:border-slate-800/60 dark:bg-gray-800/40 dark:text-gray-300"
                 >
                     <ExternalLink
                         class="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-gray-500"
@@ -371,7 +371,7 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                 <!-- Staged Uploaded File -->
                 <div
                     v-if="request.staged_file_url"
-                    class="rounded-xl border border-slate-200/80 bg-slate-50/50 p-2.5 dark:border-gray-800 dark:bg-gray-800/30"
+                    class="rounded-xl border border-slate-200/80 bg-slate-50/50 p-2.5 dark:border-slate-800/60 dark:bg-gray-800/30"
                 >
                     <img
                         v-if="request.payload?.resource_type === 'image'"
@@ -423,16 +423,16 @@ const getChangedFields = (req: ChangeRequest): ChangedField[] => {
                     <div
                         v-for="change in getChangedFields(request)"
                         :key="`modal-diff-${change.key}`"
-                        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800/60 dark:bg-gray-900"
                     >
                         <div
-                            class="border-b border-slate-100 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300"
+                            class="border-b border-slate-200/60 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 dark:border-slate-800/60 dark:bg-gray-800/60 dark:text-gray-300"
                         >
                             {{ change.label }}
                         </div>
 
                         <div
-                            class="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 dark:divide-gray-800"
+                            class="grid grid-cols-1 divide-y divide-slate-200/60 sm:grid-cols-2 sm:divide-x sm:divide-y-0 dark:divide-gray-800"
                         >
                             <!-- Before -->
                             <div class="bg-slate-50/40 p-3 dark:bg-gray-900/30">

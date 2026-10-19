@@ -537,7 +537,7 @@ const handleReject = () => {
                 <Clock class="h-3.5 w-3.5" />
                 <span>Pending</span>
                 <span
-                    class="py-0.2 rounded-full px-1.5 text-[10px] font-bold"
+                    class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                     :class="[
                         filters.status === 'pending'
                             ? 'bg-amber-600 text-white'
@@ -561,7 +561,7 @@ const handleReject = () => {
                 <Check class="h-3.5 w-3.5" />
                 <span>Approved</span>
                 <span
-                    class="py-0.2 rounded-full px-1.5 text-[10px] font-bold"
+                    class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                     :class="[
                         filters.status === 'approved'
                             ? 'bg-emerald-700 text-white'
@@ -585,7 +585,7 @@ const handleReject = () => {
                 <X class="h-3.5 w-3.5" />
                 <span>Rejected</span>
                 <span
-                    class="py-0.2 rounded-full px-1.5 text-[10px] font-bold"
+                    class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                     :class="[
                         filters.status === 'rejected'
                             ? 'bg-rose-700 text-white'
@@ -791,7 +791,7 @@ const handleReject = () => {
                                             req.action_type === 'update' &&
                                             getChangedFields(req).length > 0
                                         "
-                                        class="py-0.2 rounded bg-amber-100/80 px-1.5 text-[10px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                                        class="rounded bg-amber-100/80 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
                                     >
                                         {{ getChangedFields(req).length }}
                                         changed

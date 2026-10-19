@@ -569,7 +569,7 @@ const submitForm = async () => {
             <!-- Compression Status Bar -->
             <div
                 v-if="isCompressing"
-                class="border-t border-slate-100 bg-indigo-50/70 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-indigo-950/30"
+                class="border-t border-slate-200/60 bg-indigo-50/70 px-4 py-3 sm:px-6 dark:border-slate-800/60 dark:bg-indigo-950/30"
             >
                 <div
                     class="flex items-center gap-2 text-xs font-medium text-indigo-600 dark:text-indigo-400"
@@ -582,7 +582,7 @@ const submitForm = async () => {
             <!-- Upload Progress Bar -->
             <div
                 v-if="!isCompressing && isSaving && uploadProgress !== null"
-                class="border-t border-slate-100 bg-slate-50/80 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/80"
+                class="border-t border-slate-200/60 bg-slate-50/80 px-4 py-3 sm:px-6 dark:border-slate-800/60 dark:bg-gray-900/80"
             >
                 <div class="mb-1.5 flex items-center justify-between text-xs">
                     <span
@@ -623,7 +623,7 @@ const submitForm = async () => {
 
             <!-- Footer -->
             <div
-                class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-gray-800 dark:bg-gray-900/60"
+                class="flex items-center justify-end gap-2 border-t border-slate-200/60 bg-slate-50/60 px-4 py-3 sm:px-6 dark:border-slate-800/60 dark:bg-gray-900/60"
             >
                 <button
                     type="button"

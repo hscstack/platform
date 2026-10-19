@@ -20,7 +20,7 @@ const { can } = usePermissions();
     <div
         v-if="status === 'pending'"
         @click="emit('preview', submission)"
-        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-amber-200/80 bg-amber-50/50 p-3 transition hover:border-amber-300 hover:bg-amber-50 sm:p-3.5 dark:border-amber-900/40 dark:bg-amber-950/20 dark:hover:border-amber-800/80"
+        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-amber-50/60 p-3 ring-1 ring-amber-200/70 backdrop-blur-xl transition-colors duration-150 hover:bg-amber-50 sm:p-3.5 dark:bg-amber-500/10 dark:ring-amber-500/20 dark:hover:bg-amber-500/15 dark:hover:ring-amber-500/30"
     >
         <div class="flex min-w-0 flex-1 items-center gap-3">
             <div
@@ -37,7 +37,7 @@ const { can } = usePermissions();
                 </h3>
 
                 <span
-                    class="inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
+                    class="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
                 >
                     New Upload Pending
                 </span>
@@ -55,7 +55,7 @@ const { can } = usePermissions();
             <button
                 type="button"
                 @click.stop="emit('preview', submission)"
-                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                class="inline-flex h-7 cursor-pointer items-center gap-1 rounded-[10px] bg-white/70 px-2.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 backdrop-blur transition-colors hover:bg-white/90 hover:text-slate-900 dark:bg-slate-900/60 dark:text-gray-300 dark:ring-slate-800/60 dark:hover:bg-slate-900/85"
             >
                 <Eye class="h-3.5 w-3.5 text-slate-500" />
                 <span>Preview</span>
@@ -65,7 +65,7 @@ const { can } = usePermissions();
                 v-if="can('moderate resources')"
                 href="/admin/moderation/resources"
                 @click.stop
-                class="inline-flex cursor-pointer items-center rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-amber-800 shadow-2xs hover:bg-amber-50 dark:border-amber-800 dark:bg-gray-900 dark:text-amber-300 dark:hover:bg-gray-800"
+                class="inline-flex h-7 cursor-pointer items-center gap-1 rounded-[10px] bg-amber-50/80 px-2.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-300/60 backdrop-blur transition-colors hover:bg-amber-100/80 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/25 dark:hover:bg-amber-500/15"
             >
                 Review in Queue
             </Link>
@@ -76,7 +76,7 @@ const { can } = usePermissions();
     <div
         v-else-if="status === 'rejected'"
         @click="emit('preview', submission)"
-        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-rose-200/80 bg-rose-50/50 p-3 transition hover:border-rose-300 hover:bg-rose-50 sm:p-3.5 dark:border-rose-900/40 dark:bg-rose-950/20 dark:hover:border-rose-800/80"
+        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-rose-50/60 p-3 ring-1 ring-rose-200/70 backdrop-blur-xl transition-colors duration-150 hover:bg-rose-50 sm:p-3.5 dark:bg-rose-500/10 dark:ring-rose-500/20 dark:hover:bg-rose-500/15 dark:hover:ring-rose-500/30"
     >
         <div class="flex min-w-0 flex-1 items-center gap-3">
             <div
@@ -95,7 +95,7 @@ const { can } = usePermissions();
                 </h3>
 
                 <span
-                    class="inline-flex items-center gap-1 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
+                    class="inline-flex items-center gap-1 rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
                 >
                     Upload Rejected
                 </span>
@@ -113,7 +113,7 @@ const { can } = usePermissions();
             <button
                 type="button"
                 @click.stop="emit('preview', submission)"
-                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                class="inline-flex h-7 cursor-pointer items-center gap-1 rounded-[10px] bg-white/70 px-2.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 backdrop-blur transition-colors hover:bg-white/90 hover:text-slate-900 dark:bg-slate-900/60 dark:text-gray-300 dark:ring-slate-800/60 dark:hover:bg-slate-900/85"
             >
                 <Eye class="h-3.5 w-3.5 text-slate-500" />
                 <span>Feedback</span>
