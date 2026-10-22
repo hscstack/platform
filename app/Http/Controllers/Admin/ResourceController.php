@@ -3,92 +3,80 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\ResourceController as BaseResourceController;
-use App\Http\Requests\Resource\UpdateResourceRequest;
-use App\Models\Node;
 use App\Models\Resource;
-use App\Models\ResourceChangeRequest;
+use App\Notifications\ResourceModerationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ResourceController extends BaseResourceController
 {
-    public function update(UpdateResourceRequest $request, Resource $resource)
+    public function approve(Resource $resource)
     {
-        $validated = $request->validated();
+        abort_unless(Auth::user()?->can('moderate resources'), 403, 'Unauthorized.');
 
-        $isModerator = $request->user()->can('moderate resources');
+        $resource->update([
+            'status' => 'approved',
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ]);
 
-        if (! $isModerator) {
-            $this->ensureCanSubmit(1);
+        if ($resource->user && $resource->user_id !== Auth::id()) {
+            $resource->user->notify(new ResourceModerationNotification($resource, 'approved'));
         }
 
-        if ($request->hasFile('file')) {
-            if ($isModerator && $resource->file_path) {
-                Storage::delete($resource->file_path);
+        return back()->with('success', 'Resource approved and published successfully.');
+    }
+
+    public function reject(Request $request, Resource $resource)
+    {
+        abort_unless(Auth::user()?->can('moderate resources'), 403, 'Unauthorized.');
+
+        $validated = $request->validate([
+            'admin_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        // Clean up uploaded files in S3/R2
+        foreach ($resource->items as $item) {
+            if (! str_starts_with($item->source, 'http://') && ! str_starts_with($item->source, 'https://')) {
+                Storage::disk('s3')->delete($item->source);
             }
-            $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
         }
 
-        if ($isModerator) {
-            $resource->update($validated);
+        $resource->update([
+            'status' => 'rejected',
+            'admin_note' => $validated['admin_note'] ?? null,
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ]);
 
-            return back()->with('success', 'Resource updated successfully.');
+        if ($resource->user && $resource->user_id !== Auth::id()) {
+            $resource->user->notify(new ResourceModerationNotification($resource, 'rejected', $validated['admin_note'] ?? null));
         }
 
-        ResourceChangeRequest::recordUpdate(
-            Auth::id(),
-            $resource,
-            $validated
-        );
-
-        return back()->with('success', 'Resource update submitted for moderation.');
+        return back()->with('success', 'Resource rejected.');
     }
 
     public function destroy(Resource $resource)
     {
-        if (Auth::user()?->can('moderate resources')) {
-            if ($resource->file_path) {
-                Storage::delete($resource->file_path);
-            }
-            $resource->delete();
-
-            return redirect()->back()->with('success', 'Resource deleted successfully.');
+        $user = Auth::user();
+        if (! $user?->can('moderate resources') && ! $user?->can('delete resources')) {
+            abort(403, 'Unauthorized. Only users with moderation/deletion permissions can delete resources.');
         }
 
-        $this->ensureCanSubmit(1);
-
-        ResourceChangeRequest::recordDelete(Auth::id(), $resource);
-
-        return redirect()->back()->with('success', 'Resource deletion request submitted for moderation.');
-    }
-
-    public function bulkRename(Request $request, Node $node)
-    {
-        if ($node->isEffectivelyFrozen()) {
+        if ($resource->node?->isEffectivelyFrozen()) {
             abort(403, 'This folder is frozen and cannot be modified.');
         }
 
-        $validated = $request->validate([
-            'prefix' => ['required', 'string', 'max:100'],
-            'start_number' => ['nullable', 'integer', 'min:0'],
-        ]);
-
-        $rawPrefix = trim($validated['prefix']);
-        $cleanPrefix = rtrim($rawPrefix, ' -');
-        $startNumber = (int) ($validated['start_number'] ?? 1);
-
-        $resources = $node->resources()->orderBy('id')->get();
-
-        DB::transaction(function () use ($resources, $cleanPrefix, $startNumber) {
-            foreach ($resources as $index => $resource) {
-                $number = str_pad((string) ($startNumber + $index), 2, '0', STR_PAD_LEFT);
-                $title = $cleanPrefix !== '' ? "{$cleanPrefix} - {$number}" : $number;
-                $resource->update(['title' => $title]);
+        // Clean up stored items in S3/R2
+        foreach ($resource->items as $item) {
+            if (! str_starts_with($item->source, 'http://') && ! str_starts_with($item->source, 'https://')) {
+                Storage::disk('s3')->delete($item->source);
             }
-        });
+        }
 
-        return back()->with('success', "Renamed {$resources->count()} resources successfully.");
+        $resource->delete();
+
+        return redirect()->back()->with('success', 'Resource deleted successfully.');
     }
 }

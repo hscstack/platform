@@ -109,23 +109,4 @@ class Node extends Model
     {
         return $this->hasMany(NodeCompletion::class);
     }
-
-    public function changeRequests()
-    {
-        return $this->hasMany(ResourceChangeRequest::class);
-    }
-
-    public function pendingCreateRequests()
-    {
-        return $this->hasMany(ResourceChangeRequest::class)
-            ->where('action_type', 'create')
-            ->where('status', 'pending');
-    }
-
-    public function rejectedCreateRequests()
-    {
-        return $this->hasMany(ResourceChangeRequest::class)
-            ->where('action_type', 'create')
-            ->where('status', 'rejected');
-    }
 }

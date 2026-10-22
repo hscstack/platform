@@ -71,10 +71,11 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
 
     // Resource Actions & Uploads
+    Route::post('/resources/upload-url', [ResourceController::class, 'generateUploadUrl'])->name('resources.upload-url');
+    Route::post('/resources/documents', [ResourceController::class, 'storeDocument'])->name('resources.documents.store');
+    Route::post('/resources/notes', [ResourceController::class, 'storeDocument'])->name('resources.notes.store');
+    Route::post('/resources/videos', [ResourceController::class, 'storeVideo'])->name('resources.videos.store');
     Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
-    Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
-    Route::post('/resources/bulk/images', [ResourceController::class, 'storeBulkImages'])->name('resources.bulk.images');
-    Route::post('/resources/bulk/videos', [ResourceController::class, 'storeBulkVideos'])->name('resources.bulk.videos');
 
     // My Submissions
     Route::get('/my-submissions', [SubmissionController::class, 'index'])->name('submissions.index');

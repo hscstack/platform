@@ -7,7 +7,6 @@ use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Notice;
 use App\Models\Resource;
-use App\Models\ResourceChangeRequest;
 use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -46,20 +45,16 @@ class DeleteUnusedImages extends Command
                 ->toArray()
         );
 
-        // Resource files (notes, images, videos — all stored under resources/)
-        // Also protects pending change requests awaiting moderation review
-        $activeResourceFiles = Resource::whereNotNull('file_path')->pluck('file_path')->toArray();
-        $pendingChangeRequestFiles = ResourceChangeRequest::where('status', 'pending')
-            ->whereNotNull('payload')
-            ->get()
-            ->pluck('payload.file_path')
-            ->filter()
-            ->values()
+        // Resource files (items stored under resources/)
+        $activeResourceFiles = DB::table('resource_items')
+            ->whereNotNull('source')
+            ->where('source', 'not like', 'http%')
+            ->pluck('source')
             ->toArray();
 
         $this->cleanDirectory(
             'resources',
-            array_values(array_unique(array_merge($activeResourceFiles, $pendingChangeRequestFiles)))
+            array_values(array_unique($activeResourceFiles))
         );
 
         // Forum post images

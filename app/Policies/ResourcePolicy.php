@@ -12,7 +12,7 @@ class ResourcePolicy
      */
     public function update(User $user, Resource $resource): bool
     {
-        if ($resource->node?->isEffectivelyFrozen() || $resource->hasPendingChangeRequest()) {
+        if ($resource->node?->isEffectivelyFrozen()) {
             return false;
         }
 
@@ -24,10 +24,10 @@ class ResourcePolicy
      */
     public function delete(User $user, Resource $resource): bool
     {
-        if ($resource->node?->isEffectivelyFrozen() || $resource->hasPendingChangeRequest()) {
+        if ($resource->node?->isEffectivelyFrozen()) {
             return false;
         }
 
-        return $user->id === $resource->user_id || $user->can('delete resources');
+        return $user->can('delete resources') || $user->can('moderate resources');
     }
 }

@@ -50,25 +50,22 @@ class NodeController extends Controller
             }
         }
 
-        $pendingCreates = $node->pendingCreateRequests()
-            ->with('user:id,name,username')
+        $pendingCreates = $node->resources()
+            ->where('status', 'pending')
+            ->with(['user:id,name,username', 'items', 'firstItem'])
             ->get();
 
-        $rejectedCreates = $node->rejectedCreateRequests()
+        $rejectedCreates = $node->resources()
+            ->where('status', 'rejected')
             ->where('user_id', Auth::id())
-            ->with(['user:id,name,username', 'reviewer:id,name,username'])
+            ->with(['user:id,name,username', 'reviewer:id,name,username', 'items', 'firstItem'])
             ->latest('reviewed_at')
             ->take(10)
             ->get();
 
         $resources = $node->resources()
-            ->with([
-                'pendingChangeRequest.user:id,name,username',
-                'latestRejectedChangeRequest' => function ($query) {
-                    $query->where('user_id', Auth::id())
-                        ->with('reviewer:id,name,username');
-                },
-            ])
+            ->where('status', 'approved')
+            ->with(['items', 'firstItem', 'user:id,name,username'])
             ->get();
 
         return Inertia::render('admin/Node', [

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ResourceChangeRequest;
+use App\Models\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -13,8 +13,8 @@ class SubmissionController extends Controller
     {
         $user = Auth::user();
 
-        $maxLimit = $user->is_verified ? 100 : 30;
-        $counts = ResourceChangeRequest::where('user_id', $user->id)
+        $maxLimit = $user->is_verified ? 50 : 20;
+        $counts = Resource::where('user_id', $user->id)
             ->selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -25,8 +25,8 @@ class SubmissionController extends Controller
         $totalCount = (int) $counts->sum();
 
         $status = $request->query('status');
-        $query = ResourceChangeRequest::where('user_id', $user->id)
-            ->with(['resource', 'node.subject'])
+        $query = Resource::where('user_id', $user->id)
+            ->with(['node.subject', 'items', 'firstItem'])
             ->latest();
 
         if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {

@@ -18,6 +18,10 @@ class Resource extends Model
         'resource_type',
         'title',
         'description',
+        'status',
+        'admin_note',
+        'reviewed_by',
+        'reviewed_at',
         'vote_score',
         'upvotes_count',
         'downvotes_count',
@@ -29,6 +33,7 @@ class Resource extends Model
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -61,6 +66,16 @@ class Resource extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
     public function votes(): HasMany
     {
         return $this->hasMany(ResourceVote::class);
@@ -74,29 +89,5 @@ class Resource extends Model
     public function downvotes(): HasMany
     {
         return $this->hasMany(ResourceVote::class)->where('value', -1);
-    }
-
-    public function changeRequests(): HasMany
-    {
-        return $this->hasMany(ResourceChangeRequest::class);
-    }
-
-    public function pendingChangeRequest(): HasOne
-    {
-        return $this->hasOne(ResourceChangeRequest::class)->where('status', 'pending');
-    }
-
-    public function latestRejectedChangeRequest(): HasOne
-    {
-        return $this->hasOne(ResourceChangeRequest::class)
-            ->where('status', 'rejected')
-            ->latestOfMany('reviewed_at');
-    }
-
-    public function hasPendingChangeRequest(): bool
-    {
-        return $this->relationLoaded('pendingChangeRequest')
-            ? $this->pendingChangeRequest !== null
-            : $this->pendingChangeRequest()->exists();
     }
 }

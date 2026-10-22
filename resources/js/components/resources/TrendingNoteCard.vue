@@ -61,8 +61,8 @@ const props = defineProps<{
 
 const getYouTubeThumbnail = (url?: string | null): string | null => {
     if (!url) {
-return null;
-}
+        return null;
+    }
 
     const match = url.match(
         /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/,
@@ -75,8 +75,8 @@ const previewImageUrl = computed(() => {
     const item = props.note.first_item;
 
     if (!item) {
-return null;
-}
+        return null;
+    }
 
     if (item.format === 'image' && item.url) {
         return item.url;

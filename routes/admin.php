@@ -8,7 +8,6 @@ use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\PeerSettingsController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
-use App\Http\Controllers\Admin\ResourceModerationController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -47,20 +46,12 @@ Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middlew
 
 Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
 
-Route::post('/resources/{resource}/patch', [AdminResourceController::class, 'update'])->middleware('can:update,resource');
-
-Route::middleware('permission:edit resources')->group(function () {
-    Route::post('/nodes/{node}/resources/bulk-rename', [AdminResourceController::class, 'bulkRename'])->name('resources.bulk-rename');
+Route::middleware('permission:moderate resources')->group(function () {
+    Route::post('/resources/{resource}/approve', [AdminResourceController::class, 'approve'])->name('resources.approve');
+    Route::post('/resources/{resource}/reject', [AdminResourceController::class, 'reject'])->name('resources.reject');
 });
 
 Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy'])->middleware('can:delete,resource');
-
-// Resource Moderation
-Route::middleware('permission:moderate resources')->group(function () {
-    Route::get('/moderation/resources', [ResourceModerationController::class, 'index'])->name('moderation.resources.index');
-    Route::post('/moderation/resources/approve', [ResourceModerationController::class, 'approve'])->name('moderation.resources.approve');
-    Route::post('/moderation/resources/reject', [ResourceModerationController::class, 'reject'])->name('moderation.resources.reject');
-});
 
 // Notice
 Route::middleware('permission:edit notice')->group(function () {
