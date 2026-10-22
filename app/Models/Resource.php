@@ -46,6 +46,11 @@ class Resource extends Model
         return $this->hasMany(ResourceItem::class)->oldest('id');
     }
 
+    public function firstItem(): HasOne
+    {
+        return $this->hasOne(ResourceItem::class)->oldestOfMany();
+    }
+
     public function node(): BelongsTo
     {
         return $this->belongsTo(Node::class);

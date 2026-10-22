@@ -7,6 +7,7 @@ use App\Models\ForumPost;
 use App\Models\ForumVote;
 use App\Models\Node;
 use App\Models\Notice;
+use App\Models\Resource;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -82,6 +83,26 @@ class SubjectController extends Controller
             }
         }
 
+        $trendingNotes = Cache::remember("home_page_trending_notes_{$course}", now()->addMinutes(2), function () use ($course) {
+            return Resource::query()
+                ->has('items')
+                ->whereHas('node.subject', function ($query) use ($course) {
+                    $query->where('course', $course);
+                })
+                ->with([
+                    'firstItem',
+                    'user:id,name,username,image_path,institution,is_verified',
+                    'node:id,name,slug,subject_id',
+                    'node.subject:id,name,course,slug',
+                ])
+                ->withCount('items')
+                ->orderByDesc('vote_score')
+                ->latest('id')
+                ->limit(4)
+                ->get()
+                ->toArray();
+        });
+
         $notice = Cache::rememberForever('home_page_notice', function () {
             return Notice::activeForDisplay()?->toArray();
         });
@@ -91,6 +112,7 @@ class SubjectController extends Controller
             'current_group' => $group,
             'featured_blogs' => $featuredBlogs,
             'trending_posts' => $trendingPosts,
+            'trending_notes' => $trendingNotes,
             'notice' => $notice,
         ]);
     }

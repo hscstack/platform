@@ -9,6 +9,7 @@ import GroupSwitcher from '@/components/GroupSwitcher.vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
+import TrendingNoteCard from '@/components/resources/TrendingNoteCard.vue';
 import SubjectCard from '@/components/SubjectCard.vue';
 
 const props = defineProps({
@@ -23,6 +24,7 @@ const props = defineProps({
     notice: Object,
     featured_blogs: Array,
     trending_posts: Array,
+    trending_notes: Array,
 });
 </script>
 
@@ -51,7 +53,7 @@ const props = defineProps({
         <PwaInstallPrompt variant="banner" class="mb-6" />
         <CourseSwitcher />
         <GroupSwitcher :current-group="props.current_group" />
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
             <SubjectCard
                 v-for="subject in subjects"
                 :key="subject.id"
@@ -73,6 +75,36 @@ const props = defineProps({
                 subtitle="Reach thousands of students. Study & education promotions only — strictly verified and student-safe."
                 cta-text="Book Ad Space"
             />
+        </div>
+
+        <!-- Trending Notes Section -->
+        <div
+            v-if="trending_notes?.length"
+            class="mt-10 border-t border-slate-100 pt-8 sm:mt-12 sm:pt-10 dark:border-gray-800"
+        >
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h2
+                        class="text-2xl font-bold tracking-tight text-slate-900 dark:text-gray-100"
+                    >
+                        Trending Notes & Study Materials
+                    </h2>
+                    <p class="text-sm text-slate-500 dark:text-gray-400">
+                        শিক্ষার্থীদের শেয়ার করা সেরা নোট, লেকচার ও
+                        প্র্যাকটিক্যাল রিসোর্স
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
+            >
+                <TrendingNoteCard
+                    v-for="note in trending_notes as any[]"
+                    :key="note.id"
+                    :note="note"
+                />
+            </div>
         </div>
 
         <div
