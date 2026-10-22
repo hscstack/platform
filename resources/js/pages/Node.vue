@@ -97,19 +97,21 @@ const totalItemsCount = computed(
             >
                 <span>Name</span>
                 <UploadResourceDropdown
-                    v-if="currentNode"
+                    v-if="currentNode && nodes.length === 0"
                     :node="currentNode as any"
                     :is-frozen="Boolean(currentNode.is_frozen)"
                 />
             </div>
 
             <div class="flex-1 divide-y divide-slate-100 dark:divide-gray-800">
-                <template v-if="totalItemsCount > 0">
+                <template v-if="nodes.length > 0">
                     <NodeRow
                         v-for="node in nodes"
                         :key="`node-${node.id}`"
                         :node="node"
                     />
+                </template>
+                <template v-else-if="resources.length > 0">
                     <ResourceRow
                         v-for="resource in resources"
                         :key="`resource-${resource.id}`"

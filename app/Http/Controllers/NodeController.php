@@ -42,9 +42,13 @@ class NodeController extends Controller
                 ->get(['id', 'name', 'slug'])->toArray();
         });
 
-        $resources = Cache::remember("node_resources_{$node->id}", now()->addDay(), function () use ($node) {
-            return $node->resources()->get()->toArray();
-        });
+        $resources = [];
+
+        if (empty($nodes)) {
+            $resources = Cache::remember("node_resources_{$node->id}", now()->addDay(), function () use ($node) {
+                return $node->resources()->get()->toArray();
+            });
+        }
 
         return Inertia::render('Node', [
             'subject' => $subject,
