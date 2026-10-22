@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowBigUp, Folder } from 'lucide-vue-next';
+import { Folder } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const { node } = defineProps({
@@ -44,32 +44,11 @@ const href = computed(() => {
                         }}
                         Items
                     </span>
-                    <span
-                        v-if="node.upvotes_count"
-                        class="inline-flex items-center gap-0.5 font-bold text-indigo-600 dark:text-indigo-400"
-                    >
-                        ·
-                        <ArrowBigUp
-                            class="h-3.5 w-3.5 fill-indigo-600 text-indigo-600 dark:fill-indigo-400 dark:text-indigo-400"
-                        />
-                        {{ node.upvotes_count }}
-                    </span>
                 </span>
             </div>
         </div>
 
         <div class="flex shrink-0 items-center gap-2.5 pl-3">
-            <span
-                v-if="node.upvotes_count"
-                class="hidden items-center gap-0.5 rounded-md border border-indigo-100/80 bg-indigo-50/60 px-2 py-1 text-xs font-bold text-indigo-600 sm:inline-flex dark:border-indigo-900/40 dark:bg-indigo-950/40 dark:text-indigo-400"
-                title="Folder Upvotes"
-            >
-                <ArrowBigUp
-                    class="h-3.5 w-3.5 fill-indigo-600 text-indigo-600 dark:fill-indigo-400 dark:text-indigo-400"
-                />
-                {{ node.upvotes_count }}
-            </span>
-
             <span
                 class="hidden rounded-md border border-slate-200/60 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 transition-colors group-hover:border-indigo-100/80 group-hover:bg-indigo-50/60 group-hover:text-indigo-600 sm:inline-block dark:border-gray-700/60 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:border-indigo-500/30 dark:group-hover:bg-indigo-500/10 dark:group-hover:text-indigo-400"
             >

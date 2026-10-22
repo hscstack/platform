@@ -82,7 +82,6 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/tracker/log-time', [StudyTrackerController::class, 'logTime'])->name('tracker.log-time');
     Route::post('/tracker/reset-today', [StudyTrackerController::class, 'resetToday'])->name('tracker.reset-today');
     Route::post('/tracker/curriculum', [StudyTrackerController::class, 'updateCurriculum'])->name('tracker.curriculum');
-    Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
     Route::post('/u/{user}/poke', [UserProfileController::class, 'poke'])->name('user.poke');
     Route::get('/support/my-tickets', [SupportTicketController::class, 'myTickets'])->name('support.my-tickets');

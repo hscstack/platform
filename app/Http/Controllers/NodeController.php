@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Node;
 use App\Models\Subject;
-use App\Notifications\NodeVoteNotification;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
@@ -38,30 +36,15 @@ class NodeController extends Controller
 
         $nodes = Cache::remember("node_children_{$node->id}", now()->addDay(), function () use ($node) {
             return Node::where('parent_id', $node->id)
-                ->withCount(['children', 'resources', 'upvotes', 'downvotes'])
-                ->orderByRaw('(upvotes_count - downvotes_count) DESC')
+                ->withCount(['children', 'resources'])
                 ->orderBy('sort_order')
+                ->orderBy('name')
                 ->get(['id', 'name', 'slug'])->toArray();
         });
 
         $resources = Cache::remember("node_resources_{$node->id}", now()->addDay(), function () use ($node) {
             return $node->resources()->get()->toArray();
         });
-
-        $upvotesCount = $node->upvotes()->count();
-        $downvotesCount = $node->downvotes()->count();
-        $userVote = auth()->check()
-            ? $node->votes()->where('user_id', auth()->id())->value('type')
-            : null;
-
-        $upvoters = $node->upvotes()
-            ->with('user:id,name,username,image_path,institution,is_verified')
-            ->latest('id')
-            ->limit(50)
-            ->get()
-            ->pluck('user')
-            ->filter()
-            ->values();
 
         return Inertia::render('Node', [
             'subject' => $subject,
@@ -74,44 +57,6 @@ class NodeController extends Controller
             'nodes' => $nodes,
             'breadcrumb' => $node->breadcrumb(),
             'resources' => $resources,
-            'upvotesCount' => $upvotesCount,
-            'downvotesCount' => $downvotesCount,
-            'userVote' => $userVote,
-            'upvoters' => $upvoters,
         ]);
-    }
-
-    public function vote(Request $request, Node $node)
-    {
-        $validated = $request->validate([
-            'type' => ['required', 'in:up,down'],
-        ]);
-
-        $user = auth()->user();
-        $existing = $node->votes()->where('user_id', $user->id)->first();
-        $isFirstTimeUpvote = false;
-
-        if ($existing) {
-            if ($existing->type === $validated['type']) {
-                $existing->delete();
-            } else {
-                $existing->update(['type' => $validated['type']]);
-            }
-        } else {
-            $node->votes()->create([
-                'user_id' => $user->id,
-                'type' => $validated['type'],
-            ]);
-
-            if ($validated['type'] === 'up') {
-                $isFirstTimeUpvote = true;
-            }
-        }
-
-        if ($isFirstTimeUpvote && $node->user_id && $node->user_id !== $user->id) {
-            NodeVoteNotification::sendTo($node->user, $node, $user);
-        }
-
-        return back();
     }
 }

@@ -299,7 +299,6 @@ const sortedActivities = computed<ActivityItem[]>(() => {
     const list: ActivityItem[] = [
         ...((props.recentActivities.forum_posts || []) as ActivityItem[]),
         ...((props.recentActivities.forum_answers || []) as ActivityItem[]),
-        ...((props.recentActivities.folders || []) as ActivityItem[]),
         ...((props.recentActivities.uploads || []) as ActivityItem[]),
         ...((props.recentActivities.reactions || []) as ActivityItem[]),
         ...((props.recentActivities.comments || []) as ActivityItem[]),

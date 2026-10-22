@@ -9,7 +9,6 @@ use App\Models\BlogReaction;
 use App\Models\DailyStudyLog;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
-use App\Models\Node;
 use App\Models\NodeCompletion;
 use App\Models\Resource;
 use App\Models\Subject;
@@ -179,30 +178,6 @@ class UserProfileController extends Controller
             ])
             ->filter(fn ($item) => $item['url'] !== null);
 
-        $recentFolders = Node::where('user_id', $user->id)
-            ->with([
-                'subject:id,name,slug',
-                'parent:id,name,slug',
-                'parent.parent:id,name,slug',
-            ])
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(function ($node) {
-                $url = $this->buildNodeUrl($node);
-
-                return [
-                    'type' => 'folder',
-                    'title' => $node->name,
-                    'subtitle' => $node->subject?->name.($node->parent ? ' · '.$node->parent->name : ''),
-                    'url' => $url,
-                    'created_at' => $node->created_at?->diffForHumans(),
-                    'timestamp' => $node->created_at?->timestamp ?? 0,
-                ];
-            })
-            ->filter()
-            ->values();
-
         $recentUploads = Resource::where('user_id', $user->id)
             ->with(['node:id,name,subject_id', 'node.subject:id,name'])
             ->latest()
@@ -281,7 +256,6 @@ class UserProfileController extends Controller
             'recentActivities' => [
                 'forum_posts' => $recentForumPosts->values(),
                 'forum_answers' => $recentForumAnswers->values(),
-                'folders' => $recentFolders->values(),
                 'uploads' => $recentUploads->values(),
                 'reactions' => $recentReactions->values(),
                 'comments' => $recentComments->values(),
@@ -371,22 +345,6 @@ class UserProfileController extends Controller
         }
 
         return back();
-    }
-
-    private function buildNodeUrl(Node $node): ?string
-    {
-        if (! $node->subject) {
-            return null;
-        }
-
-        $slugs = [];
-        $curr = $node;
-        while ($curr) {
-            array_unshift($slugs, $curr->slug);
-            $curr = $curr->parent;
-        }
-
-        return '/'.$node->subject->slug.'/'.implode('/', $slugs);
     }
 
     private function getSyllabusProgress(User $user): array
