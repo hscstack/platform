@@ -47,8 +47,9 @@ Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middlew
 Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
 
 Route::middleware('permission:moderate resources')->group(function () {
-    Route::post('/resources/{resource}/approve', [AdminResourceController::class, 'approve'])->name('resources.approve');
-    Route::post('/resources/{resource}/reject', [AdminResourceController::class, 'reject'])->name('resources.reject');
+    Route::get('/moderation/resources', [AdminResourceController::class, 'moderationIndex'])->name('resources.moderation.index');
+    Route::post('/resources/approve', [AdminResourceController::class, 'approve'])->name('resources.approve');
+    Route::post('/resources/reject', [AdminResourceController::class, 'reject'])->name('resources.reject');
 });
 
 Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy'])->middleware('can:delete,resource');

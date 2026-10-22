@@ -49,8 +49,8 @@ class AppServiceProvider extends ServiceProvider
         Subject::observe(SubjectObserver::class);
         User::observe(UserObserver::class);
 
-        DatabaseNotification::created(function (DatabaseNotification $notification) {
-            if ($notification->notifiable_type === User::class && $notification->notifiable_id) {
+        DatabaseNotification::saved(function (DatabaseNotification $notification) {
+            if ($notification->notifiable_type === User::class && $notification->notifiable_id && is_null($notification->read_at)) {
                 Cache::forever("user:{$notification->notifiable_id}:has_unread_notifs", true);
             }
         });

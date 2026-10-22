@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import { PencilLine } from 'lucide-vue-next';
-
 defineProps<{
     activeTab: 'live' | 'pending' | 'rejected';
     liveCount: number;
     totalPendingCount: number;
     totalRejectedCount: number;
-    canBulkRename: boolean;
 }>();
 
 const emit = defineEmits<{
     (e: 'change-tab', tab: 'live' | 'pending' | 'rejected'): void;
-    (e: 'bulk-rename'): void;
 }>();
 </script>
 
@@ -114,21 +110,6 @@ const emit = defineEmits<{
                 >
                     0
                 </span>
-            </button>
-        </div>
-
-        <!-- Bulk Rename Action (if available and in live tab) -->
-        <div
-            v-if="canBulkRename && activeTab === 'live'"
-            class="flex shrink-0 items-center"
-        >
-            <button
-                type="button"
-                @click="emit('bulk-rename')"
-                class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-600 shadow-2xs transition hover:bg-indigo-50 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-800 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
-            >
-                <PencilLine class="h-3.5 w-3.5" />
-                <span>Bulk Rename</span>
             </button>
         </div>
     </div>

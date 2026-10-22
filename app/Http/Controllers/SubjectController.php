@@ -85,6 +85,7 @@ class SubjectController extends Controller
 
         $trendingNotes = Cache::remember("home_page_trending_notes_{$course}", now()->addMinutes(2), function () use ($course) {
             return Resource::query()
+                ->where('status', 'approved')
                 ->has('items')
                 ->whereHas('node.subject', function ($query) use ($course) {
                     $query->where('course', $course);
@@ -126,7 +127,9 @@ class SubjectController extends Controller
         $nodes = Cache::rememberForever("subject_page_{$subject->id}", function () use ($subject) {
             return Node::where('subject_id', $subject->id)
                 ->whereNull('parent_id')
-                ->withCount(['children', 'resources'])
+                ->withCount(['children', 'resources' => function ($q) {
+                    $q->where('status', 'approved');
+                }])
                 ->orderBy('sort_order')
                 ->get(['id', 'name', 'slug'])->toArray();
         });

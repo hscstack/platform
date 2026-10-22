@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Cache;
 
 class ResourceVoteNotification extends Notification implements ShouldQueue
 {
@@ -48,8 +47,6 @@ class ResourceVoteNotification extends Notification implements ShouldQueue
                 'data' => $data,
                 'created_at' => now(),
             ]);
-
-            Cache::forever("user:{$targetUser->id}:has_unread_notifs", true);
         } else {
             $targetUser->notify(new self($resource, $voter));
         }

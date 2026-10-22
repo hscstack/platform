@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Resource\StoreDocumentRequest;
 use App\Http\Requests\Resource\StoreVideoRequest;
-use App\Models\Node;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Notifications\ResourceVoteNotification;
@@ -22,16 +21,18 @@ class ResourceController extends Controller
 {
     public function show($id)
     {
-        $data = Cache::remember("resource_{$id}", 3600, function () use ($id) {
-            $resource = Resource::with(['user:id,name,username,image_path', 'node.subject', 'items'])->findOrFail($id);
+        $resource = Resource::with(['user:id,name,username,image_path', 'node.subject', 'items'])->findOrFail($id);
 
-            return [
-                'resource' => $resource->toArray(),
-                'subject' => $resource->node?->subject?->toArray(),
-            ];
-        });
+        $user = auth()->user();
+        $isModerator = $user?->can('moderate resources');
+        $isOwner = $user && $user->id === $resource->user_id;
 
-        $node = Node::find($data['resource']['node_id']);
+        // If not approved, only the owner and moderators are allowed to view
+        if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
+            abort(404);
+        }
+
+        $node = $resource->node;
 
         $userVote = auth()->check()
             ? ResourceVote::where('resource_id', $id)->where('user_id', auth()->id())->value('value')
@@ -47,11 +48,15 @@ class ResourceController extends Controller
             ->filter()
             ->values();
 
-        return Inertia::render('Resource', array_merge($data, [
+        return Inertia::render('Resource', [
+            'resource' => $resource->toArray(),
+            'subject' => $resource->node?->subject?->toArray(),
             'breadcrumb' => $node ? $node->breadcrumb() : [],
             'userVote' => $userVote,
             'upvoters' => $upvoters,
-        ]));
+            'can_moderate' => (bool) $isModerator,
+            'is_owner' => (bool) $isOwner,
+        ]);
     }
 
     public function vote(Request $request, Resource $resource)
@@ -201,18 +206,17 @@ class ResourceController extends Controller
 
         $key = 'resources/notes/'.(string) Str::uuid().'.'.$extension;
 
-        $url = Storage::disk('s3')->temporaryUploadUrl(
+        $signed = Storage::disk('s3')->temporaryUploadUrl(
             $key,
             now()->addMinutes(15),
             [
                 'ContentType' => $validated['content_type'],
-                'ContentLength' => $validated['size'],
             ]
         );
 
         return response()->json([
             'key' => $key,
-            'upload_url' => $url,
+            'upload_url' => is_array($signed) ? $signed['url'] : $signed,
         ]);
     }
 

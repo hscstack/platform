@@ -8,6 +8,8 @@ import {
     ChevronRight,
     User as UserIcon,
     ArrowBigUp,
+    Clock,
+    AlertCircle,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -16,6 +18,8 @@ const props = defineProps<{
         id: number;
         title: string;
         resource_type: string;
+        status?: 'pending' | 'approved' | 'rejected' | string;
+        admin_note?: string | null;
         items_count?: number;
         description?: string | null;
         vote_score?: number;
@@ -93,6 +97,24 @@ const typeConfig = computed(() => {
                         class="block text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 sm:text-base dark:text-gray-100 dark:group-hover:text-indigo-400"
                     >
                         {{ resource.title }}
+                    </span>
+
+                    <!-- Pending Badge -->
+                    <span
+                        v-if="resource.status === 'pending'"
+                        class="inline-flex items-center gap-1 rounded-md border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-400"
+                    >
+                        <Clock class="h-3 w-3 animate-pulse" />
+                        <span>পর্যালোচনাধীন</span>
+                    </span>
+
+                    <!-- Rejected Badge -->
+                    <span
+                        v-else-if="resource.status === 'rejected'"
+                        class="inline-flex items-center gap-1 rounded-md border border-rose-200/80 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:border-rose-800/60 dark:bg-rose-950/50 dark:text-rose-400"
+                    >
+                        <AlertCircle class="h-3 w-3" />
+                        <span>বাতিলকৃত</span>
                     </span>
                 </div>
 

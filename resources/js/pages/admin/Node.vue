@@ -2,30 +2,25 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
-import BulkRenameModal from '@/components/admin/BulkRenameModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
-import CreateResourceModal from '@/components/admin/CreateResourceModal.vue';
 import NodeHeader from '@/components/admin/NodeHeader.vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
 import NodeTabsHeader from '@/components/admin/NodeTabsHeader.vue';
 import PendingSubmissionRow from '@/components/admin/PendingSubmissionRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
-import ReviewResourceModal from '@/components/admin/ReviewResourceModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import { usePermissions } from '@/lib/usePermissions';
 
-const { can } = usePermissions();
 const page = usePage();
 
-const props = defineProps({
-    subject: Object,
-    nodes: Array,
-    resources: Array,
-    pending_creates: Array,
-    rejected_creates: Array,
-    parent: Object,
-    breadcrumb: Array,
-});
+const props = defineProps<{
+    subject: any;
+    nodes?: any[];
+    resources?: any[];
+    pending_creates?: any[];
+    rejected_creates?: any[];
+    parent?: any;
+    breadcrumb?: any[];
+}>();
 
 const isDirectlyFrozen = computed(() => Boolean(props.parent?.is_frozen));
 const isInheritedFrozen = computed(
@@ -68,12 +63,8 @@ const toggleFreeze = () => {
 };
 
 const isBulkModalOpen = ref(false);
-const isBulkRenameModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
 const editingNode = ref<any | null>(null);
-const isSingleResourceModalOpen = ref(false);
-const editingResource = ref<any | null>(null);
-const viewingPendingModal = ref<any | null>(null);
 
 const openCreateNodeModal = () => {
     editingNode.value = null;
@@ -88,16 +79,6 @@ const openEditNodeModal = (node: any) => {
 const handleNodeModalClose = () => {
     isSingleModalOpen.value = false;
     editingNode.value = null;
-};
-
-const openEditResourceModal = (resource: any) => {
-    editingResource.value = resource;
-    isSingleResourceModalOpen.value = true;
-};
-
-const handleResourceModalClose = () => {
-    isSingleResourceModalOpen.value = false;
-    editingResource.value = null;
 };
 
 const totalItemsCount = computed(
@@ -147,41 +128,11 @@ onUnmounted(() => {
     window.removeEventListener('hashchange', syncTabFromHash);
 });
 
-const liveResourcesWithPending = computed(() => {
-    return (
-        (props.resources as any[])?.filter((r) =>
-            Boolean(r.pending_change_request),
-        ) ?? []
-    );
-});
-
-const totalPendingCount = computed(() => {
-    return (
-        (props.pending_creates?.length ?? 0) +
-        liveResourcesWithPending.value.length
-    );
-});
-
-const liveResourcesWithRejected = computed(() => {
-    return (
-        (props.resources as any[])?.filter(
-            (r) =>
-                !r.pending_change_request &&
-                Boolean(r.latest_rejected_change_request),
-        ) ?? []
-    );
-});
-
-const totalRejectedCount = computed(() => {
-    return (
-        (props.rejected_creates?.length ?? 0) +
-        liveResourcesWithRejected.value.length
-    );
-});
-
-const liveCount = computed(() => {
-    return (props.nodes?.length ?? 0) + (props.resources?.length ?? 0);
-});
+const totalPendingCount = computed(() => props.pending_creates?.length ?? 0);
+const totalRejectedCount = computed(() => props.rejected_creates?.length ?? 0);
+const liveCount = computed(
+    () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
+);
 
 const backUrl = computed(() => {
     const rawPath = (page.url || '').split('?')[0];
@@ -259,33 +210,11 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
             @close="handleNodeModalClose"
         />
 
-        <CreateResourceModal
-            v-if="parent"
-            :is-open="isSingleResourceModalOpen"
-            :node="parent"
-            :resource="editingResource"
-            @close="handleResourceModalClose"
-        />
-
         <BulkNodeModal
             :is-open="isBulkModalOpen"
             :subject="subject"
             :parent="parent"
             @close="isBulkModalOpen = false"
-        />
-
-        <BulkRenameModal
-            v-if="parent"
-            :is-open="isBulkRenameModalOpen"
-            :node="parent"
-            :resources="resources ?? []"
-            @close="isBulkRenameModalOpen = false"
-        />
-
-        <!-- Pending / Rejected Resource Preview Modal -->
-        <ReviewResourceModal
-            :request="viewingPendingModal"
-            @close="viewingPendingModal = null"
         />
 
         <!-- Items Container -->
@@ -298,13 +227,7 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
                         :live-count="liveCount"
                         :total-pending-count="totalPendingCount"
                         :total-rejected-count="totalRejectedCount"
-                        :can-bulk-rename="
-                            !isFrozen &&
-                            can('edit resources') &&
-                            Boolean(resources?.length)
-                        "
                         @change-tab="handleTabChange"
-                        @bulk-rename="isBulkRenameModalOpen = true"
                     />
 
                     <!-- Live Tab Content -->
@@ -314,7 +237,7 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
                     >
                         <NodeRow
                             v-for="node in nodes"
-                            :key="`node-${node.id}`"
+                            :key="`node-${(node as any).id}`"
                             :node="node"
                             :is-frozen="isFrozen"
                             @edit="openEditNodeModal"
@@ -322,16 +245,9 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
 
                         <ResourceRow
                             v-for="resource in resources"
-                            :key="`resource-${resource.id}`"
+                            :key="`resource-${(resource as any).id}`"
                             :resource="resource"
                             :is-frozen="isFrozen"
-                            @edit="openEditResourceModal"
-                            @view-pending="
-                                (pending, res) =>
-                                    (viewingPendingModal = pending
-                                        ? { ...pending, targetResource: res }
-                                        : null)
-                            "
                         />
 
                         <div
@@ -349,24 +265,9 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
                     >
                         <PendingSubmissionRow
                             v-for="pending in pending_creates"
-                            :key="`pending-create-${pending.id}`"
+                            :key="`pending-create-${(pending as any).id}`"
                             :submission="pending"
                             status="pending"
-                            @preview="viewingPendingModal = $event"
-                        />
-
-                        <ResourceRow
-                            v-for="resource in liveResourcesWithPending"
-                            :key="`pending-res-${resource.id}`"
-                            :resource="resource"
-                            :is-frozen="isFrozen"
-                            @edit="openEditResourceModal"
-                            @view-pending="
-                                (pending, res) =>
-                                    (viewingPendingModal = pending
-                                        ? { ...pending, targetResource: res }
-                                        : null)
-                            "
                         />
 
                         <div
@@ -384,24 +285,9 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
                     >
                         <PendingSubmissionRow
                             v-for="rejected in rejected_creates"
-                            :key="`rejected-create-${rejected.id}`"
+                            :key="`rejected-create-${(rejected as any).id}`"
                             :submission="rejected"
                             status="rejected"
-                            @preview="viewingPendingModal = $event"
-                        />
-
-                        <ResourceRow
-                            v-for="resource in liveResourcesWithRejected"
-                            :key="`rejected-res-${resource.id}`"
-                            :resource="resource"
-                            :is-frozen="isFrozen"
-                            @edit="openEditResourceModal"
-                            @view-pending="
-                                (pending, res) =>
-                                    (viewingPendingModal = pending
-                                        ? { ...pending, targetResource: res }
-                                        : null)
-                            "
                         />
 
                         <div

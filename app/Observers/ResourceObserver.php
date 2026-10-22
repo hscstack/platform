@@ -9,12 +9,16 @@ class ResourceObserver
 {
     public function saved(Resource $resource): void
     {
-        $this->clearCache($resource);
+        if ($resource->status === 'approved' || $resource->wasChanged('status')) {
+            $this->clearCache($resource);
+        }
     }
 
     public function deleted(Resource $resource): void
     {
-        $this->clearCache($resource);
+        if ($resource->status === 'approved') {
+            $this->clearCache($resource);
+        }
     }
 
     private function clearCache(Resource $resource): void

@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, ArrowBigUp, User as UserIcon, X } from 'lucide-vue-next';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import {
+    ArrowLeft,
+    ArrowBigUp,
+    User as UserIcon,
+    X,
+    Clock,
+    AlertCircle,
+    Check,
+    Loader2,
+} from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
@@ -25,6 +34,8 @@ interface ResourceData {
     resource_type: string;
     title: string;
     description?: string | null;
+    status?: 'pending' | 'approved' | 'rejected';
+    admin_note?: string | null;
     created_at?: string;
     updated_at?: string;
     vote_score?: number;
@@ -60,6 +71,8 @@ const props = defineProps<{
     breadcrumb?: Array<{ name: string; slug: string }>;
     userVote?: number | null;
     upvoters?: Upvoter[];
+    can_moderate?: boolean;
+    is_owner?: boolean;
 }>();
 
 const page = usePage();
@@ -106,6 +119,52 @@ const handleVoted = ({
     } else {
         localUpvoters.value = localUpvoters.value.filter((x) => x.id !== u.id);
     }
+};
+
+// Moderation Actions
+const isApproving = ref(false);
+const isRejecting = ref(false);
+const showRejectForm = ref(false);
+const rejectReason = ref('');
+
+const handleApprove = () => {
+    if (
+        !confirm('Are you sure you want to approve and publish this resource?')
+    ) {
+        return;
+    }
+
+    isApproving.value = true;
+    router.post(
+        '/admin/resources/approve',
+        {
+            ids: [props.resource.id],
+        },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isApproving.value = false;
+            },
+        },
+    );
+};
+
+const handleReject = () => {
+    isRejecting.value = true;
+    router.post(
+        '/admin/resources/reject',
+        {
+            ids: [props.resource.id],
+            admin_note: rejectReason.value.trim() || null,
+        },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isRejecting.value = false;
+                showRejectForm.value = false;
+            },
+        },
+    );
 };
 
 // Determine which renderer to mount based on items format
@@ -161,6 +220,160 @@ const chapterUrl = computed(() => {
     </Head>
 
     <div class="mx-auto max-w-5xl px-3 pt-6 pb-24 sm:px-6">
+        <!-- Moderation / Ownership Status Banner -->
+        <!-- 1. Pending for Moderators: Full Review Controls -->
+        <div
+            v-if="resource.status === 'pending' && can_moderate"
+            class="mb-6 rounded-2xl border border-amber-300 bg-amber-50/90 p-4 shadow-2xs sm:p-5 dark:border-amber-700/60 dark:bg-amber-950/40"
+        >
+            <div
+                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+                <div class="flex items-start gap-3">
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300"
+                    >
+                        <Clock class="h-5 w-5 animate-pulse" />
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3
+                                class="text-sm font-bold text-amber-900 dark:text-amber-200"
+                            >
+                                পর্যালোচনার অপেক্ষায় (Awaiting Moderation)
+                            </h3>
+                            <span
+                                class="rounded bg-amber-200/70 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-800/40 dark:text-amber-300"
+                            >
+                                Pending
+                            </span>
+                        </div>
+                        <p
+                            class="mt-0.5 text-xs text-amber-800/80 dark:text-amber-300/80"
+                        >
+                            এই রিসোর্সটি এখনও অনুমোদিত হয়নি। শুধুমাত্র আপনি ও
+                            আপলোডার দেখতে পাচ্ছেন। কনটেন্টটি যাচাই করে অনুমোদন
+                            বা বাতিল করুন।
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div
+                    v-if="!showRejectForm"
+                    class="flex shrink-0 items-center gap-2"
+                >
+                    <button
+                        type="button"
+                        :disabled="isApproving || isRejecting"
+                        @click="handleApprove"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                        <Loader2
+                            v-if="isApproving"
+                            class="h-3.5 w-3.5 animate-spin"
+                        />
+                        <Check v-else class="h-3.5 w-3.5 stroke-[2.5]" />
+                        <span>অনুমোদন করুন</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        :disabled="isApproving || isRejecting"
+                        @click="showRejectForm = true"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 py-2 text-xs font-bold text-rose-700 shadow-2xs transition hover:bg-rose-50 disabled:opacity-50 dark:border-rose-800 dark:bg-gray-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
+                    >
+                        <X class="h-3.5 w-3.5 stroke-[2.5]" />
+                        <span>বাতিল করুন</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inline Rejection Note Form -->
+            <div
+                v-if="showRejectForm"
+                class="mt-4 border-t border-amber-200/80 pt-4 dark:border-amber-800/40"
+            >
+                <label
+                    class="block text-xs font-bold text-amber-900 dark:text-amber-200"
+                >
+                    বাতিলের কারণ (শিক্ষার্থী দেখতে পাবে):
+                </label>
+                <div
+                    class="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-center"
+                >
+                    <input
+                        v-model="rejectReason"
+                        type="text"
+                        placeholder="উদাঃ ঝাপসা ছবি, ভুল বা অসম্পূর্ণ তথ্য..."
+                        maxlength="500"
+                        class="w-full flex-1 rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-amber-500 focus:outline-none dark:border-amber-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
+                    />
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            :disabled="isRejecting"
+                            @click="handleReject"
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-rose-700 disabled:opacity-50"
+                        >
+                            <Loader2
+                                v-if="isRejecting"
+                                class="h-3.5 w-3.5 animate-spin"
+                            />
+                            <span>বাতিল নিশ্চিত করুন</span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="showRejectForm = false"
+                            class="cursor-pointer rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-amber-100/60 dark:text-gray-400 dark:hover:bg-amber-950/60"
+                        >
+                            ফেরত
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Pending for Owner: Informational Banner -->
+        <div
+            v-else-if="resource.status === 'pending' && is_owner"
+            class="mb-6 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-xs text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300"
+        >
+            <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300"
+            >
+                <Clock class="h-4.5 w-4.5" />
+            </div>
+            <div>
+                <p class="font-bold">
+                    আপনার রিসোর্সটি পর্যালোচনার জন্য জমা দেওয়া হয়েছে
+                </p>
+                <p class="text-[11px] opacity-90">
+                    এটি বর্তমানে শুধুমাত্র আপনার এবং মডারেটরদের জন্য দৃশ্যমান।
+                    মডারেটর অনুমোদন করলে এটি সবার জন্য উন্মুক্ত হবে।
+                </p>
+            </div>
+        </div>
+
+        <!-- 3. Rejected Banner -->
+        <div
+            v-else-if="resource.status === 'rejected'"
+            class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 dark:border-rose-800/60 dark:bg-rose-950/30 dark:text-rose-300"
+        >
+            <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300"
+            >
+                <AlertCircle class="h-4.5 w-4.5" />
+            </div>
+            <div class="flex-1">
+                <p class="font-bold">এই রিসোর্সটি বাতিল করা হয়েছে</p>
+                <p v-if="resource.admin_note" class="mt-0.5 text-[11px]">
+                    <span class="font-bold">কারণ:</span>
+                    {{ resource.admin_note }}
+                </p>
+            </div>
+        </div>
+
         <!-- Breadcrumb Navigation -->
         <header class="mb-6">
             <BreadcrumbNav
@@ -220,8 +433,11 @@ const chapterUrl = computed(() => {
                 </Link>
             </div>
 
-            <!-- Vote Buttons & Upvoters Stack (Next Line) -->
-            <div class="mt-4 flex flex-wrap items-center gap-3">
+            <!-- Vote Buttons & Upvoters Stack (Only when approved) -->
+            <div
+                v-if="!resource.status || resource.status === 'approved'"
+                class="mt-4 flex flex-wrap items-center gap-3"
+            >
                 <ResourceVoteButtons
                     :resource-id="resource.id"
                     :initial-upvotes="resource.upvotes_count || 0"
@@ -352,23 +568,16 @@ const chapterUrl = computed(() => {
                     </div>
 
                     <div
-                        class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
+                        class="no-scrollbar max-h-72 space-y-2 overflow-y-auto pr-1"
                     >
                         <div
-                            v-if="localUpvoters.length === 0"
-                            class="py-6 text-center text-xs text-slate-500 dark:text-gray-400"
-                        >
-                            এখনো কেউ আপভোট করেননি।
-                        </div>
-
-                        <Link
                             v-for="upvoter in localUpvoters"
                             :key="upvoter.id"
-                            :href="`/users/${upvoter.username}`"
-                            class="flex items-center gap-3 rounded-xl px-2 py-2.5 transition hover:bg-slate-50 dark:hover:bg-gray-800/50"
+                            class="flex items-center justify-between gap-3 rounded-xl p-2 transition hover:bg-slate-50 dark:hover:bg-gray-800/60"
                         >
-                            <div
-                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                            <Link
+                                :href="`/users/${upvoter.username}`"
+                                class="flex min-w-0 flex-1 items-center gap-2.5"
                             >
                                 <img
                                     v-if="
@@ -379,29 +588,37 @@ const chapterUrl = computed(() => {
                                         '/storage/' + upvoter.image_path
                                     "
                                     :alt="upvoter.name"
-                                    class="h-full w-full object-cover"
+                                    class="h-8 w-8 shrink-0 rounded-full border border-slate-200 object-cover dark:border-gray-700"
                                 />
-                                <span
+                                <div
                                     v-else
-                                    class="text-xs font-bold uppercase"
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600 dark:bg-gray-800 dark:text-gray-300"
                                 >
                                     {{ upvoter.name?.charAt(0) || 'U' }}
-                                </span>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p
-                                    class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
-                                >
-                                    {{ upvoter.name }}
-                                </p>
-                                <p
-                                    v-if="upvoter.institution"
-                                    class="truncate text-[11px] text-slate-500 dark:text-gray-400"
-                                >
-                                    {{ upvoter.institution }}
-                                </p>
-                            </div>
-                        </Link>
+                                </div>
+
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <p
+                                            class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                        >
+                                            {{ upvoter.name }}
+                                        </p>
+                                        <span
+                                            v-if="upvoter.is_verified"
+                                            class="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500"
+                                            title="Verified"
+                                        />
+                                    </div>
+                                    <p
+                                        v-if="upvoter.institution"
+                                        class="truncate text-[10px] text-slate-400 dark:text-gray-500"
+                                    >
+                                        {{ upvoter.institution }}
+                                    </p>
+                                </div>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

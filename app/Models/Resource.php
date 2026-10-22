@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Resource extends Model
 {
+    use Prunable;
+
     protected $fillable = [
         'node_id',
         'user_id',
@@ -74,6 +77,16 @@ class Resource extends Model
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved');
+    }
+
+    /**
+     * Get the prunable model query.
+     * Prunes rejected resources older than 15 days.
+     */
+    public function prunable()
+    {
+        return static::where('status', 'rejected')
+            ->where('reviewed_at', '<=', now()->subDays(15));
     }
 
     public function votes(): HasMany

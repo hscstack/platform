@@ -8,18 +8,19 @@ import {
     Image as ImageIcon,
     Video,
     File,
+    FlaskConical,
+    ExternalLink,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
-import ReviewResourceModal from '@/components/admin/ReviewResourceModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
 
 interface Submission {
     id: number;
-    action_type: 'create' | 'update' | 'delete';
+    resource_type: string;
+    title: string;
+    description?: string | null;
     status: 'pending' | 'approved' | 'rejected';
-    payload: Record<string, any>;
-    rejection_reason?: string | null;
+    admin_note?: string | null;
     created_at: string;
     reviewed_at?: string | null;
     node?: {
@@ -35,11 +36,6 @@ interface Submission {
             name: string;
             slug?: string;
         }>;
-    } | null;
-    reviewer?: {
-        id: number;
-        name: string;
-        username?: string | null;
     } | null;
 }
 
@@ -69,8 +65,6 @@ defineProps<{
     currentStatus: string;
 }>();
 
-const viewingSubmission = ref<any | null>(null);
-
 const tabs = [
     { key: 'all', label: 'সবগুলো' },
     { key: 'pending', label: 'পর্যালোচনাধীন' },
@@ -94,12 +88,14 @@ const formatDate = (dateString: string) => {
 
 const getResourceIcon = (type?: string) => {
     switch (type) {
-        case 'image':
-            return ImageIcon;
+        case 'practical':
+            return FlaskConical;
         case 'video':
             return Video;
         case 'pdf':
             return File;
+        case 'image':
+            return ImageIcon;
         default:
             return FileText;
     }
@@ -133,26 +129,6 @@ const getNodePath = (node?: Submission['node']): string[] => {
     }
 
     return segments;
-};
-
-const getNodeUrl = (node?: Submission['node']): string => {
-    if (!node?.subject?.slug) {
-        return '#';
-    }
-
-    let path = `/${node.subject.slug}`;
-
-    if (node.breadcrumb && node.breadcrumb.length > 0) {
-        for (const crumb of node.breadcrumb) {
-            if (crumb.slug) {
-                path += `/${crumb.slug}`;
-            }
-        }
-    } else if (node.slug) {
-        path += `/${node.slug}`;
-    }
-
-    return path;
 };
 </script>
 
@@ -271,11 +247,11 @@ const getNodeUrl = (node?: Submission['node']): string => {
 
         <!-- Submissions List -->
         <div v-if="submissions.data.length > 0" class="space-y-3">
-            <div
+            <Link
                 v-for="item in submissions.data"
                 :key="item.id"
-                @click="viewingSubmission = item"
-                class="cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs transition hover:border-indigo-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-700/60"
+                :href="`/resources/${item.id}`"
+                class="group block rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs transition hover:border-indigo-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-700/60"
             >
                 <div
                     class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
@@ -283,12 +259,10 @@ const getNodeUrl = (node?: Submission['node']): string => {
                     <div class="flex items-start gap-3">
                         <!-- Icon -->
                         <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-600 dark:bg-gray-800 dark:text-gray-300"
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-600 transition group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:bg-gray-800 dark:text-gray-300 dark:group-hover:bg-indigo-950/60 dark:group-hover:text-indigo-400"
                         >
                             <component
-                                :is="
-                                    getResourceIcon(item.payload?.resource_type)
-                                "
+                                :is="getResourceIcon(item.resource_type)"
                                 class="h-5 w-5"
                             />
                         </div>
@@ -297,28 +271,15 @@ const getNodeUrl = (node?: Submission['node']): string => {
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
                                 <h3
-                                    class="text-sm font-bold text-slate-900 dark:text-gray-100"
+                                    class="text-sm font-bold text-slate-900 transition group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                                 >
-                                    {{ item.payload?.title || 'রিসোর্স' }}
+                                    {{ item.title }}
                                 </h3>
 
                                 <span
-                                    v-if="item.action_type === 'create'"
-                                    class="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 uppercase dark:bg-emerald-950/50 dark:text-emerald-400"
+                                    class="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700 uppercase dark:bg-gray-800 dark:text-gray-300"
                                 >
-                                    আপলোড
-                                </span>
-                                <span
-                                    v-else-if="item.action_type === 'update'"
-                                    class="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 uppercase dark:bg-amber-950/50 dark:text-amber-400"
-                                >
-                                    আপডেট
-                                </span>
-                                <span
-                                    v-else
-                                    class="rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 uppercase dark:bg-rose-950/50 dark:text-rose-400"
-                                >
-                                    ডিলিট
+                                    {{ item.resource_type }}
                                 </span>
                             </div>
 
@@ -330,10 +291,8 @@ const getNodeUrl = (node?: Submission['node']): string => {
                                     class="inline-flex flex-wrap items-center gap-1 font-medium text-slate-600 dark:text-gray-300"
                                 >
                                     <span class="text-slate-400">in</span>
-                                    <Link
-                                        :href="getNodeUrl(item.node)"
-                                        class="inline-flex flex-wrap items-center gap-1 hover:text-indigo-600 hover:underline dark:hover:text-indigo-400"
-                                        @click.stop
+                                    <span
+                                        class="inline-flex flex-wrap items-center gap-1"
                                     >
                                         <template
                                             v-for="(seg, sIdx) in getNodePath(
@@ -348,7 +307,7 @@ const getNodeUrl = (node?: Submission['node']): string => {
                                             >
                                             <span>{{ seg }}</span>
                                         </template>
-                                    </Link>
+                                    </span>
                                 </span>
 
                                 <span v-if="getNodePath(item.node).length > 0"
@@ -356,10 +315,22 @@ const getNodeUrl = (node?: Submission['node']): string => {
                                 >
                                 <span>{{ formatDate(item.created_at) }}</span>
                             </div>
+
+                            <!-- Rejection Reason if any -->
+                            <div
+                                v-if="
+                                    item.status === 'rejected' &&
+                                    item.admin_note
+                                "
+                                class="mt-2 rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                            >
+                                <span class="font-bold">বাতিলের কারণ:</span>
+                                {{ item.admin_note }}
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Status Pill -->
+                    <!-- Status Pill & Action Hint -->
                     <div
                         class="flex items-center gap-2 self-start sm:self-auto"
                     >
@@ -392,9 +363,13 @@ const getNodeUrl = (node?: Submission['node']): string => {
                                 বাতিলকৃত
                             </span>
                         </template>
+
+                        <ExternalLink
+                            class="h-4 w-4 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
+                        />
                     </div>
                 </div>
-            </div>
+            </Link>
 
             <!-- Pagination -->
             <div class="pt-4">
@@ -412,12 +387,6 @@ const getNodeUrl = (node?: Submission['node']): string => {
             v-else
             title="কোনো সাবমিশন পাওয়া যায়নি"
             description="আপনার কোনো কন্টেন্ট সাবমিশন এই তালিকায় নেই।"
-        />
-
-        <!-- Submission Preview & Diff Modal -->
-        <ReviewResourceModal
-            :request="viewingSubmission"
-            @close="viewingSubmission = null"
         />
     </main>
 </template>

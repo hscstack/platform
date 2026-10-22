@@ -36,7 +36,9 @@ class NodeController extends Controller
 
         $nodes = Cache::remember("node_children_{$node->id}", now()->addDay(), function () use ($node) {
             return Node::where('parent_id', $node->id)
-                ->withCount(['children', 'resources'])
+                ->withCount(['children', 'resources' => function ($q) {
+                    $q->where('status', 'approved');
+                }])
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug'])->toArray();
@@ -47,6 +49,7 @@ class NodeController extends Controller
         if (empty($nodes)) {
             $resources = Cache::remember("node_resources_{$node->id}", now()->addDay(), function () use ($node) {
                 return $node->resources()
+                    ->where('status', 'approved')
                     ->withCount('items')
                     ->with('user:id,name,username')
                     ->orderByDesc('vote_score')
@@ -54,6 +57,21 @@ class NodeController extends Controller
                     ->get()
                     ->toArray();
             });
+
+            if ($userId = auth()->id()) {
+                $unapproved = $node->resources()
+                    ->where('user_id', $userId)
+                    ->whereIn('status', ['pending', 'rejected'])
+                    ->withCount('items')
+                    ->with('user:id,name,username')
+                    ->latest('id')
+                    ->get()
+                    ->toArray();
+
+                if (! empty($unapproved)) {
+                    $resources = array_merge($unapproved, $resources);
+                }
+            }
         }
 
         return Inertia::render('Node', [
