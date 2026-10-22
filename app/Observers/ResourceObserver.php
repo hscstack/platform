@@ -26,11 +26,13 @@ class ResourceObserver
         Cache::forget("resource_{$resource->id}");
         Cache::forget("node_resources_{$resource->node_id}");
 
-        $ids = Resource::where('node_id', $resource->node_id)
-            ->pluck('id');
-
-        foreach ($ids as $id) {
-            Cache::forget("resource_{$id}");
+        $node = $resource->node;
+        if ($node) {
+            if ($node->parent_id) {
+                Cache::forget("node_children_{$node->parent_id}");
+            } else {
+                Cache::forget("subject_page_{$node->subject_id}");
+            }
         }
     }
 }

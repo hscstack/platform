@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import {
-    Book,
-    File,
-    FileArchive,
-    FileImage,
-    FileVideo,
-    Trash2,
-} from 'lucide-vue-next';
+import { Book, File, FileVideo, FlaskConical, Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useAuth } from '@/lib/useAuth';
 
@@ -42,23 +35,16 @@ const handleDelete = () => {
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200/40 bg-amber-50 text-amber-600 sm:h-10 sm:w-10 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
             >
-                <FileImage
-                    v-if="resource?.resource_type === 'image'"
-                    class="h-4.5 w-4.5 stroke-[2]"
-                />
                 <FileVideo
-                    v-else-if="resource?.resource_type === 'video'"
+                    v-if="resource?.resource_type === 'video'"
                     class="h-4.5 w-4.5 stroke-[2]"
                 />
-                <FileArchive
-                    v-else-if="resource?.resource_type === 'pdf'"
+                <FlaskConical
+                    v-else-if="resource?.resource_type === 'practical'"
                     class="h-4.5 w-4.5 stroke-[2]"
                 />
                 <Book
-                    v-else-if="
-                        resource?.resource_type === 'note' ||
-                        resource?.resource_type === 'practical'
-                    "
+                    v-else-if="resource?.resource_type === 'note'"
                     class="h-4.5 w-4.5 stroke-[2]"
                 />
                 <File v-else class="h-4.5 w-4.5 stroke-[2]" />
