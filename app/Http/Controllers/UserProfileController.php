@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Admin\PeerSettingsController;
 use App\Models\AppSetting;
-use App\Models\BlogComment;
-use App\Models\BlogReaction;
 use App\Models\DailyStudyLog;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
@@ -147,96 +145,15 @@ class UserProfileController extends Controller
             ->take(5)
             ->get();
 
-        // Recent Community Activities
-        $recentForumPosts = ForumPost::where('user_id', $user->id)
-            ->approved()
+        $notesCount = Resource::where('user_id', $user->id)->count();
+
+        $notes = Resource::where('user_id', $user->id)
+            ->with(['node:id,name,slug,subject_id', 'node.subject:id,name,course,slug'])
+            ->withCount('items')
+            ->orderByDesc('vote_score')
             ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(fn ($post) => [
-                'type' => 'forum_post',
-                'title' => $post->title,
-                'subtitle' => strtoupper($post->curriculum).' Forum Question',
-                'url' => "/forum/questions/{$post->slug}",
-                'created_at' => $post->created_at?->diffForHumans(),
-                'timestamp' => $post->created_at?->timestamp ?? 0,
-            ]);
-
-        $recentForumAnswers = ForumAnswer::where('user_id', $user->id)
-            ->whereHas('post', fn ($q) => $q->approved())
-            ->with('post:id,title,slug')
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(fn ($ans) => [
-                'type' => 'forum_answer',
-                'title' => $ans->post?->title ?? 'Forum Question',
-                'content' => $ans->body,
-                'url' => $ans->post ? "/forum/questions/{$ans->post->slug}" : null,
-                'created_at' => $ans->created_at?->diffForHumans(),
-                'timestamp' => $ans->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['url'] !== null);
-
-        $recentUploads = Resource::where('user_id', $user->id)
-            ->with(['node:id,name,subject_id', 'node.subject:id,name'])
-            ->latest()
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'upload',
-                'title' => $item->title,
-                'subtitle' => $item->node?->subject?->name.' · '.$item->node?->name,
-                'resource_type' => $item->resource_type,
-                'url' => "/resources/{$item->id}",
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ]);
-
-        $recentReactions = BlogReaction::where('user_id', $user->id)
-            ->with('blog:id,title,slug')
-            ->latest()
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'reaction',
-                'title' => $item->blog?->title,
-                'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['title'] !== null);
-
-        $recentComments = BlogComment::where('user_id', $user->id)
-            ->with('blog:id,title,slug')
-            ->latest()
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'comment',
-                'title' => $item->blog?->title,
-                'content' => $item->content,
-                'url' => $item->blog ? "/blogs/{$item->blog->slug}" : null,
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['title'] !== null);
-
-        $recentAppreciations = UserAppreciation::where('appreciator_id', $user->id)
-            ->with('user:id,name,username')
-            ->latest('id')
-            ->take(3)
-            ->get()
-            ->map(fn ($item) => [
-                'type' => 'appreciation',
-                'title' => $item->user?->name,
-                'username' => $item->user?->username,
-                'url' => $item->user ? "/u/{$item->user->username}" : null,
-                'created_at' => $item->created_at?->diffForHumans(),
-                'timestamp' => $item->created_at?->timestamp ?? 0,
-            ])
-            ->filter(fn ($item) => $item['title'] !== null)
-            ->values();
+            ->take(8)
+            ->get();
 
         $syllabusProgress = $this->getSyllabusProgress($user);
 
@@ -253,14 +170,8 @@ class UserProfileController extends Controller
             'forumPosts' => $forumPosts,
             'forumAnswers' => $forumAnswers,
             'blogs' => $publishedBlogs,
-            'recentActivities' => [
-                'forum_posts' => $recentForumPosts->values(),
-                'forum_answers' => $recentForumAnswers->values(),
-                'uploads' => $recentUploads->values(),
-                'reactions' => $recentReactions->values(),
-                'comments' => $recentComments->values(),
-                'appreciations' => $recentAppreciations->values(),
-            ],
+            'notes' => $notes,
+            'notesCount' => $notesCount,
             'suggestedUsers' => $suggestedUsers,
             'pokeData' => $pokeData,
             'studyHeatmap' => DailyStudyLog::getHeatmapAndStatsForUser($user),

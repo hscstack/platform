@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
-    Activity,
     ArrowBigUp,
     ArrowBigDown,
     ArrowRight,
@@ -14,7 +13,7 @@ import {
     Eye,
     Facebook,
     FileText,
-    Folder,
+    FlaskConical,
     Github,
     GraduationCap,
     Heart,
@@ -25,8 +24,9 @@ import {
     LogIn,
     MessageSquare,
     MessageSquareCheck,
-    UploadCloud,
+    NotebookPen,
     Users,
+    Video,
     X,
     Zap,
 } from 'lucide-vue-next';
@@ -141,64 +141,26 @@ const props = defineProps<{
         comments_count: number;
         created_at: string;
     }>;
-    recentActivities: {
-        forum_posts?: Array<{
-            type: string;
-            title: string;
-            subtitle?: string;
-            url: string | null;
-            created_at: string;
-            timestamp?: number;
-        }>;
-        forum_answers?: Array<{
-            type: string;
-            title: string;
-            content?: string;
-            url: string | null;
-            created_at: string;
-            timestamp?: number;
-        }>;
-        folders?: Array<{
-            type: string;
-            title: string;
-            subtitle?: string;
-            url: string | null;
-            created_at: string;
-            timestamp?: number;
-        }>;
-        uploads?: Array<{
-            type: string;
-            title: string;
-            subtitle?: string;
-            resource_type?: string;
-            url: string | null;
-            created_at: string;
-            timestamp?: number;
-        }>;
-        reactions?: Array<{
-            type: string;
-            title: string;
-            url: string | null;
-            created_at: string;
-            timestamp?: number;
-        }>;
-        comments?: Array<{
-            type: string;
-            title: string;
-            content?: string;
-            url: string | null;
-            created_at: string;
-            timestamp?: number;
-        }>;
-        appreciations?: Array<{
-            type: string;
-            title: string;
-            username?: string;
-            url: string | null;
-            created_at: string;
-            timestamp?: number;
-        }>;
-    };
+    notes?: Array<{
+        id: number;
+        title: string;
+        resource_type: string;
+        items_count?: number;
+        vote_score?: number;
+        created_at: string;
+        node?: {
+            id: number;
+            name: string;
+            slug: string;
+            subject?: {
+                id: number;
+                name: string;
+                course: string;
+                slug: string;
+            } | null;
+        } | null;
+    }>;
+    notesCount?: number;
     suggestedUsers?: Array<{
         id: number;
         name: string;
@@ -280,35 +242,8 @@ onBeforeUnmount(() => {
     }
 });
 
-const activeTab = ref<'forum' | 'blogs' | 'activity'>('forum');
+const activeTab = ref<'notes' | 'forum' | 'blogs'>('notes');
 const forumSubTab = ref<'questions' | 'answers'>('questions');
-
-interface ActivityItem {
-    type: string;
-    title?: string | null;
-    subtitle?: string | null;
-    content?: string | null;
-    username?: string | null;
-    resource_type?: string | null;
-    url: string | null;
-    created_at: string;
-    timestamp?: number;
-}
-
-const sortedActivities = computed<ActivityItem[]>(() => {
-    const list: ActivityItem[] = [
-        ...((props.recentActivities.forum_posts || []) as ActivityItem[]),
-        ...((props.recentActivities.forum_answers || []) as ActivityItem[]),
-        ...((props.recentActivities.uploads || []) as ActivityItem[]),
-        ...((props.recentActivities.reactions || []) as ActivityItem[]),
-        ...((props.recentActivities.comments || []) as ActivityItem[]),
-        ...((props.recentActivities.appreciations || []) as ActivityItem[]),
-    ];
-
-    return list.sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0));
-});
-
-const totalActivitiesCount = computed(() => sortedActivities.value.length);
 
 const localIsAppreciated = ref(props.isAppreciated);
 const localAppreciationsCount = ref(props.appreciationsCount);
@@ -1054,12 +989,26 @@ const formatGroupName = (group?: string) => {
                     />
                 </div>
 
-                <!-- Tabbed Content Section (3 Tabs: Forum, Articles, Activity) -->
+                <!-- Tabbed Content Section (3 Tabs: Forum, Articles, Notes) -->
                 <div class="space-y-3.5">
                     <!-- Navigation Tabs Bar -->
                     <div
                         class="flex items-center gap-1 rounded-xl border border-slate-200/80 bg-white p-1 shadow-xs sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
                     >
+                        <button
+                            @click="activeTab = 'notes'"
+                            type="button"
+                            class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
+                            :class="
+                                activeTab === 'notes'
+                                    ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
+                                    : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                            "
+                        >
+                            <NotebookPen class="h-3.5 w-3.5 shrink-0" />
+                            <span>Notes</span>
+                        </button>
+
                         <button
                             @click="activeTab = 'forum'"
                             type="button"
@@ -1087,24 +1036,172 @@ const formatGroupName = (group?: string) => {
                             <FileText class="h-3.5 w-3.5 shrink-0" />
                             <span>Articles</span>
                         </button>
-
-                        <button
-                            @click="activeTab = 'activity'"
-                            type="button"
-                            class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition sm:rounded-xl sm:px-3"
-                            :class="
-                                activeTab === 'activity'
-                                    ? 'bg-slate-900 text-white shadow-xs dark:bg-gray-100 dark:text-gray-900'
-                                    : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                            "
-                        >
-                            <Activity class="h-3.5 w-3.5 shrink-0" />
-                            <span>Activity</span>
-                        </button>
                     </div>
 
-                    <!-- Tab 1: Forum Questions & Answers -->
-                    <div v-if="activeTab === 'forum'" class="space-y-3">
+                    <!-- Tab 1: Notes & Study Materials -->
+                    <div v-if="activeTab === 'notes'">
+                        <div
+                            v-if="!notes || notes.length === 0"
+                            class="rounded-2xl border border-dashed border-slate-200 bg-white p-7 text-center sm:rounded-3xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
+                        >
+                            <div
+                                class="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 sm:h-10 sm:w-10 dark:bg-amber-950/60 dark:text-amber-400"
+                            >
+                                <NotebookPen class="h-5 w-5 stroke-[1.8]" />
+                            </div>
+                            <h3
+                                class="mt-2 text-xs font-bold text-slate-900 dark:text-gray-100"
+                            >
+                                No notes or study materials shared yet
+                            </h3>
+                            <p
+                                class="mx-auto mt-1 max-w-xs text-[11px] text-slate-500 dark:text-gray-400"
+                            >
+                                Study notes, lecture videos, and PDF materials
+                                uploaded by {{ profileUser.name }} will appear
+                                here.
+                            </p>
+                        </div>
+
+                        <div v-else class="space-y-2.5">
+                            <Link
+                                v-for="note in notes"
+                                :key="note.id"
+                                :href="`/resources/${note.id}`"
+                                class="group flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs transition hover:border-slate-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+                            >
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <div
+                                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border"
+                                        :class="
+                                            note.resource_type === 'video'
+                                                ? 'border-rose-200/50 bg-rose-50 text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400'
+                                                : note.resource_type ===
+                                                    'practical'
+                                                  ? 'border-teal-200/50 bg-teal-50 text-teal-600 dark:border-teal-500/20 dark:bg-teal-500/10 dark:text-teal-400'
+                                                  : note.resource_type ===
+                                                      'other'
+                                                    ? 'border-slate-200 bg-slate-100 text-slate-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                                    : 'border-amber-200/50 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400'
+                                        "
+                                    >
+                                        <Video
+                                            v-if="
+                                                note.resource_type === 'video'
+                                            "
+                                            class="h-4.5 w-4.5 stroke-[2.2]"
+                                        />
+                                        <FlaskConical
+                                            v-else-if="
+                                                note.resource_type ===
+                                                'practical'
+                                            "
+                                            class="h-4.5 w-4.5 stroke-[2.2]"
+                                        />
+                                        <FileText
+                                            v-else-if="
+                                                note.resource_type === 'other'
+                                            "
+                                            class="h-4.5 w-4.5 stroke-[2.2]"
+                                        />
+                                        <NotebookPen
+                                            v-else
+                                            class="h-4.5 w-4.5 stroke-[2.2]"
+                                        />
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <h4
+                                            class="truncate text-xs font-bold text-slate-900 transition group-hover:text-indigo-600 sm:text-sm dark:text-gray-100 dark:group-hover:text-indigo-400"
+                                        >
+                                            {{ note.title }}
+                                        </h4>
+                                        <div
+                                            class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-400 dark:text-gray-500"
+                                        >
+                                            <span
+                                                v-if="note.node?.subject"
+                                                class="font-medium text-slate-600 dark:text-gray-300"
+                                            >
+                                                {{ note.node.subject.name }}
+                                            </span>
+                                            <span v-if="note.node"
+                                                >&middot;
+                                                {{ note.node.name }}</span
+                                            >
+                                            <span v-if="note.items_count"
+                                                >&middot; {{ note.items_count }}
+                                                {{
+                                                    note.resource_type ===
+                                                    'video'
+                                                        ? 'classes'
+                                                        : 'items'
+                                                }}</span
+                                            >
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex shrink-0 items-center gap-2">
+                                    <div
+                                        class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-colors"
+                                        :class="
+                                            (note.vote_score || 0) > 0
+                                                ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
+                                                : (note.vote_score || 0) < 0
+                                                  ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400'
+                                                  : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                                        "
+                                        title="Vote score"
+                                    >
+                                        <ArrowBigUp
+                                            class="h-3.5 w-3.5"
+                                            :class="
+                                                (note.vote_score || 0) > 0
+                                                    ? 'fill-current'
+                                                    : ''
+                                            "
+                                        />
+                                        <span class="tabular-nums">{{
+                                            note.vote_score || 0
+                                        }}</span>
+                                    </div>
+
+                                    <ChevronRight
+                                        class="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                                    />
+                                </div>
+                            </Link>
+
+                            <div
+                                v-if="
+                                    (notesCount ?? notes.length) > notes.length
+                                "
+                                class="pt-1.5 text-center"
+                            >
+                                <span
+                                    class="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50 px-3.5 py-1 text-xs font-medium text-slate-500 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400"
+                                >
+                                    and
+                                    {{
+                                        (notesCount ?? notes.length) -
+                                        notes.length
+                                    }}
+                                    other
+                                    {{
+                                        (notesCount ?? notes.length) -
+                                            notes.length ===
+                                        1
+                                            ? 'note'
+                                            : 'notes'
+                                    }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Forum Questions & Answers -->
+                    <div v-else-if="activeTab === 'forum'" class="space-y-3">
                         <!-- Sub-navigation: Questions vs Answers -->
                         <div
                             class="flex items-center justify-between gap-2 px-1"
@@ -1466,223 +1563,6 @@ const formatGroupName = (group?: string) => {
                                         >
                                     </Link>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tab 3: Recent Activity -->
-                    <div v-else-if="activeTab === 'activity'">
-                        <div
-                            v-if="totalActivitiesCount === 0"
-                            class="rounded-2xl border border-dashed border-slate-200 bg-white p-7 text-center sm:rounded-3xl sm:p-8 dark:border-gray-800 dark:bg-gray-900"
-                        >
-                            <div
-                                class="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:bg-indigo-950/60 dark:text-indigo-400"
-                            >
-                                <Activity class="h-5 w-5 stroke-[1.8]" />
-                            </div>
-                            <h3
-                                class="mt-2 text-xs font-bold text-slate-900 dark:text-gray-100"
-                            >
-                                No recent activity yet
-                            </h3>
-                            <p
-                                class="mx-auto mt-1 max-w-xs text-[11px] text-slate-500 dark:text-gray-400"
-                            >
-                                Forum questions, answers, and study notes will
-                                show up here.
-                            </p>
-                        </div>
-
-                        <div v-else class="space-y-2">
-                            <div
-                                v-for="(item, idx) in sortedActivities"
-                                :key="item.type + '-' + idx"
-                                class="flex flex-col gap-1 rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs sm:rounded-2xl sm:p-3 dark:border-gray-800 dark:bg-gray-900"
-                            >
-                                <div class="flex items-center justify-between">
-                                    <div
-                                        class="flex min-w-0 items-center gap-2"
-                                    >
-                                        <!-- Forum Post -->
-                                        <div
-                                            v-if="item.type === 'forum_post'"
-                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                                        >
-                                            <HelpCircle
-                                                class="h-3.5 w-3.5 stroke-[2.2]"
-                                            />
-                                        </div>
-
-                                        <!-- Forum Answer -->
-                                        <div
-                                            v-else-if="
-                                                item.type === 'forum_answer'
-                                            "
-                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                                        >
-                                            <MessageSquareCheck
-                                                class="h-3.5 w-3.5 stroke-[2.2]"
-                                            />
-                                        </div>
-
-                                        <!-- Folder -->
-                                        <div
-                                            v-else-if="item.type === 'folder'"
-                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
-                                        >
-                                            <Folder
-                                                class="h-3.5 w-3.5 stroke-[2.2]"
-                                            />
-                                        </div>
-
-                                        <!-- Upload -->
-                                        <div
-                                            v-else-if="item.type === 'upload'"
-                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
-                                        >
-                                            <UploadCloud class="h-3.5 w-3.5" />
-                                        </div>
-
-                                        <!-- Reaction / Like -->
-                                        <div
-                                            v-else-if="item.type === 'reaction'"
-                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
-                                        >
-                                            <Heart
-                                                class="h-3.5 w-3.5 fill-rose-500"
-                                            />
-                                        </div>
-
-                                        <!-- Comment -->
-                                        <div
-                                            v-else-if="item.type === 'comment'"
-                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
-                                        >
-                                            <MessageSquare
-                                                class="h-3.5 w-3.5"
-                                            />
-                                        </div>
-
-                                        <!-- Appreciation -->
-                                        <div
-                                            v-else-if="
-                                                item.type === 'appreciation'
-                                            "
-                                            class="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400"
-                                        >
-                                            <Heart
-                                                class="h-3.5 w-3.5 fill-rose-500"
-                                            />
-                                        </div>
-
-                                        <div class="min-w-0 flex-1 truncate">
-                                            <span
-                                                class="text-xs text-slate-500 dark:text-gray-400"
-                                            >
-                                                <template
-                                                    v-if="
-                                                        item.type ===
-                                                        'forum_post'
-                                                    "
-                                                    >Asked in Forum
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        item.type ===
-                                                        'forum_answer'
-                                                    "
-                                                    >Answered
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        item.type === 'folder'
-                                                    "
-                                                    >Created folder
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        item.type === 'upload'
-                                                    "
-                                                    >Uploaded
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        item.type === 'reaction'
-                                                    "
-                                                    >Liked
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        item.type === 'comment'
-                                                    "
-                                                    >Commented on
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        item.type ===
-                                                        'appreciation'
-                                                    "
-                                                    >Appreciated
-                                                </template>
-                                            </span>
-
-                                            <Link
-                                                v-if="item.url"
-                                                :href="item.url"
-                                                class="text-xs font-bold text-slate-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                            >
-                                                {{ item.title }}
-                                            </Link>
-                                            <span
-                                                v-else
-                                                class="text-xs font-bold text-slate-900 dark:text-gray-100"
-                                            >
-                                                {{ item.title }}
-                                            </span>
-
-                                            <span
-                                                v-if="item.subtitle"
-                                                class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
-                                            >
-                                                ({{ item.subtitle }})
-                                            </span>
-                                            <span
-                                                v-else-if="item.username"
-                                                class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
-                                            >
-                                                (@{{ item.username }})
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <span
-                                        class="shrink-0 pl-2 text-[10px] font-medium text-slate-400 dark:text-gray-500"
-                                    >
-                                        {{ item.created_at }}
-                                    </span>
-                                </div>
-
-                                <!-- Answer text preview for forum answer items -->
-                                <p
-                                    v-if="
-                                        item.type === 'forum_answer' &&
-                                        item.content
-                                    "
-                                    class="line-clamp-2 pl-8.5 text-[11px] text-slate-600 dark:text-gray-400"
-                                >
-                                    {{ item.content }}
-                                </p>
-
-                                <!-- Comment quote -->
-                                <p
-                                    v-if="
-                                        item.type === 'comment' && item.content
-                                    "
-                                    class="line-clamp-1 pl-8.5 text-xs text-slate-600 italic dark:text-gray-300"
-                                >
-                                    "{{ item.content }}"
-                                </p>
                             </div>
                         </div>
                     </div>
