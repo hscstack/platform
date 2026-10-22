@@ -44,11 +44,6 @@ class Resource extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function completions(): HasMany
-    {
-        return $this->hasMany(ResourceCompletion::class);
-    }
-
     public function changeRequests(): HasMany
     {
         return $this->hasMany(ResourceChangeRequest::class);

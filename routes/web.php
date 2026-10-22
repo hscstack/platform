@@ -69,7 +69,6 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/blogs/{blog}/react', [BlogController::class, 'toggleReaction'])->name('blogs.react');
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
-    Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
 
     // Resource Uploads
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
