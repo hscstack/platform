@@ -49,6 +49,7 @@ class NodeController extends Controller
                 return $node->resources()
                     ->withCount('items')
                     ->with('user:id,name,username')
+                    ->orderByDesc('vote_score')
                     ->latest('id')
                     ->get()
                     ->toArray();

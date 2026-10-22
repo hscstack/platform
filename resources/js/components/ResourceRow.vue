@@ -7,6 +7,7 @@ import {
     FileText,
     ChevronRight,
     User as UserIcon,
+    ArrowBigUp,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -17,6 +18,9 @@ const props = defineProps<{
         resource_type: string;
         items_count?: number;
         description?: string | null;
+        vote_score?: number;
+        upvotes_count?: number;
+        downvotes_count?: number;
         user?: {
             id: number;
             name: string;
@@ -120,8 +124,8 @@ const typeConfig = computed(() => {
             </div>
         </div>
 
-        <!-- Right Side Badges & Arrow -->
-        <div class="flex shrink-0 items-center gap-3 pl-3">
+        <!-- Right Side: Type Badge, Vote Score Pill & Arrow -->
+        <div class="flex shrink-0 items-center gap-2.5 pl-3 sm:gap-3">
             <!-- Full Type Badge (Desktop) -->
             <span
                 class="hidden rounded-lg border px-2.5 py-1 text-xs font-bold sm:inline-block"
@@ -129,6 +133,27 @@ const typeConfig = computed(() => {
             >
                 {{ typeConfig.label }}
             </span>
+
+            <!-- Read-Only Vote Score Pill (End of Row) -->
+            <div
+                class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-colors"
+                :class="
+                    (resource.vote_score || 0) > 0
+                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
+                        : (resource.vote_score || 0) < 0
+                          ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400'
+                          : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                "
+                :title="`ভোট স্কোর: ${resource.vote_score || 0}`"
+            >
+                <ArrowBigUp
+                    class="h-3.5 w-3.5"
+                    :class="
+                        (resource.vote_score || 0) > 0 ? 'fill-current' : ''
+                    "
+                />
+                <span class="tabular-nums">{{ resource.vote_score || 0 }}</span>
+            </div>
 
             <ChevronRight
                 class="h-4 w-4 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"

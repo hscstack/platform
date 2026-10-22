@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import { Flame, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import AuthModal from '@/components/AuthModal.vue';
@@ -44,6 +45,9 @@ const currentTitle = computed(
 type ResourceFilter = 'all' | 'note' | 'video' | 'practical' | 'other';
 const activeFilter = ref<ResourceFilter>('all');
 
+type SortOption = 'score' | 'newest';
+const sortBy = ref<SortOption>('score');
+
 const notesCount = computed(
     () => props.resources.filter((r) => r.resource_type === 'note').length,
 );
@@ -58,13 +62,26 @@ const othersCount = computed(
 );
 
 const filteredResources = computed(() => {
-    if (activeFilter.value === 'all') {
-        return props.resources;
+    let list = props.resources;
+
+    if (activeFilter.value !== 'all') {
+        list = list.filter((r) => r.resource_type === activeFilter.value);
     }
 
-    return props.resources.filter(
-        (r) => r.resource_type === activeFilter.value,
-    );
+    return [...list].sort((a, b) => {
+        if (sortBy.value === 'score') {
+            const scoreDiff = (b.vote_score || 0) - (a.vote_score || 0);
+
+            if (scoreDiff !== 0) {
+                return scoreDiff;
+            }
+
+            return (b.id || 0) - (a.id || 0);
+        } else {
+            // Newest first
+            return (b.id || 0) - (a.id || 0);
+        }
+    });
 });
 </script>
 
@@ -107,129 +124,167 @@ const filteredResources = computed(() => {
                 </span>
             </div>
 
-            <!-- In-Page Filter Pills for Study Materials (Visible on Leaf Nodes with Resources) -->
+            <!-- In-Page Filter Pills & Sort Controls (Visible on Leaf Nodes with Resources) -->
             <div
                 v-if="resources.length > 0 && nodes.length === 0"
-                class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 dark:border-gray-800"
+                class="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
             >
-                <button
-                    type="button"
-                    @click="activeFilter = 'all'"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
-                    :class="
-                        activeFilter === 'all'
-                            ? 'bg-slate-900 text-white shadow-xs dark:bg-white dark:text-gray-900'
-                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
-                    "
-                >
-                    <span>সব</span>
-                    <span
-                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                <!-- Category Filter Pills -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        @click="activeFilter = 'all'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
                         :class="
                             activeFilter === 'all'
-                                ? 'bg-white/20 text-white dark:bg-black/20 dark:text-gray-900'
-                                : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                                ? 'bg-slate-900 text-white shadow-xs dark:bg-white dark:text-gray-900'
+                                : 'border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
                         "
                     >
-                        {{ resources.length }}
-                    </span>
-                </button>
+                        <span>সব</span>
+                        <span
+                            class="py-0.2 rounded-md px-1.5 text-[10px]"
+                            :class="
+                                activeFilter === 'all'
+                                    ? 'bg-white/20 text-white dark:bg-black/20 dark:text-gray-900'
+                                    : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                            "
+                        >
+                            {{ resources.length }}
+                        </span>
+                    </button>
 
-                <button
-                    v-if="notesCount > 0"
-                    type="button"
-                    @click="activeFilter = 'note'"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
-                    :class="
-                        activeFilter === 'note'
-                            ? 'bg-amber-600 text-white shadow-xs dark:bg-amber-500'
-                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-amber-200 hover:bg-amber-50/50 hover:text-amber-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
-                    "
-                >
-                    <span>📝 নোট</span>
-                    <span
-                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                    <button
+                        v-if="notesCount > 0"
+                        type="button"
+                        @click="activeFilter = 'note'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
                         :class="
                             activeFilter === 'note'
-                                ? 'bg-white/20 text-white'
-                                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                                ? 'bg-amber-600 text-white shadow-xs dark:bg-amber-500'
+                                : 'border border-slate-200/80 bg-white text-slate-600 hover:border-amber-200 hover:bg-amber-50/50 hover:text-amber-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
                         "
                     >
-                        {{ notesCount }}
-                    </span>
-                </button>
+                        <span>📝 নোট</span>
+                        <span
+                            class="py-0.2 rounded-md px-1.5 text-[10px]"
+                            :class="
+                                activeFilter === 'note'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                            "
+                        >
+                            {{ notesCount }}
+                        </span>
+                    </button>
 
-                <button
-                    v-if="videosCount > 0"
-                    type="button"
-                    @click="activeFilter = 'video'"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
-                    :class="
-                        activeFilter === 'video'
-                            ? 'bg-rose-600 text-white shadow-xs dark:bg-rose-500'
-                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-rose-200 hover:bg-rose-50/50 hover:text-rose-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
-                    "
-                >
-                    <span>🎥 ক্লাস</span>
-                    <span
-                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                    <button
+                        v-if="videosCount > 0"
+                        type="button"
+                        @click="activeFilter = 'video'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
                         :class="
                             activeFilter === 'video'
-                                ? 'bg-white/20 text-white'
-                                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                                ? 'bg-rose-600 text-white shadow-xs dark:bg-rose-500'
+                                : 'border border-slate-200/80 bg-white text-slate-600 hover:border-rose-200 hover:bg-rose-50/50 hover:text-rose-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
                         "
                     >
-                        {{ videosCount }}
-                    </span>
-                </button>
+                        <span>🎥 ক্লাস</span>
+                        <span
+                            class="py-0.2 rounded-md px-1.5 text-[10px]"
+                            :class="
+                                activeFilter === 'video'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                            "
+                        >
+                            {{ videosCount }}
+                        </span>
+                    </button>
 
-                <button
-                    v-if="practicalsCount > 0"
-                    type="button"
-                    @click="activeFilter = 'practical'"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
-                    :class="
-                        activeFilter === 'practical'
-                            ? 'bg-teal-600 text-white shadow-xs dark:bg-teal-500'
-                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50/50 hover:text-teal-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
-                    "
-                >
-                    <span>🧪 ব্যবহারিক</span>
-                    <span
-                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                    <button
+                        v-if="practicalsCount > 0"
+                        type="button"
+                        @click="activeFilter = 'practical'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
                         :class="
                             activeFilter === 'practical'
-                                ? 'bg-white/20 text-white'
-                                : 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300'
+                                ? 'bg-teal-600 text-white shadow-xs dark:bg-teal-500'
+                                : 'border border-slate-200/80 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50/50 hover:text-teal-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
                         "
                     >
-                        {{ practicalsCount }}
-                    </span>
-                </button>
+                        <span>🧪 ব্যবহারিক</span>
+                        <span
+                            class="py-0.2 rounded-md px-1.5 text-[10px]"
+                            :class="
+                                activeFilter === 'practical'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300'
+                            "
+                        >
+                            {{ practicalsCount }}
+                        </span>
+                    </button>
 
-                <button
-                    v-if="othersCount > 0"
-                    type="button"
-                    @click="activeFilter = 'other'"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
-                    :class="
-                        activeFilter === 'other'
-                            ? 'bg-slate-700 text-white shadow-xs dark:bg-gray-700'
-                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
-                    "
-                >
-                    <span>📄 অন্যান্য</span>
-                    <span
-                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                    <button
+                        v-if="othersCount > 0"
+                        type="button"
+                        @click="activeFilter = 'other'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
                         :class="
                             activeFilter === 'other'
-                                ? 'bg-white/20 text-white'
-                                : 'bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-300'
+                                ? 'bg-slate-700 text-white shadow-xs dark:bg-gray-700'
+                                : 'border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
                         "
                     >
-                        {{ othersCount }}
-                    </span>
-                </button>
+                        <span>📄 অন্যান্য</span>
+                        <span
+                            class="py-0.2 rounded-md px-1.5 text-[10px]"
+                            :class="
+                                activeFilter === 'other'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-300'
+                            "
+                        >
+                            {{ othersCount }}
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Sort Filter Controls (Score vs Newest) -->
+                <div
+                    class="flex items-center gap-1 self-start rounded-xl border border-slate-200/80 bg-slate-50/70 p-1 sm:self-auto dark:border-gray-800 dark:bg-gray-900/60"
+                >
+                    <button
+                        type="button"
+                        @click="sortBy = 'score'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition active:scale-95"
+                        :class="
+                            sortBy === 'score'
+                                ? 'bg-white text-indigo-600 shadow-xs dark:bg-gray-800 dark:text-indigo-400'
+                                : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-200'
+                        "
+                        title="সর্বোচ্চ ভোট স্কোর অনুযায়ী সাজান"
+                    >
+                        <Flame class="h-3.5 w-3.5" />
+                        <span>ভোট স্কোর</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="sortBy = 'newest'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition active:scale-95"
+                        :class="
+                            sortBy === 'newest'
+                                ? 'bg-white text-indigo-600 shadow-xs dark:bg-gray-800 dark:text-indigo-400'
+                                : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-200'
+                        "
+                        title="নতুন আপলোড অনুযায়ী সাজান"
+                    >
+                        <Sparkles class="h-3.5 w-3.5" />
+                        <span>নতুন</span>
+                    </button>
+                </div>
             </div>
         </header>
 

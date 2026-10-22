@@ -70,7 +70,8 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
 
-    // Resource Uploads
+    // Resource Actions & Uploads
+    Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
     Route::post('/resources/bulk/images', [ResourceController::class, 'storeBulkImages'])->name('resources.bulk.images');
     Route::post('/resources/bulk/videos', [ResourceController::class, 'storeBulkVideos'])->name('resources.bulk.videos');

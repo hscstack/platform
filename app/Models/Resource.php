@@ -18,7 +18,19 @@ class Resource extends Model
         'resource_type',
         'title',
         'description',
+        'vote_score',
+        'upvotes_count',
+        'downvotes_count',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'vote_score' => 'integer',
+            'upvotes_count' => 'integer',
+            'downvotes_count' => 'integer',
+        ];
+    }
 
     protected static function booted(): void
     {
@@ -42,6 +54,21 @@ class Resource extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function votes(): HasMany
+    {
+        return $this->hasMany(ResourceVote::class);
+    }
+
+    public function upvotes(): HasMany
+    {
+        return $this->hasMany(ResourceVote::class)->where('value', 1);
+    }
+
+    public function downvotes(): HasMany
+    {
+        return $this->hasMany(ResourceVote::class)->where('value', -1);
     }
 
     public function changeRequests(): HasMany

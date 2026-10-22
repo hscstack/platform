@@ -8,6 +8,9 @@ use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Models\Node;
 use App\Models\Resource;
 use App\Models\ResourceChangeRequest;
+use App\Models\ResourceVote;
+use App\Notifications\ResourceVoteNotification;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -30,9 +33,115 @@ class ResourceController extends Controller
 
         $node = Node::find($data['resource']['node_id']);
 
+        $userVote = auth()->check()
+            ? ResourceVote::where('resource_id', $id)->where('user_id', auth()->id())->value('value')
+            : null;
+
+        $upvoters = ResourceVote::where('resource_id', $id)
+            ->where('value', 1)
+            ->with('user:id,name,username,image_path,institution,is_verified')
+            ->latest('id')
+            ->take(20)
+            ->get()
+            ->pluck('user')
+            ->filter()
+            ->values();
+
         return Inertia::render('Resource', array_merge($data, [
             'breadcrumb' => $node ? $node->breadcrumb() : [],
+            'userVote' => $userVote,
+            'upvoters' => $upvoters,
         ]));
+    }
+
+    public function vote(Request $request, Resource $resource)
+    {
+        $user = auth()->user();
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).",
+                ], 403);
+            }
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
+        $validated = $request->validate([
+            'value' => ['required', 'in:1,-1'],
+        ]);
+
+        $value = (int) $validated['value'];
+        $userId = auth()->id();
+        $isFirstTimeUpvote = false;
+
+        DB::transaction(function () use ($resource, $userId, $value, &$isFirstTimeUpvote) {
+            $lockedResource = Resource::where('id', $resource->id)->lockForUpdate()->first();
+            if (! $lockedResource) {
+                return;
+            }
+
+            $existing = ResourceVote::where('resource_id', $lockedResource->id)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                if ($existing->value === $value) {
+                    $existing->delete();
+                } else {
+                    $existing->update(['value' => $value]);
+                }
+            } else {
+                ResourceVote::create([
+                    'resource_id' => $lockedResource->id,
+                    'user_id' => $userId,
+                    'value' => $value,
+                ]);
+
+                if ($value === 1) {
+                    $isFirstTimeUpvote = true;
+                }
+            }
+
+            $upvotes = (int) ResourceVote::where('resource_id', $lockedResource->id)->where('value', 1)->count();
+            $downvotes = (int) ResourceVote::where('resource_id', $lockedResource->id)->where('value', -1)->count();
+
+            $lockedResource->update([
+                'upvotes_count' => $upvotes,
+                'downvotes_count' => $downvotes,
+                'vote_score' => $upvotes - $downvotes,
+            ]);
+        });
+
+        if ($isFirstTimeUpvote && $resource->user_id && $resource->user_id !== $userId) {
+            $resource->loadMissing('user');
+            if ($resource->user) {
+                ResourceVoteNotification::sendTo($resource->user, $resource, $user);
+            }
+        }
+
+        Cache::forget("resource_{$resource->id}");
+        Cache::forget("node_resources_{$resource->node_id}");
+
+        if ($request->wantsJson()) {
+            $refreshed = $resource->fresh();
+            $currentUserVote = ResourceVote::where('resource_id', $resource->id)
+                ->where('user_id', $userId)
+                ->value('value');
+
+            return response()->json([
+                'success' => true,
+                'vote_score' => $refreshed->vote_score,
+                'upvotes_count' => $refreshed->upvotes_count,
+                'downvotes_count' => $refreshed->downvotes_count,
+                'user_vote' => $currentUserVote,
+            ]);
+        }
+
+        return back();
     }
 
     /**

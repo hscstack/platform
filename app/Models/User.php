@@ -165,6 +165,11 @@ class User extends Authenticatable
         return $this->hasMany(Node::class);
     }
 
+    public function resourceVotes(): HasMany
+    {
+        return $this->hasMany(ResourceVote::class);
+    }
+
     public function appreciationsReceived(): HasMany
     {
         return $this->hasMany(UserAppreciation::class, 'user_id');
