@@ -1,23 +1,36 @@
 <script setup lang="ts">
-import { Minimize2, RotateCcw } from 'lucide-vue-next';
+import {
+    Minimize2,
+    RotateCcw,
+    ChevronLeft,
+    ChevronRight,
+} from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const modelValue = defineModel<boolean>({ default: false });
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         src: string;
         alt?: string;
         title?: string;
+        hasPrev?: boolean;
+        hasNext?: boolean;
+        pageIndicator?: string;
     }>(),
     {
         alt: 'Attached Image',
         title: '',
+        hasPrev: false,
+        hasNext: false,
+        pageIndicator: '',
     },
 );
 
 const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'prev'): void;
+    (e: 'next'): void;
 }>();
 
 const backdropRef = ref<HTMLElement | null>(null);
@@ -44,6 +57,16 @@ const close = () => {
     modelValue.value = false;
     resetZoom();
     emit('close');
+};
+
+const handlePrev = () => {
+    resetZoom();
+    emit('prev');
+};
+
+const handleNext = () => {
+    resetZoom();
+    emit('next');
 };
 
 const getTouchDistance = (e: TouchEvent) => {
@@ -151,6 +174,10 @@ const handleKeyDown = (e: KeyboardEvent) => {
         close();
     } else if (e.key === 'r' || e.key === '0') {
         resetZoom();
+    } else if (e.key === 'ArrowLeft' && props.hasPrev) {
+        handlePrev();
+    } else if (e.key === 'ArrowRight' && props.hasNext) {
+        handleNext();
     }
 };
 
@@ -163,6 +190,13 @@ watch(modelValue, (val) => {
         document.body.style.overflow = val ? 'hidden' : '';
     }
 });
+
+watch(
+    () => props.src,
+    () => {
+        resetZoom();
+    },
+);
 
 onMounted(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -236,6 +270,36 @@ onBeforeUnmount(() => {
                     >
                         <Minimize2 class="h-5 w-5" />
                     </button>
+                </div>
+
+                <!-- Previous Image Button (Left) -->
+                <button
+                    v-if="hasPrev"
+                    type="button"
+                    @click.stop="handlePrev"
+                    class="fixed top-1/2 left-3 z-[130] -translate-y-1/2 cursor-pointer rounded-full bg-white/10 p-3 text-white shadow-2xl backdrop-blur-md transition hover:bg-white/25 active:scale-95 sm:left-6 sm:p-4"
+                    title="আগের পৃষ্ঠা (←)"
+                >
+                    <ChevronLeft class="h-6 w-6 stroke-[2.5]" />
+                </button>
+
+                <!-- Next Image Button (Right) -->
+                <button
+                    v-if="hasNext"
+                    type="button"
+                    @click.stop="handleNext"
+                    class="fixed top-1/2 right-3 z-[130] -translate-y-1/2 cursor-pointer rounded-full bg-white/10 p-3 text-white shadow-2xl backdrop-blur-md transition hover:bg-white/25 active:scale-95 sm:right-6 sm:p-4"
+                    title="পরের পৃষ্ঠা (→)"
+                >
+                    <ChevronRight class="h-6 w-6 stroke-[2.5]" />
+                </button>
+
+                <!-- Page Indicator Pill (Bottom Center) -->
+                <div
+                    v-if="pageIndicator"
+                    class="pointer-events-none fixed bottom-6 left-1/2 z-[130] -translate-x-1/2 rounded-full border border-white/10 bg-black/60 px-4 py-1.5 text-xs font-bold text-white/90 shadow-lg backdrop-blur-md"
+                >
+                    {{ pageIndicator }}
                 </div>
 
                 <!-- Centered Image with transform -->

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import AuthModal from '@/components/AuthModal.vue';
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
@@ -39,12 +39,33 @@ const crumbs = computed(() => props.breadcrumb ?? []);
 const currentTitle = computed(
     () => crumbs.value.at(-1)?.name ?? props.subject?.name,
 );
-const parentTitle = computed(
-    () => crumbs.value.at(-2)?.name ?? props.subject?.name,
+
+// Filter tabs for leaf nodes (when resources exist)
+type ResourceFilter = 'all' | 'note' | 'video' | 'practical' | 'other';
+const activeFilter = ref<ResourceFilter>('all');
+
+const notesCount = computed(
+    () => props.resources.filter((r) => r.resource_type === 'note').length,
 );
-const totalItemsCount = computed(
-    () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
+const videosCount = computed(
+    () => props.resources.filter((r) => r.resource_type === 'video').length,
 );
+const practicalsCount = computed(
+    () => props.resources.filter((r) => r.resource_type === 'practical').length,
+);
+const othersCount = computed(
+    () => props.resources.filter((r) => r.resource_type === 'other').length,
+);
+
+const filteredResources = computed(() => {
+    if (activeFilter.value === 'all') {
+        return props.resources;
+    }
+
+    return props.resources.filter(
+        (r) => r.resource_type === activeFilter.value,
+    );
+});
 </script>
 
 <template>
@@ -62,30 +83,153 @@ const totalItemsCount = computed(
     </Head>
 
     <div class="mx-auto max-w-5xl px-3 pt-6 pb-24 sm:px-6">
-        <header class="mb-8">
+        <header class="mb-5">
             <BreadcrumbNav
                 :breadcrumb="crumbs"
                 :subject="subject"
                 :current-node="currentNode"
-                class="mb-4"
+                :exclude-last="true"
+                class="mb-3"
             />
 
+            <div class="flex items-center justify-between">
+                <h1
+                    class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                >
+                    {{ currentTitle }}
+                </h1>
+
+                <span
+                    v-if="nodes.length > 0"
+                    class="text-xs font-semibold text-slate-400 sm:text-sm dark:text-gray-500"
+                >
+                    {{ nodes.length }} টি অধ্যায়
+                </span>
+            </div>
+
+            <!-- In-Page Filter Pills for Study Materials (Visible on Leaf Nodes with Resources) -->
             <div
-                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                v-if="resources.length > 0 && nodes.length === 0"
+                class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 dark:border-gray-800"
             >
-                <div>
-                    <h1
-                        class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
+                <button
+                    type="button"
+                    @click="activeFilter = 'all'"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                    :class="
+                        activeFilter === 'all'
+                            ? 'bg-slate-900 text-white shadow-xs dark:bg-white dark:text-gray-900'
+                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
+                    "
+                >
+                    <span>সব</span>
+                    <span
+                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                        :class="
+                            activeFilter === 'all'
+                                ? 'bg-white/20 text-white dark:bg-black/20 dark:text-gray-900'
+                                : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                        "
                     >
-                        {{ currentTitle }}
-                    </h1>
-                    <p
-                        class="mt-1.5 text-sm font-semibold text-slate-400 dark:text-gray-500"
+                        {{ resources.length }}
+                    </span>
+                </button>
+
+                <button
+                    v-if="notesCount > 0"
+                    type="button"
+                    @click="activeFilter = 'note'"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                    :class="
+                        activeFilter === 'note'
+                            ? 'bg-amber-600 text-white shadow-xs dark:bg-amber-500'
+                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-amber-200 hover:bg-amber-50/50 hover:text-amber-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
+                    "
+                >
+                    <span>📝 নোট</span>
+                    <span
+                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                        :class="
+                            activeFilter === 'note'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                        "
                     >
-                        <span v-if="crumbs.length">{{ parentTitle }} · </span>
-                        {{ totalItemsCount }} Items Total
-                    </p>
-                </div>
+                        {{ notesCount }}
+                    </span>
+                </button>
+
+                <button
+                    v-if="videosCount > 0"
+                    type="button"
+                    @click="activeFilter = 'video'"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                    :class="
+                        activeFilter === 'video'
+                            ? 'bg-rose-600 text-white shadow-xs dark:bg-rose-500'
+                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-rose-200 hover:bg-rose-50/50 hover:text-rose-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
+                    "
+                >
+                    <span>🎥 ক্লাস</span>
+                    <span
+                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                        :class="
+                            activeFilter === 'video'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                        "
+                    >
+                        {{ videosCount }}
+                    </span>
+                </button>
+
+                <button
+                    v-if="practicalsCount > 0"
+                    type="button"
+                    @click="activeFilter = 'practical'"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                    :class="
+                        activeFilter === 'practical'
+                            ? 'bg-teal-600 text-white shadow-xs dark:bg-teal-500'
+                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50/50 hover:text-teal-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
+                    "
+                >
+                    <span>🧪 ব্যবহারিক</span>
+                    <span
+                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                        :class="
+                            activeFilter === 'practical'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300'
+                        "
+                    >
+                        {{ practicalsCount }}
+                    </span>
+                </button>
+
+                <button
+                    v-if="othersCount > 0"
+                    type="button"
+                    @click="activeFilter = 'other'"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                    :class="
+                        activeFilter === 'other'
+                            ? 'bg-slate-700 text-white shadow-xs dark:bg-gray-700'
+                            : 'border border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
+                    "
+                >
+                    <span>📄 অন্যান্য</span>
+                    <span
+                        class="py-0.2 rounded-md px-1.5 text-[10px]"
+                        :class="
+                            activeFilter === 'other'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-300'
+                        "
+                    >
+                        {{ othersCount }}
+                    </span>
+                </button>
             </div>
         </header>
 
@@ -111,9 +255,9 @@ const totalItemsCount = computed(
                         :node="node"
                     />
                 </template>
-                <template v-else-if="resources.length > 0">
+                <template v-else-if="filteredResources.length > 0">
                     <ResourceRow
-                        v-for="resource in resources"
+                        v-for="resource in filteredResources"
                         :key="`resource-${resource.id}`"
                         :resource="resource"
                     />

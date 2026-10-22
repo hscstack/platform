@@ -46,7 +46,12 @@ class NodeController extends Controller
 
         if (empty($nodes)) {
             $resources = Cache::remember("node_resources_{$node->id}", now()->addDay(), function () use ($node) {
-                return $node->resources()->get()->toArray();
+                return $node->resources()
+                    ->withCount('items')
+                    ->with('user:id,name,username')
+                    ->latest('id')
+                    ->get()
+                    ->toArray();
             });
         }
 

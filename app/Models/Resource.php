@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property-read Node $node
@@ -12,16 +14,10 @@ class Resource extends Model
 {
     protected $fillable = [
         'node_id',
+        'user_id',
         'resource_type',
         'title',
-        'content',
-        'file_path',
-        'external_url',
-        'user_id',
-    ];
-
-    protected $appends = [
-        'file_url',
+        'description',
     ];
 
     protected static function booted(): void
@@ -33,46 +29,37 @@ class Resource extends Model
         });
     }
 
-    public function getFileUrlAttribute(): ?string
+    public function items(): HasMany
     {
-        if ($this->external_url) {
-            return $this->external_url;
-        }
-
-        if ($this->file_path) {
-            return Storage::url($this->file_path);
-        }
-
-        return null;
+        return $this->hasMany(ResourceItem::class)->oldest('id');
     }
 
-    //
-    public function node()
+    public function node(): BelongsTo
     {
         return $this->belongsTo(Node::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function completions()
+    public function completions(): HasMany
     {
         return $this->hasMany(ResourceCompletion::class);
     }
 
-    public function changeRequests()
+    public function changeRequests(): HasMany
     {
         return $this->hasMany(ResourceChangeRequest::class);
     }
 
-    public function pendingChangeRequest()
+    public function pendingChangeRequest(): HasOne
     {
         return $this->hasOne(ResourceChangeRequest::class)->where('status', 'pending');
     }
 
-    public function latestRejectedChangeRequest()
+    public function latestRejectedChangeRequest(): HasOne
     {
         return $this->hasOne(ResourceChangeRequest::class)
             ->where('status', 'rejected')
