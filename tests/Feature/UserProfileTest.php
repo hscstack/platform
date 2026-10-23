@@ -103,8 +103,6 @@ test('public profile accurately displays forum questions, answers, and activitie
         ->where('forumPosts.0.title', 'How to calculate cross product angle?')
         ->has('forumAnswers', 1)
         ->where('forumAnswers.0.body', 'Use A x B = |A||B|sin(theta) formula.')
-        ->has('recentActivities.forum_posts', 1)
-        ->has('recentActivities.forum_answers', 1)
     );
 });
 
@@ -146,8 +144,6 @@ test('public profile excludes unapproved forum questions and answers', function 
         ->component('User/Show')
         ->has('forumPosts', 0)
         ->has('forumAnswers', 0)
-        ->has('recentActivities.forum_posts', 0)
-        ->has('recentActivities.forum_answers', 0)
     );
 });
 

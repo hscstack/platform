@@ -86,17 +86,16 @@ class SubjectController extends Controller
         $trendingNotes = Cache::remember("home_page_trending_notes_{$course}", now()->addMinutes(2), function () use ($course) {
             return Resource::query()
                 ->where('status', 'approved')
-                ->has('items')
+                ->whereNotNull('items')
+                ->whereJsonLength('items', '>', 0)
                 ->whereHas('node.subject', function ($query) use ($course) {
                     $query->where('course', $course);
                 })
                 ->with([
-                    'firstItem',
                     'user:id,name,username,image_path,institution,is_verified',
                     'node:id,name,slug,subject_id',
                     'node.subject:id,name,course,slug',
                 ])
-                ->withCount('items')
                 ->orderByDesc('vote_score')
                 ->latest('id')
                 ->limit(4)

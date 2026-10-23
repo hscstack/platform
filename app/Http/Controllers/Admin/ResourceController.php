@@ -30,9 +30,7 @@ class ResourceController extends BaseResourceController
             ->with([
                 'user:id,name,username,image_path',
                 'node.subject',
-                'firstItem',
             ])
-            ->withCount('items')
             ->latest('id');
 
         if ($status !== 'all') {
@@ -146,8 +144,9 @@ class ResourceController extends BaseResourceController
 
         // Clean up stored items in S3/R2
         foreach ($resource->items as $item) {
-            if (! str_starts_with($item->source, 'http://') && ! str_starts_with($item->source, 'https://')) {
-                Storage::disk('s3')->delete($item->source);
+            $source = is_array($item) ? ($item['source'] ?? '') : ($item->source ?? '');
+            if ($source && ! str_starts_with($source, 'http://') && ! str_starts_with($source, 'https://')) {
+                Storage::disk('s3')->delete($source);
             }
         }
 

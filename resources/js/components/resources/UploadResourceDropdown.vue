@@ -2,7 +2,7 @@
 import { Plus } from 'lucide-vue-next';
 import { ref } from 'vue';
 import FolderLockedModal from '@/components/resources/FolderLockedModal.vue';
-import UploadResourceModal from '@/components/resources/UploadResourceModal.vue';
+import ResourceFormModal from '@/components/resources/ResourceFormModal.vue';
 import { useAuth } from '@/lib/useAuth';
 
 const props = defineProps<{
@@ -51,7 +51,7 @@ const handleTriggerClick = () => {
         />
 
         <!-- Unified Upload Modal -->
-        <UploadResourceModal
+        <ResourceFormModal
             :is-open="isUploadModalOpen"
             :node="node"
             default-type="note"

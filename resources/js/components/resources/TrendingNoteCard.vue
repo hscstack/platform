@@ -5,6 +5,7 @@ import {
     FileText,
     FlaskConical,
     NotebookPen,
+    BookOpen,
     Play,
     Video,
 } from 'lucide-vue-next';
@@ -34,23 +35,14 @@ interface NodeItem {
     } | null;
 }
 
-interface FirstItem {
-    id: number;
-    resource_id: number;
-    format: string;
-    title: string;
-    source: string;
-    url?: string;
-}
-
 interface ResourceNote {
     id: number;
     title: string;
     resource_type: string;
+    thumbnail?: string | null;
     items_count?: number;
     vote_score: number;
     created_at?: string;
-    first_item?: FirstItem | null;
     user?: User | null;
     node?: NodeItem | null;
 }
@@ -59,41 +51,9 @@ const props = defineProps<{
     note: ResourceNote;
 }>();
 
-const getYouTubeThumbnail = (url?: string | null): string | null => {
-    if (!url) {
-        return null;
-    }
+const previewImageUrl = computed(() => props.note.thumbnail || null);
 
-    const match = url.match(
-        /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/,
-    );
-
-    return match ? `https://i.ytimg.com/vi/${match[1]}/mqdefault.jpg` : null;
-};
-
-const previewImageUrl = computed(() => {
-    const item = props.note.first_item;
-
-    if (!item) {
-        return null;
-    }
-
-    if (item.format === 'image' && item.url) {
-        return item.url;
-    }
-
-    if (item.format === 'video') {
-        return getYouTubeThumbnail(item.source);
-    }
-
-    return null;
-});
-
-const isVideo = computed(
-    () =>
-        props.note.resource_type === 'video' ||
-        props.note.first_item?.format === 'video',
-);
+const isVideo = computed(() => props.note.resource_type === 'video');
 
 const typeLabel = computed(() => {
     switch (props.note.resource_type) {
@@ -108,6 +68,12 @@ const typeLabel = computed(() => {
                 icon: FlaskConical,
                 text: 'Practical',
                 color: 'text-teal-600 dark:text-teal-400',
+            };
+        case 'marked_book':
+            return {
+                icon: BookOpen,
+                text: 'দাগানো বই',
+                color: 'text-emerald-600 dark:text-emerald-400',
             };
         case 'other':
             return {

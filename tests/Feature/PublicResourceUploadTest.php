@@ -4,6 +4,7 @@ use App\Models\Node;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -38,7 +39,7 @@ function createTestSubjectAndNode(bool $isFrozen = false): array
 test('guest cannot upload documents', function () {
     [, $node] = createTestSubjectAndNode();
 
-    $this->post('/resources/documents', [
+    $this->post('/resources', [
         'node_id' => $node->id,
         'resource_type' => 'note',
         'title' => 'Test Note',
@@ -56,7 +57,7 @@ test('banned user cannot upload resources', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->post('/resources/documents', [
+        ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Banned User Note',
@@ -75,7 +76,7 @@ test('public authenticated user submits document with pending status', function 
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->post('/resources/documents', [
+        ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'My Community Note',
@@ -95,7 +96,7 @@ test('public authenticated user submits document with pending status', function 
         ->and($res->node_id)->toBe($node->id)
         ->and($res->status)->toBe('pending')
         ->and($res->title)->toBe('My Community Note')
-        ->and($res->items()->count())->toBe(2);
+        ->and(count($res->items))->toBe(2);
 });
 
 test('moderator user uploading document gets auto-approved', function () {
@@ -105,7 +106,7 @@ test('moderator user uploading document gets auto-approved', function () {
     $moderator->givePermissionTo('moderate resources');
 
     $this->actingAs($moderator)
-        ->post('/resources/documents', [
+        ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Moderator Note',
@@ -141,7 +142,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
 
     // 21st submission should be rejected
     $this->actingAs($user)
-        ->post('/resources/documents', [
+        ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Exceeding Quota',
@@ -155,7 +156,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
     $user->update(['is_verified' => true]);
 
     $this->actingAs($user->fresh())
-        ->post('/resources/documents', [
+        ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Allowed For Verified',
@@ -165,4 +166,139 @@ test('regular users are blocked after 20 pending submissions while verified can 
         ])
         ->assertRedirect()
         ->assertSessionHas('success');
+});
+
+test('cannot submit resource with mixed formats', function () {
+    [, $node] = createTestSubjectAndNode();
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'note',
+            'title' => 'Mixed Formats Note',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/page1.webp'],
+                ['format' => 'pdf', 'source' => 'https://drive.google.com/file/d/xyz/view'],
+            ],
+        ])
+        ->assertSessionHasErrors('items');
+
+    expect(Resource::count())->toBe(0);
+});
+
+test('cannot submit video resource with non-video formats or note resource with video format', function () {
+    [, $node] = createTestSubjectAndNode();
+    $user = User::factory()->create();
+
+    // 1. Video resource cannot contain image
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'video',
+            'title' => 'Video with Image',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/page1.webp'],
+            ],
+        ])
+        ->assertSessionHasErrors('items');
+
+    // 2. Note resource cannot contain video
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'note',
+            'title' => 'Note with Video',
+            'items' => [
+                ['format' => 'video', 'source' => 'https://www.youtube.com/watch?v=12345678901'],
+            ],
+        ])
+        ->assertSessionHasErrors('items');
+
+    expect(Resource::count())->toBe(0);
+});
+
+test('fetch playlist endpoint validates input and returns videos', function () {
+    $user = User::factory()->create();
+
+    // Invalid URL
+    $this->actingAs($user)
+        ->postJson('/resources/fetch-playlist', [
+            'playlist_url' => 'not-a-url',
+        ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('playlist_url');
+
+    // Valid URL with Http fake
+    config(['services.youtube.key' => 'fake-key']);
+    Http::fake([
+        'https://www.googleapis.com/youtube/v3/playlistItems*' => Http::response([
+            'items' => [
+                [
+                    'snippet' => [
+                        'title' => 'Lecture 1: Intro',
+                        'resourceId' => ['videoId' => 'vid11111111'],
+                    ],
+                ],
+                [
+                    'snippet' => [
+                        'title' => 'Lecture 2: Advanced',
+                        'resourceId' => ['videoId' => 'vid22222222'],
+                    ],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->postJson('/resources/fetch-playlist', [
+            'playlist_url' => 'https://www.youtube.com/playlist?list=PL1234567890',
+        ]);
+
+    $response->assertOk()
+        ->assertJsonCount(2, 'items')
+        ->assertJsonPath('items.0.format', 'video')
+        ->assertJsonPath('items.0.title', 'Lecture 1: Intro')
+        ->assertJsonPath('items.0.source', 'https://www.youtube.com/watch?v=vid11111111');
+});
+
+test('fetch playlist endpoint is rate limited to 10 requests per minute', function () {
+    $user = User::factory()->create();
+
+    for ($i = 0; $i < 10; $i++) {
+        $this->actingAs($user)
+            ->postJson('/resources/fetch-playlist', [
+                'playlist_url' => 'https://www.youtube.com/playlist?list=PL1234567890',
+            ]);
+    }
+
+    // 11th request should be throttled (HTTP 429)
+    $this->actingAs($user)
+        ->postJson('/resources/fetch-playlist', [
+            'playlist_url' => 'https://www.youtube.com/playlist?list=PL1234567890',
+        ])
+        ->assertStatus(429);
+});
+
+test('user can submit marked_book resource with images', function () {
+    [, $node] = createTestSubjectAndNode();
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'marked_book',
+            'title' => 'Physics 1st Paper Marked Book',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/book_p1.webp'],
+                ['format' => 'image', 'source' => 'resources/notes/book_p2.webp'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $res = Resource::where('resource_type', 'marked_book')->first();
+    expect($res)->not->toBeNull()
+        ->and($res->title)->toBe('Physics 1st Paper Marked Book')
+        ->and(count($res->items))->toBe(2);
 });

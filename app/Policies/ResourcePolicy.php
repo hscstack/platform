@@ -16,7 +16,13 @@ class ResourcePolicy
             return false;
         }
 
-        return $user->id === $resource->user_id || $user->can('edit resources');
+        if ($user->isBanned()) {
+            return false;
+        }
+
+        return $user->can('moderate resources')
+            || $user->can('edit resources')
+            || $user->id === $resource->user_id;
     }
 
     /**

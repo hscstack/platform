@@ -26,7 +26,7 @@ class SubmissionController extends Controller
 
         $status = $request->query('status');
         $query = Resource::where('user_id', $user->id)
-            ->with(['node.subject', 'items', 'firstItem'])
+            ->with(['node.subject'])
             ->latest();
 
         if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {

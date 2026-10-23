@@ -42,7 +42,13 @@ const currentTitle = computed(
 );
 
 // Filter tabs for leaf nodes (when resources exist)
-type ResourceFilter = 'all' | 'note' | 'video' | 'practical' | 'other';
+type ResourceFilter =
+    | 'all'
+    | 'note'
+    | 'video'
+    | 'practical'
+    | 'marked_book'
+    | 'other';
 const activeFilter = ref<ResourceFilter>('all');
 
 type SortOption = 'score' | 'newest';
@@ -56,6 +62,10 @@ const videosCount = computed(
 );
 const practicalsCount = computed(
     () => props.resources.filter((r) => r.resource_type === 'practical').length,
+);
+const markedBooksCount = computed(
+    () =>
+        props.resources.filter((r) => r.resource_type === 'marked_book').length,
 );
 const othersCount = computed(
     () => props.resources.filter((r) => r.resource_type === 'other').length,
@@ -223,6 +233,30 @@ const filteredResources = computed(() => {
                             "
                         >
                             {{ practicalsCount }}
+                        </span>
+                    </button>
+
+                    <button
+                        v-if="markedBooksCount > 0"
+                        type="button"
+                        @click="activeFilter = 'marked_book'"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                        :class="
+                            activeFilter === 'marked_book'
+                                ? 'bg-emerald-600 text-white shadow-xs dark:bg-emerald-500'
+                                : 'border border-slate-200/80 bg-white text-slate-600 hover:border-emerald-200 hover:bg-emerald-50/50 hover:text-emerald-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'
+                        "
+                    >
+                        <span>📖 দাগানো বই</span>
+                        <span
+                            class="py-0.2 rounded-md px-1.5 text-[10px]"
+                            :class="
+                                activeFilter === 'marked_book'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                            "
+                        >
+                            {{ markedBooksCount }}
                         </span>
                     </button>
 

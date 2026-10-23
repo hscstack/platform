@@ -46,11 +46,20 @@ class DeleteUnusedImages extends Command
         );
 
         // Resource files (items stored under resources/)
-        $activeResourceFiles = DB::table('resource_items')
-            ->whereNotNull('source')
-            ->where('source', 'not like', 'http%')
-            ->pluck('source')
-            ->toArray();
+        $rawItems = DB::table('resources')
+            ->whereNotNull('items')
+            ->pluck('items');
+
+        $activeResourceFiles = [];
+        foreach ($rawItems as $json) {
+            $items = is_array($json) ? $json : (json_decode($json, true) ?: []);
+            foreach ($items as $item) {
+                $source = $item['source'] ?? null;
+                if ($source && ! str_starts_with($source, 'http://') && ! str_starts_with($source, 'https://')) {
+                    $activeResourceFiles[] = $source;
+                }
+            }
+        }
 
         $this->cleanDirectory(
             'resources',

@@ -9,6 +9,7 @@ import {
     Image as ImageIcon,
     Video,
     FlaskConical,
+    BookOpen,
     File,
     ChevronRight,
     Check,
@@ -182,6 +183,8 @@ const getResourceIcon = (type?: string) => {
     switch (type) {
         case 'practical':
             return FlaskConical;
+        case 'marked_book':
+            return BookOpen;
         case 'video':
             return Video;
         case 'pdf':

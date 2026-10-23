@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Resource\StoreDocumentRequest;
-use App\Http\Requests\Resource\StoreVideoRequest;
+use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Notifications\ResourceVoteNotification;
@@ -13,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -21,7 +21,7 @@ class ResourceController extends Controller
 {
     public function show($id)
     {
-        $resource = Resource::with(['user:id,name,username,image_path', 'node.subject', 'items'])->findOrFail($id);
+        $resource = Resource::with(['user:id,name,username,image_path', 'node.subject'])->findOrFail($id);
 
         $user = auth()->user();
         $isModerator = $user?->can('moderate resources');
@@ -220,30 +220,53 @@ class ResourceController extends Controller
         ]);
     }
 
-    public function storeDocument(StoreDocumentRequest $request)
+    public function fetchPlaylist(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'playlist_url' => ['required', 'url'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'সঠিক ইউটিউব প্লেলিস্টের লিংক দিন।',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $items = $this->resolveYoutubePlaylist($validator->validated()['playlist_url']);
+
+        if (empty($items)) {
+            return response()->json([
+                'error' => 'Unable to fetch videos. Please provide a valid, public YouTube playlist URL.',
+            ], 422);
+        }
+
+        return response()->json([
+            'items' => $items,
+        ]);
+    }
+
+    public function store(StoreResourceRequest $request)
     {
         $this->ensureCanSubmit(1);
 
         $validated = $request->validated();
         $isModerator = $request->user()->can('moderate resources');
-
         $status = $isModerator ? 'approved' : 'pending';
 
         DB::transaction(function () use ($validated, $status, $isModerator) {
-            $resource = Resource::create([
+            return Resource::create([
                 'node_id' => $validated['node_id'],
                 'user_id' => Auth::id(),
                 'resource_type' => $validated['resource_type'],
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
+                'thumbnail' => Resource::computeThumbnailFromItems($validated['items']),
+                'items' => $validated['items'],
                 'status' => $status,
                 'reviewed_by' => $isModerator ? Auth::id() : null,
                 'reviewed_at' => $isModerator ? now() : null,
             ]);
-
-            $resource->items()->createMany($validated['items']);
-
-            return $resource;
         });
 
         $typeName = ucfirst($validated['resource_type']);
@@ -254,42 +277,68 @@ class ResourceController extends Controller
         return back()->with('success', $message);
     }
 
-    public function storeVideo(StoreVideoRequest $request)
+    public function update(Request $request, Resource $resource)
     {
-        $this->ensureCanSubmit(1);
+        $user = Auth::user();
 
-        $validated = $request->validated();
-        $isModerator = $request->user()->can('moderate resources');
-        $status = $isModerator ? 'approved' : 'pending';
-
-        $items = $this->resolveYoutubePlaylist($validated['playlist_url']);
-
-        if (empty($items)) {
-            return back()->with('error', 'Unable to fetch videos. Please provide a valid, public YouTube playlist URL.');
+        if ($user?->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+            throw ValidationException::withMessages([
+                'banned' => "আপনি সাময়িকভাবে ব্যান রয়েছেন ({$bannedUntilFormatted} পর্যন্ত)। এই সময়ে কোনো রিসোর্স পরিবর্তন করা যাবে না।",
+            ]);
         }
 
-        DB::transaction(function () use ($validated, $items, $status, $isModerator) {
-            $resource = Resource::create([
-                'node_id' => $validated['node_id'],
-                'user_id' => Auth::id(),
-                'resource_type' => 'video',
-                'title' => $validated['title'],
-                'description' => $validated['description'] ?? null,
-                'status' => $status,
-                'reviewed_by' => $isModerator ? Auth::id() : null,
-                'reviewed_at' => $isModerator ? now() : null,
+        if ($resource->node?->isEffectivelyFrozen()) {
+            abort(403, 'This folder is frozen and cannot be modified.');
+        }
+
+        abort_unless(
+            $user?->can('moderate resources') || $user?->can('edit resources') || $user?->id === $resource->user_id,
+            403,
+            'Unauthorized to edit this resource.'
+        );
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*' => ['required', 'array'],
+            'items.*.format' => ['required', 'in:image,pdf,video'],
+            'items.*.source' => ['required', 'string'],
+            'items.*.title' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $formats = array_unique(array_column($validated['items'], 'format'));
+        if (count($formats) > 1) {
+            throw ValidationException::withMessages([
+                'items' => 'একটি রিসোর্সে একাধিক ফরম্যাট (ছবি, PDF, ভিডিও) একসাথে রাখা যাবে না।',
             ]);
+        }
 
-            $resource->items()->createMany($items);
+        $format = $formats[0] ?? null;
+        if ($validated['resource_type'] === 'video' && $format !== 'video') {
+            throw ValidationException::withMessages([
+                'items' => 'ভিডিও রিসোর্সে শুধুমাত্র ভিডিও লিংক থাকতে পারে।',
+            ]);
+        } elseif ($validated['resource_type'] !== 'video' && $format === 'video') {
+            throw ValidationException::withMessages([
+                'items' => 'নোট বা ডকুমেন্টে ভিডিও লিংক যুক্ত করা যাবে না।',
+            ]);
+        }
 
-            return $resource;
-        });
+        $resource->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'resource_type' => $validated['resource_type'],
+            'thumbnail' => Resource::computeThumbnailFromItems($validated['items']),
+            'items' => $validated['items'],
+        ]);
 
-        $message = $isModerator
-            ? 'Video playlist created and published successfully.'
-            : 'Video playlist submitted successfully and is awaiting review.';
+        Cache::forget("resource_{$resource->id}");
+        Cache::forget("node_resources_{$resource->node_id}");
 
-        return back()->with('success', $message);
+        return back()->with('success', 'রিসোর্স সফলভাবে আপডেট করা হয়েছে।');
     }
 
     private function resolveYoutubePlaylist(string $url): array

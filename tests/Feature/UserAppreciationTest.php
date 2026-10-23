@@ -81,7 +81,6 @@ test('user profile displays accurate appreciation counts and status', function (
             ->where('isAppreciated', true)
             ->has('appreciators', 2)
             ->has('appreciating', 1)
-            ->has('recentActivities.appreciations', 1)
         );
 
     // Check as unauthenticated guest (isAppreciated = false)

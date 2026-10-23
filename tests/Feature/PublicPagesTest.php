@@ -92,7 +92,10 @@ test('public resource page loads with subject, node, and enriched SEO metadata',
         'node_id' => $node->id,
         'resource_type' => 'video',
         'title' => 'Matrix o nirnayok 01',
-        'external_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        'status' => 'approved',
+        'items' => [
+            ['format' => 'video', 'title' => 'Matrix o nirnayok 01', 'source' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+        ],
     ]);
 
     $response = $this->get("/resources/{$resource->id}");

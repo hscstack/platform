@@ -9,12 +9,14 @@ import {
     AlertCircle,
     Check,
     Loader2,
+    Pencil,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import NoteReader from '@/components/resources/NoteReader.vue';
 import PdfViewer from '@/components/resources/PdfViewer.vue';
+import ResourceFormModal from '@/components/resources/ResourceFormModal.vue';
 import ResourceVoteButtons from '@/components/resources/ResourceVoteButtons.vue';
 import VideoSeriesPlayer from '@/components/resources/VideoSeriesPlayer.vue';
 
@@ -126,6 +128,7 @@ const isApproving = ref(false);
 const isRejecting = ref(false);
 const showRejectForm = ref(false);
 const rejectReason = ref('');
+const showEditModal = ref(false);
 
 const handleApprove = () => {
     if (
@@ -265,6 +268,15 @@ const chapterUrl = computed(() => {
                 >
                     <button
                         type="button"
+                        @click="showEditModal = true"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-bold text-amber-900 shadow-2xs transition hover:bg-amber-100/60 dark:border-amber-700 dark:bg-gray-900 dark:text-amber-200 dark:hover:bg-amber-950/40"
+                    >
+                        <Pencil class="h-3.5 w-3.5" />
+                        <span>সম্পাদনা</span>
+                    </button>
+
+                    <button
+                        type="button"
                         :disabled="isApproving || isRejecting"
                         @click="handleApprove"
                         class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 disabled:opacity-50"
@@ -383,21 +395,35 @@ const chapterUrl = computed(() => {
             />
 
             <!-- Title & Back Button -->
-            <div class="flex items-center gap-3">
-                <!-- Clear Back Button -->
-                <Link
-                    :href="chapterUrl"
-                    class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-xs transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                    title="অধ্যায়ে ফিরে যান"
-                >
-                    <ArrowLeft class="h-4 w-4 stroke-[2.3]" />
-                </Link>
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-3">
+                    <!-- Clear Back Button -->
+                    <Link
+                        :href="chapterUrl"
+                        class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-xs transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                        title="অধ্যায়ে ফিরে যান"
+                    >
+                        <ArrowLeft class="h-4 w-4 stroke-[2.3]" />
+                    </Link>
 
-                <h1
-                    class="truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl md:text-3xl dark:text-gray-100"
+                    <h1
+                        class="truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl md:text-3xl dark:text-gray-100"
+                    >
+                        {{ resource.title }}
+                    </h1>
+                </div>
+
+                <!-- Admin Edit Button -->
+                <button
+                    v-if="can_moderate"
+                    type="button"
+                    @click="showEditModal = true"
+                    class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    title="রিসোর্স সম্পাদনা করুন"
                 >
-                    {{ resource.title }}
-                </h1>
+                    <Pencil class="h-3.5 w-3.5" />
+                    <span>সম্পাদনা</span>
+                </button>
             </div>
 
             <!-- Author Info -->
@@ -624,4 +650,11 @@ const chapterUrl = computed(() => {
             </div>
         </Transition>
     </Teleport>
+
+    <!-- Admin Edit Resource Modal -->
+    <ResourceFormModal
+        v-if="can_moderate"
+        v-model:is-open="showEditModal"
+        :resource="resource"
+    />
 </template>

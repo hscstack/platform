@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property-read Node $node
@@ -21,6 +21,8 @@ class Resource extends Model
         'resource_type',
         'title',
         'description',
+        'thumbnail',
+        'items',
         'status',
         'admin_note',
         'reviewed_by',
@@ -28,6 +30,10 @@ class Resource extends Model
         'vote_score',
         'upvotes_count',
         'downvotes_count',
+    ];
+
+    protected $appends = [
+        'items_count',
     ];
 
     protected function casts(): array
@@ -40,23 +46,95 @@ class Resource extends Model
         ];
     }
 
+    public function getItemsAttribute($value): array
+    {
+        if (empty($value)) {
+            return [];
+        }
+
+        $items = is_array($value) ? $value : (json_decode($value, true) ?: []);
+
+        return array_values(array_map(function ($item) {
+            $source = $item['source'] ?? '';
+            $url = (str_starts_with($source, 'http://') || str_starts_with($source, 'https://'))
+                ? $source
+                : ($source ? Storage::url($source) : '');
+
+            return array_merge($item, ['url' => $url]);
+        }, $items));
+    }
+
+    public function setItemsAttribute($value): void
+    {
+        $this->attributes['items'] = is_string($value) ? $value : json_encode($value ?: []);
+    }
+
+    public function getThumbnailAttribute(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        return str_starts_with($value, 'http://') || str_starts_with($value, 'https://')
+            ? $value
+            : Storage::url($value);
+    }
+
+    public static function extractYoutubeThumbnail(?string $url): ?string
+    {
+        if (! $url) {
+            return null;
+        }
+
+        if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/', $url, $matches)) {
+            return "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
+        }
+
+        return null;
+    }
+
+    public static function computeThumbnailFromItems(array $items): ?string
+    {
+        $first = $items[0] ?? null;
+        if (! $first) {
+            return null;
+        }
+
+        $format = $first['format'] ?? null;
+        $source = $first['source'] ?? null;
+
+        if ($format === 'image' && $source) {
+            return $source;
+        }
+
+        if ($format === 'video' && $source) {
+            return static::extractYoutubeThumbnail($source);
+        }
+
+        return null;
+    }
+
+    public function getItemsCountAttribute(): int
+    {
+        return count($this->items);
+    }
+
     protected static function booted(): void
     {
+        static::saving(function (Resource $resource) {
+            if ($resource->isDirty('items') || empty($resource->thumbnail)) {
+                $computed = static::computeThumbnailFromItems($resource->items ?? []);
+                if ($computed !== null || $resource->isDirty('items')) {
+                    $resource->thumbnail = $computed;
+                }
+            }
+        });
+
         static::deleting(function (Resource $resource) {
             if ($resource->node?->isEffectivelyFrozen()) {
                 abort(403, 'Cannot delete resources from a frozen folder.');
             }
         });
-    }
-
-    public function items(): HasMany
-    {
-        return $this->hasMany(ResourceItem::class)->oldest('id');
-    }
-
-    public function firstItem(): HasOne
-    {
-        return $this->hasOne(ResourceItem::class)->oldestOfMany();
     }
 
     public function node(): BelongsTo

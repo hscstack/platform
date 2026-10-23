@@ -5,6 +5,7 @@ import {
     Video,
     FlaskConical,
     FileText,
+    BookOpen,
     ChevronRight,
     User as UserIcon,
     ArrowBigUp,
@@ -20,6 +21,7 @@ const props = defineProps<{
         resource_type: string;
         status?: 'pending' | 'approved' | 'rejected' | string;
         admin_note?: string | null;
+        thumbnail?: string | null;
         items_count?: number;
         description?: string | null;
         vote_score?: number;
@@ -52,6 +54,15 @@ const typeConfig = computed(() => {
                 iconBg: 'bg-teal-50 text-teal-600 border-teal-200/50 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20',
                 badgeBg:
                     'bg-teal-50 text-teal-700 border-teal-200/60 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900/50',
+            };
+        case 'marked_book':
+            return {
+                icon: BookOpen,
+                label: 'দাগানো বই',
+                countLabel: `${props.resource.items_count || 0} পৃষ্ঠা`,
+                iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-200/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+                badgeBg:
+                    'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50',
             };
         case 'other':
             return {

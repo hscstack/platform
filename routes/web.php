@@ -72,9 +72,9 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
 
     // Resource Actions & Uploads
     Route::post('/resources/upload-url', [ResourceController::class, 'generateUploadUrl'])->name('resources.upload-url');
-    Route::post('/resources/documents', [ResourceController::class, 'storeDocument'])->name('resources.documents.store');
-    Route::post('/resources/notes', [ResourceController::class, 'storeDocument'])->name('resources.notes.store');
-    Route::post('/resources/videos', [ResourceController::class, 'storeVideo'])->name('resources.videos.store');
+    Route::middleware('throttle:10,1')->post('/resources/fetch-playlist', [ResourceController::class, 'fetchPlaylist'])->name('resources.fetch-playlist');
+    Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
+    Route::match(['post', 'patch'], '/resources/{resource}', [ResourceController::class, 'update'])->name('resources.update');
     Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
 
     // My Submissions

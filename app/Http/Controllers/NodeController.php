@@ -50,7 +50,6 @@ class NodeController extends Controller
             $resources = Cache::remember("node_resources_{$node->id}", now()->addDay(), function () use ($node) {
                 return $node->resources()
                     ->where('status', 'approved')
-                    ->withCount('items')
                     ->with('user:id,name,username')
                     ->orderByDesc('vote_score')
                     ->latest('id')
@@ -62,7 +61,6 @@ class NodeController extends Controller
                 $unapproved = $node->resources()
                     ->where('user_id', $userId)
                     ->whereIn('status', ['pending', 'rejected'])
-                    ->withCount('items')
                     ->with('user:id,name,username')
                     ->latest('id')
                     ->get()

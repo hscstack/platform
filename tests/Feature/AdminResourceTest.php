@@ -24,7 +24,8 @@ test('unauthorized users cannot view moderation queue or approve/reject resource
 
     $this->actingAs($user)
         ->get('/admin/moderation/resources')
-        ->assertForbidden();
+        ->assertRedirect()
+        ->assertSessionHas('error');
 
     $subject = Subject::create([
         'name' => 'Physics',
@@ -48,16 +49,18 @@ test('unauthorized users cannot view moderation queue or approve/reject resource
 
     $this->actingAs($user)
         ->post('/admin/resources/approve', ['ids' => [$resource->id]])
-        ->assertForbidden();
+        ->assertRedirect()
+        ->assertSessionHas('error');
 
     $this->actingAs($user)
         ->post('/admin/resources/reject', ['ids' => [$resource->id]])
-        ->assertForbidden();
+        ->assertRedirect()
+        ->assertSessionHas('error');
 });
 
 test('moderator can view resource moderation queue with counts', function () {
     $moderator = User::factory()->create();
-    $moderator->givePermissionTo('moderate resources');
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
 
     $subject = Subject::create([
         'name' => 'Physics',
@@ -103,7 +106,7 @@ test('moderator can batch approve pending resources to bring them live', functio
     Notification::fake();
 
     $moderator = User::factory()->create();
-    $moderator->givePermissionTo('moderate resources');
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
 
     $author = User::factory()->create();
     $subject = Subject::create([
@@ -154,7 +157,7 @@ test('approving already approved resource skips update without error', function 
     Notification::fake();
 
     $moderator = User::factory()->create();
-    $moderator->givePermissionTo('moderate resources');
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
 
     $author = User::factory()->create();
     $subject = Subject::create([
@@ -190,7 +193,7 @@ test('moderator can reject a pending resource with feedback note', function () {
     Notification::fake();
 
     $moderator = User::factory()->create();
-    $moderator->givePermissionTo('moderate resources');
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
 
     $author = User::factory()->create();
 
@@ -259,14 +262,15 @@ test('regular user cannot delete resources without permission', function () {
 
     $this->actingAs($author)
         ->delete("/admin/resources/{$resource->id}")
-        ->assertForbidden();
+        ->assertRedirect()
+        ->assertSessionHas('error');
 
     expect(Resource::find($resource->id))->not->toBeNull();
 });
 
 test('user with delete resources permission can delete a resource', function () {
     $user = User::factory()->create();
-    $user->givePermissionTo('delete resources');
+    $user->givePermissionTo(['view admin', 'delete resources']);
 
     $subject = Subject::create([
         'name' => 'Biology',
@@ -386,4 +390,84 @@ test('batch node creation respects should_track_top_folders parameter', function
         ->and($topNode->is_trackable)->toBeTrue()
         ->and($subNode)->not->toBeNull()
         ->and($subNode->is_trackable)->toBeFalse();
+});
+
+test('moderator can update any resource and author can update own resource', function () {
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics-update-test',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Chapter 1',
+        'slug' => 'chapter-1',
+    ]);
+
+    $author = User::factory()->create();
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo('moderate resources');
+    $otherUser = User::factory()->create();
+
+    $resource = Resource::create([
+        'node_id' => $node->id,
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Initial Title',
+        'items' => [
+            ['format' => 'image', 'source' => 'resources/notes/p1.webp', 'title' => 'Page 1'],
+            ['format' => 'image', 'source' => 'resources/notes/p2.webp', 'title' => 'Page 2'],
+        ],
+    ]);
+
+    // 1. Other unauthorized user cannot update
+    $this->actingAs($otherUser)
+        ->patch("/resources/{$resource->id}", [
+            'title' => 'Hacked Title',
+            'resource_type' => 'note',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/p1.webp'],
+            ],
+        ])
+        ->assertForbidden();
+
+    // 2. Author can update own resource (e.g. reorder pages and change title)
+    $this->actingAs($author)
+        ->patch("/resources/{$resource->id}", [
+            'title' => 'Author Updated Title',
+            'description' => 'Author new description',
+            'resource_type' => 'note',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/p2.webp', 'title' => 'Now Page 1'],
+                ['format' => 'image', 'source' => 'resources/notes/p1.webp', 'title' => 'Now Page 2'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $resource->refresh();
+    expect($resource->title)->toBe('Author Updated Title')
+        ->and($resource->description)->toBe('Author new description')
+        ->and(count($resource->items))->toBe(2)
+        ->and($resource->items[0]['source'])->toBe('resources/notes/p2.webp')
+        ->and($resource->thumbnail)->toContain('resources/notes/p2.webp');
+
+    // 3. Moderator can update any resource
+    $this->actingAs($moderator)
+        ->patch("/resources/{$resource->id}", [
+            'title' => 'Moderator Fixed Title',
+            'resource_type' => 'video',
+            'items' => [
+                ['format' => 'video', 'source' => 'https://www.youtube.com/watch?v=lnnYO482hhg', 'title' => 'Class 1'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $resource->refresh();
+    expect($resource->title)->toBe('Moderator Fixed Title')
+        ->and($resource->resource_type)->toBe('video')
+        ->and($resource->thumbnail)->toBe('https://img.youtube.com/vi/lnnYO482hhg/hqdefault.jpg');
 });

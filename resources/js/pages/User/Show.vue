@@ -6,6 +6,7 @@ import {
     ArrowRight,
     ArrowUpRight,
     BadgeCheck,
+    BookOpen,
     Calendar,
     CheckCircle2,
     ChevronRight,
@@ -1080,9 +1081,12 @@ const formatGroupName = (group?: string) => {
                                                     'practical'
                                                   ? 'border-teal-200/50 bg-teal-50 text-teal-600 dark:border-teal-500/20 dark:bg-teal-500/10 dark:text-teal-400'
                                                   : note.resource_type ===
-                                                      'other'
-                                                    ? 'border-slate-200 bg-slate-100 text-slate-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                                                    : 'border-amber-200/50 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400'
+                                                      'marked_book'
+                                                    ? 'border-emerald-200/50 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400'
+                                                    : note.resource_type ===
+                                                        'other'
+                                                      ? 'border-slate-200 bg-slate-100 text-slate-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                                      : 'border-amber-200/50 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400'
                                         "
                                     >
                                         <Video
@@ -1095,6 +1099,13 @@ const formatGroupName = (group?: string) => {
                                             v-else-if="
                                                 note.resource_type ===
                                                 'practical'
+                                            "
+                                            class="h-4.5 w-4.5 stroke-[2.2]"
+                                        />
+                                        <BookOpen
+                                            v-else-if="
+                                                note.resource_type ===
+                                                'marked_book'
                                             "
                                             class="h-4.5 w-4.5 stroke-[2.2]"
                                         />

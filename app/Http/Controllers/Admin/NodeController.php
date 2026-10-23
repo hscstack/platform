@@ -52,20 +52,20 @@ class NodeController extends Controller
 
         $pendingCreates = $node->resources()
             ->where('status', 'pending')
-            ->with(['user:id,name,username', 'items', 'firstItem'])
+            ->with(['user:id,name,username'])
             ->get();
 
         $rejectedCreates = $node->resources()
             ->where('status', 'rejected')
             ->where('user_id', Auth::id())
-            ->with(['user:id,name,username', 'reviewer:id,name,username', 'items', 'firstItem'])
+            ->with(['user:id,name,username', 'reviewer:id,name,username'])
             ->latest('reviewed_at')
             ->take(10)
             ->get();
 
         $resources = $node->resources()
             ->where('status', 'approved')
-            ->with(['items', 'firstItem', 'user:id,name,username'])
+            ->with(['user:id,name,username'])
             ->get();
 
         return Inertia::render('admin/Node', [

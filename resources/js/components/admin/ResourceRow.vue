@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import { Book, File, FileVideo, FlaskConical, Trash2 } from 'lucide-vue-next';
+import {
+    Book,
+    BookOpen,
+    File,
+    FileVideo,
+    FlaskConical,
+    Trash2,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useAuth } from '@/lib/useAuth';
 
@@ -41,6 +48,10 @@ const handleDelete = () => {
                 />
                 <FlaskConical
                     v-else-if="resource?.resource_type === 'practical'"
+                    class="h-4.5 w-4.5 stroke-[2]"
+                />
+                <BookOpen
+                    v-else-if="resource?.resource_type === 'marked_book'"
                     class="h-4.5 w-4.5 stroke-[2]"
                 />
                 <Book

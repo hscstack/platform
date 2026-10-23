@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Node;
 use App\Models\Resource;
-use App\Models\ResourceItem;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -65,36 +64,29 @@ class ResourceSeeder extends Seeder
 
             // 1. Multi-Page Scanned Handwritten Note (format = 'image')
             $notePagesCount = rand(4, 8);
-            $noteResource = Resource::create([
+            $noteItems = [];
+            for ($page = 1; $page <= $notePagesCount; $page++) {
+                $imageFile = $availableImages[$imageIndex % count($availableImages)];
+                $imageIndex++;
+
+                $noteItems[] = [
+                    'format' => 'image',
+                    'title' => null,
+                    'source' => "resources/images/{$imageFile}",
+                ];
+            }
+
+            Resource::create([
                 'node_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'note',
                 'title' => "{$node->name} সম্পূর্ণ অধ্যায়ভিত্তিক হ্যান্ডনোট",
                 'description' => "{$subjectName} বিষয়ের '{$node->name}' অধ্যায়ের সকল গুরুত্বপূর্ণ সূত্র, নিয়ম ও বিস্তারিত সমাধানসহ সম্পূর্ণ হ্যান্ডনোট। পরীক্ষার আগে দ্রুত রিভিশনের জন্য সহায়ক।",
+                'items' => $noteItems,
             ]);
-
-            for ($page = 1; $page <= $notePagesCount; $page++) {
-                $imageFile = $availableImages[$imageIndex % count($availableImages)];
-                $imageIndex++;
-
-                ResourceItem::create([
-                    'resource_id' => $noteResource->id,
-                    'format' => 'image',
-                    'title' => "পৃষ্ঠা ০{$page}",
-                    'source' => "resources/images/{$imageFile}",
-                ]);
-            }
 
             // 2. Video Lecture Course (format = 'video')
             $lectureCount = rand(3, 5);
-            $videoResource = Resource::create([
-                'node_id' => $node->id,
-                'user_id' => $user->id,
-                'resource_type' => 'video',
-                'title' => "{$node->name} পূর্ণাঙ্গ মাস্টারক্লাস ও কনসেপ্ট ক্লিয়ারিং",
-                'description' => "অভিজ্ঞ শিক্ষক দ্বারা পরিচালিত '{$node->name}' অধ্যায়ের ধারাবাহিক ভিডিও লেকচার। টপিকভিত্তিক আলোচনা ও বোর্ড প্রশ্ন সমাধান কাভার করা হয়েছে।",
-            ]);
-
             $lectureTitles = [
                 'লেকচার ০১: প্রাথমিক ধারণা ও বেসিক আলোচনা',
                 'লেকচার ০২: গাণিতিক সূত্রাবলি ও টাইপভিত্তিক সমস্যা',
@@ -103,68 +95,77 @@ class ResourceSeeder extends Seeder
                 'লেকচার ০৫: এমসিকিউ শর্টকাট ও সুপার ট্রিকস',
             ];
 
+            $videoItems = [];
             for ($lec = 0; $lec < $lectureCount; $lec++) {
                 $videoUrl = $youtubeUrls[$videoIndex % count($youtubeUrls)];
                 $videoIndex++;
 
-                ResourceItem::create([
-                    'resource_id' => $videoResource->id,
+                $videoItems[] = [
                     'format' => 'video',
                     'title' => $lectureTitles[$lec] ?? 'লেকচার ০'.($lec + 1),
                     'source' => $videoUrl,
-                ]);
+                ];
             }
+
+            Resource::create([
+                'node_id' => $node->id,
+                'user_id' => $user->id,
+                'resource_type' => 'video',
+                'title' => "{$node->name} পূর্ণাঙ্গ মাস্টারক্লাস ও কনসেপ্ট ক্লিয়ারিং",
+                'description' => "অভিজ্ঞ শিক্ষক দ্বারা পরিচালিত '{$node->name}' অধ্যায়ের ধারাবাহিক ভিডিও লেকচার। টপিকভিত্তিক আলোচনা ও বোর্ড প্রশ্ন সমাধান কাভার করা হয়েছে।",
+                'items' => $videoItems,
+            ]);
 
             // 3. Highlighted Textbook / Note in PDF Format (format = 'pdf')
             $pdfUrl = $pdfUrls[array_rand($pdfUrls)];
-            $pdfResource = Resource::create([
+            Resource::create([
                 'node_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'note',
                 'title' => "{$node->name} দাগানো মূল বই ও গুরুত্বপূর্ণ পয়েন্ট (PDF)",
                 'description' => 'বোর্ড পরীক্ষার জন্য সবচেয়ে গুরুত্বপূর্ণ লাইন এবং জ্ঞানমূলক ও অনুধাবনমূলক প্রশ্নের জন্য দাগানো পাঠ্যবই।',
-            ]);
-
-            ResourceItem::create([
-                'resource_id' => $pdfResource->id,
-                'format' => 'pdf',
-                'title' => 'দাগানো পাঠ্যবই (PDF)',
-                'source' => $pdfUrl,
+                'items' => [
+                    [
+                        'format' => 'pdf',
+                        'title' => 'দাগানো পাঠ্যবই (PDF)',
+                        'source' => $pdfUrl,
+                    ],
+                ],
             ]);
 
             // 4. Practical / Lab Notebook (format = 'pdf')
             if ($node->id % 2 === 0) {
-                $practicalResource = Resource::create([
+                Resource::create([
                     'node_id' => $node->id,
                     'user_id' => $user->id,
                     'resource_type' => 'practical',
                     'title' => "{$node->name} ব্যবহারিক নোটবুক ও এক্সপেরিমেন্ট চিত্র",
                     'description' => 'ল্যাব ক্লাসের জন্য সম্পূর্ণ ব্যবহারিক খাতা, এক্সপেরিমেন্ট ডেটা টেবিল ও সঠিক চিত্রাঙ্কনসহ সমাধান।',
-                ]);
-
-                ResourceItem::create([
-                    'resource_id' => $practicalResource->id,
-                    'format' => 'pdf',
-                    'title' => 'ব্যবহারিক নির্দেশিকা ও ল্যাব শিট (PDF)',
-                    'source' => $pdfUrl,
+                    'items' => [
+                        [
+                            'format' => 'pdf',
+                            'title' => 'ব্যবহারিক নির্দেশিকা ও ল্যাব শিট (PDF)',
+                            'source' => $pdfUrl,
+                        ],
+                    ],
                 ]);
             }
 
             // 5. Other Resources (format = 'pdf')
             if ($node->id % 3 === 0) {
-                $otherResource = Resource::create([
+                Resource::create([
                     'node_id' => $node->id,
                     'user_id' => $user->id,
                     'resource_type' => 'other',
                     'title' => "{$node->name} বিগত ৫ বছরের বোর্ড প্রশ্ন ব্যাংক ও সাজেশন",
                     'description' => 'বিগত বছরের সকল বোর্ডের গুরুত্বপূর্ণ সৃজনশীল ও বহুনির্বাচনী প্রশ্নের সাজানো সংগ্রহ।',
-                ]);
-
-                ResourceItem::create([
-                    'resource_id' => $otherResource->id,
-                    'format' => 'pdf',
-                    'title' => 'প্রশ্নব্যাংক ও সাজেশন বুকলেট (PDF)',
-                    'source' => $pdfUrl,
+                    'items' => [
+                        [
+                            'format' => 'pdf',
+                            'title' => 'প্রশ্নব্যাংক ও সাজেশন বুকলেট (PDF)',
+                            'source' => $pdfUrl,
+                        ],
+                    ],
                 ]);
             }
         }

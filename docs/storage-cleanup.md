@@ -8,7 +8,7 @@ It scans four storage directories and cross-references them against the database
 
 | Storage Directory | Database Check                                                                 |
 | ----------------- | ------------------------------------------------------------------------------ |
-| `resources/`      | `resource_items.source` (non-HTTP paths only)                                  |
+| `resources/`      | `resources.items` (non-HTTP paths only)                                       |
 | `users/`          | `users.image_path`                                                             |
 | `blogs/`          | `blogs.featured_image_path`                                                    |
 | `notices/`        | `notices.image` (non-HTTP paths only)                                          |

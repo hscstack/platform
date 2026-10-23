@@ -149,7 +149,6 @@ class UserProfileController extends Controller
 
         $notes = Resource::where('user_id', $user->id)
             ->with(['node:id,name,slug,subject_id', 'node.subject:id,name,course,slug'])
-            ->withCount('items')
             ->orderByDesc('vote_score')
             ->latest('id')
             ->take(8)

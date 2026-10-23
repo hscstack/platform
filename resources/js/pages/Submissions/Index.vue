@@ -9,6 +9,7 @@ import {
     Video,
     File,
     FlaskConical,
+    BookOpen,
     ExternalLink,
 } from 'lucide-vue-next';
 import EmptyState from '@/components/EmptyState.vue';
@@ -90,6 +91,8 @@ const getResourceIcon = (type?: string) => {
     switch (type) {
         case 'practical':
             return FlaskConical;
+        case 'marked_book':
+            return BookOpen;
         case 'video':
             return Video;
         case 'pdf':
