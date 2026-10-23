@@ -216,7 +216,7 @@ class ResourceController extends Controller
                 $key,
                 now()->addMinutes(15),
                 [
-                    'ContentType'        => $fileData['content_type'],
+                    'ContentType' => $fileData['content_type'],
                     'ContentLengthRange' => [1, $fileData['size']],
                 ]
             );
