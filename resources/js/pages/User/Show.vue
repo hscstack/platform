@@ -161,7 +161,6 @@ const props = defineProps<{
             } | null;
         } | null;
     }>;
-    notesCount?: number;
     suggestedUsers?: Array<{
         id: number;
         name: string;
@@ -1007,7 +1006,7 @@ const formatGroupName = (group?: string) => {
                             "
                         >
                             <NotebookPen class="h-3.5 w-3.5 shrink-0" />
-                            <span>Notes</span>
+                            <span>Recent Notes</span>
                         </button>
 
                         <button
@@ -1183,31 +1182,6 @@ const formatGroupName = (group?: string) => {
                                     />
                                 </div>
                             </Link>
-
-                            <div
-                                v-if="
-                                    (notesCount ?? notes.length) > notes.length
-                                "
-                                class="pt-1.5 text-center"
-                            >
-                                <span
-                                    class="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50 px-3.5 py-1 text-xs font-medium text-slate-500 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400"
-                                >
-                                    and
-                                    {{
-                                        (notesCount ?? notes.length) -
-                                        notes.length
-                                    }}
-                                    other
-                                    {{
-                                        (notesCount ?? notes.length) -
-                                            notes.length ===
-                                        1
-                                            ? 'note'
-                                            : 'notes'
-                                    }}
-                                </span>
-                            </div>
                         </div>
                     </div>
 

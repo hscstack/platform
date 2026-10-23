@@ -145,12 +145,8 @@ class UserProfileController extends Controller
             ->take(5)
             ->get();
 
-        $notesQuery = Resource::where('user_id', $user->id)
-            ->when(! $isOwner, fn ($q) => $q->where('status', 'approved'));
-
-        $notesCount = (clone $notesQuery)->count();
-
-        $notes = $notesQuery
+        $notes = Resource::where('user_id', $user->id)
+            ->when(! $isOwner, fn ($q) => $q->where('status', 'approved'))
             ->with(['node:id,name,slug,subject_id', 'node.subject:id,name,course,slug'])
             ->orderByDesc('vote_score')
             ->latest('id')
@@ -173,7 +169,6 @@ class UserProfileController extends Controller
             'forumAnswers' => $forumAnswers,
             'blogs' => $publishedBlogs,
             'notes' => $notes,
-            'notesCount' => $notesCount,
             'suggestedUsers' => $suggestedUsers,
             'pokeData' => $pokeData,
             'studyHeatmap' => DailyStudyLog::getHeatmapAndStatsForUser($user),
