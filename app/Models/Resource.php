@@ -76,61 +76,9 @@ class Resource extends Model
             : Storage::url($value);
     }
 
-    public static function extractYoutubeThumbnail(?string $url): ?string
-    {
-        if (! $url) {
-            return null;
-        }
-
-        if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/', $url, $matches)) {
-            return "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
-        }
-
-        return null;
-    }
-
-    public static function computeThumbnailFromItems(array $items): ?string
-    {
-        $first = $items[0] ?? null;
-        if (! $first) {
-            return null;
-        }
-
-        $format = $first['format'] ?? null;
-        $source = $first['source'] ?? null;
-
-        if ($format === 'image' && $source) {
-            return $source;
-        }
-
-        if ($format === 'video' && $source) {
-            return static::extractYoutubeThumbnail($source);
-        }
-
-        return null;
-    }
-
     public function getItemsCountAttribute(): int
     {
         return count($this->items);
-    }
-
-    protected static function booted(): void
-    {
-        static::saving(function (Resource $resource) {
-            if ($resource->isDirty('items') || empty($resource->thumbnail)) {
-                $computed = static::computeThumbnailFromItems($resource->items ?? []);
-                if ($computed !== null || $resource->isDirty('items')) {
-                    $resource->thumbnail = $computed;
-                }
-            }
-        });
-
-        static::deleting(function (Resource $resource) {
-            if ($resource->node?->isEffectivelyFrozen()) {
-                abort(403, 'Cannot delete resources from a frozen folder.');
-            }
-        });
     }
 
     public function node(): BelongsTo

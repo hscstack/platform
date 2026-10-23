@@ -306,7 +306,7 @@ class ResourceController extends Controller
                 'resource_type' => $validated['resource_type'],
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
-                'thumbnail' => Resource::computeThumbnailFromItems($validated['items']),
+                'thumbnail' => $this->computeThumbnailFromItems($validated['items']),
                 'items' => $validated['items'],
                 'status' => $status,
                 'reviewed_by' => $isModerator ? Auth::id() : null,
@@ -415,7 +415,7 @@ class ResourceController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'resource_type' => $validated['resource_type'],
-            'thumbnail' => Resource::computeThumbnailFromItems($validated['items']),
+            'thumbnail' => $this->computeThumbnailFromItems($validated['items']),
             'items' => $validated['items'],
         ];
 
@@ -479,5 +479,28 @@ class ResourceController extends Controller
         } while ($pageToken && count($videos) < 100);
 
         return $videos;
+    }
+
+    private function computeThumbnailFromItems(array $items): ?string
+    {
+        $first = $items[0] ?? null;
+        if (! $first) {
+            return null;
+        }
+
+        $format = $first['format'] ?? null;
+        $source = $first['source'] ?? null;
+
+        if ($format === 'image' && $source) {
+            return $source;
+        }
+
+        if ($format === 'video' && $source) {
+            if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/', $source, $matches)) {
+                return "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
+            }
+        }
+
+        return null;
     }
 }
