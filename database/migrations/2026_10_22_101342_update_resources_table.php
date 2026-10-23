@@ -18,7 +18,9 @@ return new class extends Migration
             $table->dropColumn(['file_path', 'external_url']);
         });
 
-        DB::statement("ALTER TABLE resources MODIFY COLUMN resource_type VARCHAR(32) NOT NULL DEFAULT 'note'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE resources MODIFY COLUMN resource_type VARCHAR(32) NOT NULL DEFAULT 'note'");
+        }
     }
 
     /**
@@ -26,7 +28,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE resources MODIFY COLUMN resource_type ENUM('note', 'question', 'pdf', 'image', 'video') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE resources MODIFY COLUMN resource_type ENUM('note', 'question', 'pdf', 'image', 'video') NOT NULL");
+        }
 
         Schema::table('resources', function (Blueprint $table) {
             $table->renameColumn('description', 'content');
