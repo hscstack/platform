@@ -215,7 +215,10 @@ class ResourceController extends Controller
             $signed = Storage::disk('s3')->temporaryUploadUrl(
                 $key,
                 now()->addMinutes(15),
-                ['ContentType' => $fileData['content_type']]
+                [
+                    'ContentType'        => $fileData['content_type'],
+                    'ContentLengthRange' => [1, $fileData['size']],
+                ]
             );
 
             $results[] = [
