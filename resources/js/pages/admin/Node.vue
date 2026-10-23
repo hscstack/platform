@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref } from 'vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
 import NodeHeader from '@/components/admin/NodeHeader.vue';
 import NodeRow from '@/components/admin/NodeRow.vue';
-import NodeTabsHeader from '@/components/admin/NodeTabsHeader.vue';
-import PendingSubmissionRow from '@/components/admin/PendingSubmissionRow.vue';
 import ResourceRow from '@/components/admin/ResourceRow.vue';
 import EmptyState from '@/components/EmptyState.vue';
 
@@ -16,8 +14,6 @@ const props = defineProps<{
     subject: any;
     nodes?: any[];
     resources?: any[];
-    pending_creates?: any[];
-    rejected_creates?: any[];
     parent?: any;
     breadcrumb?: any[];
 }>();
@@ -82,55 +78,6 @@ const handleNodeModalClose = () => {
 };
 
 const totalItemsCount = computed(
-    () =>
-        (props.nodes?.length ?? 0) +
-        (props.resources?.length ?? 0) +
-        (props.pending_creates?.length ?? 0) +
-        (props.rejected_creates?.length ?? 0),
-);
-
-const activeResourceTab = ref<'live' | 'pending' | 'rejected'>('live');
-
-const syncTabFromHash = () => {
-    if (typeof window === 'undefined') {
-        return;
-    }
-
-    const hash = window.location.hash.toLowerCase();
-
-    if (hash === '#rejected') {
-        activeResourceTab.value = 'rejected';
-    } else if (hash === '#pending') {
-        activeResourceTab.value = 'pending';
-    } else if (hash === '#live' || hash === '#approved') {
-        activeResourceTab.value = 'live';
-    }
-};
-
-const handleTabChange = (tab: 'live' | 'pending' | 'rejected') => {
-    activeResourceTab.value = tab;
-
-    if (typeof window !== 'undefined') {
-        const hash = `#${tab}`;
-
-        if (window.location.hash !== hash) {
-            history.replaceState(null, '', hash);
-        }
-    }
-};
-
-onMounted(() => {
-    syncTabFromHash();
-    window.addEventListener('hashchange', syncTabFromHash);
-});
-
-onUnmounted(() => {
-    window.removeEventListener('hashchange', syncTabFromHash);
-});
-
-const totalPendingCount = computed(() => props.pending_creates?.length ?? 0);
-const totalRejectedCount = computed(() => props.rejected_creates?.length ?? 0);
-const liveCount = computed(
     () => (props.nodes?.length ?? 0) + (props.resources?.length ?? 0),
 );
 
@@ -220,83 +167,21 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
         <!-- Items Container -->
         <div class="flex flex-1 flex-col">
             <template v-if="totalItemsCount > 0">
-                <div class="space-y-4">
-                    <!-- Tabs Header on Top -->
-                    <NodeTabsHeader
-                        :active-tab="activeResourceTab"
-                        :live-count="liveCount"
-                        :total-pending-count="totalPendingCount"
-                        :total-rejected-count="totalRejectedCount"
-                        @change-tab="handleTabChange"
+                <div class="flex flex-col gap-2.5 sm:gap-3">
+                    <NodeRow
+                        v-for="node in nodes"
+                        :key="`node-${(node as any).id}`"
+                        :node="node"
+                        :is-frozen="isFrozen"
+                        @edit="openEditNodeModal"
                     />
 
-                    <!-- Live Tab Content -->
-                    <div
-                        v-if="activeResourceTab === 'live'"
-                        class="flex flex-col gap-2.5 sm:gap-3"
-                    >
-                        <NodeRow
-                            v-for="node in nodes"
-                            :key="`node-${(node as any).id}`"
-                            :node="node"
-                            :is-frozen="isFrozen"
-                            @edit="openEditNodeModal"
-                        />
-
-                        <ResourceRow
-                            v-for="resource in resources"
-                            :key="`resource-${(resource as any).id}`"
-                            :resource="resource"
-                            :is-frozen="isFrozen"
-                        />
-
-                        <div
-                            v-if="liveCount === 0"
-                            class="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center text-xs text-slate-500 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-                        >
-                            No live items in this folder.
-                        </div>
-                    </div>
-
-                    <!-- Pending Review Tab Content -->
-                    <div
-                        v-else-if="activeResourceTab === 'pending'"
-                        class="flex flex-col gap-2.5 sm:gap-3"
-                    >
-                        <PendingSubmissionRow
-                            v-for="pending in pending_creates"
-                            :key="`pending-create-${(pending as any).id}`"
-                            :submission="pending"
-                            status="pending"
-                        />
-
-                        <div
-                            v-if="totalPendingCount === 0"
-                            class="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center text-xs text-slate-500 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-                        >
-                            No pending submissions awaiting review.
-                        </div>
-                    </div>
-
-                    <!-- Rejected Submissions Tab Content -->
-                    <div
-                        v-else-if="activeResourceTab === 'rejected'"
-                        class="flex flex-col gap-2.5 sm:gap-3"
-                    >
-                        <PendingSubmissionRow
-                            v-for="rejected in rejected_creates"
-                            :key="`rejected-create-${(rejected as any).id}`"
-                            :submission="rejected"
-                            status="rejected"
-                        />
-
-                        <div
-                            v-if="totalRejectedCount === 0"
-                            class="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center text-xs text-slate-500 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-                        >
-                            No rejected submissions in this folder.
-                        </div>
-                    </div>
+                    <ResourceRow
+                        v-for="resource in resources"
+                        :key="`resource-${(resource as any).id}`"
+                        :resource="resource"
+                        :is-frozen="isFrozen"
+                    />
                 </div>
             </template>
 
