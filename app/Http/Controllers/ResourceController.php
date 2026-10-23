@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Resource\BulkImageStoreRequest;
-use App\Http\Requests\Resource\BulkVideoStoreRequest;
 use App\Http\Requests\Resource\StoreResourceRequest;
-use App\Models\Node;
+use App\Http\Requests\Resource\UpdateResourceRequest;
 use App\Models\Resource;
-use App\Models\ResourceChangeRequest;
-use App\Models\ResourceCompletion;
+use App\Models\ResourceVote;
+use App\Notifications\ResourceVoteNotification;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -20,78 +22,140 @@ class ResourceController extends Controller
 {
     public function show($id)
     {
-        $data = Cache::rememberForever("resource_{$id}", function () use ($id) {
-            $resource = Resource::with(['user', 'node.subject'])->findOrFail($id);
+        $resource = Resource::with(['user:id,name,username,image_path', 'node.subject'])->findOrFail($id);
 
-            $previousResourceId = Resource::where('node_id', $resource->node_id)
-                ->where('id', '<', $resource->id)
-                ->orderByDesc('id')
-                ->value('id');
+        $user = auth()->user();
+        $isModerator = $user?->can('moderate resources');
+        $isOwner = $user && $user->id === $resource->user_id;
 
-            $nextResourceId = Resource::where('node_id', $resource->node_id)
-                ->where('id', '>', $resource->id)
-                ->orderBy('id')
-                ->value('id');
+        if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
+            abort(404);
+        }
 
-            return [
-                'resource' => $resource->toArray(),
-                'subject' => $resource->node?->subject?->toArray(),
-                'previousResourceId' => $previousResourceId,
-                'nextResourceId' => $nextResourceId,
-            ];
-        });
+        $node = $resource->node;
 
-        $isCompleted = auth()->check()
-            ? ResourceCompletion::where('resource_id', $id)->where('user_id', auth()->id())->exists()
-            : false;
+        $userVote = auth()->check()
+            ? ResourceVote::where('resource_id', $id)->where('user_id', auth()->id())->value('value')
+            : null;
 
-        $completionsCount = ResourceCompletion::where('resource_id', $id)->count();
-
-        $completers = ResourceCompletion::where('resource_id', $id)
-            ->with(['user:id,name,username,image_path,institution,is_verified'])
-            ->latest()
-            ->take(10)
+        $upvoters = ResourceVote::where('resource_id', $id)
+            ->where('value', 1)
+            ->with('user:id,name,username,image_path,institution,is_verified')
+            ->latest('id')
+            ->take(20)
             ->get()
             ->pluck('user')
             ->filter()
             ->values();
 
-        $node = Node::find($data['resource']['node_id']);
-
-        return Inertia::render('Resource', array_merge($data, [
+        return Inertia::render('Resource', [
+            'resource' => $resource->toArray(),
+            'subject' => $resource->node?->subject?->toArray(),
             'breadcrumb' => $node ? $node->breadcrumb() : [],
-            'isCompleted' => $isCompleted,
-            'completionsCount' => $completionsCount,
-            'completers' => $completers,
-        ]));
+            'userVote' => $userVote,
+            'upvoters' => $upvoters,
+            'can_moderate' => (bool) $isModerator,
+            'is_owner' => (bool) $isOwner,
+        ]);
     }
 
-    public function toggleComplete(Resource $resource)
+    public function vote(Request $request, Resource $resource)
     {
         $user = auth()->user();
-        $existing = $resource->completions()->where('user_id', $user->id)->first();
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
 
-        if ($existing) {
-            $existing->delete();
-        } else {
-            $resource->completions()->create(['user_id' => $user->id]);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).",
+                ], 403);
+            }
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
+        abort_if($resource->status !== 'approved', 404);
+
+        $validated = $request->validate([
+            'value' => ['required', 'in:1,-1'],
+        ]);
+
+        $value = (int) $validated['value'];
+        $userId = auth()->id();
+        $isFirstTimeUpvote = false;
+
+        DB::transaction(function () use ($resource, $userId, $value, &$isFirstTimeUpvote) {
+            $lockedResource = Resource::where('id', $resource->id)->lockForUpdate()->first();
+            if (! $lockedResource) {
+                return;
+            }
+
+            $existing = ResourceVote::where('resource_id', $lockedResource->id)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                if ($existing->value === $value) {
+                    $existing->delete();
+                } else {
+                    $existing->update(['value' => $value]);
+                }
+            } else {
+                ResourceVote::create([
+                    'resource_id' => $lockedResource->id,
+                    'user_id' => $userId,
+                    'value' => $value,
+                ]);
+
+                if ($value === 1) {
+                    $isFirstTimeUpvote = true;
+                }
+            }
+
+            $upvotes = (int) ResourceVote::where('resource_id', $lockedResource->id)->where('value', 1)->count();
+            $downvotes = (int) ResourceVote::where('resource_id', $lockedResource->id)->where('value', -1)->count();
+
+            $lockedResource->update([
+                'upvotes_count' => $upvotes,
+                'downvotes_count' => $downvotes,
+                'vote_score' => $upvotes - $downvotes,
+            ]);
+        });
+
+        if ($isFirstTimeUpvote && $resource->user_id && $resource->user_id !== $userId) {
+            $resource->loadMissing('user');
+            if ($resource->user) {
+                ResourceVoteNotification::sendTo($resource->user, $resource, $user);
+            }
+        }
+
+        Cache::forget("resource_{$resource->id}");
+        Cache::forget("node_resources_{$resource->node_id}");
+
+        if ($request->wantsJson()) {
+            $refreshed = $resource->fresh();
+            $currentUserVote = ResourceVote::where('resource_id', $resource->id)
+                ->where('user_id', $userId)
+                ->value('value');
+
+            return response()->json([
+                'success' => true,
+                'vote_score' => $refreshed->vote_score,
+                'upvotes_count' => $refreshed->upvotes_count,
+                'downvotes_count' => $refreshed->downvotes_count,
+                'user_vote' => $currentUserVote,
+            ]);
         }
 
         return back();
     }
 
-    /**
-     * Determine maximum allowed pending submissions for the user.
-     * Verified users: 100, Unverified users: 30.
-     */
     public function getMaxPendingSubmissions(): int
     {
-        return Auth::user()?->is_verified ? 100 : 30;
+        return Auth::user()?->is_verified ? 50 : 20;
     }
 
-    /**
-     * Check if user is eligible to submit (account age) and within pending change requests quota.
-     */
     public function ensureCanSubmit(int $incomingCount = 1): void
     {
         $user = Auth::user();
@@ -106,16 +170,10 @@ class ResourceController extends Controller
             ]);
         }
 
-        if ($user?->created_at && $user->created_at->diffInHours(now()) < 24) {
-            throw ValidationException::withMessages([
-                'account_age' => 'আপনার অ্যাকাউন্টটি নতুন। স্প্যাম রোধে অ্যাকাউন্ট তৈরির ২৪ ঘণ্টা পর রিসোর্স আপলোড করা যাবে।',
-            ]);
-        }
-
         $userId = Auth::id();
         $maxLimit = $this->getMaxPendingSubmissions();
 
-        $currentPending = ResourceChangeRequest::where('user_id', $userId)
+        $currentPending = Resource::where('user_id', $userId)
             ->where('status', 'pending')
             ->count();
 
@@ -126,100 +184,148 @@ class ResourceController extends Controller
         }
     }
 
+    public function generateUploadUrl(Request $request)
+    {
+        try {
+            $this->ensureCanSubmit(1);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => collect($e->errors())->flatten()->first(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'files' => ['required', 'array', 'min:1', 'max:50'],
+            'files.*.content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
+            'files.*.size' => ['required', 'integer', 'min:1', 'max:5242880'],
+        ]);
+
+        $userId = auth()->id();
+        $results = [];
+
+        foreach ($validated['files'] as $fileData) {
+            $extension = match ($fileData['content_type']) {
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+            };
+
+            $key = "resources/notes/{$userId}/".(string) Str::uuid().'.'.$extension;
+            $signed = Storage::disk('s3')->temporaryUploadUrl(
+                $key,
+                now()->addMinutes(15),
+                [
+                    'ContentType' => $fileData['content_type'],
+                    'ContentLengthRange' => [1, $fileData['size']],
+                ]
+            );
+
+            $results[] = [
+                'key' => $key,
+                'upload_url' => is_array($signed) ? $signed['url'] : $signed,
+            ];
+        }
+
+        return response()->json(['urls' => $results]);
+    }
+
+    public function fetchPlaylist(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'playlist_url' => ['required', 'url'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'সঠিক ইউটিউব প্লেলিস্টের লিংক দিন।',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $items = $this->resolveYoutubePlaylist($validator->validated()['playlist_url']);
+
+        if (empty($items)) {
+            return response()->json([
+                'error' => 'Unable to fetch videos. Please provide a valid, public YouTube playlist URL.',
+            ], 422);
+        }
+
+        return response()->json(['items' => $items]);
+    }
+
     public function store(StoreResourceRequest $request)
     {
+        $this->ensureCanSubmit(1);
+
         $validated = $request->validated();
         $isModerator = $request->user()->can('moderate resources');
+        $status = $isModerator ? 'approved' : 'pending';
 
-        if (! $isModerator) {
-            $this->ensureCanSubmit(1);
-        }
+        Resource::create([
+            'node_id' => $validated['node_id'],
+            'user_id' => Auth::id(),
+            'resource_type' => $validated['resource_type'],
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'thumbnail' => $this->computeThumbnailFromItems($validated['items']),
+            'items' => $validated['items'],
+            'status' => $status,
+            'reviewed_by' => $isModerator ? Auth::id() : null,
+            'reviewed_at' => $isModerator ? now() : null,
+        ]);
 
-        if ($request->hasFile('file')) {
-            $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
-        }
+        $typeName = ucfirst($validated['resource_type']);
+        $message = $isModerator
+            ? "{$typeName} created and published successfully."
+            : "{$typeName} submitted successfully and is awaiting review.";
 
-        if ($isModerator) {
-            $validated['user_id'] = Auth::id();
-            Resource::create($validated);
-
-            return back()->with('success', 'Resource created successfully.');
-        }
-
-        ResourceChangeRequest::recordCreate(
-            Auth::id(),
-            (int) $validated['node_id'],
-            $validated
-        );
-
-        return redirect()->route('submissions.index')->with('success', 'Resource submitted for moderation.');
+        return back()->with('success', $message);
     }
 
-    public function storeBulkImages(BulkImageStoreRequest $request)
+    public function update(UpdateResourceRequest $request, Resource $resource)
     {
+        $user = Auth::user();
+        if ($user?->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+            throw ValidationException::withMessages([
+                'banned' => "আপনি সাময়িকভাবে ব্যান রয়েছেন ({$bannedUntilFormatted} পর্যন্ত)। এই সময়ে কোনো রিসোর্স পরিবর্তন করা যাবে না।",
+            ]);
+        }
+
         $validated = $request->validated();
-        $filesCount = count($request->file('files') ?? []);
-        $isModerator = $request->user()->can('moderate resources');
 
-        if (! $isModerator) {
-            $this->ensureCanSubmit($filesCount);
+        $updateData = [
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'resource_type' => $validated['resource_type'],
+            'thumbnail' => $this->computeThumbnailFromItems($validated['items']),
+            'items' => $validated['items'],
+        ];
+
+        // If an approved resource is edited by someone without 'edit resources', return it to pending for re-review
+        $canEditDirectly = $user && $user->can('edit resources');
+        if (! $canEditDirectly && $resource->status === 'approved') {
+            $updateData['status'] = 'pending';
+            $updateData['reviewed_by'] = null;
+            $updateData['reviewed_at'] = null;
         }
 
-        $userId = Auth::id();
-        $nodeId = (int) $validated['node_id'];
+        $resource->update($updateData);
 
-        DB::transaction(function () use ($request, $validated, $userId, $nodeId, $isModerator) {
-            $content = $validated['content'] ?? null;
+        Cache::forget("resource_{$resource->id}");
+        Cache::forget("node_resources_{$resource->node_id}");
 
-            foreach ($request->file('files') as $index => $file) {
-                $filePath = $file->store('resources/images');
-                $title = $validated['custom_titles'][$index];
-
-                if ($isModerator) {
-                    Resource::create([
-                        'user_id' => $userId,
-                        'node_id' => $nodeId,
-                        'title' => $title,
-                        'content' => $content,
-                        'resource_type' => 'image',
-                        'file_path' => $filePath,
-                    ]);
-                } else {
-                    ResourceChangeRequest::recordCreate($userId, $nodeId, [
-                        'title' => $title,
-                        'content' => $content,
-                        'resource_type' => 'image',
-                        'file_path' => $filePath,
-                    ]);
-                }
-            }
-        });
-
-        if ($isModerator) {
-            return back()->with('success', 'Images uploaded successfully.');
-        }
-
-        return redirect()->route('submissions.index')->with('success', 'Images submitted for moderation.');
+        return back()->with('success', 'রিসোর্স সফলভাবে আপডেট করা হয়েছে।');
     }
 
-    public function storeBulkVideos(BulkVideoStoreRequest $request)
+    private function resolveYoutubePlaylist(string $url): array
     {
-        $validated = $request->validated();
-        $isModerator = $request->user()->can('moderate resources');
-
-        if (! $isModerator) {
-            $this->ensureCanSubmit(1);
-        }
-
-        $playlistUrl = $validated['playlist_url'];
-
-        // Extract playlist ID
-        parse_str(parse_url($playlistUrl, PHP_URL_QUERY), $query);
-
+        parse_str(parse_url($url, PHP_URL_QUERY) ?? '', $query);
         $playlistId = $query['list'] ?? null;
 
-        if (! $playlistId) {
-            return back()->with('error', 'Invalid Youtube URL');
+        if (! $playlistId || ! config('services.youtube.key')) {
+            return [];
         }
 
         $videos = [];
@@ -235,82 +341,49 @@ class ResourceController extends Controller
             ]);
 
             if (! $response->successful()) {
-                return back()->with('error', 'Unable to fetch youtube url');
-            }
-
-            $data = $response->json();
-
-            foreach ($data['items'] as $item) {
-                $videos[] = [
-                    'title' => $item['snippet']['title'],
-                    'video_id' => $item['snippet']['resourceId']['videoId'],
-                    'position' => $item['snippet']['position'],
-                ];
-            }
-
-            if (! $isModerator && count($videos) >= $this->getMaxPendingSubmissions()) {
                 break;
             }
 
-            $pageToken = $data['nextPageToken'] ?? null;
-        } while ($pageToken);
+            $data = $response->json();
+            foreach ($data['items'] ?? [] as $item) {
+                $videoId = $item['snippet']['resourceId']['videoId'] ?? null;
+                $title = $item['snippet']['title'] ?? null;
 
-        if (! empty($validated['is_reversed'])) {
-            $videos = array_reverse($videos);
-        }
-
-        // Apply naming strategy
-        foreach ($videos as $index => &$video) {
-            if ($validated['naming_strategy'] === 'youtube') {
-                $video['title'] = $video['title'];
-            } else {
-                $number = str_pad(
-                    ($validated['start_number'] ?? 1) + $index,
-                    2,
-                    '0',
-                    STR_PAD_LEFT
-                );
-
-                $prefix = trim($validated['naming_prefix'] ?? '');
-                $video['title'] = $prefix !== '' ? "{$prefix} - {$number}" : $number;
-            }
-        }
-
-        $userId = Auth::id();
-        $nodeId = (int) $validated['node_id'];
-        $videosCount = count($videos);
-        $isModerator = $request->user()->can('moderate resources');
-
-        if (! $isModerator) {
-            $this->ensureCanSubmit($videosCount);
-        }
-
-        DB::transaction(function () use ($videos, $userId, $nodeId, $isModerator) {
-            foreach ($videos as $video) {
-                $finalUrl = "https://www.youtube.com/watch?v={$video['video_id']}";
-
-                if ($isModerator) {
-                    Resource::create([
-                        'user_id' => $userId,
-                        'node_id' => $nodeId,
-                        'title' => $video['title'],
-                        'resource_type' => 'video',
-                        'external_url' => $finalUrl,
-                    ]);
-                } else {
-                    ResourceChangeRequest::recordCreate($userId, $nodeId, [
-                        'title' => $video['title'],
-                        'resource_type' => 'video',
-                        'external_url' => $finalUrl,
-                    ]);
+                if ($videoId && $title !== 'Private video' && $title !== 'Deleted video') {
+                    $videos[] = [
+                        'format' => 'video',
+                        'title' => $title,
+                        'source' => "https://www.youtube.com/watch?v={$videoId}",
+                    ];
                 }
             }
-        });
 
-        if ($isModerator) {
-            return back()->with('success', 'YouTube playlist imported successfully.');
+            $pageToken = $data['nextPageToken'] ?? null;
+        } while ($pageToken && count($videos) < 100);
+
+        return $videos;
+    }
+
+    private function computeThumbnailFromItems(array $items): ?string
+    {
+        $first = $items[0] ?? null;
+        if (! $first) {
+            return null;
         }
 
-        return redirect()->route('submissions.index')->with('success', 'YouTube playlist imported and submitted for moderation.');
+        $format = $first['format'] ?? null;
+        $source = $first['source'] ?? null;
+
+        if ($format === 'image' && $source) {
+            return $source;
+        }
+
+        if ($format === 'video' && $source) {
+            if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/', $source, $matches)) {
+                return "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
+            }
+        }
+
+        return null;
     }
 }

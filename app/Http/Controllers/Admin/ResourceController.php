@@ -3,92 +3,140 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\ResourceController as BaseResourceController;
-use App\Http\Requests\Resource\UpdateResourceRequest;
-use App\Models\Node;
 use App\Models\Resource;
-use App\Models\ResourceChangeRequest;
+use App\Notifications\ResourceModerationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class ResourceController extends BaseResourceController
 {
-    public function update(UpdateResourceRequest $request, Resource $resource)
+    public function moderationIndex(Request $request)
     {
-        $validated = $request->validated();
-
-        $isModerator = $request->user()->can('moderate resources');
-
-        if (! $isModerator) {
-            $this->ensureCanSubmit(1);
+        $status = $request->query('status', 'pending');
+        if (! in_array($status, ['pending', 'approved', 'rejected', 'all'])) {
+            $status = 'pending';
         }
 
-        if ($request->hasFile('file')) {
-            if ($isModerator && $resource->file_path) {
-                Storage::delete($resource->file_path);
+        $counts = Resource::selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $query = Resource::query()
+            ->with([
+                'user:id,name,username,image_path',
+                'node.subject',
+            ])
+            ->latest('id');
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $resources = $query->paginate(20)->withQueryString();
+
+        $resources->getCollection()->each(function ($res) {
+            $res->node?->append('breadcrumb');
+        });
+
+        return Inertia::render('admin/moderation/Resources', [
+            'resources' => $resources,
+            'currentStatus' => $status,
+            'counts' => [
+                'all' => (int) $counts->sum(),
+                'pending' => (int) $counts->get('pending', 0),
+                'approved' => (int) $counts->get('approved', 0),
+                'rejected' => (int) $counts->get('rejected', 0),
+            ],
+        ]);
+    }
+
+    public function approve(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:resources,id'],
+        ]);
+
+        $resources = Resource::whereIn('id', $validated['ids'])
+            ->where('status', '!=', 'approved')
+            ->with('user')
+            ->get();
+
+        DB::transaction(function () use ($resources) {
+            foreach ($resources as $res) {
+                $res->update([
+                    'status' => 'approved',
+                    'reviewed_by' => Auth::id(),
+                    'reviewed_at' => now(),
+                ]);
+
+                if ($res->user) {
+                    ResourceModerationNotification::sendTo($res->user, $res, 'approved');
+                }
             }
-            $validated['file_path'] = $request->file('file')->store("resources/{$validated['resource_type']}s");
-        }
+        });
 
-        if ($isModerator) {
-            $resource->update($validated);
+        $count = $resources->count();
+        $message = $count === 1
+            ? 'Resource approved and published successfully.'
+            : "{$count} resources approved and published successfully.";
 
-            return back()->with('success', 'Resource updated successfully.');
-        }
+        return back()->with('success', $message);
+    }
 
-        ResourceChangeRequest::recordUpdate(
-            Auth::id(),
-            $resource,
-            $validated
-        );
+    public function reject(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:resources,id'],
+            'admin_note' => ['nullable', 'string', 'max:500'],
+        ]);
 
-        return back()->with('success', 'Resource update submitted for moderation.');
+        $resources = Resource::whereIn('id', $validated['ids'])
+            ->where('status', '!=', 'rejected')
+            ->with('user')
+            ->get();
+
+        $adminNote = $validated['admin_note'] ?? null;
+
+        DB::transaction(function () use ($resources, $adminNote) {
+            foreach ($resources as $res) {
+                $res->update([
+                    'status' => 'rejected',
+                    'admin_note' => $adminNote,
+                    'reviewed_by' => Auth::id(),
+                    'reviewed_at' => now(),
+                ]);
+
+                if ($res->user) {
+                    ResourceModerationNotification::sendTo($res->user, $res, 'rejected', $adminNote);
+                }
+            }
+        });
+
+        $count = $resources->count();
+        $message = $count === 1
+            ? 'Resource rejected.'
+            : "{$count} resources rejected.";
+
+        return back()->with('success', $message);
     }
 
     public function destroy(Resource $resource)
     {
-        if (Auth::user()?->can('moderate resources')) {
-            if ($resource->file_path) {
-                Storage::delete($resource->file_path);
+        // Clean up stored items in S3/R2
+        foreach ($resource->items as $item) {
+            $source = is_array($item) ? ($item['source'] ?? '') : ($item->source ?? '');
+            if ($source && ! str_starts_with($source, 'http://') && ! str_starts_with($source, 'https://')) {
+                Storage::disk('s3')->delete($source);
             }
-            $resource->delete();
-
-            return redirect()->back()->with('success', 'Resource deleted successfully.');
         }
 
-        $this->ensureCanSubmit(1);
+        $resource->delete();
 
-        ResourceChangeRequest::recordDelete(Auth::id(), $resource);
-
-        return redirect()->back()->with('success', 'Resource deletion request submitted for moderation.');
-    }
-
-    public function bulkRename(Request $request, Node $node)
-    {
-        if ($node->isEffectivelyFrozen()) {
-            abort(403, 'This folder is frozen and cannot be modified.');
-        }
-
-        $validated = $request->validate([
-            'prefix' => ['required', 'string', 'max:100'],
-            'start_number' => ['nullable', 'integer', 'min:0'],
-        ]);
-
-        $rawPrefix = trim($validated['prefix']);
-        $cleanPrefix = rtrim($rawPrefix, ' -');
-        $startNumber = (int) ($validated['start_number'] ?? 1);
-
-        $resources = $node->resources()->orderBy('id')->get();
-
-        DB::transaction(function () use ($resources, $cleanPrefix, $startNumber) {
-            foreach ($resources as $index => $resource) {
-                $number = str_pad((string) ($startNumber + $index), 2, '0', STR_PAD_LEFT);
-                $title = $cleanPrefix !== '' ? "{$cleanPrefix} - {$number}" : $number;
-                $resource->update(['title' => $title]);
-            }
-        });
-
-        return back()->with('success', "Renamed {$resources->count()} resources successfully.");
+        return redirect()->back()->with('success', 'Resource deleted successfully.');
     }
 }

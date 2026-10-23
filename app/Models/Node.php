@@ -30,8 +30,6 @@ class Node extends Model
             'is_frozen' => 'boolean',
             'children_count' => 'integer',
             'resources_count' => 'integer',
-            'upvotes_count' => 'integer',
-            'downvotes_count' => 'integer',
         ];
     }
 
@@ -107,42 +105,8 @@ class Node extends Model
         return $this->hasMany(Resource::class);
     }
 
-    public function votes()
-    {
-        return $this->hasMany(NodeVote::class);
-    }
-
-    public function upvotes()
-    {
-        return $this->hasMany(NodeVote::class)->where('type', 'up');
-    }
-
-    public function downvotes()
-    {
-        return $this->hasMany(NodeVote::class)->where('type', 'down');
-    }
-
     public function completions()
     {
         return $this->hasMany(NodeCompletion::class);
-    }
-
-    public function changeRequests()
-    {
-        return $this->hasMany(ResourceChangeRequest::class);
-    }
-
-    public function pendingCreateRequests()
-    {
-        return $this->hasMany(ResourceChangeRequest::class)
-            ->where('action_type', 'create')
-            ->where('status', 'pending');
-    }
-
-    public function rejectedCreateRequests()
-    {
-        return $this->hasMany(ResourceChangeRequest::class)
-            ->where('action_type', 'create')
-            ->where('status', 'rejected');
     }
 }

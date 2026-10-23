@@ -103,8 +103,6 @@ test('public profile accurately displays forum questions, answers, and activitie
         ->where('forumPosts.0.title', 'How to calculate cross product angle?')
         ->has('forumAnswers', 1)
         ->where('forumAnswers.0.body', 'Use A x B = |A||B|sin(theta) formula.')
-        ->has('recentActivities.forum_posts', 1)
-        ->has('recentActivities.forum_answers', 1)
     );
 });
 
@@ -146,8 +144,6 @@ test('public profile excludes unapproved forum questions and answers', function 
         ->component('User/Show')
         ->has('forumPosts', 0)
         ->has('forumAnswers', 0)
-        ->has('recentActivities.forum_posts', 0)
-        ->has('recentActivities.forum_answers', 0)
     );
 });
 
@@ -169,33 +165,6 @@ test('public profile includes both contributors and random users in suggestions'
     );
 });
 
-test('public profile displays created folders in recent activity', function () {
-    $user = User::factory()->create(['username' => 'voter_student']);
-    $subject = Subject::create([
-        'name' => 'Higher Math',
-        'slug' => 'higher-math',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-emerald-500',
-        'icon' => 'calculator',
-    ]);
-
-    $parentFolder = Node::create([
-        'user_id' => $user->id,
-        'subject_id' => $subject->id,
-        'name' => 'Calculus',
-        'slug' => 'calculus',
-    ]);
-
-    $response = $this->get('/u/voter_student');
-
-    $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('User/Show')
-        ->has('recentActivities.folders', 1)
-        ->where('recentActivities.folders.0.title', 'Calculus')
-    );
-});
-
 test('user model has is_verified boolean column and is single source of truth', function () {
     $regularUser = User::factory()->create(['is_verified' => false]);
     expect($regularUser->is_verified)->toBeFalse();
@@ -203,36 +172,6 @@ test('user model has is_verified boolean column and is single source of truth', 
     $verifiedUser = User::factory()->create(['is_verified' => true]);
     expect($verifiedUser->is_verified)->toBeTrue();
     expect($verifiedUser->toArray())->toHaveKey('is_verified', true);
-});
-
-test('public profile returns created folders in recent activities', function () {
-    $user = User::factory()->create(['username' => 'folder_creator']);
-
-    $subject = Subject::create([
-        'name' => 'Physics',
-        'slug' => 'physics',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-blue-500',
-        'icon' => 'atom',
-    ]);
-
-    Node::create([
-        'user_id' => $user->id,
-        'subject_id' => $subject->id,
-        'name' => 'Thermodynamics Chapter',
-        'slug' => 'thermodynamics-chapter',
-    ]);
-
-    $response = $this->get('/u/folder_creator');
-
-    $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('User/Show')
-        ->has('recentActivities.folders', 1)
-        ->where('recentActivities.folders.0.title', 'Thermodynamics Chapter')
-        ->where('recentActivities.folders.0.subtitle', 'Physics')
-        ->where('recentActivities.folders.0.url', '/physics/thermodynamics-chapter')
-    );
 });
 
 test('profile update rejects inappropriate words in name, username, about, or institution', function () {

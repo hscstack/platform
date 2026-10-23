@@ -2,20 +2,16 @@
 
 use App\Models\Node;
 use App\Models\Resource;
-use App\Models\ResourceChangeRequest;
 use App\Models\Subject;
 use App\Models\User;
-use App\Notifications\ResourceModerationNotification;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    Storage::fake();
+    Storage::fake('s3');
     Permission::findOrCreate('view admin', 'web');
-    Permission::findOrCreate('edit resources', 'web');
-    Permission::findOrCreate('delete resources', 'web');
     Permission::findOrCreate('moderate resources', 'web');
     Role::findOrCreate('admin', 'web');
 });
@@ -40,50 +36,23 @@ function createTestSubjectAndNode(bool $isFrozen = false): array
     return [$subject, $node];
 }
 
-test('guest cannot upload resources', function () {
+test('guest cannot upload documents', function () {
     [, $node] = createTestSubjectAndNode();
 
     $this->post('/resources', [
         'node_id' => $node->id,
         'resource_type' => 'note',
         'title' => 'Test Note',
-        'content' => 'Note content',
+        'items' => [
+            ['format' => 'image', 'source' => 'resources/notes/test.webp'],
+        ],
     ])->assertRedirect('/login');
-});
-
-test('public authenticated user older than 24h stages resource into change request', function () {
-    [, $node] = createTestSubjectAndNode();
-
-    $user = User::factory()->create([
-        'created_at' => now()->subHours(25),
-    ]);
-
-    $this->actingAs($user)
-        ->post('/resources', [
-            'node_id' => $node->id,
-            'resource_type' => 'note',
-            'title' => 'My Community Note',
-            'content' => 'Some useful content',
-        ])
-        ->assertRedirect(route('submissions.index'))
-        ->assertSessionHas('success', 'Resource submitted for moderation.');
-
-    expect(Resource::count())->toBe(0);
-    expect(ResourceChangeRequest::count())->toBe(1);
-
-    $cr = ResourceChangeRequest::first();
-    expect($cr->user_id)->toBe($user->id)
-        ->and($cr->node_id)->toBe($node->id)
-        ->and($cr->action_type)->toBe('create')
-        ->and($cr->status)->toBe('pending')
-        ->and($cr->payload['title'])->toBe('My Community Note');
 });
 
 test('banned user cannot upload resources', function () {
     [, $node] = createTestSubjectAndNode();
 
     $user = User::factory()->create([
-        'created_at' => now()->subDays(5),
         'banned_until' => now()->addDays(7),
     ]);
 
@@ -92,239 +61,244 @@ test('banned user cannot upload resources', function () {
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Banned User Note',
-            'content' => 'Test',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/test.webp'],
+            ],
         ]);
 
     $response->assertSessionHasErrors('banned');
-
-    expect(ResourceChangeRequest::count())->toBe(0);
+    expect(Resource::count())->toBe(0);
 });
 
-test('accounts less than 24h old are blocked with Bangla message', function () {
+test('public authenticated user submits document with pending status', function () {
     [, $node] = createTestSubjectAndNode();
 
-    $user = User::factory()->create([
-        'created_at' => now()->subHours(2),
-    ]);
+    $user = User::factory()->create();
 
-    $response = $this->actingAs($user)
+    $this->actingAs($user)
         ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
-            'title' => 'Spam Note',
-            'content' => 'Test',
-        ]);
+            'title' => 'My Community Note',
+            'description' => 'Detailed notes',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/uuid-1.webp'],
+                ['format' => 'image', 'source' => 'resources/notes/uuid-2.webp'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
 
-    $response->assertSessionHasErrors([
-        'account_age' => 'আপনার অ্যাকাউন্টটি নতুন। স্প্যাম রোধে অ্যাকাউন্ট তৈরির ২৪ ঘণ্টা পর রিসোর্স আপলোড করা যাবে।',
-    ]);
+    expect(Resource::count())->toBe(1);
 
-    expect(ResourceChangeRequest::count())->toBe(0);
+    $res = Resource::first();
+    expect($res->user_id)->toBe($user->id)
+        ->and($res->node_id)->toBe($node->id)
+        ->and($res->status)->toBe('pending')
+        ->and($res->title)->toBe('My Community Note')
+        ->and(count($res->items))->toBe(2);
 });
 
-test('moderator directly creates resource without staging and bypasses age check', function () {
+test('moderator user uploading document gets auto-approved', function () {
     [, $node] = createTestSubjectAndNode();
 
-    $moderator = User::factory()->create([
-        'created_at' => now()->subMinutes(10), // even if new
-    ]);
+    $moderator = User::factory()->create();
     $moderator->givePermissionTo('moderate resources');
 
     $this->actingAs($moderator)
         ->post('/resources', [
             'node_id' => $node->id,
             'resource_type' => 'note',
-            'title' => 'Direct Moderator Resource',
-            'content' => 'Immediate publish',
+            'title' => 'Moderator Note',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/mod.webp'],
+            ],
         ])
-        ->assertSessionHas('success', 'Resource created successfully.');
+        ->assertRedirect()
+        ->assertSessionHas('success');
 
-    expect(Resource::count())->toBe(1);
-    expect(ResourceChangeRequest::count())->toBe(0);
-    expect(Resource::first()->title)->toBe('Direct Moderator Resource');
+    $res = Resource::first();
+    expect($res->status)->toBe('approved')
+        ->and($res->reviewed_by)->toBe($moderator->id)
+        ->and($res->reviewed_at)->not->toBeNull();
 });
 
-test('unverified user cannot exceed quota of 30 pending requests', function () {
+test('regular users are blocked after 20 pending submissions while verified can submit up to 50', function () {
     [, $node] = createTestSubjectAndNode();
 
     $user = User::factory()->create([
         'is_verified' => false,
-        'created_at' => now()->subDays(2),
     ]);
 
-    // Create 30 existing pending change requests
-    for ($i = 0; $i < 30; $i++) {
-        ResourceChangeRequest::recordCreate($user->id, $node->id, [
-            'title' => "Resource {$i}",
+    for ($i = 0; $i < 20; $i++) {
+        Resource::create([
+            'user_id' => $user->id,
+            'node_id' => $node->id,
             'resource_type' => 'note',
+            'title' => "Pending Note {$i}",
+            'status' => 'pending',
         ]);
     }
+
+    // 21st submission should be rejected
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'note',
+            'title' => 'Exceeding Quota',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/extra.webp'],
+            ],
+        ])
+        ->assertSessionHasErrors('pending_limit');
+
+    // Make user verified - now limit is 50
+    $user->update(['is_verified' => true]);
+
+    $this->actingAs($user->fresh())
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'note',
+            'title' => 'Allowed For Verified',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/allowed.webp'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+});
+
+test('cannot submit resource with mixed formats', function () {
+    [, $node] = createTestSubjectAndNode();
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'note',
+            'title' => 'Mixed Formats Note',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/page1.webp'],
+                ['format' => 'pdf', 'source' => 'https://drive.google.com/file/d/xyz/view'],
+            ],
+        ])
+        ->assertSessionHasErrors('items');
+
+    expect(Resource::count())->toBe(0);
+});
+
+test('cannot submit video resource with non-video formats or note resource with video format', function () {
+    [, $node] = createTestSubjectAndNode();
+    $user = User::factory()->create();
+
+    // 1. Video resource cannot contain image
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'video',
+            'title' => 'Video with Image',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/page1.webp'],
+            ],
+        ])
+        ->assertSessionHasErrors('items');
+
+    // 2. Note resource cannot contain video
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'note',
+            'title' => 'Note with Video',
+            'items' => [
+                ['format' => 'video', 'source' => 'https://www.youtube.com/watch?v=12345678901'],
+            ],
+        ])
+        ->assertSessionHasErrors('items');
+
+    expect(Resource::count())->toBe(0);
+});
+
+test('fetch playlist endpoint validates input and returns videos', function () {
+    $user = User::factory()->create();
+
+    // Invalid URL
+    $this->actingAs($user)
+        ->postJson('/resources/fetch-playlist', [
+            'playlist_url' => 'not-a-url',
+        ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('playlist_url');
+
+    // Valid URL with Http fake
+    config(['services.youtube.key' => 'fake-key']);
+    Http::fake([
+        'https://www.googleapis.com/youtube/v3/playlistItems*' => Http::response([
+            'items' => [
+                [
+                    'snippet' => [
+                        'title' => 'Lecture 1: Intro',
+                        'resourceId' => ['videoId' => 'vid11111111'],
+                    ],
+                ],
+                [
+                    'snippet' => [
+                        'title' => 'Lecture 2: Advanced',
+                        'resourceId' => ['videoId' => 'vid22222222'],
+                    ],
+                ],
+            ],
+        ], 200),
+    ]);
 
     $response = $this->actingAs($user)
-        ->post('/resources', [
-            'node_id' => $node->id,
-            'resource_type' => 'note',
-            'title' => '31st Resource',
-            'content' => 'Exceed limit',
+        ->postJson('/resources/fetch-playlist', [
+            'playlist_url' => 'https://www.youtube.com/playlist?list=PL1234567890',
         ]);
 
-    $response->assertSessionHasErrors('pending_limit');
-    expect(ResourceChangeRequest::count())->toBe(30);
+    $response->assertOk()
+        ->assertJsonCount(2, 'items')
+        ->assertJsonPath('items.0.format', 'video')
+        ->assertJsonPath('items.0.title', 'Lecture 1: Intro')
+        ->assertJsonPath('items.0.source', 'https://www.youtube.com/watch?v=vid11111111');
 });
 
-test('verified user can upload beyond 30 pending requests up to 100', function () {
-    [, $node] = createTestSubjectAndNode();
+test('fetch playlist endpoint is rate limited to 10 requests per minute', function () {
+    $user = User::factory()->create();
 
-    $user = User::factory()->create([
-        'is_verified' => true,
-        'created_at' => now()->subDays(2),
-    ]);
-
-    // Create 30 existing pending change requests
-    for ($i = 0; $i < 30; $i++) {
-        ResourceChangeRequest::recordCreate($user->id, $node->id, [
-            'title' => "Resource {$i}",
-            'resource_type' => 'note',
-        ]);
+    for ($i = 0; $i < 10; $i++) {
+        $this->actingAs($user)
+            ->postJson('/resources/fetch-playlist', [
+                'playlist_url' => 'https://www.youtube.com/playlist?list=PL1234567890',
+            ]);
     }
 
+    // 11th request should be throttled (HTTP 429)
     $this->actingAs($user)
-        ->post('/resources', [
-            'node_id' => $node->id,
-            'resource_type' => 'note',
-            'title' => '31st Resource',
-            'content' => 'Allowed for verified',
+        ->postJson('/resources/fetch-playlist', [
+            'playlist_url' => 'https://www.youtube.com/playlist?list=PL1234567890',
         ])
-        ->assertSessionHas('success', 'Resource submitted for moderation.');
-
-    expect(ResourceChangeRequest::count())->toBe(31);
+        ->assertStatus(429);
 });
 
-test('frozen node rejects upload for non-moderators', function () {
-    [, $node] = createTestSubjectAndNode(isFrozen: true);
-
-    $user = User::factory()->create([
-        'created_at' => now()->subDays(2),
-    ]);
-
-    $this->actingAs($user)
-        ->post('/resources', [
-            'node_id' => $node->id,
-            'resource_type' => 'note',
-            'title' => 'Locked Folder Resource',
-            'content' => 'Should fail',
-        ])
-        ->assertForbidden();
-
-    expect(ResourceChangeRequest::count())->toBe(0);
-});
-
-test('frozen node rejects upload for moderators as well', function () {
-    [, $node] = createTestSubjectAndNode(isFrozen: true);
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo('moderate resources');
-
-    $this->actingAs($moderator)
-        ->post('/resources', [
-            'node_id' => $node->id,
-            'resource_type' => 'note',
-            'title' => 'Moderator Cannot Bypass Frozen',
-            'content' => 'Should fail',
-        ])
-        ->assertForbidden();
-
-    expect(Resource::count())->toBe(0);
-});
-
-test('bulk image upload stages multiple change requests for non-moderator', function () {
+test('user can submit marked_book resource with images', function () {
     [, $node] = createTestSubjectAndNode();
-
-    $user = User::factory()->create([
-        'created_at' => now()->subDays(2),
-    ]);
-
-    $file1 = UploadedFile::fake()->create('page1.png', 100, 'image/png');
-    $file2 = UploadedFile::fake()->create('page2.png', 100, 'image/png');
-
-    $this->actingAs($user)
-        ->post('/resources/bulk/images', [
-            'node_id' => $node->id,
-            'files' => [$file1, $file2],
-            'custom_titles' => ['Image Page 1', 'Image Page 2'],
-            'content' => 'Shared note for these images',
-        ])
-        ->assertRedirect(route('submissions.index'))
-        ->assertSessionHas('success', 'Images submitted for moderation.');
-
-    expect(Resource::count())->toBe(0);
-    expect(ResourceChangeRequest::count())->toBe(2);
-    expect(ResourceChangeRequest::pluck('status')->all())->toBe(['pending', 'pending']);
-    expect(ResourceChangeRequest::first()->payload['content'])->toBe('Shared note for these images');
-});
-
-test('bulk image upload with content directly creates resources for moderator', function () {
-    [, $node] = createTestSubjectAndNode();
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo('moderate resources');
-
-    $file1 = UploadedFile::fake()->create('page1.png', 100, 'image/png');
-    $file2 = UploadedFile::fake()->create('page2.png', 100, 'image/png');
-
-    $this->actingAs($moderator)
-        ->post('/resources/bulk/images', [
-            'node_id' => $node->id,
-            'files' => [$file1, $file2],
-            'custom_titles' => ['Image Page 1', 'Image Page 2'],
-            'content' => 'Batch lecture slides note',
-        ])
-        ->assertSessionHas('success', 'Images uploaded successfully.');
-
-    expect(Resource::count())->toBe(2);
-    expect(Resource::pluck('content')->all())->toBe([
-        'Batch lecture slides note',
-        'Batch lecture slides note',
-    ]);
-});
-
-test('my-submissions page returns list and quota', function () {
-    [, $node] = createTestSubjectAndNode();
-
-    $user = User::factory()->create();
-    ResourceChangeRequest::recordCreate($user->id, $node->id, [
-        'title' => 'Pending Resource',
-        'resource_type' => 'note',
-    ]);
-
-    $this->actingAs($user)
-        ->get('/my-submissions')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('Submissions/Index')
-            ->has('submissions.data', 1)
-            ->where('quota.used', 1)
-            ->where('quota.max', 30)
-            ->where('counts.pending', 1)
-        );
-});
-
-test('moderation notification generates my-submissions url with status on approve and reject', function () {
-    [$subject, $node] = createTestSubjectAndNode();
     $user = User::factory()->create();
 
-    $cr = ResourceChangeRequest::recordCreate($user->id, $node->id, [
-        'title' => 'Physics Formula Note',
-        'resource_type' => 'note',
-    ]);
+    $this->actingAs($user)
+        ->post('/resources', [
+            'node_id' => $node->id,
+            'resource_type' => 'marked_book',
+            'title' => 'Physics 1st Paper Marked Book',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/book_p1.webp'],
+                ['format' => 'image', 'source' => 'resources/notes/book_p2.webp'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
 
-    // Approved notification
-    $approvedNotif = new ResourceModerationNotification($cr, 'approved');
-    $approvedData = $approvedNotif->toArray($user);
-    expect($approvedData['url'])->toBe('/my-submissions?status=approved');
-
-    // Rejected notification
-    $rejectedNotif = new ResourceModerationNotification($cr, 'rejected', feedback: 'Irrelevant topic');
-    $rejectedData = $rejectedNotif->toArray($user);
-    expect($rejectedData['url'])->toBe('/my-submissions?status=rejected');
+    $res = Resource::where('resource_type', 'marked_book')->first();
+    expect($res)->not->toBeNull()
+        ->and($res->title)->toBe('Physics 1st Paper Marked Book')
+        ->and(count($res->items))->toBe(2);
 });

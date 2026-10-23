@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\Blog;
 use App\Models\Node;
-use App\Models\NodeVote;
 use App\Models\Notice;
 use App\Models\Product;
 use App\Models\Resource;
@@ -12,7 +11,6 @@ use App\Models\Subject;
 use App\Models\User;
 use App\Observers\BlogObserver;
 use App\Observers\NodeObserver;
-use App\Observers\NodeVoteObserver;
 use App\Observers\NoticeObserver;
 use App\Observers\ProductObserver;
 use App\Observers\ResourceObserver;
@@ -45,15 +43,14 @@ class AppServiceProvider extends ServiceProvider
 
         Blog::observe(BlogObserver::class);
         Node::observe(NodeObserver::class);
-        NodeVote::observe(NodeVoteObserver::class);
         Notice::observe(NoticeObserver::class);
         Product::observe(ProductObserver::class);
         Resource::observe(ResourceObserver::class);
         Subject::observe(SubjectObserver::class);
         User::observe(UserObserver::class);
 
-        DatabaseNotification::created(function (DatabaseNotification $notification) {
-            if ($notification->notifiable_type === User::class && $notification->notifiable_id) {
+        DatabaseNotification::saved(function (DatabaseNotification $notification) {
+            if ($notification->notifiable_type === User::class && $notification->notifiable_id && is_null($notification->read_at)) {
                 Cache::forever("user:{$notification->notifiable_id}:has_unread_notifs", true);
             }
         });

@@ -2,27 +2,35 @@
 
 use App\Models\Node;
 use App\Models\Resource;
-use App\Models\ResourceChangeRequest;
 use App\Models\Subject;
 use App\Models\User;
 use App\Notifications\ResourceModerationNotification;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
+    Permission::findOrCreate('moderate resources', 'web');
     Permission::findOrCreate('edit resources', 'web');
+    Permission::findOrCreate('delete resources', 'web');
+    Permission::findOrCreate('create nodes', 'web');
+
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->syncPermissions(Permission::all());
 });
 
-test('unauthorized users cannot bulk rename resources', function () {
+test('unauthorized users cannot view moderation queue or approve/reject resources', function () {
     $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/admin/moderation/resources')
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics',
+        'slug' => 'physics-test',
         'course' => 'hsc',
         'tailwind_format' => 'bg-indigo-500',
         'icon' => 'atom',
@@ -32,21 +40,79 @@ test('unauthorized users cannot bulk rename resources', function () {
         'name' => 'Chapter 1',
         'slug' => 'chapter-1',
     ]);
+    $resource = Resource::create([
+        'node_id' => $node->id,
+        'user_id' => $user->id,
+        'resource_type' => 'note',
+        'title' => 'Test Note',
+        'status' => 'pending',
+    ]);
 
     $this->actingAs($user)
-        ->post("/admin/nodes/{$node->id}/resources/bulk-rename", [
-            'prefix' => 'Class',
-            'start_number' => 1,
-        ])->assertRedirect();
+        ->post('/admin/resources/approve', ['ids' => [$resource->id]])
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    $this->actingAs($user)
+        ->post('/admin/resources/reject', ['ids' => [$resource->id]])
+        ->assertRedirect()
+        ->assertSessionHas('error');
 });
 
-test('admin with edit resources permission can bulk rename resources in sequential order', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('admin');
+test('moderator can view resource moderation queue with counts', function () {
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
 
     $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics-queue',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Kinematics',
+        'slug' => 'kinematics',
+    ]);
+
+    Resource::create([
+        'node_id' => $node->id,
+        'user_id' => $moderator->id,
+        'resource_type' => 'note',
+        'title' => 'Pending Note',
+        'status' => 'pending',
+    ]);
+
+    Resource::create([
+        'node_id' => $node->id,
+        'user_id' => $moderator->id,
+        'resource_type' => 'note',
+        'title' => 'Approved Note',
+        'status' => 'approved',
+    ]);
+
+    $this->actingAs($moderator)
+        ->get('/admin/moderation/resources?status=pending')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('admin/moderation/Resources')
+            ->has('resources.data', 1)
+            ->where('counts.pending', 1)
+            ->where('counts.approved', 1)
+        );
+});
+
+test('moderator can batch approve pending resources to bring them live', function () {
+    Notification::fake();
+
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $author = User::factory()->create();
+    $subject = Subject::create([
         'name' => 'Higher Math',
-        'slug' => 'higher-math',
+        'slug' => 'higher-math-batch',
         'course' => 'hsc',
         'tailwind_format' => 'bg-indigo-500',
         'icon' => 'calculator',
@@ -60,174 +126,81 @@ test('admin with edit resources permission can bulk rename resources in sequenti
 
     $res1 = Resource::create([
         'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'Old Title 1',
-        'external_url' => 'https://youtube.com/watch?v=11111111111',
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Matrix Basics 1',
+        'status' => 'pending',
     ]);
-
     $res2 = Resource::create([
         'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'Old Title 2',
-        'external_url' => 'https://youtube.com/watch?v=22222222222',
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Matrix Basics 2',
+        'status' => 'pending',
     ]);
 
-    $res3 = Resource::create([
-        'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'Old Title 3',
-        'external_url' => 'https://youtube.com/watch?v=33333333333',
-    ]);
-
-    $this->actingAs($admin)
-        ->post("/admin/nodes/{$node->id}/resources/bulk-rename", [
-            'prefix' => 'Class - ',
-            'start_number' => 1,
+    $this->actingAs($moderator)
+        ->post('/admin/resources/approve', [
+            'ids' => [$res1->id, $res2->id],
         ])
         ->assertRedirect()
         ->assertSessionHas('success');
 
-    expect($res1->fresh()->title)->toBe('Class - 01');
-    expect($res2->fresh()->title)->toBe('Class - 02');
-    expect($res3->fresh()->title)->toBe('Class - 03');
+    expect($res1->fresh()->status)->toBe('approved')
+        ->and($res2->fresh()->status)->toBe('approved')
+        ->and($res1->fresh()->reviewed_by)->toBe($moderator->id)
+        ->and($res2->fresh()->reviewed_at)->not->toBeNull();
+
+    Notification::assertSentTo($author, ResourceModerationNotification::class);
 });
 
-test('bulk rename respects custom starting number', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('admin');
+test('approving already approved resource skips update without error', function () {
+    Notification::fake();
 
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+
+    $author = User::factory()->create();
     $subject = Subject::create([
-        'name' => 'Chemistry',
-        'slug' => 'chemistry',
+        'name' => 'Math II',
+        'slug' => 'math-ii-skip',
         'course' => 'hsc',
         'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'flask',
+        'icon' => 'book',
     ]);
-
     $node = Node::create([
         'subject_id' => $subject->id,
-        'name' => 'Organic',
-        'slug' => 'organic',
+        'name' => 'Algebra',
+        'slug' => 'algebra',
     ]);
-
-    $res1 = Resource::create([
+    $resource = Resource::create([
         'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'Intro',
-        'external_url' => 'https://youtube.com/watch?v=aaaaa',
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Algebra 101',
+        'status' => 'approved',
     ]);
 
-    $res2 = Resource::create([
-        'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'Part 2',
-        'external_url' => 'https://youtube.com/watch?v=bbbbb',
-    ]);
-
-    $this->actingAs($admin)
-        ->post("/admin/nodes/{$node->id}/resources/bulk-rename", [
-            'prefix' => 'Lecture',
-            'start_number' => 5,
+    $this->actingAs($moderator)
+        ->post('/admin/resources/approve', [
+            'ids' => [$resource->id],
         ])
-        ->assertRedirect()
-        ->assertSessionHas('success');
+        ->assertRedirect();
 
-    expect($res1->fresh()->title)->toBe('Lecture - 05');
-    expect($res2->fresh()->title)->toBe('Lecture - 06');
+    Notification::assertNothingSent();
 });
 
-test('resource author can submit a deletion request for moderation', function () {
-    Permission::findOrCreate('delete resources', 'web');
+test('moderator can reject a pending resource with feedback note', function () {
+    Notification::fake();
 
-    $author = User::factory()->create([
-        'created_at' => now()->subHours(25),
-    ]);
-    $author->givePermissionTo('view admin');
+    $moderator = User::factory()->create();
+    $moderator->givePermissionTo(['view admin', 'moderate resources']);
 
-    $subject = Subject::create([
-        'name' => 'Math',
-        'slug' => 'math',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'calculator',
-    ]);
-
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Geometry',
-        'slug' => 'geometry',
-    ]);
-
-    $resource = Resource::create([
-        'user_id' => $author->id,
-        'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'My Video',
-        'external_url' => 'https://youtube.com/watch?v=myvideo12345',
-    ]);
-
-    $this->actingAs($author)
-        ->delete("/admin/resources/{$resource->id}")
-        ->assertRedirect()
-        ->assertSessionHas('success');
-
-    // Live resource remains until approved
-    expect(Resource::find($resource->id))->not->toBeNull();
-
-    // Pending deletion request exists in moderation queue
-    $request = ResourceChangeRequest::where('resource_id', $resource->id)->first();
-    expect($request)->not->toBeNull()
-        ->and($request->action_type)->toBe('delete')
-        ->and($request->status)->toBe('pending');
-});
-
-test('non-author without delete resources permission cannot submit deletion request', function () {
-    Permission::findOrCreate('delete resources', 'web');
-
-    $author = User::factory()->create([
-        'created_at' => now()->subHours(25),
-    ]);
-    $otherUser = User::factory()->create();
-    $otherUser->givePermissionTo('view admin');
-
-    $subject = Subject::create([
-        'name' => 'Biology',
-        'slug' => 'biology',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'dna',
-    ]);
-
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Genetics',
-        'slug' => 'genetics',
-    ]);
-
-    $resource = Resource::create([
-        'user_id' => $author->id,
-        'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'Cell Division',
-        'external_url' => 'https://youtube.com/watch?v=cell12345678',
-    ]);
-
-    $this->actingAs($otherUser)
-        ->delete("/admin/resources/{$resource->id}")
-        ->assertForbidden();
-
-    expect(ResourceChangeRequest::where('resource_id', $resource->id)->exists())->toBeFalse();
-});
-
-test('resource author can submit an update for moderation while live resource is unchanged', function () {
-    $author = User::factory()->create([
-        'created_at' => now()->subHours(25),
-    ]);
-    $author->givePermissionTo('view admin');
+    $author = User::factory()->create();
 
     $subject = Subject::create([
         'name' => 'Chemistry',
-        'slug' => 'chemistry',
+        'slug' => 'chemistry-reject',
         'course' => 'hsc',
         'tailwind_format' => 'bg-indigo-500',
         'icon' => 'flask',
@@ -240,43 +213,36 @@ test('resource author can submit an update for moderation while live resource is
     ]);
 
     $resource = Resource::create([
-        'user_id' => $author->id,
         'node_id' => $node->id,
-        'resource_type' => 'video',
-        'title' => 'Old Title',
-        'external_url' => 'https://youtube.com/watch?v=acid11111111',
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Blurry Note',
+        'status' => 'pending',
     ]);
 
-    $this->actingAs($author)
-        ->post("/admin/resources/{$resource->id}/patch", [
-            'node_id' => $node->id,
-            'title' => 'New Proposed Title',
-            'resource_type' => 'video',
-            'external_url' => 'https://youtube.com/watch?v=acid22222222',
+    $this->actingAs($moderator)
+        ->post('/admin/resources/reject', [
+            'ids' => [$resource->id],
+            'admin_note' => 'Please re-upload with clearer images.',
         ])
         ->assertRedirect()
         ->assertSessionHas('success');
 
-    // Live resource is untouched
-    expect($resource->fresh()->title)->toBe('Old Title');
+    $fresh = $resource->fresh();
+    expect($fresh->status)->toBe('rejected')
+        ->and($fresh->admin_note)->toBe('Please re-upload with clearer images.')
+        ->and($fresh->reviewed_by)->toBe($moderator->id)
+        ->and($fresh->reviewed_at)->not->toBeNull();
 
-    // Moderation queue has the pending update
-    $change = ResourceChangeRequest::where('resource_id', $resource->id)->first();
-    expect($change)->not->toBeNull()
-        ->and($change->action_type)->toBe('update')
-        ->and($change->status)->toBe('pending')
-        ->and($change->payload['title'])->toBe('New Proposed Title');
+    Notification::assertSentTo($author, ResourceModerationNotification::class);
 });
 
-test('moderator can approve a create request to bring resource live', function () {
-    Permission::findOrCreate('moderate resources', 'web');
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo(['view admin', 'moderate resources']);
+test('regular user cannot delete resources without permission', function () {
+    $author = User::factory()->create();
 
     $subject = Subject::create([
         'name' => 'Math',
-        'slug' => 'math',
+        'slug' => 'math-no-del',
         'course' => 'hsc',
         'tailwind_format' => 'bg-indigo-500',
         'icon' => 'calculator',
@@ -284,189 +250,60 @@ test('moderator can approve a create request to bring resource live', function (
 
     $node = Node::create([
         'subject_id' => $subject->id,
-        'name' => 'Algebra',
-        'slug' => 'algebra',
+        'name' => 'Geometry',
+        'slug' => 'geometry',
     ]);
 
-    $changeRequest = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
-        'title' => 'Equations Note',
+    $resource = Resource::create([
+        'user_id' => $author->id,
+        'node_id' => $node->id,
         'resource_type' => 'note',
-        'content' => 'Algebra notes content',
+        'title' => 'My Note',
     ]);
 
-    expect(Resource::where('title', 'Equations Note')->exists())->toBeFalse();
-
-    $this->actingAs($moderator)
-        ->post('/admin/moderation/resources/approve', [
-            'ids' => [$changeRequest->id],
-        ])
+    $this->actingAs($author)
+        ->delete("/admin/resources/{$resource->id}")
         ->assertRedirect()
-        ->assertSessionHas('success');
+        ->assertSessionHas('error');
 
-    expect($changeRequest->fresh()->status)->toBe('approved')
-        ->and($changeRequest->fresh()->reviewed_by)->toBe($moderator->id)
-        ->and(Resource::where('title', 'Equations Note')->exists())->toBeTrue();
+    expect(Resource::find($resource->id))->not->toBeNull();
 });
 
-test('moderator can bulk approve multiple requests at once', function () {
-    Notification::fake();
-
-    Permission::findOrCreate('moderate resources', 'web');
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo(['view admin', 'moderate resources']);
-
-    $subject = Subject::create([
-        'name' => 'Physics',
-        'slug' => 'physics-bulk',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
-    ]);
-
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Mechanics',
-        'slug' => 'mechanics',
-    ]);
-
-    $req1 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
-        'title' => 'Bulk Note 1',
-        'resource_type' => 'note',
-        'content' => 'Content 1',
-    ]);
-
-    $req2 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
-        'title' => 'Bulk Note 2',
-        'resource_type' => 'note',
-        'content' => 'Content 2',
-    ]);
-
-    $this->actingAs($moderator)
-        ->post('/admin/moderation/resources/approve', [
-            'ids' => [$req1->id, $req2->id],
-        ])
-        ->assertRedirect()
-        ->assertSessionHas('success');
-
-    expect($req1->fresh()->status)->toBe('approved')
-        ->and($req2->fresh()->status)->toBe('approved')
-        ->and(Resource::where('title', 'Bulk Note 1')->exists())->toBeTrue()
-        ->and(Resource::where('title', 'Bulk Note 2')->exists())->toBeTrue();
-
-    Notification::assertSentToTimes($moderator, ResourceModerationNotification::class, 1);
-    Notification::assertSentTo(
-        $moderator,
-        ResourceModerationNotification::class,
-        fn ($notif) => $notif->status === 'approved' && $notif->totalCount === 2
-    );
-});
-
-test('moderator can reject a request with feedback reason', function () {
-    Notification::fake();
-
-    Permission::findOrCreate('moderate resources', 'web');
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo(['view admin', 'moderate resources']);
-
-    $author = User::factory()->create();
-
-    $subject = Subject::create([
-        'name' => 'Physics',
-        'slug' => 'physics',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
-    ]);
-
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Optics',
-        'slug' => 'optics',
-    ]);
-
-    $changeRequest = ResourceChangeRequest::recordCreate($author->id, $node->id, [
-        'title' => 'Bad Video Link',
-        'resource_type' => 'video',
-        'external_url' => 'https://youtube.com/watch?v=brokenlink11',
-    ]);
-
-    $this->actingAs($moderator)
-        ->post('/admin/moderation/resources/reject', [
-            'ids' => [$changeRequest->id],
-            'rejection_reason' => 'The video URL is not valid.',
-        ])
-        ->assertRedirect()
-        ->assertSessionHas('success');
-
-    expect($changeRequest->fresh()->status)->toBe('rejected')
-        ->and($changeRequest->fresh()->rejection_reason)->toBe('The video URL is not valid.')
-        ->and(Resource::where('title', 'Bad Video Link')->exists())->toBeFalse();
-
-    Notification::assertSentTo(
-        $author,
-        ResourceModerationNotification::class,
-        fn ($notif) => $notif->status === 'rejected' && $notif->feedback === 'The video URL is not valid.'
-    );
-});
-
-test('moderator can bulk reject multiple requests with shared feedback', function () {
-    Notification::fake();
-
-    Permission::findOrCreate('moderate resources', 'web');
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo(['view admin', 'moderate resources']);
-
-    $subject = Subject::create([
-        'name' => 'Physics',
-        'slug' => 'physics-bulk-reject',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
-    ]);
-
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Thermodynamics',
-        'slug' => 'thermodynamics',
-    ]);
-
-    $req1 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
-        'title' => 'Spam 1',
-        'resource_type' => 'note',
-    ]);
-
-    $req2 = ResourceChangeRequest::recordCreate($moderator->id, $node->id, [
-        'title' => 'Spam 2',
-        'resource_type' => 'note',
-    ]);
-
-    $this->actingAs($moderator)
-        ->post('/admin/moderation/resources/reject', [
-            'ids' => [$req1->id, $req2->id],
-            'rejection_reason' => 'Duplicate spam uploads.',
-        ])
-        ->assertRedirect()
-        ->assertSessionHas('success');
-
-    expect($req1->fresh()->status)->toBe('rejected')
-        ->and($req1->fresh()->rejection_reason)->toBe('Duplicate spam uploads.')
-        ->and($req2->fresh()->status)->toBe('rejected')
-        ->and($req2->fresh()->rejection_reason)->toBe('Duplicate spam uploads.');
-
-    Notification::assertSentToTimes($moderator, ResourceModerationNotification::class, 1);
-    Notification::assertSentTo(
-        $moderator,
-        ResourceModerationNotification::class,
-        fn ($notif) => $notif->status === 'rejected' && $notif->totalCount === 2 && $notif->feedback === 'Duplicate spam uploads.'
-    );
-});
-
-test('old reviewed change requests are pruned after 15 days', function () {
+test('user with delete resources permission can delete a resource', function () {
     $user = User::factory()->create();
+    $user->givePermissionTo(['view admin', 'delete resources']);
 
+    $subject = Subject::create([
+        'name' => 'Biology',
+        'slug' => 'biology-del',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'dna',
+    ]);
+
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Genetics',
+        'slug' => 'genetics',
+    ]);
+
+    $resource = Resource::create([
+        'user_id' => $user->id,
+        'node_id' => $node->id,
+        'resource_type' => 'note',
+        'title' => 'Bad Note',
+    ]);
+
+    $this->actingAs($user)
+        ->delete("/admin/resources/{$resource->id}")
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect(Resource::find($resource->id))->toBeNull();
+});
+
+test('rejected resources are pruned after 15 days via model:prune', function () {
+    $author = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Physics',
         'slug' => 'physics-prune',
@@ -474,187 +311,51 @@ test('old reviewed change requests are pruned after 15 days', function () {
         'tailwind_format' => 'bg-indigo-500',
         'icon' => 'atom',
     ]);
-
     $node = Node::create([
         'subject_id' => $subject->id,
-        'name' => 'Waves',
-        'slug' => 'waves',
+        'name' => 'Mechanics',
+        'slug' => 'mechanics',
     ]);
 
-    // Old approved request (> 15 days)
-    $oldApproved = ResourceChangeRequest::create([
-        'user_id' => $user->id,
+    // Resource 1: Rejected 16 days ago (should be pruned)
+    $oldRejected = Resource::create([
         'node_id' => $node->id,
-        'action_type' => 'create',
-        'status' => 'approved',
-        'reviewed_by' => $user->id,
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Old Rejected',
+        'status' => 'rejected',
         'reviewed_at' => now()->subDays(16),
-        'payload' => ['title' => 'Old Approved'],
     ]);
 
-    // Recent approved request (<= 15 days)
-    $recentApproved = ResourceChangeRequest::create([
-        'user_id' => $user->id,
+    // Resource 2: Rejected 5 days ago (should be kept)
+    $recentRejected = Resource::create([
         'node_id' => $node->id,
-        'action_type' => 'create',
-        'status' => 'approved',
-        'reviewed_by' => $user->id,
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Recent Rejected',
+        'status' => 'rejected',
         'reviewed_at' => now()->subDays(5),
-        'payload' => ['title' => 'Recent Approved'],
     ]);
 
-    // Pending request (> 15 days old created_at, but status pending)
-    $pendingReq = ResourceChangeRequest::create([
-        'user_id' => $user->id,
+    // Resource 3: Approved 20 days ago (should NOT be pruned)
+    $approvedResource = Resource::create([
         'node_id' => $node->id,
-        'action_type' => 'create',
-        'status' => 'pending',
-        'payload' => ['title' => 'Pending Req'],
-    ]);
-
-    $this->artisan('model:prune', ['--model' => [ResourceChangeRequest::class]]);
-
-    expect(ResourceChangeRequest::where('id', $oldApproved->id)->exists())->toBeFalse()
-        ->and(ResourceChangeRequest::where('id', $recentApproved->id)->exists())->toBeTrue()
-        ->and(ResourceChangeRequest::where('id', $pendingReq->id)->exists())->toBeTrue();
-});
-
-test('rejecting a change request preserves the staged file until prune', function () {
-    Storage::fake();
-    Notification::fake();
-    Permission::findOrCreate('moderate resources', 'web');
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo(['view admin', 'moderate resources']);
-
-    $author = User::factory()->create();
-    $subject = Subject::create([
-        'name' => 'Math',
-        'slug' => 'math-keep-staged',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'calculator',
-    ]);
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Geometry',
-        'slug' => 'geometry',
-    ]);
-
-    Storage::put('resources/geometry.png', 'png-content');
-
-    $req = ResourceChangeRequest::recordCreate($author->id, $node->id, [
-        'title' => 'Geometry Diagram',
-        'resource_type' => 'image',
-        'file_path' => 'resources/geometry.png',
-    ]);
-
-    $this->actingAs($moderator)
-        ->post('/admin/moderation/resources/reject', [
-            'ids' => [$req->id],
-            'rejection_reason' => 'Blurry image.',
-        ])
-        ->assertRedirect();
-
-    expect(Storage::exists('resources/geometry.png'))->toBeTrue()
-        ->and($req->fresh()->status)->toBe('rejected');
-
-    // Simulate 16 days passing and pruning running
-    $req->update(['reviewed_at' => now()->subDays(16)]);
-    $this->artisan('model:prune', ['--model' => [ResourceChangeRequest::class]]);
-
-    expect(ResourceChangeRequest::where('id', $req->id)->exists())->toBeFalse()
-        ->and(Storage::exists('resources/geometry.png'))->toBeFalse();
-});
-
-test('approving an update preserves omitted attributes on the live resource', function () {
-    Permission::findOrCreate('moderate resources', 'web');
-
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo(['view admin', 'moderate resources']);
-
-    $subject = Subject::create([
-        'name' => 'Math',
-        'slug' => 'math-update-preserve',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'calculator',
-    ]);
-
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Calculus',
-        'slug' => 'calculus',
-    ]);
-
-    $resource = Resource::create([
-        'user_id' => $moderator->id,
-        'node_id' => $node->id,
+        'user_id' => $author->id,
         'resource_type' => 'note',
-        'title' => 'Original Title',
-        'content' => 'Existing description that must not be cleared',
-        'external_url' => 'https://example.com/original',
+        'title' => 'Approved Note',
+        'status' => 'approved',
+        'reviewed_at' => now()->subDays(20),
     ]);
 
-    $changeRequest = ResourceChangeRequest::recordUpdate($moderator->id, $resource, [
-        'node_id' => $node->id,
-        'resource_type' => 'note',
-        'title' => 'Updated Title Only',
-    ]);
+    $this->artisan('model:prune', ['--model' => [Resource::class]])
+        ->assertSuccessful();
 
-    $this->actingAs($moderator)
-        ->post('/admin/moderation/resources/approve', [
-            'ids' => [$changeRequest->id],
-        ])
-        ->assertRedirect()
-        ->assertSessionHas('success');
-
-    $fresh = $resource->fresh();
-    expect($fresh->title)->toBe('Updated Title Only')
-        ->and($fresh->content)->toBe('Existing description that must not be cleared')
-        ->and($fresh->external_url)->toBe('https://example.com/original');
-});
-
-test('resource moderation notification formats batch data correctly', function () {
-    $user = User::factory()->create();
-    $subject = Subject::create([
-        'name' => 'Chemistry',
-        'slug' => 'chem-notif',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-emerald-500',
-        'icon' => 'flask',
-    ]);
-    $node = Node::create([
-        'subject_id' => $subject->id,
-        'name' => 'Organic',
-        'slug' => 'organic',
-    ]);
-    $req = ResourceChangeRequest::recordCreate($user->id, $node->id, [
-        'title' => 'Sample Note',
-        'resource_type' => 'note',
-    ]);
-
-    $rejectBatch = new ResourceModerationNotification($req, 'rejected', 'Poor image resolution', 15);
-    $rejectData = $rejectBatch->toArray($user);
-
-    expect($rejectData['title'])->toBe('15 Resource Requests Rejected')
-        ->and($rejectData['message'])->toBe('15 of your resource requests were rejected: Poor image resolution')
-        ->and($rejectData['action_type'])->toBe('batch')
-        ->and($rejectData['count'])->toBe(15)
-        ->and($rejectData['status'])->toBe('rejected');
-
-    $approveBatch = new ResourceModerationNotification($req, 'approved', null, 5);
-    $approveData = $approveBatch->toArray($user);
-
-    expect($approveData['title'])->toBe('5 Resource Requests Approved')
-        ->and($approveData['message'])->toBe('5 of your resource requests were approved and are now live.')
-        ->and($approveData['action_type'])->toBe('batch')
-        ->and($approveData['count'])->toBe(5)
-        ->and($approveData['status'])->toBe('approved');
+    expect(Resource::find($oldRejected->id))->toBeNull()
+        ->and(Resource::find($recentRejected->id))->not->toBeNull()
+        ->and(Resource::find($approvedResource->id))->not->toBeNull();
 });
 
 test('batch node creation respects should_track_top_folders parameter', function () {
-    Permission::findOrCreate('create nodes', 'web');
     $admin = User::factory()->create();
     $admin->assignRole('admin');
     $admin->givePermissionTo('create nodes');
@@ -690,4 +391,84 @@ test('batch node creation respects should_track_top_folders parameter', function
         ->and($topNode->is_trackable)->toBeTrue()
         ->and($subNode)->not->toBeNull()
         ->and($subNode->is_trackable)->toBeFalse();
+});
+
+test('user with edit resources permission can update any resource and author can update own resource', function () {
+    $subject = Subject::create([
+        'name' => 'Physics',
+        'slug' => 'physics-update-test',
+        'course' => 'hsc',
+        'tailwind_format' => 'bg-indigo-500',
+        'icon' => 'atom',
+    ]);
+    $node = Node::create([
+        'subject_id' => $subject->id,
+        'name' => 'Chapter 1',
+        'slug' => 'chapter-1',
+    ]);
+
+    $author = User::factory()->create();
+    $editor = User::factory()->create();
+    $editor->givePermissionTo('edit resources');
+    $otherUser = User::factory()->create();
+
+    $resource = Resource::create([
+        'node_id' => $node->id,
+        'user_id' => $author->id,
+        'resource_type' => 'note',
+        'title' => 'Initial Title',
+        'items' => [
+            ['format' => 'image', 'source' => 'resources/notes/p1.webp', 'title' => 'Page 1'],
+            ['format' => 'image', 'source' => 'resources/notes/p2.webp', 'title' => 'Page 2'],
+        ],
+    ]);
+
+    // 1. Other unauthorized user cannot update
+    $this->actingAs($otherUser)
+        ->patch("/resources/{$resource->id}", [
+            'title' => 'Hacked Title',
+            'resource_type' => 'note',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/p1.webp'],
+            ],
+        ])
+        ->assertForbidden();
+
+    // 2. Author can update own resource (e.g. reorder pages and change title)
+    $this->actingAs($author)
+        ->patch("/resources/{$resource->id}", [
+            'title' => 'Author Updated Title',
+            'description' => 'Author new description',
+            'resource_type' => 'note',
+            'items' => [
+                ['format' => 'image', 'source' => 'resources/notes/p2.webp', 'title' => 'Now Page 1'],
+                ['format' => 'image', 'source' => 'resources/notes/p1.webp', 'title' => 'Now Page 2'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $resource->refresh();
+    expect($resource->title)->toBe('Author Updated Title')
+        ->and($resource->description)->toBe('Author new description')
+        ->and(count($resource->items))->toBe(2)
+        ->and($resource->items[0]['source'])->toBe('resources/notes/p2.webp')
+        ->and($resource->thumbnail)->toContain('resources/notes/p2.webp');
+
+    // 3. User with edit resources permission can update any resource
+    $this->actingAs($editor)
+        ->patch("/resources/{$resource->id}", [
+            'title' => 'Editor Fixed Title',
+            'resource_type' => 'video',
+            'items' => [
+                ['format' => 'video', 'source' => 'https://www.youtube.com/watch?v=lnnYO482hhg', 'title' => 'Class 1'],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $resource->refresh();
+    expect($resource->title)->toBe('Editor Fixed Title')
+        ->and($resource->resource_type)->toBe('video')
+        ->and($resource->thumbnail)->toBe('https://img.youtube.com/vi/lnnYO482hhg/hqdefault.jpg');
 });

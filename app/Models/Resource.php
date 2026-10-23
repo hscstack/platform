@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -10,79 +13,116 @@ use Illuminate\Support\Facades\Storage;
  */
 class Resource extends Model
 {
+    use Prunable;
+
     protected $fillable = [
         'node_id',
+        'user_id',
         'resource_type',
         'title',
-        'content',
-        'file_path',
-        'external_url',
-        'user_id',
+        'description',
+        'thumbnail',
+        'items',
+        'status',
+        'admin_note',
+        'reviewed_by',
+        'reviewed_at',
+        'vote_score',
+        'upvotes_count',
+        'downvotes_count',
     ];
 
     protected $appends = [
-        'file_url',
+        'items_count',
     ];
 
-    protected static function booted(): void
+    protected function casts(): array
     {
-        static::deleting(function (Resource $resource) {
-            if ($resource->node?->isEffectivelyFrozen()) {
-                abort(403, 'Cannot delete resources from a frozen folder.');
-            }
-        });
+        return [
+            'items' => 'array',
+            'vote_score' => 'integer',
+            'upvotes_count' => 'integer',
+            'downvotes_count' => 'integer',
+            'reviewed_at' => 'datetime',
+        ];
     }
 
-    public function getFileUrlAttribute(): ?string
+    public function getItemsAttribute($value): array
     {
-        if ($this->external_url) {
-            return $this->external_url;
+        if (empty($value)) {
+            return [];
         }
 
-        if ($this->file_path) {
-            return Storage::url($this->file_path);
-        }
+        $items = is_array($value) ? $value : (json_decode($value, true) ?: []);
 
-        return null;
+        return array_values(array_map(function ($item) {
+            $source = $item['source'] ?? '';
+            $url = (str_starts_with($source, 'http://') || str_starts_with($source, 'https://'))
+                ? $source
+                : ($source ? Storage::url($source) : '');
+
+            return array_merge($item, ['url' => $url]);
+        }, $items));
     }
 
-    //
-    public function node()
+    public function getThumbnailAttribute(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        return str_starts_with($value, 'http://') || str_starts_with($value, 'https://')
+            ? $value
+            : Storage::url($value);
+    }
+
+    public function getItemsCountAttribute(): int
+    {
+        return count($this->items);
+    }
+
+    public function node(): BelongsTo
     {
         return $this->belongsTo(Node::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function completions()
+    public function reviewer(): BelongsTo
     {
-        return $this->hasMany(ResourceCompletion::class);
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
-    public function changeRequests()
+    public function scopeApproved($query)
     {
-        return $this->hasMany(ResourceChangeRequest::class);
+        return $query->where('status', 'approved');
     }
 
-    public function pendingChangeRequest()
+    /**
+     * Get the prunable model query.
+     * Prunes rejected resources older than 15 days.
+     */
+    public function prunable()
     {
-        return $this->hasOne(ResourceChangeRequest::class)->where('status', 'pending');
+        return static::where('status', 'rejected')
+            ->where('reviewed_at', '<=', now()->subDays(15));
     }
 
-    public function latestRejectedChangeRequest()
+    public function votes(): HasMany
     {
-        return $this->hasOne(ResourceChangeRequest::class)
-            ->where('status', 'rejected')
-            ->latestOfMany('reviewed_at');
+        return $this->hasMany(ResourceVote::class);
     }
 
-    public function hasPendingChangeRequest(): bool
+    public function upvotes(): HasMany
     {
-        return $this->relationLoaded('pendingChangeRequest')
-            ? $this->pendingChangeRequest !== null
-            : $this->pendingChangeRequest()->exists();
+        return $this->hasMany(ResourceVote::class)->where('value', 1);
+    }
+
+    public function downvotes(): HasMany
+    {
+        return $this->hasMany(ResourceVote::class)->where('value', -1);
     }
 }

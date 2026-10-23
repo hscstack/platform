@@ -576,7 +576,7 @@ onBeforeUnmount(() => {
                                     <ArrowBigUp
                                         v-else-if="
                                             item.data?.type === 'forum_vote' ||
-                                            item.data?.type === 'node_vote'
+                                            item.data?.type === 'resource_vote'
                                         "
                                         class="h-4.5 w-4.5 fill-indigo-500/30 text-indigo-600 dark:fill-indigo-400/30 dark:text-indigo-400"
                                     />

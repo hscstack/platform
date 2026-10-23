@@ -1,77 +1,196 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Book, File, FileArchive, FileImage, FileVideo } from 'lucide-vue-next';
+import {
+    NotebookPen,
+    Video,
+    FlaskConical,
+    FileText,
+    BookOpen,
+    ChevronRight,
+    User as UserIcon,
+    ArrowBigUp,
+    Clock,
+    AlertCircle,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
 
-const { resource } = defineProps({
-    resource: Object,
+const props = defineProps<{
+    resource: {
+        id: number;
+        title: string;
+        resource_type: string;
+        status?: 'pending' | 'approved' | 'rejected' | string;
+        admin_note?: string | null;
+        thumbnail?: string | null;
+        items_count?: number;
+        description?: string | null;
+        vote_score?: number;
+        upvotes_count?: number;
+        downvotes_count?: number;
+        user?: {
+            id: number;
+            name: string;
+            username: string;
+        } | null;
+    };
+}>();
+
+const typeConfig = computed(() => {
+    switch (props.resource.resource_type) {
+        case 'video':
+            return {
+                icon: Video,
+                label: 'ক্লাস',
+                countLabel: `${props.resource.items_count || 0} ক্লাস`,
+                iconBg: 'bg-rose-50 text-rose-600 border-rose-200/50 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20',
+                badgeBg:
+                    'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50',
+            };
+        case 'practical':
+            return {
+                icon: FlaskConical,
+                label: 'ব্যবহারিক',
+                countLabel: `${props.resource.items_count || 0} আইটেম`,
+                iconBg: 'bg-teal-50 text-teal-600 border-teal-200/50 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20',
+                badgeBg:
+                    'bg-teal-50 text-teal-700 border-teal-200/60 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900/50',
+            };
+        case 'marked_book':
+            return {
+                icon: BookOpen,
+                label: 'দাগানো বই',
+                countLabel: `${props.resource.items_count || 0} পৃষ্ঠা`,
+                iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-200/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+                badgeBg:
+                    'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50',
+            };
+        case 'other':
+            return {
+                icon: FileText,
+                label: 'অন্যান্য',
+                countLabel: `${props.resource.items_count || 0} ফাইল`,
+                iconBg: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
+                badgeBg:
+                    'bg-slate-100 text-slate-700 border-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
+            };
+        case 'note':
+        default:
+            return {
+                icon: NotebookPen,
+                label: 'নোট',
+                countLabel: `${props.resource.items_count || 0} আইটেম`,
+                iconBg: 'bg-amber-50 text-amber-600 border-amber-200/50 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+                badgeBg:
+                    'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50',
+            };
+    }
 });
 </script>
 
 <template>
     <Link
         :href="`/resources/${resource.id}`"
-        class="group relative flex cursor-pointer touch-manipulation items-center justify-between bg-white px-5 py-4.5 transition-all duration-200 hover:bg-slate-50/40 active:scale-[0.995] sm:px-6 sm:active:scale-100 dark:bg-gray-900 dark:hover:bg-gray-800/50"
+        class="group relative flex cursor-pointer touch-manipulation items-center justify-between bg-white px-5 py-4 transition-all duration-200 hover:bg-slate-50/60 active:scale-[0.995] sm:px-6 dark:bg-gray-900 dark:hover:bg-gray-800/50"
     >
         <div class="flex min-w-0 items-center gap-4">
+            <!-- Resource Type Icon -->
             <div
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-amber-200/40 bg-amber-50 text-amber-600 transition-colors duration-200 group-hover:border-amber-200 group-hover:bg-amber-100/70 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400 dark:group-hover:border-amber-500/30 dark:group-hover:bg-amber-500/20"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors duration-200"
+                :class="typeConfig.iconBg"
             >
-                <FileImage
-                    v-if="resource.resource_type == 'image'"
-                    class="h-5 w-5 stroke-[2.2]"
-                />
-                <FileVideo
-                    v-else-if="resource.resource_type == 'video'"
-                    class="h-5 w-5 stroke-[2.2]"
-                />
-                <FileArchive
-                    v-else-if="resource.resource_type == 'pdf'"
-                    class="h-5 w-5 stroke-[2.2]"
-                />
-                <Book
-                    v-else-if="resource.resource_type == 'note'"
-                    class="h-5 w-5 stroke-[2.2]"
-                />
-                <File v-else class="h-5 w-5 stroke-[2.2]" />
+                <component :is="typeConfig.icon" class="h-5 w-5 stroke-[2.2]" />
             </div>
 
+            <!-- Title & Metadata -->
             <div class="min-w-0">
-                <span
-                    class="block text-base font-bold break-words text-slate-900 transition-colors group-hover:text-amber-700 dark:text-gray-100 dark:group-hover:text-amber-400"
+                <div class="flex flex-wrap items-center gap-2">
+                    <span
+                        class="block text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 sm:text-base dark:text-gray-100 dark:group-hover:text-indigo-400"
+                    >
+                        {{ resource.title }}
+                    </span>
+
+                    <!-- Pending Badge -->
+                    <span
+                        v-if="resource.status === 'pending'"
+                        class="inline-flex items-center gap-1 rounded-md border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-400"
+                    >
+                        <Clock class="h-3 w-3 animate-pulse" />
+                        <span>পর্যালোচনাধীন</span>
+                    </span>
+
+                    <!-- Rejected Badge -->
+                    <span
+                        v-else-if="resource.status === 'rejected'"
+                        class="inline-flex items-center gap-1 rounded-md border border-rose-200/80 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:border-rose-800/60 dark:bg-rose-950/50 dark:text-rose-400"
+                    >
+                        <AlertCircle class="h-3 w-3" />
+                        <span>বাতিলকৃত</span>
+                    </span>
+                </div>
+
+                <div
+                    class="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-400 dark:text-gray-500"
                 >
-                    {{ resource.title }}
-                </span>
-                <span
-                    class="mt-0.5 inline-block text-xs font-semibold text-amber-600 sm:hidden dark:text-amber-400"
-                >
-                    {{ resource.resource_type }}
-                </span>
+                    <!-- Type Badge (Mobile Only) -->
+                    <span
+                        class="rounded border px-1.5 py-0.5 text-[10px] font-bold sm:hidden"
+                        :class="typeConfig.badgeBg"
+                    >
+                        {{ typeConfig.label }}
+                    </span>
+
+                    <!-- Item / Lecture Count -->
+                    <span
+                        class="font-semibold text-slate-600 dark:text-gray-300"
+                    >
+                        {{ typeConfig.countLabel }}
+                    </span>
+
+                    <!-- Author Info -->
+                    <span v-if="resource.user" class="flex items-center gap-1">
+                        <span>•</span>
+                        <UserIcon class="h-3 w-3 stroke-[2]" />
+                        <span>{{ resource.user.name }}</span>
+                    </span>
+                </div>
             </div>
         </div>
 
-        <div class="flex shrink-0 items-center gap-4 pl-3">
+        <!-- Right Side: Type Badge, Vote Score Pill & Arrow -->
+        <div class="flex shrink-0 items-center gap-2.5 pl-3 sm:gap-3">
+            <!-- Full Type Badge (Desktop) -->
             <span
-                class="hidden rounded-md border border-amber-200/60 bg-amber-50/60 px-2.5 py-1 text-xs font-bold text-amber-600 sm:inline-block dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
+                class="hidden rounded-lg border px-2.5 py-1 text-xs font-bold sm:inline-block"
+                :class="typeConfig.badgeBg"
             >
-                {{ resource.resource_type }}
+                {{ typeConfig.label }}
             </span>
 
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-amber-600 dark:text-gray-500 dark:group-hover:text-amber-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
+            <!-- Read-Only Vote Score Pill (End of Row) -->
+            <div
+                class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-colors"
+                :class="
+                    (resource.vote_score || 0) > 0
+                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
+                        : (resource.vote_score || 0) < 0
+                          ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400'
+                          : 'bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400'
+                "
+                :title="`ভোট স্কোর: ${resource.vote_score || 0}`"
             >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                <ArrowBigUp
+                    class="h-3.5 w-3.5"
+                    :class="
+                        (resource.vote_score || 0) > 0 ? 'fill-current' : ''
+                    "
                 />
-            </svg>
+                <span class="tabular-nums">{{ resource.vote_score || 0 }}</span>
+            </div>
+
+            <ChevronRight
+                class="h-4 w-4 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+            />
         </div>
     </Link>
 </template>
-
-<style scoped></style>

@@ -7,6 +7,7 @@ use App\Models\ForumPost;
 use App\Models\ForumVote;
 use App\Models\Node;
 use App\Models\Notice;
+use App\Models\Resource;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -82,6 +83,26 @@ class SubjectController extends Controller
             }
         }
 
+        $trendingNotes = Cache::remember("home_page_trending_notes_{$course}", now()->addMinutes(2), function () use ($course) {
+            return Resource::query()
+                ->where('status', 'approved')
+                ->whereNotNull('items')
+                ->whereJsonLength('items', '>', 0)
+                ->whereHas('node.subject', function ($query) use ($course) {
+                    $query->where('course', $course);
+                })
+                ->with([
+                    'user:id,name,username,image_path,institution,is_verified',
+                    'node:id,name,slug,subject_id',
+                    'node.subject:id,name,course,slug',
+                ])
+                ->orderByDesc('vote_score')
+                ->latest('id')
+                ->limit(4)
+                ->get()
+                ->toArray();
+        });
+
         $notice = Cache::rememberForever('home_page_notice', function () {
             return Notice::activeForDisplay()?->toArray();
         });
@@ -91,6 +112,7 @@ class SubjectController extends Controller
             'current_group' => $group,
             'featured_blogs' => $featuredBlogs,
             'trending_posts' => $trendingPosts,
+            'trending_notes' => $trendingNotes,
             'notice' => $notice,
         ]);
     }
@@ -104,7 +126,9 @@ class SubjectController extends Controller
         $nodes = Cache::rememberForever("subject_page_{$subject->id}", function () use ($subject) {
             return Node::where('subject_id', $subject->id)
                 ->whereNull('parent_id')
-                ->withCount(['children', 'resources', 'upvotes', 'downvotes'])
+                ->withCount(['children', 'resources' => function ($q) {
+                    $q->where('status', 'approved');
+                }])
                 ->orderBy('sort_order')
                 ->get(['id', 'name', 'slug'])->toArray();
         });
@@ -115,10 +139,6 @@ class SubjectController extends Controller
             'nodes' => $nodes,
             'breadcrumb' => [],
             'resources' => [],
-            'upvotesCount' => 0,
-            'downvotesCount' => 0,
-            'userVote' => null,
-            'upvoters' => [],
         ]);
     }
 }

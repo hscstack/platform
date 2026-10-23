@@ -2,15 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ResourceCompletion extends Model
+class ResourceVote extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'resource_id',
         'user_id',
+        'value',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'value' => 'integer',
+        ];
+    }
 
     public function resource(): BelongsTo
     {

@@ -262,32 +262,34 @@ const isDismissed = ref(false);
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Sponsored course tile"
-            class="group relative flex touch-manipulation items-center justify-between overflow-hidden rounded-xl border border-dashed border-amber-300/90 bg-gradient-to-r from-amber-50/70 via-white to-orange-50/40 px-5 py-4.5 transition-all duration-200 hover:border-amber-400 hover:shadow-sm active:scale-[0.99] dark:border-amber-500/40 dark:from-amber-950/20 dark:via-gray-900 dark:to-gray-900"
+            class="group relative flex touch-manipulation flex-col items-start gap-2.5 overflow-hidden rounded-xl border border-dashed border-amber-300/90 bg-gradient-to-r from-amber-50/70 via-white to-orange-50/40 p-3.5 transition-all duration-200 hover:border-amber-400 hover:shadow-sm active:scale-[0.99] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-5 sm:py-4.5 dark:border-amber-500/40 dark:from-amber-950/20 dark:via-gray-900 dark:to-gray-900"
         >
-            <div class="flex min-w-0 items-center gap-4">
+            <div
+                class="flex w-full min-w-0 flex-col items-start gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:gap-4"
+            >
                 <!-- Icon matching SubjectCard proportions -->
                 <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 transition-colors duration-200 dark:bg-amber-900/40 dark:text-amber-400"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 transition-colors duration-200 sm:h-10 sm:w-10 dark:bg-amber-900/40 dark:text-amber-400"
                 >
-                    <BookOpen class="h-5 w-5" />
+                    <BookOpen class="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                 </div>
 
                 <!-- Content matching SubjectCard structure -->
-                <div class="min-w-0">
+                <div class="w-full min-w-0">
                     <div class="flex items-center gap-1.5">
                         <h3
-                            class="truncate text-base font-bold text-slate-800 transition-colors group-hover:text-amber-600 dark:text-gray-200 dark:group-hover:text-amber-400"
+                            class="line-clamp-2 text-[15px] leading-snug font-bold text-slate-800 transition-colors group-hover:text-amber-600 sm:truncate sm:text-base sm:leading-normal dark:text-gray-200 dark:group-hover:text-amber-400"
                         >
                             {{ title }}
                         </h3>
                         <span
-                            class="shrink-0 rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black tracking-wider text-amber-800 uppercase dark:bg-amber-400/20 dark:text-amber-300"
+                            class="py-0.2 shrink-0 rounded-md bg-amber-500/20 px-1 text-[8px] font-black tracking-wider text-amber-800 uppercase sm:px-1.5 sm:py-0.5 sm:text-[9px] dark:bg-amber-400/20 dark:text-amber-300"
                         >
                             {{ badgeText }}
                         </span>
                     </div>
                     <p
-                        class="mt-0.5 truncate text-xs font-semibold text-slate-400 dark:text-gray-500"
+                        class="mt-1 truncate text-[11px] font-semibold text-slate-400 sm:mt-0.5 sm:text-xs dark:text-gray-500"
                     >
                         {{ subtitle }}
                     </p>
@@ -295,7 +297,7 @@ const isDismissed = ref(false);
             </div>
 
             <!-- Chevron indicator matching SubjectCard -->
-            <div class="flex items-center pl-4">
+            <div class="hidden items-center pl-4 sm:flex">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-5 w-5 text-amber-500 transition-all duration-200 group-hover:translate-x-0.5 dark:text-amber-400"

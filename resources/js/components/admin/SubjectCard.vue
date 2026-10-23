@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { Pencil, Trash2 } from 'lucide-vue-next';
+
 import SubjectIcon from '@/components/SubjectIcon.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -23,11 +24,13 @@ const handleDelete = () => {
 
 <template>
     <div
-        @click="router.visit(`/admin/subjects/${subject.slug}/nodes`)"
-        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
+        class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <!-- Left: Icon + Subject Details (Full title, no ellipsis) -->
-        <div class="flex min-w-0 flex-1 items-center gap-3">
+        <!-- Left: Icon + Subject Details as Link -->
+        <Link
+            :href="`/admin/subjects/${subject.slug}/nodes`"
+            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+        >
             <div
                 :class="[
                     subject.tailwind_format ||
@@ -69,7 +72,7 @@ const handleDelete = () => {
                     Disabled
                 </span>
             </div>
-        </div>
+        </Link>
 
         <!-- Right: Actions -->
         <div

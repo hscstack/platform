@@ -69,12 +69,13 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/blogs/{blog}/react', [BlogController::class, 'toggleReaction'])->name('blogs.react');
     Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
     Route::delete('/blogs/comments/{comment}', [BlogController::class, 'destroyComment'])->name('blogs.comments.destroy');
-    Route::post('/resources/{resource}/complete', [ResourceController::class, 'toggleComplete'])->name('resources.complete');
 
-    // Resource Uploads
+    // Resource Actions & Uploads
+    Route::middleware('throttle:10,1')->post('/resources/upload-url', [ResourceController::class, 'generateUploadUrl'])->name('resources.upload-url');
+    Route::middleware('throttle:10,1')->post('/resources/fetch-playlist', [ResourceController::class, 'fetchPlaylist'])->name('resources.fetch-playlist');
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
-    Route::post('/resources/bulk/images', [ResourceController::class, 'storeBulkImages'])->name('resources.bulk.images');
-    Route::post('/resources/bulk/videos', [ResourceController::class, 'storeBulkVideos'])->name('resources.bulk.videos');
+    Route::patch('/resources/{resource}', [ResourceController::class, 'update'])->middleware('can:update,resource')->name('resources.update');
+    Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
 
     // My Submissions
     Route::get('/my-submissions', [SubmissionController::class, 'index'])->name('submissions.index');
@@ -82,7 +83,6 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/tracker/log-time', [StudyTrackerController::class, 'logTime'])->name('tracker.log-time');
     Route::post('/tracker/reset-today', [StudyTrackerController::class, 'resetToday'])->name('tracker.reset-today');
     Route::post('/tracker/curriculum', [StudyTrackerController::class, 'updateCurriculum'])->name('tracker.curriculum');
-    Route::post('/nodes/{node}/vote', [NodeController::class, 'vote'])->name('nodes.vote');
     Route::post('/u/{user}/appreciate', [UserProfileController::class, 'toggleAppreciate'])->name('user.appreciate');
     Route::post('/u/{user}/poke', [UserProfileController::class, 'poke'])->name('user.poke');
     Route::get('/support/my-tickets', [SupportTicketController::class, 'myTickets'])->name('support.my-tickets');

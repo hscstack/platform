@@ -3,15 +3,10 @@
 namespace App\Http\Requests\Resource;
 
 use App\Models\Node;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreResourceRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         $node = Node::find($this->input('node_id'));
@@ -19,34 +14,25 @@ class StoreResourceRequest extends FormRequest
         return ! ($node?->isEffectivelyFrozen());
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'node_id' => ['required', 'integer', 'exists:nodes,id'],
-            'resource_type' => ['required', 'in:note,pdf,image,video'],
-            'title' => ['required', 'string', 'max:100', 'min:2'],
-            'content' => ['nullable', 'string'],
-
-            'file' => [
-                'nullable',
-                'file',
-                'max:5120',
-                'mimes:jpg,jpeg,png,webp',
-                Rule::requiredIf($this->resource_type === 'image'),
-            ],
-
-            'external_url' => [
-                'nullable',
-
-                'url',
-                'max:2048',
-                Rule::requiredIf(in_array($this->resource_type, ['pdf', 'video'])),
-            ],
+            'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*' => ['required', 'array'],
+            'items.*.format' => ['required', 'in:image,pdf,video'],
+            'items.*.source' => ['required', 'string'],
+            'items.*.title' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            ResourceValidationRules::validateItems($validator, $this->input('items', []), $this->input('resource_type'));
+        });
     }
 }

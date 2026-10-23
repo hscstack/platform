@@ -160,24 +160,14 @@ class User extends Authenticatable
         return $this->hasmany(Blog::class);
     }
 
-    public function resourceCompletions(): HasMany
-    {
-        return $this->hasMany(ResourceCompletion::class);
-    }
-
-    public function completedResources()
-    {
-        return $this->belongsToMany(Resource::class, 'resource_completions');
-    }
-
-    public function nodeVotes(): HasMany
-    {
-        return $this->hasMany(NodeVote::class);
-    }
-
     public function nodes(): HasMany
     {
         return $this->hasMany(Node::class);
+    }
+
+    public function resourceVotes(): HasMany
+    {
+        return $this->hasMany(ResourceVote::class);
     }
 
     public function appreciationsReceived(): HasMany
