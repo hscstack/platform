@@ -202,6 +202,42 @@ class ResourceController extends Controller
             ], 422);
         }
 
+        // Support both single file and batch files (up to 50 at once)
+        if ($request->has('files') && is_array($request->input('files'))) {
+            $validated = $request->validate([
+                'files' => ['required', 'array', 'min:1', 'max:50'],
+                'files.*.content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
+                'files.*.size' => ['required', 'integer', 'min:1', 'max:5242880'],
+            ]);
+
+            $userId = auth()->id();
+            $results = [];
+
+            foreach ($validated['files'] as $fileData) {
+                $extension = match ($fileData['content_type']) {
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/webp' => 'webp',
+                };
+
+                $key = "resources/notes/{$userId}/".(string) Str::uuid().'.'.$extension;
+                $signed = Storage::disk('s3')->temporaryUploadUrl(
+                    $key,
+                    now()->addMinutes(15),
+                    [
+                        'ContentType' => $fileData['content_type'],
+                    ]
+                );
+
+                $results[] = [
+                    'key' => $key,
+                    'upload_url' => is_array($signed) ? $signed['url'] : $signed,
+                ];
+            }
+
+            return response()->json(['urls' => $results]);
+        }
+
         $validated = $request->validate([
             'content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
             'size' => ['required', 'integer', 'min:1', 'max:5242880'], // Max 5MB per image
@@ -326,6 +362,20 @@ class ResourceController extends Controller
         }
 
         $format = $formats[0] ?? null;
+        if ($format === 'image' && count($validated['items']) > 50) {
+            throw ValidationException::withMessages([
+                'items' => 'একটি রিসোর্সে সর্বোচ্চ ৫০টি ছবি যুক্ত করা যাবে।',
+            ]);
+        } elseif ($format === 'video' && count($validated['items']) > 50) {
+            throw ValidationException::withMessages([
+                'items' => 'একটি প্লেলিস্ট/রিসোর্সে সর্বোচ্চ ৫০টি ভিডিও যুক্ত করা যাবে।',
+            ]);
+        } elseif ($format === 'pdf' && count($validated['items']) > 5) {
+            throw ValidationException::withMessages([
+                'items' => 'একটি রিসোর্সে সর্বোচ্চ ৫টি PDF ডকুমেন্ট যুক্ত করা যাবে।',
+            ]);
+        }
+
         if ($validated['resource_type'] === 'video' && $format !== 'video') {
             throw ValidationException::withMessages([
                 'items' => 'ভিডিও রিসোর্সে শুধুমাত্র ভিডিও লিংক থাকতে পারে।',

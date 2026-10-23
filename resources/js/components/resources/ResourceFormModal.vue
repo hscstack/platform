@@ -415,6 +415,17 @@ const handleNewFilesSelected = (e: Event) => {
     itemErrorMessage.value = null;
     const files = Array.from(input.files);
 
+    const currentImageCount = activeItems.value.filter(
+        (i) => i.format === 'image',
+    ).length;
+
+    if (currentImageCount + files.length > 50) {
+        itemErrorMessage.value = `একটি রিসোর্সে সর্বোচ্চ ৫০টি ছবি যুক্ত করা যাবে (বর্তমানে আছে ${currentImageCount}টি)।`;
+        input.value = '';
+
+        return;
+    }
+
     for (const file of files) {
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
             itemErrorMessage.value =
@@ -495,7 +506,20 @@ const handleAddYoutube = async () => {
                 throw new Error('প্লেলিস্টে কোনো উন্মুক্ত ভিডিও পাওয়া যায়নি।');
             }
 
-            for (const item of data.items) {
+            const currentVideoCount = activeItems.value.filter(
+                (i) => i.format === 'video',
+            ).length;
+            const allowedToAdd = 50 - currentVideoCount;
+
+            if (allowedToAdd <= 0) {
+                throw new Error(
+                    'একটি রিসোর্সে সর্বোচ্চ ৫০টি ভিডিও যুক্ত করা যাবে।',
+                );
+            }
+
+            const itemsToAdd = data.items.slice(0, allowedToAdd);
+
+            for (const item of itemsToAdd) {
                 form.value.items.push({
                     id: 0,
                     resource_id: props.resource?.id,
@@ -508,6 +532,10 @@ const handleAddYoutube = async () => {
                 });
             }
 
+            if (data.items.length > allowedToAdd) {
+                itemErrorMessage.value = `প্লেলিস্টের প্রথম ${allowedToAdd}টি ভিডিও যুক্ত করা হয়েছে (সর্বোচ্চ সীমা ৫০টি)।`;
+            }
+
             youtubeInput.value = '';
         } catch (err: any) {
             itemErrorMessage.value =
@@ -517,6 +545,17 @@ const handleAddYoutube = async () => {
         }
     } else {
         // Single video
+        const currentVideoCount = activeItems.value.filter(
+            (i) => i.format === 'video',
+        ).length;
+
+        if (currentVideoCount >= 50) {
+            itemErrorMessage.value =
+                'একটি রিসোর্সে সর্বোচ্চ ৫০টি ভিডিও যুক্ত করা যাবে।';
+
+            return;
+        }
+
         form.value.items.push({
             id: 0,
             resource_id: props.resource?.id,
@@ -541,6 +580,17 @@ const handleAddGdrive = () => {
 
     if (!url.includes('drive.google.com')) {
         itemErrorMessage.value = 'সঠিক গুগল ড্রাইভ লিংক দিন।';
+
+        return;
+    }
+
+    const currentPdfCount = activeItems.value.filter(
+        (i) => i.format === 'pdf',
+    ).length;
+
+    if (currentPdfCount >= 5) {
+        itemErrorMessage.value =
+            'একটি রিসোর্সে সর্বোচ্চ ৫টি PDF ডকুমেন্ট যুক্ত করা যাবে।';
 
         return;
     }
@@ -650,55 +700,72 @@ const handleSubmit = async () => {
             title: string | null;
         }> = [];
 
-        for (let i = 0; i < active.length; i++) {
-            const item = active[i];
+        // Identify new image files that need compression and S3 upload
+        const newImageItems = active.filter(
+            (item) => item.format === 'image' && item.file,
+        );
 
-            if (item.format === 'image' && item.file) {
-                uploadProgress.value = `ছবি কম্প্রেস ও আপলোড হচ্ছে (${i + 1}/${active.length})...`;
+        if (newImageItems.length > 0) {
+            uploadProgress.value = `ছবি কম্প্রেস করা হচ্ছে (0/${newImageItems.length})...`;
 
-                const compressedFile = await compressImage(item.file, {
+            const compressedFiles: File[] = [];
+
+            for (let i = 0; i < newImageItems.length; i++) {
+                uploadProgress.value = `ছবি কম্প্রেস করা হচ্ছে (${i + 1}/${newImageItems.length})...`;
+                const compressed = await compressImage(newImageItems[i].file!, {
                     maxWidth: 2048,
                     maxHeight: 2048,
                     quality: 0.85,
                     targetFormat: 'image/webp',
                 });
+                compressedFiles.push(compressed);
+            }
 
-                const presignRes = await fetch('/resources/upload-url', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-CSRF-TOKEN':
-                            (
-                                document.querySelector(
-                                    'meta[name="csrf-token"]',
-                                ) as HTMLMetaElement
-                            )?.content || '',
-                    },
-                    body: JSON.stringify({
+            uploadProgress.value = 'আপলোড লিংক প্রস্তুত করা হচ্ছে...';
+            const presignRes = await fetch('/resources/upload-url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN':
+                        (
+                            document.querySelector(
+                                'meta[name="csrf-token"]',
+                            ) as HTMLMetaElement
+                        )?.content || '',
+                },
+                body: JSON.stringify({
+                    files: compressedFiles.map((file) => ({
                         content_type: 'image/webp',
-                        size: compressedFile.size,
-                    }),
-                });
+                        size: file.size,
+                    })),
+                }),
+            });
 
-                if (!presignRes.ok) {
-                    const errData = await presignRes.json().catch(() => ({}));
+            if (!presignRes.ok) {
+                const errData = await presignRes.json().catch(() => ({}));
 
-                    throw new Error(
-                        errData.message ||
-                            errData.errors?.pending_limit?.[0] ||
-                            'আপলোড ইউআরএল তৈরি করতে ব্যর্থ হয়েছে।',
-                    );
-                }
+                throw new Error(
+                    errData.message ||
+                        errData.errors?.pending_limit?.[0] ||
+                        'আপলোড ইউআরএল তৈরি করতে ব্যর্থ হয়েছে।',
+                );
+            }
 
-                const { key, upload_url } = await presignRes.json();
+            const { urls } = await presignRes.json();
+
+            // Upload directly to Cloudflare R2
+            for (let i = 0; i < newImageItems.length; i++) {
+                uploadProgress.value = `ক্লাউডে ছবি আপলোড হচ্ছে (${i + 1}/${newImageItems.length})...`;
+                const { key, upload_url } = urls[i];
+                const file = compressedFiles[i];
 
                 const putRes = await fetch(upload_url, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'image/webp',
                     },
-                    body: compressedFile,
+                    body: file,
                 });
 
                 if (!putRes.ok) {
@@ -707,18 +774,17 @@ const handleSubmit = async () => {
                     );
                 }
 
-                itemsPayload.push({
-                    format: 'image',
-                    source: key,
-                    title: item.title?.trim() || null,
-                });
-            } else {
-                itemsPayload.push({
-                    format: item.format,
-                    source: item.source,
-                    title: item.title?.trim() || null,
-                });
+                // Update item's source with the uploaded key
+                newImageItems[i].source = key;
             }
+        }
+
+        for (const item of active) {
+            itemsPayload.push({
+                format: item.format,
+                source: item.source,
+                title: item.title?.trim() || null,
+            });
         }
 
         uploadProgress.value = 'সংরক্ষণ করা হচ্ছে...';

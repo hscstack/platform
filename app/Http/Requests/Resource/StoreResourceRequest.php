@@ -47,6 +47,20 @@ class StoreResourceRequest extends FormRequest
             $format = $formats[0] ?? null;
             $type = $this->input('resource_type');
 
+            if ($format === 'image' && count($items) > 50) {
+                $validator->errors()->add('items', 'একটি রিসোর্সে সর্বোচ্চ ৫০টি ছবি যুক্ত করা যাবে।');
+
+                return;
+            } elseif ($format === 'video' && count($items) > 50) {
+                $validator->errors()->add('items', 'একটি প্লেলিস্ট/রিসোর্সে সর্বোচ্চ ৫০টি ভিডিও যুক্ত করা যাবে।');
+
+                return;
+            } elseif ($format === 'pdf' && count($items) > 5) {
+                $validator->errors()->add('items', 'একটি রিসোর্সে সর্বোচ্চ ৫টি PDF ডকুমেন্ট যুক্ত করা যাবে।');
+
+                return;
+            }
+
             if ($type === 'video' && $format !== 'video') {
                 $validator->errors()->add('items', 'ভিডিও রিসোর্সে শুধুমাত্র ভিডিও লিংক থাকতে পারে।');
             } elseif ($type !== 'video' && $format === 'video') {
