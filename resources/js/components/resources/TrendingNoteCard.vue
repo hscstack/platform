@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import {
     ArrowBigUp,
     FileText,
@@ -10,6 +10,7 @@ import {
     Video,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 
 interface User {
@@ -122,9 +123,15 @@ const subtitle = computed(() => {
 
 <template>
     <article
-        class="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
-        @click="router.visit(`/resources/${note.id}`)"
+        class="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
     >
+        <!-- Full-card clickable Link overlay for robust, native Inertia navigation -->
+        <Link
+            :href="`/resources/${note.id}`"
+            class="absolute inset-0 z-10"
+            :aria-label="note.title"
+        />
+
         <!-- Top Half: Preview Thumbnail (Row 1) -->
         <div
             class="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-gray-800/80"
@@ -266,7 +273,7 @@ const subtitle = computed(() => {
 
             <!-- Author & Avatar Footer -->
             <div
-                class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-gray-800 dark:text-gray-400"
+                class="relative z-20 mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-gray-800 dark:text-gray-400"
             >
                 <div class="flex min-w-0 items-center gap-1.5">
                     <Link

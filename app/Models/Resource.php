@@ -39,6 +39,7 @@ class Resource extends Model
     protected function casts(): array
     {
         return [
+            'items' => 'array',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',
@@ -62,11 +63,6 @@ class Resource extends Model
 
             return array_merge($item, ['url' => $url]);
         }, $items));
-    }
-
-    public function setItemsAttribute($value): void
-    {
-        $this->attributes['items'] = is_string($value) ? $value : json_encode($value ?: []);
     }
 
     public function getThumbnailAttribute(?string $value): ?string

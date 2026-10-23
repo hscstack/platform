@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { Folder, Lock, Pencil, Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { usePermissions } from '@/lib/usePermissions';
@@ -28,11 +28,13 @@ const handleDelete = () => {
 
 <template>
     <div
-        @click="router.visit(`${$page.url}/${node?.slug}`)"
-        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
+        class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <!-- Left: Icon + Full Title -->
-        <div class="flex min-w-0 flex-1 items-center gap-3">
+        <!-- Left: Icon + Full Title as Link -->
+        <Link
+            :href="`${$page.url}/${node?.slug}`"
+            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+        >
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200/40 bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
             >
@@ -74,7 +76,7 @@ const handleDelete = () => {
                     Frozen
                 </span>
             </div>
-        </div>
+        </Link>
 
         <!-- Right: Actions -->
         <div

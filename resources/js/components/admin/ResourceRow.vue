@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import {
     Book,
     BookOpen,
@@ -9,6 +9,7 @@ import {
     Trash2,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+
 import { useAuth } from '@/lib/useAuth';
 
 const { can } = useAuth();
@@ -34,11 +35,13 @@ const handleDelete = () => {
 
 <template>
     <div
-        @click="router.visit(`/resources/${resource?.id}`)"
-        class="group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-amber-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-amber-500/30 dark:hover:bg-gray-800/40"
+        class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-amber-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-amber-500/30 dark:hover:bg-gray-800/40"
     >
-        <!-- Left: Resource Icon + Full Title -->
-        <div class="flex min-w-0 flex-1 items-center gap-3">
+        <!-- Left: Resource Icon + Full Title as Link -->
+        <Link
+            :href="`/resources/${resource?.id}`"
+            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+        >
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200/40 bg-amber-50 text-amber-600 sm:h-10 sm:w-10 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
             >
@@ -82,7 +85,7 @@ const handleDelete = () => {
                     by {{ resource.user.name }}
                 </span>
             </div>
-        </div>
+        </Link>
 
         <!-- Right: Actions -->
         <div
