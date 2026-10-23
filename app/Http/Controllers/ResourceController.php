@@ -193,7 +193,14 @@ class ResourceController extends Controller
 
     public function generateUploadUrl(Request $request)
     {
-        $this->ensureCanSubmit(1);
+        try {
+            $this->ensureCanSubmit(1);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => collect($e->errors())->flatten()->first(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $validated = $request->validate([
             'content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
