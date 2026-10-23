@@ -195,62 +195,36 @@ class ResourceController extends Controller
             ], 422);
         }
 
-        if ($request->has('files') && is_array($request->input('files'))) {
-            $validated = $request->validate([
-                'files' => ['required', 'array', 'min:1', 'max:50'],
-                'files.*.content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
-                'files.*.size' => ['required', 'integer', 'min:1', 'max:5242880'],
-            ]);
+        $validated = $request->validate([
+            'files' => ['required', 'array', 'min:1', 'max:50'],
+            'files.*.content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
+            'files.*.size' => ['required', 'integer', 'min:1', 'max:5242880'],
+        ]);
 
-            $userId = auth()->id();
-            $results = [];
+        $userId = auth()->id();
+        $results = [];
 
-            foreach ($validated['files'] as $fileData) {
-                $extension = match ($fileData['content_type']) {
-                    'image/jpeg' => 'jpg',
-                    'image/png' => 'png',
-                    'image/webp' => 'webp',
-                };
+        foreach ($validated['files'] as $fileData) {
+            $extension = match ($fileData['content_type']) {
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+            };
 
-                $key = "resources/notes/{$userId}/".(string) Str::uuid().'.'.$extension;
-                $signed = Storage::disk('s3')->temporaryUploadUrl(
-                    $key,
-                    now()->addMinutes(15),
-                    ['ContentType' => $fileData['content_type']]
-                );
+            $key = "resources/notes/{$userId}/".(string) Str::uuid().'.'.$extension;
+            $signed = Storage::disk('s3')->temporaryUploadUrl(
+                $key,
+                now()->addMinutes(15),
+                ['ContentType' => $fileData['content_type']]
+            );
 
-                $results[] = [
-                    'key' => $key,
-                    'upload_url' => is_array($signed) ? $signed['url'] : $signed,
-                ];
-            }
-
-            return response()->json(['urls' => $results]);
+            $results[] = [
+                'key' => $key,
+                'upload_url' => is_array($signed) ? $signed['url'] : $signed,
+            ];
         }
 
-        $validated = $request->validate([
-            'content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
-            'size' => ['required', 'integer', 'min:1', 'max:5242880'],
-        ]);
-
-        $extension = match ($validated['content_type']) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-        };
-
-        $key = 'resources/notes/'.auth()->id().'/'.(string) Str::uuid().'.'.$extension;
-
-        $signed = Storage::disk('s3')->temporaryUploadUrl(
-            $key,
-            now()->addMinutes(15),
-            ['ContentType' => $validated['content_type']]
-        );
-
-        return response()->json([
-            'key' => $key,
-            'upload_url' => is_array($signed) ? $signed['url'] : $signed,
-        ]);
+        return response()->json(['urls' => $results]);
     }
 
     public function fetchPlaylist(Request $request)
