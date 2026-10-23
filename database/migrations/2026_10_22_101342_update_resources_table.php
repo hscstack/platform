@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::table('resources', function (Blueprint $table) {
             $table->string('title', 255)->change();
             $table->renameColumn('content', 'description');
-            $table->string('thumbnail', 2048)->nullable()->after('content');
+            $table->string('thumbnail', 2048)->nullable()->after('description');
             $table->json('items')->nullable()->after('thumbnail');
             $table->string('status', 20)->default('pending')->after('items');
             $table->text('admin_note')->nullable()->after('status');

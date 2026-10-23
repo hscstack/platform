@@ -28,6 +28,7 @@ beforeEach(function () {
         'resource_type' => 'note',
         'title' => 'Newtonian Mechanics Note',
         'description' => 'Test description',
+        'status' => 'approved',
     ]);
 });
 

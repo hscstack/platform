@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Resource\StoreResourceRequest;
+use App\Http\Requests\Resource\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Notifications\ResourceVoteNotification;
@@ -27,7 +28,6 @@ class ResourceController extends Controller
         $isModerator = $user?->can('moderate resources');
         $isOwner = $user && $user->id === $resource->user_id;
 
-        // If not approved, only the owner and moderators are allowed to view
         if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
             abort(404);
         }
@@ -151,18 +151,11 @@ class ResourceController extends Controller
         return back();
     }
 
-    /**
-     * Determine maximum allowed pending submissions for the user.
-     * Verified users: 50, Unverified users: 20.
-     */
     public function getMaxPendingSubmissions(): int
     {
         return Auth::user()?->is_verified ? 50 : 20;
     }
 
-    /**
-     * Check if user is eligible to submit (account age) and within pending quota.
-     */
     public function ensureCanSubmit(int $incomingCount = 1): void
     {
         $user = Auth::user();
@@ -202,7 +195,6 @@ class ResourceController extends Controller
             ], 422);
         }
 
-        // Support both single file and batch files (up to 50 at once)
         if ($request->has('files') && is_array($request->input('files'))) {
             $validated = $request->validate([
                 'files' => ['required', 'array', 'min:1', 'max:50'],
@@ -224,9 +216,7 @@ class ResourceController extends Controller
                 $signed = Storage::disk('s3')->temporaryUploadUrl(
                     $key,
                     now()->addMinutes(15),
-                    [
-                        'ContentType' => $fileData['content_type'],
-                    ]
+                    ['ContentType' => $fileData['content_type']]
                 );
 
                 $results[] = [
@@ -240,7 +230,7 @@ class ResourceController extends Controller
 
         $validated = $request->validate([
             'content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
-            'size' => ['required', 'integer', 'min:1', 'max:5242880'], // Max 5MB per image
+            'size' => ['required', 'integer', 'min:1', 'max:5242880'],
         ]);
 
         $extension = match ($validated['content_type']) {
@@ -254,9 +244,7 @@ class ResourceController extends Controller
         $signed = Storage::disk('s3')->temporaryUploadUrl(
             $key,
             now()->addMinutes(15),
-            [
-                'ContentType' => $validated['content_type'],
-            ]
+            ['ContentType' => $validated['content_type']]
         );
 
         return response()->json([
@@ -286,9 +274,7 @@ class ResourceController extends Controller
             ], 422);
         }
 
-        return response()->json([
-            'items' => $items,
-        ]);
+        return response()->json(['items' => $items]);
     }
 
     public function store(StoreResourceRequest $request)
@@ -299,20 +285,18 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
         $status = $isModerator ? 'approved' : 'pending';
 
-        DB::transaction(function () use ($validated, $status, $isModerator) {
-            return Resource::create([
-                'node_id' => $validated['node_id'],
-                'user_id' => Auth::id(),
-                'resource_type' => $validated['resource_type'],
-                'title' => $validated['title'],
-                'description' => $validated['description'] ?? null,
-                'thumbnail' => $this->computeThumbnailFromItems($validated['items']),
-                'items' => $validated['items'],
-                'status' => $status,
-                'reviewed_by' => $isModerator ? Auth::id() : null,
-                'reviewed_at' => $isModerator ? now() : null,
-            ]);
-        });
+        Resource::create([
+            'node_id' => $validated['node_id'],
+            'user_id' => Auth::id(),
+            'resource_type' => $validated['resource_type'],
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'thumbnail' => $this->computeThumbnailFromItems($validated['items']),
+            'items' => $validated['items'],
+            'status' => $status,
+            'reviewed_by' => $isModerator ? Auth::id() : null,
+            'reviewed_at' => $isModerator ? now() : null,
+        ]);
 
         $typeName = ucfirst($validated['resource_type']);
         $message = $isModerator
@@ -322,10 +306,9 @@ class ResourceController extends Controller
         return back()->with('success', $message);
     }
 
-    public function update(Request $request, Resource $resource)
+    public function update(UpdateResourceRequest $request, Resource $resource)
     {
         $user = Auth::user();
-
         if ($user?->isBanned()) {
             $bannedUntilFormatted = $user->banned_until->diffForHumans();
             throw ValidationException::withMessages([
@@ -333,83 +316,7 @@ class ResourceController extends Controller
             ]);
         }
 
-        if ($resource->node?->isEffectivelyFrozen()) {
-            abort(403, 'This folder is frozen and cannot be modified.');
-        }
-
-        abort_unless(
-            $user?->can('edit resources') || $user?->id === $resource->user_id,
-            403,
-            'Unauthorized to edit this resource.'
-        );
-
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*' => ['required', 'array'],
-            'items.*.format' => ['required', 'in:image,pdf,video'],
-            'items.*.source' => ['required', 'string'],
-            'items.*.title' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $formats = array_unique(array_column($validated['items'], 'format'));
-        if (count($formats) > 1) {
-            throw ValidationException::withMessages([
-                'items' => 'একটি রিসোর্সে একাধিক ফরম্যাট (ছবি, PDF, ভিডিও) একসাথে রাখা যাবে না।',
-            ]);
-        }
-
-        $format = $formats[0] ?? null;
-        if ($format === 'image' && count($validated['items']) > 50) {
-            throw ValidationException::withMessages([
-                'items' => 'একটি রিসোর্সে সর্বোচ্চ ৫০টি ছবি যুক্ত করা যাবে।',
-            ]);
-        } elseif ($format === 'video' && count($validated['items']) > 50) {
-            throw ValidationException::withMessages([
-                'items' => 'একটি প্লেলিস্ট/রিসোর্সে সর্বোচ্চ ৫০টি ভিডিও যুক্ত করা যাবে।',
-            ]);
-        } elseif ($format === 'pdf' && count($validated['items']) > 5) {
-            throw ValidationException::withMessages([
-                'items' => 'একটি রিসোর্সে সর্বোচ্চ ৫টি PDF ডকুমেন্ট যুক্ত করা যাবে।',
-            ]);
-        }
-
-        if ($validated['resource_type'] === 'video' && $format !== 'video') {
-            throw ValidationException::withMessages([
-                'items' => 'ভিডিও রিসোর্সে শুধুমাত্র ভিডিও লিংক থাকতে পারে।',
-            ]);
-        } elseif ($validated['resource_type'] !== 'video' && $format === 'video') {
-            throw ValidationException::withMessages([
-                'items' => 'নোট বা ডকুমেন্টে ভিডিও লিংক যুক্ত করা যাবে না।',
-            ]);
-        }
-
-        $ownerId = $resource->user_id;
-        $currentUserId = auth()->id();
-        foreach ($validated['items'] as $index => $item) {
-            $itemFormat = $item['format'] ?? null;
-            $source = $item['source'] ?? '';
-
-            if (in_array($itemFormat, ['pdf', 'video'], true)) {
-                if (! filter_var($source, FILTER_VALIDATE_URL) || (! str_starts_with($source, 'http://') && ! str_starts_with($source, 'https://'))) {
-                    throw ValidationException::withMessages([
-                        "items.{$index}.source" => 'PDF এবং ভিডিওর জন্য সঠিক URL লিঙ্ক প্রদান করতে হবে।',
-                    ]);
-                }
-            } elseif ($itemFormat === 'image') {
-                $isAllowedUpload = (str_starts_with($source, "resources/notes/{$ownerId}/") || str_starts_with($source, "resources/notes/{$currentUserId}/"))
-                    && (preg_match('#^resources/notes/\d+/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$#', $source) || preg_match('#^resources/notes/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$#', $source));
-                $isExternalUrl = (str_starts_with($source, 'http://') || str_starts_with($source, 'https://')) && filter_var($source, FILTER_VALIDATE_URL);
-
-                if (! $isAllowedUpload && ! $isExternalUrl) {
-                    throw ValidationException::withMessages([
-                        "items.{$index}.source" => 'ছবির জন্য একটি সঠিক আপলোড কী বা লিঙ্ক প্রদান করতে হবে।',
-                    ]);
-                }
-            }
-        }
+        $validated = $request->validated();
 
         $updateData = [
             'title' => $validated['title'],
@@ -420,7 +327,6 @@ class ResourceController extends Controller
         ];
 
         // If an approved resource is edited by someone without 'edit resources', return it to pending for re-review
-        $user = auth()->user();
         $canEditDirectly = $user && $user->can('edit resources');
         if (! $canEditDirectly && $resource->status === 'approved') {
             $updateData['status'] = 'pending';
