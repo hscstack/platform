@@ -2,29 +2,13 @@
 
 namespace App\Http\Requests\Resource;
 
-use App\Models\Resource;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateResourceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $resource = $this->route('resource');
-        if (! $resource instanceof Resource) {
-            $resource = Resource::find($resource);
-        }
-
-        if (! $resource) {
-            return false;
-        }
-
-        if ($resource->node?->isEffectivelyFrozen()) {
-            return false;
-        }
-
-        $user = $this->user();
-
-        return $user && ($user->can('edit resources') || $user->id === $resource->user_id);
+        return true;
     }
 
     public function rules(): array

@@ -74,7 +74,7 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::middleware('throttle:10,1')->post('/resources/upload-url', [ResourceController::class, 'generateUploadUrl'])->name('resources.upload-url');
     Route::middleware('throttle:10,1')->post('/resources/fetch-playlist', [ResourceController::class, 'fetchPlaylist'])->name('resources.fetch-playlist');
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
-    Route::patch('/resources/{resource}', [ResourceController::class, 'update'])->name('resources.update');
+    Route::patch('/resources/{resource}', [ResourceController::class, 'update'])->middleware('can:update,resource')->name('resources.update');
     Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
 
     // My Submissions
