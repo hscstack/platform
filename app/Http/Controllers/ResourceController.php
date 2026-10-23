@@ -213,7 +213,7 @@ class ResourceController extends Controller
             'image/webp' => 'webp',
         };
 
-        $key = 'resources/notes/'.(string) Str::uuid().'.'.$extension;
+        $key = 'resources/notes/'.auth()->id().'/'.(string) Str::uuid().'.'.$extension;
 
         $signed = Storage::disk('s3')->temporaryUploadUrl(
             $key,
@@ -334,6 +334,31 @@ class ResourceController extends Controller
             throw ValidationException::withMessages([
                 'items' => 'নোট বা ডকুমেন্টে ভিডিও লিংক যুক্ত করা যাবে না।',
             ]);
+        }
+
+        $ownerId = $resource->user_id;
+        $currentUserId = auth()->id();
+        foreach ($validated['items'] as $index => $item) {
+            $itemFormat = $item['format'] ?? null;
+            $source = $item['source'] ?? '';
+
+            if (in_array($itemFormat, ['pdf', 'video'], true)) {
+                if (! filter_var($source, FILTER_VALIDATE_URL) || (! str_starts_with($source, 'http://') && ! str_starts_with($source, 'https://'))) {
+                    throw ValidationException::withMessages([
+                        "items.{$index}.source" => 'PDF এবং ভিডিওর জন্য সঠিক URL লিঙ্ক প্রদান করতে হবে।',
+                    ]);
+                }
+            } elseif ($itemFormat === 'image') {
+                $isAllowedUpload = (str_starts_with($source, "resources/notes/{$ownerId}/") || str_starts_with($source, "resources/notes/{$currentUserId}/"))
+                    && (preg_match('#^resources/notes/\d+/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$#', $source) || preg_match('#^resources/notes/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$#', $source));
+                $isExternalUrl = (str_starts_with($source, 'http://') || str_starts_with($source, 'https://')) && filter_var($source, FILTER_VALIDATE_URL);
+
+                if (! $isAllowedUpload && ! $isExternalUrl) {
+                    throw ValidationException::withMessages([
+                        "items.{$index}.source" => 'ছবির জন্য একটি সঠিক আপলোড কী বা লিঙ্ক প্রদান করতে হবে।',
+                    ]);
+                }
+            }
         }
 
         $updateData = [

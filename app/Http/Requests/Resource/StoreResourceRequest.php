@@ -9,19 +9,9 @@ class StoreResourceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        if (! auth()->check()) {
-            return false;
-        }
+        $node = Node::find($this->input('node_id'));
 
-        $nodeId = $this->input('node_id');
-        if ($nodeId) {
-            $node = Node::find($nodeId);
-            if ($node && $node->isEffectivelyFrozen()) {
-                return false;
-            }
-        }
-
-        return true;
+        return ! ($node?->isEffectivelyFrozen());
     }
 
     public function rules(): array
@@ -61,6 +51,27 @@ class StoreResourceRequest extends FormRequest
                 $validator->errors()->add('items', 'ভিডিও রিসোর্সে শুধুমাত্র ভিডিও লিংক থাকতে পারে।');
             } elseif ($type !== 'video' && $format === 'video') {
                 $validator->errors()->add('items', 'নোট বা ডকুমেন্টে ভিডিও লিংক যুক্ত করা যাবে না।');
+            }
+
+            $userId = auth()->id();
+            foreach ($items as $index => $item) {
+                $itemFormat = $item['format'] ?? null;
+                $source = $item['source'] ?? '';
+
+                if (in_array($itemFormat, ['pdf', 'video'], true)) {
+                    if (! filter_var($source, FILTER_VALIDATE_URL) || (! str_starts_with($source, 'http://') && ! str_starts_with($source, 'https://'))) {
+                        $validator->errors()->add("items.{$index}.source", 'PDF এবং ভিডিওর জন্য সঠিক URL লিঙ্ক প্রদান করতে হবে।');
+                    }
+                } elseif ($itemFormat === 'image') {
+                    // Must match user's uploaded path format or a valid image URL
+                    $expectedPrefix = 'resources/notes/'.$userId.'/';
+                    $isUserUploaded = str_starts_with($source, $expectedPrefix) && preg_match('#^resources/notes/'.$userId.'/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$#', $source);
+                    $isExternalUrl = (str_starts_with($source, 'http://') || str_starts_with($source, 'https://')) && filter_var($source, FILTER_VALIDATE_URL);
+
+                    if (! $isUserUploaded && ! $isExternalUrl) {
+                        $validator->errors()->add("items.{$index}.source", 'ছবির জন্য একটি সঠিক আপলোড কী বা লিঙ্ক প্রদান করতে হবে।');
+                    }
+                }
             }
         });
     }
