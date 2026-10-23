@@ -806,9 +806,7 @@ const handleSubmit = async () => {
             payload.node_id = props.node!.id;
         }
 
-        const submitFn = isEditing.value ? router.patch : router.post;
-
-        submitFn(endpoint, payload, {
+        const requestOptions = {
             preserveScroll: true,
             onSuccess: () => {
                 if (isEditing.value) {
@@ -818,7 +816,7 @@ const handleSubmit = async () => {
                 isSubmitting.value = false;
                 handleClose(true);
             },
-            onError: (errors) => {
+            onError: (errors: Record<string, any>) => {
                 errorMessage.value =
                     Object.values(errors).flat().join(', ') ||
                     (isEditing.value
@@ -829,7 +827,13 @@ const handleSubmit = async () => {
                 isSubmitting.value = false;
                 uploadProgress.value = null;
             },
-        });
+        };
+
+        if (isEditing.value) {
+            router.patch(endpoint, payload, requestOptions);
+        } else {
+            router.post(endpoint, payload, requestOptions);
+        }
     } catch (err: any) {
         errorMessage.value =
             err.message || 'আপলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।';

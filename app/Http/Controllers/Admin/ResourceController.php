@@ -15,8 +15,6 @@ class ResourceController extends BaseResourceController
 {
     public function moderationIndex(Request $request)
     {
-        abort_unless(Auth::user()?->can('moderate resources'), 403, 'Unauthorized.');
-
         $status = $request->query('status', 'pending');
         if (! in_array($status, ['pending', 'approved', 'rejected', 'all'])) {
             $status = 'pending';
@@ -57,8 +55,6 @@ class ResourceController extends BaseResourceController
 
     public function approve(Request $request)
     {
-        abort_unless(Auth::user()?->can('moderate resources'), 403, 'Unauthorized.');
-
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer', 'exists:resources,id'],
@@ -93,8 +89,6 @@ class ResourceController extends BaseResourceController
 
     public function reject(Request $request)
     {
-        abort_unless(Auth::user()?->can('moderate resources'), 403, 'Unauthorized.');
-
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer', 'exists:resources,id'],
