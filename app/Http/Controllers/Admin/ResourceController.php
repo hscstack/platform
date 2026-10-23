@@ -127,15 +127,6 @@ class ResourceController extends BaseResourceController
 
     public function destroy(Resource $resource)
     {
-        $user = Auth::user();
-        if (! $user?->can('delete resources')) {
-            abort(403, 'Unauthorized. Only users with deletion permissions can delete resources.');
-        }
-
-        if ($resource->node?->isEffectivelyFrozen()) {
-            abort(403, 'This folder is frozen and cannot be modified.');
-        }
-
         // Clean up stored items in S3/R2
         foreach ($resource->items as $item) {
             $source = is_array($item) ? ($item['source'] ?? '') : ($item->source ?? '');
