@@ -98,9 +98,19 @@ class DeleteUnusedImages extends Command
         $files = Storage::allFiles($directory);
 
         $deleted = 0;
+        $oneDayAgo = now()->subDay()->timestamp;
 
         foreach ($files as $file) {
             if (! in_array($file, $usedFiles, true)) {
+                // Skip newly uploaded files (e.g. uploaded within last 24h) to avoid race conditions with unsubmitted forms
+                try {
+                    if (Storage::lastModified($file) > $oneDayAgo) {
+                        continue;
+                    }
+                } catch (\Throwable) {
+                    // ignore if storage does not support lastModified
+                }
+
                 $this->line("Unused: {$file}");
 
                 if (! $this->option('dry-run')) {

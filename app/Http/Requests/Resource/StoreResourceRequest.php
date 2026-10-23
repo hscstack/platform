@@ -2,13 +2,26 @@
 
 namespace App\Http\Requests\Resource;
 
+use App\Models\Node;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreResourceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        if (! auth()->check()) {
+            return false;
+        }
+
+        $nodeId = $this->input('node_id');
+        if ($nodeId) {
+            $node = Node::find($nodeId);
+            if ($node && $node->isEffectivelyFrozen()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function rules(): array

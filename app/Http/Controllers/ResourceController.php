@@ -74,6 +74,8 @@ class ResourceController extends Controller
             return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
         }
 
+        abort_if($resource->status !== 'approved', 404);
+
         $validated = $request->validate([
             'value' => ['required', 'in:1,-1'],
         ]);
@@ -327,13 +329,24 @@ class ResourceController extends Controller
             ]);
         }
 
-        $resource->update([
+        $updateData = [
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'resource_type' => $validated['resource_type'],
             'thumbnail' => Resource::computeThumbnailFromItems($validated['items']),
             'items' => $validated['items'],
-        ]);
+        ];
+
+        // If an approved resource is edited by a non-moderator, return it to pending for re-review
+        $user = auth()->user();
+        $isModerator = $user && ($user->can('moderate resources') || $user->can('edit resources'));
+        if (! $isModerator && $resource->status === 'approved') {
+            $updateData['status'] = 'pending';
+            $updateData['reviewed_by'] = null;
+            $updateData['reviewed_at'] = null;
+        }
+
+        $resource->update($updateData);
 
         Cache::forget("resource_{$resource->id}");
         Cache::forget("node_resources_{$resource->node_id}");

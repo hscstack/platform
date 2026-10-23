@@ -145,9 +145,12 @@ class UserProfileController extends Controller
             ->take(5)
             ->get();
 
-        $notesCount = Resource::where('user_id', $user->id)->count();
+        $notesQuery = Resource::where('user_id', $user->id)
+            ->when(! $isOwner, fn ($q) => $q->where('status', 'approved'));
 
-        $notes = Resource::where('user_id', $user->id)
+        $notesCount = (clone $notesQuery)->count();
+
+        $notes = $notesQuery
             ->with(['node:id,name,slug,subject_id', 'node.subject:id,name,course,slug'])
             ->orderByDesc('vote_score')
             ->latest('id')

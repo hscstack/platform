@@ -435,7 +435,7 @@ const chapterUrl = computed(() => {
                     >By</span
                 >
                 <Link
-                    :href="`/users/${resource.user.username}`"
+                    :href="`/u/${resource.user.username}`"
                     class="inline-flex items-center gap-2 font-bold text-slate-800 transition hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
                 >
                     <img
@@ -602,7 +602,7 @@ const chapterUrl = computed(() => {
                             class="flex items-center justify-between gap-3 rounded-xl p-2 transition hover:bg-slate-50 dark:hover:bg-gray-800/60"
                         >
                             <Link
-                                :href="`/users/${upvoter.username}`"
+                                :href="`/u/${upvoter.username}`"
                                 class="flex min-w-0 flex-1 items-center gap-2.5"
                             >
                                 <img
