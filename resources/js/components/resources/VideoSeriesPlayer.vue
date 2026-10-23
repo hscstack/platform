@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Play, ListVideo } from 'lucide-vue-next';
+import { Play, ListVideo, ExternalLink, Youtube } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import YouTubePlayer from '@/components/YouTubePlayer.vue';
 
@@ -21,6 +21,20 @@ const currentLecture = computed(() => {
     return props.items[activeIndex.value] || props.items[0];
 });
 
+const currentLectureYouTubeUrl = computed(() => {
+    const raw = currentLecture.value?.url || currentLecture.value?.source;
+
+    if (!raw) {
+        return '';
+    }
+
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+        return raw;
+    }
+
+    return `https://www.youtube.com/watch?v=${raw}`;
+});
+
 const selectLecture = (index: number) => {
     if (index >= 0 && index < props.items.length) {
         activeIndex.value = index;
@@ -31,13 +45,47 @@ const selectLecture = (index: number) => {
 <template>
     <div class="mx-auto w-full space-y-6">
         <!-- 1. The Video Player (Expanded to match full container) -->
-        <div
-            class="overflow-hidden rounded-2xl border border-slate-200/90 bg-black shadow-sm dark:border-gray-800"
-        >
-            <YouTubePlayer
-                :key="currentLecture?.url || currentLecture?.source"
-                :url="currentLecture?.url || currentLecture?.source"
-            />
+        <div class="space-y-3">
+            <div
+                class="overflow-hidden rounded-2xl border border-slate-200/90 bg-black shadow-sm dark:border-gray-800"
+            >
+                <YouTubePlayer
+                    :key="currentLecture?.url || currentLecture?.source"
+                    :url="currentLecture?.url || currentLecture?.source"
+                />
+            </div>
+
+            <!-- Active Video Bar: Current Lecture Title & Open in YouTube action -->
+            <div
+                class="flex flex-wrap items-center justify-between gap-3 px-1 py-0.5"
+            >
+                <div class="min-w-0 flex-1">
+                    <h3
+                        class="truncate text-sm font-bold text-slate-800 sm:text-base dark:text-gray-100"
+                    >
+                        {{
+                            currentLecture?.title ||
+                            `লেকচার ০${activeIndex + 1}`
+                        }}
+                    </h3>
+                </div>
+
+                <a
+                    v-if="currentLectureYouTubeUrl"
+                    :href="currentLectureYouTubeUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-rose-300 hover:bg-rose-50/50 hover:text-rose-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-rose-900/40 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
+                >
+                    <Youtube
+                        class="h-3.5 w-3.5 text-rose-600 dark:text-rose-500"
+                    />
+                    <span>Open in YouTube</span>
+                    <ExternalLink
+                        class="h-3 w-3 text-slate-400 dark:text-gray-500"
+                    />
+                </a>
+            </div>
         </div>
 
         <!-- 2. Playlist / Lecture Series Drawer (If multiple lectures exist) -->
