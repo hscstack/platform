@@ -21,18 +21,19 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Feed',
+        labelBn: 'ফিড',
+        href: '/feed',
+        icon: 'dynamic_feed',
+        match: (url) => url.startsWith('/feed'),
+        showInBottom: true,
+    },
+    {
         label: 'Tracker',
         labelBn: 'স্টাডি ট্র্যাকার',
         href: '/tracker',
         icon: 'timer',
         match: (url) => url.startsWith('/tracker'),
-        showInBottom: true,
-    },
-    {
-        label: 'People',
-        href: '/peers',
-        icon: 'group',
-        match: (url) => url.startsWith('/peers'),
         showInBottom: true,
     },
     {
@@ -76,6 +77,12 @@ export const primaryNavItems: NavItem[] = [
 ];
 
 export const overflowNavItems: NavItem[] = [
+    {
+        label: 'People',
+        href: '/peers',
+        icon: 'group',
+        match: (url) => url.startsWith('/peers'),
+    },
     {
         label: 'Support Center',
         href: '/support',

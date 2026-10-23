@@ -37,3 +37,4 @@ npm run format && composer lint && npm run lint
 ## Strict Code Modification & Execution Guardrail
 - **Explicit Instruction Required**: NEVER modify files, apply code edits, or execute code refactors unless the user explicitly gives direct instruction or confirmation to make the change (e.g., "do it", "apply this", "fix it", "proceed").
 - **Exploratory / Question Turns**: When diagnosing bugs, answering questions, explaining behavior, or exploring solutions, provide explanations and code snippets in the response text ONLY. Do not apply file changes until confirmed.
+- **Clarification Over Assumptions**: If you are confused, uncertain, or need clarification on requirements or behavior, ask the user directly instead of attempting to discover or guess it on your own.

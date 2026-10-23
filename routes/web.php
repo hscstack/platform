@@ -8,6 +8,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ForumAnswerController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumVoteController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\NotificationController;
@@ -92,7 +93,6 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::get('/forum/ask', [ForumController::class, 'create'])->name('forum.create');
     Route::post('/forum', [ForumController::class, 'store'])->name('forum.store');
     Route::delete('/forum/posts/{post:id}', [ForumController::class, 'destroy'])->name('forum.destroy');
-    Route::post('/forum/posts/{post:id}/toggle-answered', [ForumController::class, 'toggleAnswered'])->name('forum.toggle-answered');
     Route::post('/forum/posts/{post:id}/report', [ForumController::class, 'report'])->name('forum.posts.report');
     Route::post('/forum/posts/{post:id}/answers', [ForumAnswerController::class, 'store'])->name('forum.answers.store');
     Route::delete('/forum/answers/{answer}', [ForumAnswerController::class, 'destroy'])->name('forum.answers.destroy');
@@ -166,6 +166,9 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/u/{user}/appreciators', [UserProfileController::class, 'appreciators'])->name('user.appreciators');
     Route::get('/u/{user}/appreciating', [UserProfileController::class, 'appreciating'])->name('user.appreciating');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
+
+    Route::get('/feed', [HomeController::class, 'index'])->name('feed');
+    Route::get('/api/feed', [HomeController::class, 'feed'])->name('feed.api');
 
     Route::get('/', [SubjectController::class, 'index'])
         ->defaults('course', 'hsc')

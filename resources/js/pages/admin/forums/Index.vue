@@ -19,11 +19,9 @@ import Pagination from '@/components/Pagination.vue';
 
 interface ForumPostItem {
     id: number;
-    title: string;
     slug: string;
-    body?: string;
+    body: string;
     curriculum: 'hsc' | 'ssc';
-    is_answered: boolean;
     is_locked: boolean;
     moderation_status: 'approved' | 'pending' | 'flagged' | 'rejected';
     vote_score: number;
@@ -111,7 +109,7 @@ const updateStatus = (
 };
 
 const deletePost = (post: ForumPostItem) => {
-    if (confirm(`Delete "${post.title}" permanently? This cannot be undone.`)) {
+    if (confirm('Delete this discussion permanently? This cannot be undone.')) {
         router.delete(`/admin/forums/${post.id}`, {
             preserveScroll: true,
         });
@@ -333,7 +331,12 @@ const openBanModal = (post: ForumPostItem) => {
                                             target="_blank"
                                             class="font-semibold text-slate-900 hover:text-indigo-600 hover:underline dark:text-gray-100 dark:hover:text-indigo-400"
                                         >
-                                            {{ post.title }}
+                                            {{
+                                                post.body
+                                                    ? post.body.slice(0, 60) +
+                                                      '...'
+                                                    : 'Post #' + post.id
+                                            }}
                                         </a>
                                         <ExternalLink
                                             class="h-3 w-3 shrink-0 text-slate-400"

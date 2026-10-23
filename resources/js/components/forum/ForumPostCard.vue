@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { CheckCircle2, ImageIcon, MessageSquare } from 'lucide-vue-next';
+import { ImageIcon, MessageSquare } from 'lucide-vue-next';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { formatTimeAgo } from '@/lib/useDate';
@@ -35,12 +35,10 @@ interface ForumPost {
     subject_id?: number | null;
     node_id?: number | null;
     curriculum: 'hsc' | 'ssc';
-    title: string;
     slug: string;
-    body?: string | null;
+    body: string;
     image_path?: string | null;
     image_url?: string | null;
-    is_answered?: boolean;
     vote_score: number;
     upvotes_count?: number;
     downvotes_count?: number;
@@ -115,38 +113,21 @@ defineProps<{
                     >
                         # {{ post.node.name }}
                     </span>
-
-                    <!-- Answered Badge -->
-                    <span
-                        v-if="post.is_answered"
-                        class="inline-flex items-center gap-1 rounded-md bg-emerald-100/70 px-1.5 py-0.5 font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                    >
-                        <CheckCircle2
-                            class="h-3 w-3 text-emerald-600 dark:text-emerald-400"
-                        />
-                        <span>Answered</span>
-                    </span>
                 </div>
 
-                <!-- Question Title -->
-                <h2
-                    class="text-base font-bold text-slate-900 transition sm:text-lg dark:text-gray-100"
-                >
+                <!-- Post Body Link -->
+                <div class="mt-1">
                     <Link
                         :href="`/forum/questions/${post.slug}`"
-                        class="hover:text-indigo-600 dark:hover:text-indigo-400"
+                        class="block text-xs leading-relaxed text-slate-800 transition hover:text-indigo-600 sm:text-sm dark:text-gray-200 dark:hover:text-indigo-400"
                     >
-                        {{ post.title }}
+                        <p
+                            class="line-clamp-4 font-normal whitespace-pre-line text-slate-700 dark:text-gray-300"
+                        >
+                            {{ post.body }}
+                        </p>
                     </Link>
-                </h2>
-
-                <!-- Preview snippet -->
-                <p
-                    v-if="post.body"
-                    class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-gray-300"
-                >
-                    {{ post.body }}
-                </p>
+                </div>
 
                 <!-- Attached Image Indicator (if any) -->
                 <div

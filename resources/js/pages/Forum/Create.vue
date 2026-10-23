@@ -37,7 +37,6 @@ const form = useForm({
     curriculum: 'hsc' as 'hsc' | 'ssc',
     subject_id: '' as string | number,
     node_id: '' as string | number,
-    title: '',
     body: '',
     image: null as File | null,
 });
@@ -172,7 +171,7 @@ const handleOpenModal = () => {
     }
 
     // Basic frontend checks before modal
-    if (!form.title.trim()) {
+    if (!form.body.trim()) {
         form.post('/forum'); // trigger inertia validation errors if fields are empty
 
         return;
@@ -355,41 +354,14 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Title -->
-                <div>
-                    <label
-                        for="title"
-                        class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
-                    >
-                        Question Title <span class="text-rose-500">*</span>
-                    </label>
-                    <input
-                        id="title"
-                        v-model="form.title"
-                        type="text"
-                        required
-                        maxlength="255"
-                        placeholder="যেমন: ভেক্টর বিভাজনের বাস্তব উদাহরণ কী কী হতে পারে?"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-2xs transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
-                    />
-                    <p
-                        v-if="form.errors.title"
-                        class="mt-1.5 text-xs text-rose-500"
-                    >
-                        {{ form.errors.title }}
-                    </p>
-                </div>
-
                 <!-- Body -->
                 <div>
                     <label
                         for="body"
                         class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
                     >
-                        Question Details
-                        <span class="text-xs font-normal text-slate-400"
-                            >(Optional)</span
-                        >
+                        Question / Discussion
+                        <span class="text-rose-500">*</span>
                     </label>
                     <textarea
                         id="body"

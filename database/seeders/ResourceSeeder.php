@@ -59,6 +59,48 @@ class ResourceSeeder extends Seeder
         $imageIndex = 0;
         $videoIndex = 0;
 
+        $statuses = ['approved', 'approved', 'approved', 'pending', 'rejected'];
+
+        $getRandomStatus = function () use ($statuses, $user): array {
+            $status = $statuses[array_rand($statuses)];
+
+            if ($status === 'approved') {
+                $upvotes = rand(2, 45);
+
+                return [
+                    'status' => 'approved',
+                    'reviewed_by' => $user->id,
+                    'reviewed_at' => now()->subDays(rand(1, 28))->subHours(rand(1, 23)),
+                    'admin_note' => null,
+                    'vote_score' => $upvotes,
+                    'upvotes_count' => $upvotes,
+                    'downvotes_count' => 0,
+                ];
+            }
+
+            if ($status === 'rejected') {
+                return [
+                    'status' => 'rejected',
+                    'reviewed_by' => $user->id,
+                    'reviewed_at' => now()->subDays(rand(1, 10)),
+                    'admin_note' => 'কন্টেন্টের মান যাচাইয়ে উত্তীর্ণ হয়নি অথবা অসঙ্গতি পাওয়া গেছে।',
+                    'vote_score' => 0,
+                    'upvotes_count' => 0,
+                    'downvotes_count' => 0,
+                ];
+            }
+
+            return [
+                'status' => 'pending',
+                'reviewed_by' => null,
+                'reviewed_at' => null,
+                'admin_note' => null,
+                'vote_score' => 0,
+                'upvotes_count' => 0,
+                'downvotes_count' => 0,
+            ];
+        };
+
         foreach ($leafNodes as $node) {
             $subjectName = $node->subject?->name ?? 'সাধারণ';
 
@@ -76,14 +118,14 @@ class ResourceSeeder extends Seeder
                 ];
             }
 
-            Resource::create([
+            Resource::create(array_merge([
                 'node_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'note',
                 'title' => "{$node->name} সম্পূর্ণ অধ্যায়ভিত্তিক হ্যান্ডনোট",
                 'description' => "{$subjectName} বিষয়ের '{$node->name}' অধ্যায়ের সকল গুরুত্বপূর্ণ সূত্র, নিয়ম ও বিস্তারিত সমাধানসহ সম্পূর্ণ হ্যান্ডনোট। পরীক্ষার আগে দ্রুত রিভিশনের জন্য সহায়ক।",
                 'items' => $noteItems,
-            ]);
+            ], $getRandomStatus()));
 
             // 2. Video Lecture Course (format = 'video')
             $lectureCount = rand(3, 5);
@@ -107,18 +149,18 @@ class ResourceSeeder extends Seeder
                 ];
             }
 
-            Resource::create([
+            Resource::create(array_merge([
                 'node_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'video',
                 'title' => "{$node->name} পূর্ণাঙ্গ মাস্টারক্লাস ও কনসেপ্ট ক্লিয়ারিং",
                 'description' => "অভিজ্ঞ শিক্ষক দ্বারা পরিচালিত '{$node->name}' অধ্যায়ের ধারাবাহিক ভিডিও লেকচার। টপিকভিত্তিক আলোচনা ও বোর্ড প্রশ্ন সমাধান কাভার করা হয়েছে।",
                 'items' => $videoItems,
-            ]);
+            ], $getRandomStatus()));
 
             // 3. Highlighted Textbook / Note in PDF Format (format = 'pdf')
             $pdfUrl = $pdfUrls[array_rand($pdfUrls)];
-            Resource::create([
+            Resource::create(array_merge([
                 'node_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'note',
@@ -131,11 +173,11 @@ class ResourceSeeder extends Seeder
                         'source' => $pdfUrl,
                     ],
                 ],
-            ]);
+            ], $getRandomStatus()));
 
             // 4. Practical / Lab Notebook (format = 'pdf')
             if ($node->id % 2 === 0) {
-                Resource::create([
+                Resource::create(array_merge([
                     'node_id' => $node->id,
                     'user_id' => $user->id,
                     'resource_type' => 'practical',
@@ -148,12 +190,12 @@ class ResourceSeeder extends Seeder
                             'source' => $pdfUrl,
                         ],
                     ],
-                ]);
+                ], $getRandomStatus()));
             }
 
             // 5. Other Resources (format = 'pdf')
             if ($node->id % 3 === 0) {
-                Resource::create([
+                Resource::create(array_merge([
                     'node_id' => $node->id,
                     'user_id' => $user->id,
                     'resource_type' => 'other',
@@ -166,7 +208,7 @@ class ResourceSeeder extends Seeder
                             'source' => $pdfUrl,
                         ],
                     ],
-                ]);
+                ], $getRandomStatus()));
             }
         }
     }

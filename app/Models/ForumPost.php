@@ -22,11 +22,9 @@ class ForumPost extends Model
         'subject_id',
         'node_id',
         'curriculum',
-        'title',
         'slug',
         'body',
         'image_path',
-        'is_answered',
         'is_locked',
         'moderation_status',
         'vote_score',
@@ -42,7 +40,6 @@ class ForumPost extends Model
     protected function casts(): array
     {
         return [
-            'is_answered' => 'boolean',
             'is_locked' => 'boolean',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
@@ -71,7 +68,8 @@ class ForumPost extends Model
     {
         static::creating(function (ForumPost $post) {
             if (empty($post->slug)) {
-                $baseSlug = Str::slug($post->title) ?: 'post';
+                $excerpt = Str::words(strip_tags($post->body ?? ''), 8, '');
+                $baseSlug = Str::slug($excerpt) ?: 'post';
                 $slug = $baseSlug;
                 $counter = 1;
 
@@ -178,17 +176,14 @@ class ForumPost extends Model
 
         $query->when($filters['status'] ?? null, function ($q, $status) {
             if ($status === 'unanswered') {
-                $q->where('is_answered', false);
+                $q->where('answers_count', 0);
             } elseif ($status === 'answered') {
-                $q->where('is_answered', true);
+                $q->where('answers_count', '>', 0);
             }
         });
 
         $query->when($filters['search'] ?? null, function ($q, $search) {
-            $q->where(function ($sub) use ($search) {
-                $sub->where('title', 'like', "%{$search}%")
-                    ->orWhere('body', 'like', "%{$search}%");
-            });
+            $q->where('body', 'like', "%{$search}%");
         });
 
         $sort = $filters['sort'] ?? 'recent';

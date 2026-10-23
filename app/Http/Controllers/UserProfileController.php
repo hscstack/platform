@@ -133,7 +133,7 @@ class UserProfileController extends Controller
             ->get();
         $forumAnswers = ForumAnswer::where('user_id', $user->id)
             ->whereHas('post', fn ($q) => $q->approved())
-            ->with(['post:id,title,slug,curriculum,is_answered'])
+            ->with(['post:id,body,slug,curriculum'])
             ->latest()
             ->take(5)
             ->get();

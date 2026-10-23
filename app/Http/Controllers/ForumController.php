@@ -214,8 +214,7 @@ class ForumController extends Controller
         }
 
         $validated = $request->validate([
-            'title' => ['required', 'string', 'min:5', 'max:255', new CleanText],
-            'body' => ['nullable', 'string', 'max:30000', new CleanText],
+            'body' => ['required', 'string', 'min:5', 'max:30000', new CleanText],
             'curriculum' => ['required', 'in:hsc,ssc'],
             'subject_id' => ['nullable', 'exists:subjects,id'],
             'node_id' => ['nullable', 'exists:nodes,id'],
@@ -253,8 +252,7 @@ class ForumController extends Controller
             'subject_id' => $subjectId,
             'node_id' => $nodeId,
             'curriculum' => $validated['curriculum'],
-            'title' => $validated['title'],
-            'body' => $validated['body'] ?? null,
+            'body' => $validated['body'],
             'image_path' => $imagePath,
             'is_locked' => false,
             'moderation_status' => $moderationStatus,
@@ -293,17 +291,6 @@ class ForumController extends Controller
         $post->delete();
 
         return redirect()->route('forum.index')->with('success', 'Question deleted successfully.');
-    }
-
-    public function toggleAnswered(Request $request, ForumPost $post): RedirectResponse
-    {
-        abort_unless(auth()->id() === $post->user_id || auth()->user()?->can('manage forums'), 403);
-
-        $post->update([
-            'is_answered' => ! $post->is_answered,
-        ]);
-
-        return back();
     }
 
     public function report(Request $request, ForumPost $post): JsonResponse

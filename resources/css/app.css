@@ -43,20 +43,54 @@
     body {
         font-stretch: 96%;
         @apply bg-slate-50 transition-colors duration-300 dark:bg-gray-950;
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE and Edge */
     }
 
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    *::-webkit-scrollbar {
+    /* Custom Modern Minimal Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* slate-300 */
+        border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8; /* slate-400 */
+    }
+
+    .dark ::-webkit-scrollbar-thumb {
+        background-color: #374151; /* gray-700 */
+    }
+
+    .dark ::-webkit-scrollbar-thumb:hover {
+        background-color: #4b5563; /* gray-600 */
+    }
+
+    /* Firefox */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .dark * {
+        scrollbar-color: #374151 transparent;
+    }
+
+    /* Utility to hide scrollbars where specifically desired (e.g. horizontal pill lists) */
+    .no-scrollbar::-webkit-scrollbar {
         display: none;
         width: 0 !important;
         height: 0 !important;
     }
-
-    * {
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE and Edge */
+    .no-scrollbar {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
     }
 
     button,
