@@ -134,8 +134,8 @@ class ResourceController extends BaseResourceController
     public function destroy(Resource $resource)
     {
         $user = Auth::user();
-        if (! $user?->can('moderate resources') && ! $user?->can('delete resources')) {
-            abort(403, 'Unauthorized. Only users with moderation/deletion permissions can delete resources.');
+        if (! $user?->can('delete resources')) {
+            abort(403, 'Unauthorized. Only users with deletion permissions can delete resources.');
         }
 
         if ($resource->node?->isEffectivelyFrozen()) {

@@ -20,9 +20,7 @@ class ResourcePolicy
             return false;
         }
 
-        return $user->can('moderate resources')
-            || $user->can('edit resources')
-            || $user->id === $resource->user_id;
+        return $user->can('edit resources') || $user->id === $resource->user_id;
     }
 
     /**
@@ -34,6 +32,6 @@ class ResourcePolicy
             return false;
         }
 
-        return $user->can('delete resources') || $user->can('moderate resources');
+        return $user->can('delete resources');
     }
 }

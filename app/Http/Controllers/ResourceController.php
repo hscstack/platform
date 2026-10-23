@@ -295,7 +295,7 @@ class ResourceController extends Controller
         }
 
         abort_unless(
-            $user?->can('moderate resources') || $user?->can('edit resources') || $user?->id === $resource->user_id,
+            $user?->can('edit resources') || $user?->id === $resource->user_id,
             403,
             'Unauthorized to edit this resource.'
         );
@@ -337,10 +337,10 @@ class ResourceController extends Controller
             'items' => $validated['items'],
         ];
 
-        // If an approved resource is edited by a non-moderator, return it to pending for re-review
+        // If an approved resource is edited by someone without 'edit resources', return it to pending for re-review
         $user = auth()->user();
-        $isModerator = $user && ($user->can('moderate resources') || $user->can('edit resources'));
-        if (! $isModerator && $resource->status === 'approved') {
+        $canEditDirectly = $user && $user->can('edit resources');
+        if (! $canEditDirectly && $resource->status === 'approved') {
             $updateData['status'] = 'pending';
             $updateData['reviewed_by'] = null;
             $updateData['reviewed_at'] = null;

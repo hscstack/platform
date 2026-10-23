@@ -12,6 +12,7 @@ use Spatie\Permission\Models\Role;
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
     Permission::findOrCreate('moderate resources', 'web');
+    Permission::findOrCreate('edit resources', 'web');
     Permission::findOrCreate('delete resources', 'web');
     Permission::findOrCreate('create nodes', 'web');
 
@@ -392,7 +393,7 @@ test('batch node creation respects should_track_top_folders parameter', function
         ->and($subNode->is_trackable)->toBeFalse();
 });
 
-test('moderator can update any resource and author can update own resource', function () {
+test('user with edit resources permission can update any resource and author can update own resource', function () {
     $subject = Subject::create([
         'name' => 'Physics',
         'slug' => 'physics-update-test',
@@ -407,8 +408,8 @@ test('moderator can update any resource and author can update own resource', fun
     ]);
 
     $author = User::factory()->create();
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo('moderate resources');
+    $editor = User::factory()->create();
+    $editor->givePermissionTo('edit resources');
     $otherUser = User::factory()->create();
 
     $resource = Resource::create([
@@ -454,10 +455,10 @@ test('moderator can update any resource and author can update own resource', fun
         ->and($resource->items[0]['source'])->toBe('resources/notes/p2.webp')
         ->and($resource->thumbnail)->toContain('resources/notes/p2.webp');
 
-    // 3. Moderator can update any resource
-    $this->actingAs($moderator)
+    // 3. User with edit resources permission can update any resource
+    $this->actingAs($editor)
         ->patch("/resources/{$resource->id}", [
-            'title' => 'Moderator Fixed Title',
+            'title' => 'Editor Fixed Title',
             'resource_type' => 'video',
             'items' => [
                 ['format' => 'video', 'source' => 'https://www.youtube.com/watch?v=lnnYO482hhg', 'title' => 'Class 1'],
@@ -467,7 +468,7 @@ test('moderator can update any resource and author can update own resource', fun
         ->assertSessionHas('success');
 
     $resource->refresh();
-    expect($resource->title)->toBe('Moderator Fixed Title')
+    expect($resource->title)->toBe('Editor Fixed Title')
         ->and($resource->resource_type)->toBe('video')
         ->and($resource->thumbnail)->toBe('https://img.youtube.com/vi/lnnYO482hhg/hqdefault.jpg');
 });
