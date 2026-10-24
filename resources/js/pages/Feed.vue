@@ -228,7 +228,7 @@ const loadMore = async () => {
                                     '/storage/' + user.image_path
                                 "
                                 :alt="user.name"
-                                class="dark:ring-gray-750 h-9 w-9 rounded-full object-cover ring-1 ring-slate-200"
+                                class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-gray-700"
                             />
                             <div
                                 v-else
@@ -241,7 +241,7 @@ const loadMore = async () => {
                         <!-- Prompt trigger input linking to forum question ask page -->
                         <Link
                             href="/forum/ask"
-                            class="group dark:bg-gray-850 flex flex-1 items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 sm:text-sm dark:border-gray-800 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800"
+                            class="group flex flex-1 items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 sm:text-sm dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800"
                         >
                             <span class="truncate">
                                 কী পড়ছেন আজ? হ্যান্ডনোট, বইয়ের লিংক শেয়ার
@@ -261,7 +261,7 @@ const loadMore = async () => {
                     <button
                         type="button"
                         @click="handleMobilePeerClick"
-                        class="group dark:hover:bg-gray-850 flex w-full cursor-pointer items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3.5 py-2.5 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-gray-800 dark:bg-gray-900"
+                        class="group flex w-full cursor-pointer items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3.5 py-2.5 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800/80"
                     >
                         <div
                             class="flex min-w-0 items-center gap-2.5 text-xs text-slate-500 dark:text-gray-400"
@@ -442,7 +442,7 @@ const loadMore = async () => {
                             v-model="sidebarPeerSearch"
                             type="text"
                             placeholder="নাম বা কলেজের নাম..."
-                            class="dark:bg-gray-850 h-9 w-full rounded-xl border border-slate-200/90 bg-slate-50/70 pr-16 pl-8.5 text-xs text-slate-800 placeholder-slate-400 shadow-2xs transition focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-gray-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500"
+                            class="h-9 w-full rounded-xl border border-slate-200/90 bg-slate-50/70 pr-16 pl-8.5 text-xs text-slate-800 placeholder-slate-400 shadow-2xs transition focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500 dark:focus:bg-gray-800"
                         />
                         <button
                             type="submit"
@@ -492,7 +492,7 @@ const loadMore = async () => {
                         class="mt-4 flex w-full cursor-default items-center justify-center gap-1.5 rounded-xl bg-slate-900/80 py-2.5 text-xs font-bold text-white dark:bg-gray-800 dark:text-gray-200"
                     >
                         <BookOpen class="h-3.5 w-3.5" />
-                        <span>পুরো নোট লাইব্রেরি (শীঘ্রই আসছে)</span>
+                        <span>পুরো নোট লাইব্রেরি</span>
                     </button>
                 </div>
 
