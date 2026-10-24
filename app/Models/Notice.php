@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class Notice extends Model
@@ -37,6 +38,8 @@ class Notice extends Model
 
     public static function activeForDisplay(): ?self
     {
-        return static::where('is_active', true)->first();
+        return Cache::rememberForever('active_notice_for_display', function () {
+            return static::where('is_active', true)->first();
+        });
     }
 }

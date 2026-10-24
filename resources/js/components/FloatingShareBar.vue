@@ -11,13 +11,7 @@ import AuthModal from './AuthModal.vue';
 const page = usePage();
 const { requireAuth, showAuthModal, authModalMessage } = useAuth();
 
-const shareablePages = [
-    'Node',
-    'Resource',
-    'Blog/Show',
-    'User/Show',
-    'Forum/Show',
-];
+const shareablePages = ['Resource', 'Blog/Show', 'User/Show', 'Forum/Show'];
 
 const shouldShow = computed(() => shareablePages.includes(page.component));
 

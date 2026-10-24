@@ -12,6 +12,7 @@ use App\Models\Subject;
 use App\Models\UserAppreciation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -25,20 +26,23 @@ class HomeController extends Controller
 
         $feed = $this->getFeed($course, $group, $sort, $page);
 
-        $subjectsQuery = Subject::where('is_disabled', false)
-            ->where('course', $course);
+        $subjects = Cache::rememberForever("curriculum_subjects_{$course}_{$group}", function () use ($course, $group) {
+            $subjectsQuery = Subject::where('is_disabled', false)
+                ->where('course', $course);
 
-        if ($group) {
-            $subjectsQuery->whereIn('group', [$group, 'common']);
-        }
+            if ($group) {
+                $subjectsQuery->whereIn('group', [$group, 'common']);
+            }
 
-        $subjects = $subjectsQuery->orderBy('sort_order', 'asc')
-            ->with(['nodes' => function ($q) {
-                $q->whereNull('parent_id')
-                    ->select('id', 'subject_id', 'parent_id', 'name', 'slug')
-                    ->orderBy('sort_order');
-            }])
-            ->get(['id', 'name', 'slug', 'course', 'group']);
+            return $subjectsQuery->orderBy('sort_order', 'asc')
+                ->with(['nodes' => function ($q) {
+                    $q->whereNull('parent_id')
+                        ->select('id', 'subject_id', 'parent_id', 'name', 'slug')
+                        ->orderBy('sort_order');
+                }])
+                ->get(['id', 'name', 'slug', 'course', 'group'])
+                ->toArray();
+        });
 
         return Inertia::render('Feed', [
             'feed' => $feed,

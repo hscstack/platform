@@ -23,36 +23,64 @@ class ResourceController extends Controller
 {
     public function show($id)
     {
-        $resource = Resource::with([
-            'user:id,name,username,image_path',
-            'node:id,name,slug',
-            'subject:id,name,slug',
-        ])->findOrFail($id);
+        $cachedData = Cache::remember("resource_public_{$id}", now()->addHours(6), function () use ($id) {
+            $resource = Resource::with([
+                'user:id,name,username,image_path',
+                'node:id,name,slug',
+                'subject:id,name,slug',
+            ])->find($id);
+
+            if (! $resource || $resource->status !== 'approved') {
+                return null;
+            }
+
+            $upvoters = ResourceVote::where('resource_id', $id)
+                ->where('value', 1)
+                ->with('user:id,name,username,image_path,institution,is_verified')
+                ->latest('id')
+                ->take(20)
+                ->get()
+                ->pluck('user')
+                ->filter()
+                ->values();
+
+            return [
+                'resource' => $resource->toArray(),
+                'upvoters' => $upvoters->toArray(),
+            ];
+        });
 
         $user = auth()->user();
         $isModerator = $user?->can('moderate resources');
-        $isOwner = $user && $user->id === $resource->user_id;
 
-        if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
-            abort(404);
+        if ($cachedData) {
+            $resourceData = $cachedData['resource'];
+            $upvoters = $cachedData['upvoters'];
+            $isOwner = $user && $user->id === ($resourceData['user_id'] ?? null);
+        } else {
+            // Fallback for non-approved (pending / rejected) viewing by owner or moderator
+            $resource = Resource::with([
+                'user:id,name,username,image_path',
+                'node:id,name,slug',
+                'subject:id,name,slug',
+            ])->findOrFail($id);
+
+            $isOwner = $user && $user->id === $resource->user_id;
+
+            if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
+                abort(404);
+            }
+
+            $resourceData = $resource->toArray();
+            $upvoters = [];
         }
 
         $userVote = auth()->check()
             ? ResourceVote::where('resource_id', $id)->where('user_id', auth()->id())->value('value')
             : null;
 
-        $upvoters = ResourceVote::where('resource_id', $id)
-            ->where('value', 1)
-            ->with('user:id,name,username,image_path,institution,is_verified')
-            ->latest('id')
-            ->take(20)
-            ->get()
-            ->pluck('user')
-            ->filter()
-            ->values();
-
         return Inertia::render('Resource', [
-            'resource' => $resource->toArray(),
+            'resource' => $resourceData,
             'userVote' => $userVote,
             'upvoters' => $upvoters,
             'can_moderate' => (bool) $isModerator,
@@ -131,8 +159,7 @@ class ResourceController extends Controller
             }
         }
 
-        Cache::forget("resource_{$resource->id}");
-        Cache::forget("node_resources_{$resource->node_id}");
+        Cache::forget("resource_public_{$resource->id}");
 
         if ($request->wantsJson()) {
             $refreshed = $resource->fresh();
@@ -320,8 +347,7 @@ class ResourceController extends Controller
 
         $resource->update($updateData);
 
-        Cache::forget("resource_{$resource->id}");
-        Cache::forget("node_resources_{$resource->node_id}");
+        Cache::forget("resource_public_{$resource->id}");
 
         return back()->with('success', 'রিসোর্স সফলভাবে আপডেট করা হয়েছে।');
     }

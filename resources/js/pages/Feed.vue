@@ -660,7 +660,7 @@ const loadMore = async () => {
             <button
                 type="button"
                 @click="chooseAskQuestion"
-                class="group dark:bg-gray-850 flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-4 text-left shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/40 active:scale-98 dark:border-gray-800 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+                class="group flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-4 text-left shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/40 active:scale-98 dark:border-gray-800 dark:bg-gray-800/60 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/40"
             >
                 <div
                     class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition group-hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-400"
@@ -687,7 +687,7 @@ const loadMore = async () => {
             <button
                 type="button"
                 @click="chooseUploadResource"
-                class="group dark:bg-gray-850 flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-4 text-left shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/40 active:scale-98 dark:border-gray-800 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+                class="group flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-4 text-left shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/40 active:scale-98 dark:border-gray-800 dark:bg-gray-800/60 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/40"
             >
                 <div
                     class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400"
