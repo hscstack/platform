@@ -36,10 +36,10 @@ class Notice extends Model
         ]);
     }
 
-    public static function activeForDisplay(): ?self
+    public static function activeForDisplay(): ?array
     {
         return Cache::rememberForever('active_notice_for_display', function () {
-            return static::where('is_active', true)->first();
+            return static::where('is_active', true)->first()?->toArray();
         });
     }
 }
