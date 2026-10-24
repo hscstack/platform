@@ -16,7 +16,7 @@ import {
     X,
     Loader2,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
@@ -62,12 +62,130 @@ const canEdit = computed(() => {
     );
 });
 
-const canDelete = computed(() => {
-    return (
-        can('manage blogs') ||
-        (currentUser.value?.id && currentUser.value.id === props.blog.user_id)
-    );
+const blogContentRef = ref<HTMLElement | null>(null);
+
+// Dynamic KaTeX loader & renderer for mathematical equations
+const renderMathEquations = () => {
+    if (!blogContentRef.value) {
+        return;
+    }
+
+    const render = () => {
+        if ((window as any).renderMathInElement && blogContentRef.value) {
+            // Replace any ``` ... ``` blocks directly in HTML before rendering
+            let html = blogContentRef.value.innerHTML;
+            const backtickRegex = /```\s*([\s\S]*?)\s*```/g;
+
+            if (backtickRegex.test(html)) {
+                html = html.replace(backtickRegex, (match, code) => {
+                    // Unescape HTML entities that might be inside the code block
+                    const decoded = code
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'")
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<\/?div>/gi, '\n')
+                        .trim();
+
+                    if (
+                        decoded.includes('\\begin') ||
+                        decoded.includes('\\frac') ||
+                        decoded.includes('\\sqrt') ||
+                        decoded.includes('\\pm') ||
+                        decoded.includes('\\sum') ||
+                        decoded.includes('\\int') ||
+                        decoded.includes('\\times') ||
+                        decoded.includes('=')
+                    ) {
+                        return `$$${decoded}$$`;
+                    }
+
+                    return match;
+                });
+                blogContentRef.value.innerHTML = html;
+            }
+
+            (window as any).renderMathInElement(blogContentRef.value, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\(', right: '\\)', display: false },
+                    { left: '\\[', right: '\\]', display: true },
+                ],
+                throwOnError: false,
+            });
+        }
+    };
+
+    if ((window as any).renderMathInElement) {
+        render();
+
+        return;
+    }
+
+    // Load KaTeX CSS
+    if (!document.getElementById('katex-css')) {
+        const link = document.createElement('link');
+        link.id = 'katex-css';
+        link.rel = 'stylesheet';
+        link.href =
+            'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';
+        link.crossOrigin = 'anonymous';
+        document.head.appendChild(link);
+    }
+
+    // Load KaTeX core script
+    const loadScript = (src: string): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.crossOrigin = 'anonymous';
+            script.onload = () => resolve();
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    };
+
+    if (!(window as any).katex) {
+        loadScript(
+            'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js',
+        )
+            .then(() =>
+                loadScript(
+                    'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js',
+                ),
+            )
+            .then(() => {
+                render();
+            })
+            .catch(() => {
+                // Silently fallback to raw text on network error
+            });
+    } else if (!(window as any).renderMathInElement) {
+        loadScript(
+            'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js',
+        )
+            .then(() => render())
+            .catch(() => {});
+    }
+};
+
+onMounted(() => {
+    nextTick(() => {
+        renderMathEquations();
+    });
 });
+
+watch(
+    () => props.blog.content,
+    () => {
+        nextTick(() => {
+            renderMathEquations();
+        });
+    },
+);
 
 const deleteBlog = () => {
     if (confirm('Are you sure you want to delete this blog post?')) {
@@ -409,7 +527,11 @@ const formatTimeAgo = (dateStr: string) => {
                 />
             </div>
 
-            <div class="blog-content max-w-none" v-html="blog.content"></div>
+            <div
+                ref="blogContentRef"
+                class="blog-content max-w-none"
+                v-html="blog.content"
+            ></div>
 
             <!-- Reaction Interaction Bar -->
             <div
