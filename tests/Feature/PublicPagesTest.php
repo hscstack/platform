@@ -84,8 +84,8 @@ test('public resource page loads with subject, node, and enriched SEO metadata',
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('Resource')
         ->where('resource.id', $resource->id)
-        ->where('subject.name', 'Higher Mathematics')
-        ->where('subject.course', 'hsc')
+        ->where('resource.subject.name', 'Higher Mathematics')
+        ->where('resource.subject.course', 'hsc')
     );
 
     $appName = config('app.name', 'HSCStack');

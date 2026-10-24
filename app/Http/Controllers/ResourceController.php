@@ -27,7 +27,7 @@ class ResourceController extends Controller
             $resource = Resource::with([
                 'user:id,name,username,image_path',
                 'node:id,name,slug',
-                'subject:id,name,slug',
+                'subject:id,name,slug,course',
             ])->find($id);
 
             if (! $resource || $resource->status !== 'approved') {
@@ -62,7 +62,7 @@ class ResourceController extends Controller
             $resource = Resource::with([
                 'user:id,name,username,image_path',
                 'node:id,name,slug',
-                'subject:id,name,slug',
+                'subject:id,name,slug,course',
             ])->findOrFail($id);
 
             $isOwner = $user && $user->id === $resource->user_id;
