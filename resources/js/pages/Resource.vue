@@ -13,7 +13,6 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
-import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import NoteReader from '@/components/resources/NoteReader.vue';
 import PdfViewer from '@/components/resources/PdfViewer.vue';
 import ResourceFormModal from '@/components/resources/ResourceFormModal.vue';
@@ -44,6 +43,16 @@ interface ResourceData {
     upvotes_count?: number;
     downvotes_count?: number;
     items?: ResourceItem[];
+    node?: {
+        id: number;
+        name: string;
+        slug: string;
+    } | null;
+    subject?: {
+        id: number;
+        name: string;
+        slug: string;
+    } | null;
     user?: {
         id: number;
         name: string;
@@ -65,12 +74,6 @@ interface Upvoter {
 
 const props = defineProps<{
     resource: ResourceData;
-    subject?: {
-        id: number;
-        name: string;
-        slug: string;
-    } | null;
-    breadcrumb?: Array<{ name: string; slug: string }>;
     userVote?: number | null;
     upvoters?: Upvoter[];
     can_moderate?: boolean;
@@ -194,17 +197,18 @@ const primaryFormat = computed<'image' | 'video' | 'pdf'>(() => {
     return 'image';
 });
 
-// Chapter link for direct return
-const chapterUrl = computed(() => {
-    const subjectSlug = props.subject?.slug ? `/${props.subject.slug}` : '';
+const subtitle = computed(() => {
+    const parts: string[] = [];
 
-    if (!props.breadcrumb || props.breadcrumb.length === 0) {
-        return subjectSlug || '/';
+    if (props.resource.node?.name) {
+        parts.push(props.resource.node.name);
     }
 
-    const path = props.breadcrumb.map((c) => c.slug).join('/');
+    if (props.resource.subject?.name) {
+        parts.push(props.resource.subject.name);
+    }
 
-    return `${subjectSlug}/${path}`;
+    return parts.join(' · ');
 });
 </script>
 
@@ -386,22 +390,24 @@ const chapterUrl = computed(() => {
             </div>
         </div>
 
-        <!-- Breadcrumb Navigation -->
+        <!-- Title & Header -->
         <header class="mb-6">
-            <BreadcrumbNav
-                :breadcrumb="breadcrumb"
-                :subject="subject"
-                class="mb-3"
-            />
+            <!-- Context Subtitle: Chapter · Subject -->
+            <div
+                v-if="subtitle"
+                class="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500 sm:text-sm dark:text-gray-400"
+            >
+                <span class="truncate">{{ subtitle }}</span>
+            </div>
 
             <!-- Title & Back Button -->
             <div class="flex items-center justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
                     <!-- Clear Back Button -->
                     <Link
-                        :href="chapterUrl"
+                        href="/notes"
                         class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-xs transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-                        title="অধ্যায়ে ফিরে যান"
+                        title="নোট আর্কাইভে ফিরে যান"
                     >
                         <ArrowLeft class="h-4 w-4 stroke-[2.3]" />
                     </Link>

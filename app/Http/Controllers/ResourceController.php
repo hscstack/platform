@@ -23,7 +23,11 @@ class ResourceController extends Controller
 {
     public function show($id)
     {
-        $resource = Resource::with(['user:id,name,username,image_path', 'node.subject'])->findOrFail($id);
+        $resource = Resource::with([
+            'user:id,name,username,image_path',
+            'node:id,name,slug',
+            'subject:id,name,slug',
+        ])->findOrFail($id);
 
         $user = auth()->user();
         $isModerator = $user?->can('moderate resources');
@@ -32,8 +36,6 @@ class ResourceController extends Controller
         if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
             abort(404);
         }
-
-        $node = $resource->node;
 
         $userVote = auth()->check()
             ? ResourceVote::where('resource_id', $id)->where('user_id', auth()->id())->value('value')
@@ -51,8 +53,6 @@ class ResourceController extends Controller
 
         return Inertia::render('Resource', [
             'resource' => $resource->toArray(),
-            'subject' => $resource->node?->subject?->toArray(),
-            'breadcrumb' => $node ? $node->breadcrumb() : [],
             'userVote' => $userVote,
             'upvoters' => $upvoters,
             'can_moderate' => (bool) $isModerator,
