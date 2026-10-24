@@ -19,15 +19,13 @@ class ForumPostFactory extends Factory
      */
     public function definition(): array
     {
-        $title = fake()->sentence();
+        $body = fake()->paragraphs(2, true);
 
         return [
             'user_id' => User::factory(),
             'curriculum' => fake()->randomElement(['hsc', 'ssc']),
-            'title' => $title,
-            'slug' => Str::slug($title).'-'.fake()->unique()->randomNumber(5),
-            'body' => fake()->paragraphs(2, true),
-            'is_answered' => false,
+            'slug' => Str::slug(Str::words($body, 8, '')).'-'.fake()->unique()->randomNumber(5),
+            'body' => $body,
             'is_locked' => false,
             'moderation_status' => 'approved',
             'vote_score' => 0,

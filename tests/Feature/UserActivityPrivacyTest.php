@@ -11,7 +11,7 @@ test('public profile shows forum activity and stats to guests', function () {
 
     ForumPost::factory()->create([
         'user_id' => $user->id,
-        'title' => 'Public User Question',
+        'body' => 'Public User Question',
     ]);
 
     $response = $this->get(route('user.profile', ['username' => 'publicuser']));
@@ -32,7 +32,7 @@ test('private profile hides activity and returns isLocked=true for visitors', fu
 
     ForumPost::factory()->create([
         'user_id' => $user->id,
-        'title' => 'Secret Question',
+        'body' => 'Secret Question',
     ]);
 
     $visitor = User::factory()->create();
@@ -56,7 +56,7 @@ test('private profile owner can view their own activity', function () {
 
     ForumPost::factory()->create([
         'user_id' => $user->id,
-        'title' => 'Owner Question',
+        'body' => 'Owner Question',
     ]);
 
     $response = $this->actingAs($user)->get(route('user.profile', ['username' => 'owneruser']));
@@ -77,7 +77,7 @@ test('appreciators_only profile is locked for non-appreciators', function () {
 
     ForumPost::factory()->create([
         'user_id' => $user->id,
-        'title' => 'Exclusive Question',
+        'body' => 'Exclusive Question',
     ]);
 
     $visitor = User::factory()->create();
@@ -101,7 +101,7 @@ test('appreciators_only profile is unlocked for users who appreciate them', func
 
     ForumPost::factory()->create([
         'user_id' => $user->id,
-        'title' => 'Exclusive Question',
+        'body' => 'Exclusive Question',
     ]);
 
     $fan = User::factory()->create();

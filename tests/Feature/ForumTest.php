@@ -7,6 +7,7 @@ use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
@@ -29,7 +30,7 @@ test('unauthenticated users can view forum index and show', function () {
         'user_id' => $user->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
-        'title' => 'How to solve vector addition problems?',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'I am struggling with relative velocity in vector physics.',
     ]);
 
@@ -74,8 +75,7 @@ test('authenticated user can create a question', function () {
     ]);
 
     $response = $this->actingAs($user)->post('/forum', [
-        'title' => 'Need help with Calculus Integration',
-        'body' => 'How do I evaluate trigonometric substitution integrals?',
+        'body' => 'Need help with Calculus Integration. How do I evaluate trigonometric substitution integrals?',
         'curriculum' => 'hsc',
         'subject_id' => $subject->id,
         'node_id' => $node->id,
@@ -83,8 +83,7 @@ test('authenticated user can create a question', function () {
 
     $post = ForumPost::first();
     expect($post)->not->toBeNull()
-        ->and($post->title)->toBe('Need help with Calculus Integration')
-        ->and($post->slug)->toBe('need-help-with-calculus-integration')
+        ->and($post->body)->toBe('Need help with Calculus Integration. How do I evaluate trigonometric substitution integrals?')
         ->and($post->subject_id)->toBe($subject->id)
         ->and($post->node_id)->toBe($node->id)
         ->and($post->user_id)->toBe($user->id);
@@ -96,8 +95,7 @@ test('authenticated user can create a general question with null subject and cha
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/forum', [
-        'title' => 'Which engineering college has the best campus life?',
-        'body' => 'I am confused between multiple engineering universities and need student feedback.',
+        'body' => 'Which engineering college has the best campus life? I am confused between multiple engineering universities and need student feedback.',
         'curriculum' => 'hsc',
         'subject_id' => null,
         'node_id' => null,
@@ -105,33 +103,23 @@ test('authenticated user can create a general question with null subject and cha
 
     $post = ForumPost::latest('id')->first();
     expect($post)->not->toBeNull()
-        ->and($post->title)->toBe('Which engineering college has the best campus life?')
+        ->and($post->body)->toBe('Which engineering college has the best campus life? I am confused between multiple engineering universities and need student feedback.')
         ->and($post->subject_id)->toBeNull()
         ->and($post->node_id)->toBeNull();
 
     $response->assertRedirect("/forum/questions/{$post->slug}");
 });
 
-test('authenticated user can create a question without details', function () {
+test('authenticated user cannot create a question with empty body', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/forum', [
-        'title' => 'Self-contained title question without any details?',
+        'body' => '',
         'curriculum' => 'hsc',
     ]);
 
-    $post = ForumPost::where('title', 'Self-contained title question without any details?')->first();
-    expect($post)->not->toBeNull()
-        ->and($post->body)->toBeNull();
-
-    $response->assertRedirect("/forum/questions/{$post->slug}");
-
-    $showResponse = $this->get("/forum/questions/{$post->slug}");
-    $showResponse->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('Forum/Show')
-            ->where('post.body', null)
-        );
+    $response->assertSessionHasErrors('body');
+    expect(ForumPost::count())->toBe(0);
 });
 
 test('user can post answer and reply with 1-level nesting enforced', function () {
@@ -141,7 +129,7 @@ test('user can post answer and reply with 1-level nesting enforced', function ()
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
-        'title' => 'Sample Chemistry Question',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'What is the oxidation state of Chromium in K2Cr2O7?',
     ]);
 
@@ -187,7 +175,7 @@ test('voting on posts updates vote_score and toggles', function () {
     $post = ForumPost::create([
         'user_id' => $user1->id,
         'curriculum' => 'hsc',
-        'title' => 'Vote Testing Question Title',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Sample body content for voting test.',
     ]);
 
@@ -220,43 +208,6 @@ test('voting on posts updates vote_score and toggles', function () {
         ->and($post->downvotes_count)->toBe(1);
 });
 
-test('author can toggle answered status', function () {
-    $author = User::factory()->create();
-    $other = User::factory()->create();
-
-    $post = ForumPost::create([
-        'user_id' => $author->id,
-        'curriculum' => 'hsc',
-        'title' => 'Question to be answered',
-        'body' => 'Sample body content for toggle test.',
-    ]);
-
-    // Other user cannot toggle
-    $this->actingAs($other)->post("/forum/posts/{$post->id}/toggle-answered")
-        ->assertForbidden();
-
-    // Author can toggle
-    $this->actingAs($author)->post("/forum/posts/{$post->id}/toggle-answered");
-    $post->refresh();
-    expect($post->is_answered)->toBeTrue();
-
-    $this->actingAs($author)->post("/forum/posts/{$post->id}/toggle-answered");
-    $post->refresh();
-    expect($post->is_answered)->toBeFalse();
-
-    // Moderator with manage forums permission can toggle
-    $moderator = User::factory()->create();
-    $moderator->givePermissionTo('manage forums');
-
-    $this->actingAs($moderator)->post("/forum/posts/{$post->id}/toggle-answered");
-    $post->refresh();
-    expect($post->is_answered)->toBeTrue();
-
-    $this->actingAs($moderator)->post("/forum/posts/{$post->id}/toggle-answered");
-    $post->refresh();
-    expect($post->is_answered)->toBeFalse();
-});
-
 test('profane words trigger CleanText validation on post and answer', function () {
     AppSetting::set('global_chat_banned_words', 'fuck,badword');
     $user = User::factory()->create();
@@ -270,17 +221,16 @@ test('profane words trigger CleanText validation on post and answer', function (
     ]);
 
     $response = $this->actingAs($user)->post('/forum', [
-        'title' => 'Sample Title with fuck word',
-        'body' => 'Clean body text for testing.',
+        'body' => 'Sample body with fuck word inside.',
         'curriculum' => 'hsc',
         'subject_id' => $subject->id,
     ]);
-    $response->assertSessionHasErrors('title');
+    $response->assertSessionHasErrors('body');
 
     $post = ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
-        'title' => 'Clean Question Title',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Clean Question Body',
     ]);
 
@@ -298,7 +248,7 @@ test('author can delete their own posts and answers while others cannot', functi
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
-        'title' => 'Post to be deleted',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post body to be deleted.',
     ]);
 
@@ -332,7 +282,7 @@ test('voting on answers works correctly', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
-        'title' => 'Post for Answer Vote Test',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post body.',
     ]);
 
@@ -380,11 +330,10 @@ test('invalid subject course or mismatched node resets invalid fields on store',
         'curriculum' => 'hsc',
         'subject_id' => $sscSubject->id,
         'node_id' => $sscNode->id,
-        'title' => 'Taxonomy Mismatch Question',
-        'body' => 'Checking taxonomy boundary conditions.',
+        'body' => 'Taxonomy Mismatch Question Checking taxonomy boundary conditions.',
     ]);
 
-    $post = ForumPost::where('title', 'Taxonomy Mismatch Question')->first();
+    $post = ForumPost::where('body', 'Taxonomy Mismatch Question Checking taxonomy boundary conditions.')->first();
     expect($post)->not->toBeNull()
         ->and($post->subject_id)->toBeNull()
         ->and($post->node_id)->toBeNull();
@@ -394,11 +343,10 @@ test('invalid subject course or mismatched node resets invalid fields on store',
         'curriculum' => 'hsc',
         'subject_id' => $hscSubject->id,
         'node_id' => $sscNode->id,
-        'title' => 'Mismatched Node Question',
-        'body' => 'Checking node subject boundary conditions.',
+        'body' => 'Mismatched Node Question Checking node subject boundary conditions.',
     ]);
 
-    $post2 = ForumPost::where('title', 'Mismatched Node Question')->first();
+    $post2 = ForumPost::where('body', 'Mismatched Node Question Checking node subject boundary conditions.')->first();
     expect($post2)->not->toBeNull()
         ->and($post2->subject_id)->toBe($hscSubject->id)
         ->and($post2->node_id)->toBeNull();
@@ -413,8 +361,8 @@ test('deleting a post cleans up all child answer images from storage', function 
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
-        'title' => 'Post with Image Answers',
-        'body' => 'Testing image cleanup.',
+        'slug' => 'test-slug-'.Str::random(6),
+        'body' => 'Post with Image Answers Testing image cleanup.',
         'image_path' => 'forum/posts/test_post.png',
     ]);
     Storage::put('forum/posts/test_post.png', 'fake post image');
@@ -440,8 +388,8 @@ test('unauthenticated users filtering by my_posts receive zero questions', funct
     ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
-        'title' => 'Sample Post for Guest Filter Test',
-        'body' => 'Content of the question.',
+        'slug' => 'test-slug-'.Str::random(6),
+        'body' => 'Content of the question for guest filter test.',
     ]);
 
     $response = $this->get('/forum?my_posts=1');
@@ -461,7 +409,7 @@ test('users cannot reply to unapproved discussions', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
-        'title' => 'Unpublished Question',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Body of unpublished question.',
         'moderation_status' => 'rejected',
     ]);
@@ -492,13 +440,12 @@ test('submitting question with auto approval mode sets moderation_status to appr
 
     $this->actingAs($user)
         ->post(route('forum.store'), [
-            'title' => 'Auto Approved Question Title',
             'body' => 'Body of auto approved question with enough details.',
             'curriculum' => 'hsc',
         ])
         ->assertRedirect();
 
-    $post = ForumPost::where('title', 'Auto Approved Question Title')->first();
+    $post = ForumPost::where('body', 'Body of auto approved question with enough details.')->first();
     expect($post)->not->toBeNull();
     expect($post->moderation_status)->toBe('approved');
 });
@@ -510,13 +457,12 @@ test('submitting question with manual approval mode sets moderation_status to pe
 
     $this->actingAs($user)
         ->post(route('forum.store'), [
-            'title' => 'Manual Pending Question Title',
             'body' => 'Body of manual pending question with enough details.',
             'curriculum' => 'ssc',
         ])
         ->assertRedirect();
 
-    $post = ForumPost::where('title', 'Manual Pending Question Title')->first();
+    $post = ForumPost::where('body', 'Body of manual pending question with enough details.')->first();
     expect($post)->not->toBeNull();
     expect($post->moderation_status)->toBe('pending');
 });
@@ -571,7 +517,6 @@ test('suspended user cannot create forum questions', function () {
 
     $this->actingAs($suspendedUser)
         ->post('/forum', [
-            'title' => 'Suspended user question title',
             'body' => 'Suspended user question body content here.',
             'curriculum' => 'hsc',
         ])
@@ -589,7 +534,7 @@ test('suspended user cannot reply to forum questions', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
-        'title' => 'Active Forum Question Title',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Active forum question body content.',
     ]);
 
@@ -611,7 +556,7 @@ test('suspended user cannot vote on forum questions or answers', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
-        'title' => 'Active Question for Voting Test',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body.',
     ]);
 

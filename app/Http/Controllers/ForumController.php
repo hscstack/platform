@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -214,8 +215,7 @@ class ForumController extends Controller
         }
 
         $validated = $request->validate([
-            'title' => ['required', 'string', 'min:5', 'max:255', new CleanText],
-            'body' => ['nullable', 'string', 'max:30000', new CleanText],
+            'body' => ['required', 'string', 'min:5', 'max:30000', new CleanText],
             'curriculum' => ['required', 'in:hsc,ssc'],
             'subject_id' => ['nullable', 'exists:subjects,id'],
             'node_id' => ['nullable', 'exists:nodes,id'],
@@ -248,13 +248,16 @@ class ForumController extends Controller
         $approvalMode = AppSetting::get('forum_approval_mode', 'auto');
         $moderationStatus = $approvalMode === 'auto' ? 'approved' : 'pending';
 
+        $baseSlug = Str::limit(Str::slug(Str::words(strip_tags($validated['body']), 8, '')) ?: 'post', 200, '');
+        $slug = $baseSlug.'-'.Str::lower(Str::random(6));
+
         $post = ForumPost::create([
             'user_id' => auth()->id(),
             'subject_id' => $subjectId,
             'node_id' => $nodeId,
             'curriculum' => $validated['curriculum'],
-            'title' => $validated['title'],
-            'body' => $validated['body'] ?? null,
+            'slug' => $slug,
+            'body' => $validated['body'],
             'image_path' => $imagePath,
             'is_locked' => false,
             'moderation_status' => $moderationStatus,
@@ -295,17 +298,6 @@ class ForumController extends Controller
         return redirect()->route('forum.index')->with('success', 'Question deleted successfully.');
     }
 
-    public function toggleAnswered(Request $request, ForumPost $post): RedirectResponse
-    {
-        abort_unless(auth()->id() === $post->user_id || auth()->user()?->can('manage forums'), 403);
-
-        $post->update([
-            'is_answered' => ! $post->is_answered,
-        ]);
-
-        return back();
-    }
-
     public function report(Request $request, ForumPost $post): JsonResponse
     {
         $user = auth()->user();
@@ -329,7 +321,7 @@ class ForumController extends Controller
                 'reported_user_id' => $author?->id,
                 'reported_user_name' => $author?->name,
                 'reported_user_username' => $author?->username,
-                'content_snapshot' => $post->title."\n\n".$post->body,
+                'content_snapshot' => $post->body,
                 'reason' => $validated['reason'],
                 'status' => 'pending',
             ]);

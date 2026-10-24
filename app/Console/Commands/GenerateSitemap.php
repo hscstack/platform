@@ -121,10 +121,7 @@ class GenerateSitemap extends Command
 
         // 6. Latest 100 Answered Forum Questions
         ForumPost::approved()
-            ->where(function ($query) {
-                $query->where('answers_count', '>', 0)
-                    ->orWhere('is_answered', true);
-            })
+            ->where('answers_count', '>', 0)
             ->orderByDesc('updated_at')
             ->take(100)
             ->get(['slug', 'updated_at'])

@@ -24,57 +24,50 @@ class ForumSeeder extends Seeder
         $sampleQuestions = [
             [
                 'curriculum' => 'hsc',
-                'title' => 'How to solve 2nd order differential equations in Physics Paper 1?',
                 'body' => "I am having trouble understanding the standard method to solve second-order differential equations representing simple harmonic motion (SHM).\n\nCould someone please explain the step-by-step approach and how boundary conditions apply?",
-                'is_answered' => true,
+                'has_answers' => true,
                 'is_locked' => false,
                 'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
-                'title' => 'Difference between SN1 and SN2 reaction mechanisms in Organic Chemistry',
                 'body' => "Can anyone summarize the main differences between SN1 and SN2 nucleophilic substitution reactions?\n\nSpecifically regarding solvent polarity, carbocation stability, and stereochemistry inversion.",
-                'is_answered' => true,
+                'has_answers' => true,
                 'is_locked' => false,
                 'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
-                'title' => 'Important formulas cheat sheet for Higher Math Integration',
                 'body' => 'Which substitution techniques and trigonometric identities appear most frequently in board exam questions for indefinite integrals?',
-                'is_answered' => false,
+                'has_answers' => false,
                 'is_locked' => false,
                 'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'ssc',
-                'title' => 'How to balance redox chemical equations easily in SSC Chemistry Chapter 7?',
                 'body' => 'Is there an intuitive trick for balancing redox equations with oxidation numbers without memorizing every single equation in the textbook?',
-                'is_answered' => true,
+                'has_answers' => true,
                 'is_locked' => false,
                 'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'ssc',
-                'title' => 'SSC General Science - Electricity and Ohm\'s law problem clarification',
                 'body' => 'When resistors are in parallel, why does the equivalent resistance decrease below the smallest resistor? Looking for a physical intuition explanation.',
-                'is_answered' => false,
+                'has_answers' => false,
                 'is_locked' => false,
                 'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
-                'title' => '[RESOLVED/LOCKED] Official guidelines for HSC Board practical submissions',
                 'body' => 'This discussion contains the verified laboratory notebook guidelines and submission deadlines for physics and chemistry practical exams.',
-                'is_answered' => true,
+                'has_answers' => true,
                 'is_locked' => true,
                 'moderation_status' => 'approved',
             ],
             [
                 'curriculum' => 'hsc',
-                'title' => 'Spam discussion flagged by community for inappropriate content',
                 'body' => 'Check out this random link http://suspicious-site.example.com to buy leaked question papers!',
-                'is_answered' => false,
+                'has_answers' => false,
                 'is_locked' => true,
                 'moderation_status' => 'flagged',
             ],
@@ -86,7 +79,7 @@ class ForumSeeder extends Seeder
             $subject = $curriculumSubjects->isNotEmpty() ? $curriculumSubjects->random() : null;
             $node = $subject && $subject->nodes->isNotEmpty() ? $subject->nodes->random() : null;
 
-            $baseSlug = Str::slug($qData['title']) ?: 'post';
+            $baseSlug = Str::slug(Str::words($qData['body'], 8, '')) ?: 'post';
             $slug = "{$baseSlug}-".Str::lower(Str::random(5));
 
             $post = ForumPost::create([
@@ -94,18 +87,16 @@ class ForumSeeder extends Seeder
                 'subject_id' => $subject?->id,
                 'node_id' => $node?->id,
                 'curriculum' => $qData['curriculum'],
-                'title' => $qData['title'],
                 'slug' => $slug,
                 'body' => $qData['body'],
-                'is_answered' => $qData['is_answered'],
                 'is_locked' => $qData['is_locked'],
                 'moderation_status' => $qData['moderation_status'],
                 'vote_score' => 0,
                 'answers_count' => 0,
             ]);
 
-            // Add sample answers if question is answered
-            if ($qData['is_answered']) {
+            // Add sample answers if question has answers
+            if (! empty($qData['has_answers'])) {
                 $answeringUser = $users->where('id', '!=', $author->id)->random();
 
                 $answer = ForumAnswer::create([

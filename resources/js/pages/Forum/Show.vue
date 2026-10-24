@@ -3,7 +3,6 @@ import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     ArrowBigUp,
-    CheckCircle2,
     MessageSquare,
     Trash2,
     Reply,
@@ -86,12 +85,10 @@ interface ForumPost {
     subject_id?: number | null;
     node_id?: number | null;
     curriculum: 'hsc' | 'ssc';
-    title: string;
     slug: string;
-    body?: string | null;
+    body: string;
     image_path?: string | null;
     image_url?: string | null;
-    is_answered: boolean;
     is_locked?: boolean;
     moderation_status?: 'approved' | 'pending' | 'flagged' | 'rejected';
     vote_score: number;
@@ -197,29 +194,6 @@ const openImageModal = (src: string, alt = 'Attached image') => {
     modalImageSrc.value = src;
     modalImageAlt.value = alt;
     showImageModal.value = true;
-};
-
-// Toggle Answered
-const isTogglingAnswered = ref(false);
-const toggleAnswered = () => {
-    if (
-        !user.value ||
-        (user.value.id !== props.post.user_id && !can('manage forums'))
-    ) {
-        return;
-    }
-
-    isTogglingAnswered.value = true;
-    router.post(
-        `/forum/posts/${props.post.id}/toggle-answered`,
-        {},
-        {
-            preserveScroll: true,
-            onFinish: () => {
-                isTogglingAnswered.value = false;
-            },
-        },
-    );
 };
 
 // Delete Post
@@ -677,10 +651,17 @@ function parseMentions(
 
 <template>
     <Head>
-        <title>{{ post.title }} — HSCStack Forum</title>
+        <title>
+            {{ post.body ? post.body.slice(0, 60) + '...' : 'Forum Question' }}
+            — HSCStack Forum
+        </title>
         <meta
             name="description"
-            :content="post.body ? post.body.slice(0, 160) : post.title"
+            :content="
+                post.body
+                    ? post.body.slice(0, 160)
+                    : 'Forum Question on HSCStack'
+            "
         />
     </Head>
 
@@ -815,25 +796,7 @@ function parseMentions(
                 >
                     # {{ post.node.name }}
                 </span>
-
-                <!-- Answered Badge -->
-                <span
-                    v-if="post.is_answered"
-                    class="inline-flex items-center gap-1 rounded-md bg-emerald-100/80 px-2 py-0.5 font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                >
-                    <CheckCircle2
-                        class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
-                    />
-                    <span>Answered</span>
-                </span>
             </div>
-
-            <!-- Question Title -->
-            <h1
-                class="text-xl font-extrabold text-slate-900 sm:text-2xl dark:text-gray-100"
-            >
-                {{ post.title }}
-            </h1>
 
             <!-- Author & Metadata Row -->
             <div
@@ -907,8 +870,13 @@ function parseMentions(
                 >
                     <img
                         :src="post.image_url"
-                        :alt="post.title"
-                        @click="openImageModal(post.image_url, post.title)"
+                        :alt="post.body?.slice(0, 50)"
+                        @click="
+                            openImageModal(
+                                post.image_url,
+                                post.body?.slice(0, 50),
+                            )
+                        "
                         class="max-h-96 cursor-zoom-in rounded-xl object-contain transition hover:opacity-95"
                     />
                 </div>
@@ -973,30 +941,6 @@ function parseMentions(
                                     : 'upvotes'
                             }}
                         </span>
-                    </button>
-
-                    <!-- Author or Moderator "Mark as Answered" Toggle -->
-                    <button
-                        v-if="
-                            user &&
-                            (user.id === post.user_id || can('manage forums'))
-                        "
-                        type="button"
-                        @click="toggleAnswered"
-                        :disabled="isTogglingAnswered"
-                        class="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition"
-                        :class="[
-                            post.is_answered
-                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800',
-                        ]"
-                    >
-                        <CheckCircle2 class="h-3.5 w-3.5" />
-                        <span>{{
-                            post.is_answered
-                                ? 'Mark as Unanswered'
-                                : 'Mark as Answered'
-                        }}</span>
                     </button>
                 </div>
 
@@ -1081,9 +1025,9 @@ function parseMentions(
                             openReportModal(
                                 'post',
                                 post.id,
-                                post.title,
+                                post.body?.slice(0, 50),
                                 post.user?.name,
-                                post.body || post.title,
+                                post.body,
                             )
                         "
                         class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-2xs transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-amber-900/60 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
@@ -1255,7 +1199,7 @@ function parseMentions(
                                 openReportModal(
                                     'answer',
                                     answer.id,
-                                    post.title,
+                                    post.body?.slice(0, 50),
                                     answer.user?.name,
                                     answer.body,
                                 )
@@ -1427,7 +1371,7 @@ function parseMentions(
                                         openReportModal(
                                             'answer',
                                             reply.id,
-                                            post.title,
+                                            post.body?.slice(0, 50),
                                             reply.user?.name,
                                             reply.body,
                                         )

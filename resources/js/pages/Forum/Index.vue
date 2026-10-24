@@ -50,12 +50,10 @@ interface ForumPost {
     subject_id?: number | null;
     node_id?: number | null;
     curriculum: 'hsc' | 'ssc';
-    title: string;
     slug: string;
-    body?: string | null;
+    body: string;
     image_path?: string | null;
     image_url?: string | null;
-    is_answered: boolean;
     vote_score: number;
     upvotes_count: number;
     downvotes_count: number;

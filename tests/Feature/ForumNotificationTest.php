@@ -9,6 +9,7 @@ use App\Notifications\ForumReportNotification;
 use App\Notifications\ForumStatusNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -34,7 +35,7 @@ test('reporting a question sends ForumReportNotification to users with manage fo
         'user_id' => $reporter->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
-        'title' => 'Sample reported question',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content here',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -70,7 +71,7 @@ test('admin locking discussion sends ForumStatusNotification to author', functio
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
-        'title' => 'Question to be locked',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -104,7 +105,7 @@ test('admin updating moderation status sends ForumStatusNotification to author',
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
-        'title' => 'Question pending approval',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content',
         'moderation_status' => 'pending',
         'is_locked' => false,
@@ -140,7 +141,7 @@ test('admin updating moderation status to same status does not trigger duplicate
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
-        'title' => 'Already approved question',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -175,7 +176,7 @@ test('auto unpublishing a question on report threshold sends ForumStatusNotifica
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
-        'title' => 'Spam question title',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Spam body content',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -213,7 +214,7 @@ test('ForumStatusNotification delivers to database channel only', function () {
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
-        'title' => 'Channel test post',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post body',
     ]);
 
@@ -249,7 +250,6 @@ test('submitting a question when approval mode is manual sends ForumQuestionPend
     ]);
 
     $this->actingAs($author)->post(route('forum.store'), [
-        'title' => 'New question requiring review',
         'body' => 'Here is my detailed physics inquiry that requires approval.',
         'curriculum' => 'hsc',
         'subject_id' => $subject->id,
@@ -257,6 +257,6 @@ test('submitting a question when approval mode is manual sends ForumQuestionPend
 
     Notification::assertSentTo($admin, ForumQuestionPendingNotification::class, function ($notification) use ($author) {
         return $notification->author->id === $author->id
-            && $notification->post->title === 'New question requiring review';
+            && str_contains($notification->post->body, 'Here is my detailed physics inquiry');
     });
 });

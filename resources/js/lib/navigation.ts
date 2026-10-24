@@ -10,6 +10,14 @@ export type NavItem = {
 
 export const primaryNavItems: NavItem[] = [
     {
+        label: 'Feed',
+        labelBn: 'ফিড',
+        href: '/feed',
+        icon: 'dynamic_feed',
+        match: (url) => url.startsWith('/feed'),
+        showInBottom: true,
+    },
+    {
         label: 'Home',
         href: '/',
         icon: 'home',
@@ -26,13 +34,6 @@ export const primaryNavItems: NavItem[] = [
         href: '/tracker',
         icon: 'timer',
         match: (url) => url.startsWith('/tracker'),
-        showInBottom: true,
-    },
-    {
-        label: 'People',
-        href: '/peers',
-        icon: 'group',
-        match: (url) => url.startsWith('/peers'),
         showInBottom: true,
     },
     {

@@ -9,6 +9,7 @@ use App\Models\NodeCompletion;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 test('public user profile can be rendered by username', function () {
     $user = User::factory()->create([
@@ -82,9 +83,9 @@ test('public profile accurately displays forum questions, answers, and activitie
     $post = ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'subject_id' => $subject->id,
         'node_id' => $node->id,
-        'title' => 'How to calculate cross product angle?',
         'body' => 'Need help with vector cross product.',
     ]);
 
@@ -100,7 +101,7 @@ test('public profile accurately displays forum questions, answers, and activitie
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
         ->has('forumPosts', 1)
-        ->where('forumPosts.0.title', 'How to calculate cross product angle?')
+        ->where('forumPosts.0.body', 'Need help with vector cross product.')
         ->has('forumAnswers', 1)
         ->where('forumAnswers.0.body', 'Use A x B = |A||B|sin(theta) formula.')
     );
@@ -124,9 +125,9 @@ test('public profile excludes unapproved forum questions and answers', function 
     $pendingPost = ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'subject_id' => $subject->id,
         'node_id' => $node->id,
-        'title' => 'Pending Question Title',
         'body' => 'Pending post body.',
         'moderation_status' => 'pending',
     ]);

@@ -11,6 +11,7 @@ use App\Notifications\ForumStatusNotification;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ForumController extends Controller
@@ -31,8 +32,7 @@ class ForumController extends Controller
             })
             ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($sub) use ($search) {
-                    $sub->where('title', 'like', "%{$search}%")
-                        ->orWhere('body', 'like', "%{$search}%")
+                    $sub->where('body', 'like', "%{$search}%")
                         ->orWhereHas('user', function ($u) use ($search) {
                             $u->where('name', 'like', "%{$search}%")
                                 ->orWhere('username', 'like', "%{$search}%");
@@ -112,7 +112,7 @@ class ForumController extends Controller
             'reportedUser:id,name,username,banned_until',
             'reportable' => function (MorphTo $morphTo) {
                 $morphTo->morphWith([
-                    ForumAnswer::class => ['post:id,title,slug'],
+                    ForumAnswer::class => ['post:id,body,slug'],
                 ]);
             },
         ])
@@ -126,10 +126,10 @@ class ForumController extends Controller
 
                 if ($report->reportable instanceof ForumPost) {
                     $postSlug = $report->reportable->slug;
-                    $postTitle = $report->reportable->title;
+                    $postTitle = Str::words(strip_tags($report->reportable->body ?? ''), 8, '...');
                 } elseif ($report->reportable instanceof ForumAnswer) {
                     $postSlug = $report->reportable->post?->slug;
-                    $postTitle = $report->reportable->post?->title;
+                    $postTitle = Str::words(strip_tags($report->reportable->post?->body ?? ''), 8, '...');
                 }
 
                 return [

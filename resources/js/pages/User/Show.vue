@@ -8,7 +8,6 @@ import {
     BadgeCheck,
     BookOpen,
     Calendar,
-    CheckCircle2,
     ChevronRight,
     Edit3,
     Eye,
@@ -99,10 +98,9 @@ const props = defineProps<{
     }>;
     forumPosts?: Array<{
         id: number;
-        title: string;
         slug: string;
+        body: string;
         curriculum: 'hsc' | 'ssc';
-        is_answered: boolean;
         answers_count?: number;
         vote_score: number;
         created_at: string;
@@ -125,10 +123,9 @@ const props = defineProps<{
         created_at: string;
         post?: {
             id: number;
-            title: string;
             slug: string;
+            body: string;
             curriculum: string;
-            is_answered: boolean;
         } | null;
     }>;
     blogs: Array<{
@@ -1270,22 +1267,13 @@ const formatGroupName = (group?: string) => {
                                                 >
                                                     {{ post.node.name }}
                                                 </span>
-                                                <span
-                                                    v-if="post.is_answered"
-                                                    class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                                                >
-                                                    <CheckCircle2
-                                                        class="h-2.5 w-2.5"
-                                                    />
-                                                    Answered
-                                                </span>
                                             </div>
 
-                                            <h4
-                                                class="text-xs font-bold text-slate-900 transition group-hover:text-indigo-600 sm:text-sm dark:text-gray-100 dark:group-hover:text-indigo-400"
+                                            <p
+                                                class="line-clamp-2 text-xs font-semibold text-slate-900 transition group-hover:text-indigo-600 sm:text-sm dark:text-gray-100 dark:group-hover:text-indigo-400"
                                             >
-                                                {{ post.title }}
-                                            </h4>
+                                                {{ post.body }}
+                                            </p>
                                         </div>
 
                                         <ArrowUpRight
@@ -1394,8 +1382,12 @@ const formatGroupName = (group?: string) => {
                                                 <span class="truncate"
                                                     >Answer on:
                                                     {{
-                                                        ans.post?.title ||
-                                                        'Question'
+                                                        ans.post?.body
+                                                            ? ans.post.body.slice(
+                                                                  0,
+                                                                  50,
+                                                              ) + '...'
+                                                            : 'Question'
                                                     }}</span
                                                 >
                                             </div>

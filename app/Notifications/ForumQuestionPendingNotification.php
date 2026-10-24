@@ -38,7 +38,7 @@ class ForumQuestionPendingNotification extends Notification implements ShouldQue
             'type' => 'forum_pending',
             'post_id' => $this->post->id,
             'title' => 'New Question Pending Review',
-            'message' => "{$this->author->name}: \"{$this->post->title}\"",
+            'message' => "{$this->author->name}: \"{$this->post->snippet(40)}\"",
             'url' => route('admin.forums.index', ['status' => 'pending']),
         ];
     }

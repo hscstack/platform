@@ -44,7 +44,7 @@ class ForumStatusNotification extends Notification implements ShouldQueue
         ];
 
         $title = $this->actionTitle ?? ($statusLabels[$this->status] ?? 'Discussion update');
-        $message = $this->actionMessage ?? "\"{$this->post->title}\"";
+        $message = $this->actionMessage ?? "\"{$this->post->snippet(40)}\"";
 
         return [
             'type' => 'forum_status',
