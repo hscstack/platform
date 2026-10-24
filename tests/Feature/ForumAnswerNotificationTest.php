@@ -8,6 +8,7 @@ use App\Notifications\ForumAnswerNotification;
 use App\Notifications\ForumReportNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -31,6 +32,7 @@ test('answering a forum post sends ForumAnswerNotification to post author', func
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'I am struggling with relative velocity in vector physics.',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -64,6 +66,7 @@ test('sub-reply notification is strictly database only and does not send mail', 
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post body text here',
     ]);
 
@@ -97,6 +100,7 @@ test('author answering own post does not trigger notification', function () {
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'I am struggling with relative velocity in vector physics.',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -128,6 +132,7 @@ test('replying to an answer sends ForumAnswerNotification to the parent answer a
         'user_id' => $postAuthor->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'I am struggling with relative velocity in vector physics.',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -171,6 +176,7 @@ test('replying with @mention sends ForumAnswerNotification to the mentioned user
         'user_id' => $postAuthor->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'I am struggling with relative velocity in vector physics.',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -218,6 +224,7 @@ test('reporting a forum answer sends ForumReportNotification to users with manag
         'user_id' => $reporter->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'I am struggling with relative velocity in vector physics.',
         'moderation_status' => 'approved',
         'is_locked' => false,

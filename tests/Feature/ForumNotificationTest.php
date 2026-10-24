@@ -9,6 +9,7 @@ use App\Notifications\ForumReportNotification;
 use App\Notifications\ForumStatusNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -34,6 +35,7 @@ test('reporting a question sends ForumReportNotification to users with manage fo
         'user_id' => $reporter->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content here',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -69,6 +71,7 @@ test('admin locking discussion sends ForumStatusNotification to author', functio
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -102,6 +105,7 @@ test('admin updating moderation status sends ForumStatusNotification to author',
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content',
         'moderation_status' => 'pending',
         'is_locked' => false,
@@ -137,6 +141,7 @@ test('admin updating moderation status to same status does not trigger duplicate
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body content',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -171,6 +176,7 @@ test('auto unpublishing a question on report threshold sends ForumStatusNotifica
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Spam body content',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -208,6 +214,7 @@ test('ForumStatusNotification delivers to database channel only', function () {
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post body',
     ]);
 

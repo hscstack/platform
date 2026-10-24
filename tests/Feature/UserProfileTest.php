@@ -9,6 +9,7 @@ use App\Models\NodeCompletion;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 test('public user profile can be rendered by username', function () {
     $user = User::factory()->create([
@@ -82,6 +83,7 @@ test('public profile accurately displays forum questions, answers, and activitie
     $post = ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'subject_id' => $subject->id,
         'node_id' => $node->id,
         'body' => 'Need help with vector cross product.',
@@ -123,6 +125,7 @@ test('public profile excludes unapproved forum questions and answers', function 
     $pendingPost = ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'subject_id' => $subject->id,
         'node_id' => $node->id,
         'body' => 'Pending post body.',

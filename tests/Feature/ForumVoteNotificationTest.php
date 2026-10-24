@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\ForumVoteNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -30,6 +31,7 @@ test('upvoting a question sends ForumVoteNotification to post author', function 
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body here',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -63,6 +65,7 @@ test('downvoting a question does not trigger ForumVoteNotification', function ()
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body here',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -92,6 +95,7 @@ test('author upvoting own post does not trigger ForumVoteNotification', function
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body here',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -123,6 +127,7 @@ test('upvoting an answer sends ForumVoteNotification to the answer author', func
         'user_id' => $postAuthor->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body here',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -161,6 +166,7 @@ test('repeatedly toggling or switching vote does not trigger spam notifications'
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body here',
         'moderation_status' => 'approved',
         'is_locked' => false,
@@ -196,6 +202,7 @@ test('multiple upvotes on a question aggregate into a single unread notification
         'user_id' => $author->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body here',
         'moderation_status' => 'approved',
         'is_locked' => false,

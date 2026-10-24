@@ -7,6 +7,7 @@ use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
@@ -29,6 +30,7 @@ test('unauthenticated users can view forum index and show', function () {
         'user_id' => $user->id,
         'subject_id' => $subject->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'I am struggling with relative velocity in vector physics.',
     ]);
 
@@ -127,6 +129,7 @@ test('user can post answer and reply with 1-level nesting enforced', function ()
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'What is the oxidation state of Chromium in K2Cr2O7?',
     ]);
 
@@ -172,6 +175,7 @@ test('voting on posts updates vote_score and toggles', function () {
     $post = ForumPost::create([
         'user_id' => $user1->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Sample body content for voting test.',
     ]);
 
@@ -226,6 +230,7 @@ test('profane words trigger CleanText validation on post and answer', function (
     $post = ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Clean Question Body',
     ]);
 
@@ -243,6 +248,7 @@ test('author can delete their own posts and answers while others cannot', functi
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post body to be deleted.',
     ]);
 
@@ -276,6 +282,7 @@ test('voting on answers works correctly', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post body.',
     ]);
 
@@ -354,6 +361,7 @@ test('deleting a post cleans up all child answer images from storage', function 
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post with Image Answers Testing image cleanup.',
         'image_path' => 'forum/posts/test_post.png',
     ]);
@@ -380,6 +388,7 @@ test('unauthenticated users filtering by my_posts receive zero questions', funct
     ForumPost::create([
         'user_id' => $user->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Content of the question for guest filter test.',
     ]);
 
@@ -400,6 +409,7 @@ test('users cannot reply to unapproved discussions', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Body of unpublished question.',
         'moderation_status' => 'rejected',
     ]);
@@ -524,6 +534,7 @@ test('suspended user cannot reply to forum questions', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Active forum question body content.',
     ]);
 
@@ -545,6 +556,7 @@ test('suspended user cannot vote on forum questions or answers', function () {
     $post = ForumPost::create([
         'user_id' => $author->id,
         'curriculum' => 'hsc',
+        'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Question body.',
     ]);
 

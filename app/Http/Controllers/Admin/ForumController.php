@@ -11,6 +11,7 @@ use App\Notifications\ForumStatusNotification;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ForumController extends Controller
