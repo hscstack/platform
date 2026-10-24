@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
+use App\Models\Node;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Notifications\ResourceVoteNotification;

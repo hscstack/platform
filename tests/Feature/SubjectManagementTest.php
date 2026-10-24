@@ -251,7 +251,7 @@ test('disabled subjects are hidden from home page', function () {
     $response->assertOk();
 
     $response->assertInertia(fn ($page) => $page
-        ->component('Home')
+        ->component('Feed')
         ->where('subjects', fn ($subjects) => collect($subjects)->pluck('id')->contains($enabledSubject->id)
             && ! collect($subjects)->pluck('id')->contains($disabledSubject->id)
         )
