@@ -10,22 +10,20 @@ export type NavItem = {
 
 export const primaryNavItems: NavItem[] = [
     {
-        label: 'Feed',
-        labelBn: 'ফিড',
-        href: '/feed',
-        icon: 'dynamic_feed',
-        match: (url) => url.startsWith('/feed'),
+        label: 'Home',
+        labelBn: 'হোম',
+        href: '/',
+        icon: 'home',
+        match: (url) => url === '/' || url.startsWith('/feed'),
         showInBottom: true,
     },
     {
-        label: 'Home',
-        href: '/',
-        icon: 'home',
+        label: 'Notes',
+        labelBn: 'নোট আর্কাইভ',
+        href: '/notes',
+        icon: 'auto_stories',
         match: (url) =>
-            url === '/' ||
-            url.startsWith('/?') ||
-            url === '/ssc' ||
-            url.startsWith('/ssc?'),
+            url.startsWith('/notes') || url.startsWith('/resources'),
         showInBottom: true,
     },
     {
@@ -37,11 +35,19 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Leaderboard',
+        labelBn: 'লিডারবোর্ড',
+        href: '/leaderboard',
+        icon: 'leaderboard',
+        match: (url) => url.startsWith('/leaderboard'),
+        showInBottom: true,
+    },
+    {
         label: 'Blogs',
         href: '/blogs',
         icon: 'menu_book',
         match: (url) => url.startsWith('/blogs'),
-        showInBottom: true,
+        showInBottom: false,
     },
     {
         label: 'Forum',
@@ -57,14 +63,6 @@ export const primaryNavItems: NavItem[] = [
         icon: 'chat',
         match: (url) => url.startsWith('/chat'),
         showInBottom: true,
-    },
-    {
-        label: 'Leaderboard',
-        labelBn: 'লিডারবোর্ড',
-        href: '/leaderboard',
-        icon: 'leaderboard',
-        match: (url) => url.startsWith('/leaderboard'),
-        showInBottom: false,
     },
     {
         label: 'AI',

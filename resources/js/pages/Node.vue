@@ -8,7 +8,6 @@ import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import NodeRow from '@/components/NodeRow.vue';
 import ResourceRow from '@/components/ResourceRow.vue';
-import UploadResourceDropdown from '@/components/resources/UploadResourceDropdown.vue';
 import { useAuth } from '@/lib/useAuth';
 
 const props = defineProps({
@@ -329,11 +328,6 @@ const filteredResources = computed(() => {
                 class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-2.5 text-xs font-bold tracking-wider text-slate-400 uppercase sm:px-6 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500"
             >
                 <span>Name</span>
-                <UploadResourceDropdown
-                    v-if="currentNode && nodes.length === 0"
-                    :node="currentNode as any"
-                    :is-frozen="Boolean(currentNode.is_frozen)"
-                />
             </div>
 
             <div class="flex-1 divide-y divide-slate-100 dark:divide-gray-800">

@@ -10,7 +10,7 @@ use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumVoteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeaderboardController;
-use App\Http\Controllers\NodeController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeerController;
 use App\Http\Controllers\ProductController;
@@ -18,7 +18,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\StudyTrackerController;
-use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
@@ -167,18 +166,11 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/u/{user}/appreciating', [UserProfileController::class, 'appreciating'])->name('user.appreciating');
     Route::get('/u/{username}', [UserProfileController::class, 'show'])->name('user.profile');
 
-    Route::get('/feed', [HomeController::class, 'index'])->name('feed');
+    Route::get('/', [HomeController::class, 'index'])->name('index');
     Route::get('/api/feed', [HomeController::class, 'feed'])->name('feed.api');
 
-    Route::get('/', [SubjectController::class, 'index'])
-        ->defaults('course', 'hsc')
-        ->name('index');
-
-    Route::get('/ssc', [SubjectController::class, 'index'])
-        ->defaults('course', 'ssc')
-        ->name('ssc.index');
+    Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
+    Route::get('/resources', [NoteController::class, 'index'])->name('resources.index');
 
     Route::get('/resources/{id}', [ResourceController::class, 'show']);
-    Route::get('/{subject:slug}', [SubjectController::class, 'show']);
-    Route::get('/{subject:slug}/{path}', [NodeController::class, 'show'])->where('path', '.*');
 });

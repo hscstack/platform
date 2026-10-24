@@ -9,15 +9,20 @@ class StoreResourceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $node = Node::find($this->input('node_id'));
+        if ($this->filled('node_id')) {
+            $node = Node::find($this->input('node_id'));
 
-        return ! ($node?->isEffectivelyFrozen());
+            return ! ($node?->isEffectivelyFrozen());
+        }
+
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'node_id' => ['required', 'integer', 'exists:nodes,id'],
+            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
+            'node_id' => ['nullable', 'integer', 'exists:nodes,id'],
             'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

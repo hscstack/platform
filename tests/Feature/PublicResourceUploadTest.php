@@ -37,9 +37,10 @@ function createTestSubjectAndNode(bool $isFrozen = false): array
 }
 
 test('guest cannot upload documents', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
 
     $this->post('/resources', [
+        'subject_id' => $subject->id,
         'node_id' => $node->id,
         'resource_type' => 'note',
         'title' => 'Test Note',
@@ -50,7 +51,7 @@ test('guest cannot upload documents', function () {
 });
 
 test('banned user cannot upload resources', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
 
     $user = User::factory()->create([
         'banned_until' => now()->addDays(7),
@@ -58,6 +59,7 @@ test('banned user cannot upload resources', function () {
 
     $response = $this->actingAs($user)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Banned User Note',
@@ -71,12 +73,13 @@ test('banned user cannot upload resources', function () {
 });
 
 test('public authenticated user submits document with pending status', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
 
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'My Community Note',
@@ -93,6 +96,7 @@ test('public authenticated user submits document with pending status', function 
 
     $res = Resource::first();
     expect($res->user_id)->toBe($user->id)
+        ->and($res->subject_id)->toBe($subject->id)
         ->and($res->node_id)->toBe($node->id)
         ->and($res->status)->toBe('pending')
         ->and($res->title)->toBe('My Community Note')
@@ -100,13 +104,14 @@ test('public authenticated user submits document with pending status', function 
 });
 
 test('moderator user uploading document gets auto-approved', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
 
     $moderator = User::factory()->create();
     $moderator->givePermissionTo('moderate resources');
 
     $this->actingAs($moderator)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Moderator Note',
@@ -124,7 +129,7 @@ test('moderator user uploading document gets auto-approved', function () {
 });
 
 test('regular users are blocked after 20 pending submissions while verified can submit up to 50', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
 
     $user = User::factory()->create([
         'is_verified' => false,
@@ -133,6 +138,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
     for ($i = 0; $i < 20; $i++) {
         Resource::create([
             'user_id' => $user->id,
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => "Pending Note {$i}",
@@ -143,6 +149,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
     // 21st submission should be rejected
     $this->actingAs($user)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Exceeding Quota',
@@ -157,6 +164,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
 
     $this->actingAs($user->fresh())
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Allowed For Verified',
@@ -169,11 +177,12 @@ test('regular users are blocked after 20 pending submissions while verified can 
 });
 
 test('cannot submit resource with mixed formats', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Mixed Formats Note',
@@ -188,12 +197,13 @@ test('cannot submit resource with mixed formats', function () {
 });
 
 test('cannot submit video resource with non-video formats or note resource with video format', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
     $user = User::factory()->create();
 
     // 1. Video resource cannot contain image
     $this->actingAs($user)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'video',
             'title' => 'Video with Image',
@@ -206,6 +216,7 @@ test('cannot submit video resource with non-video formats or note resource with 
     // 2. Note resource cannot contain video
     $this->actingAs($user)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Note with Video',
@@ -281,11 +292,12 @@ test('fetch playlist endpoint is rate limited to 10 requests per minute', functi
 });
 
 test('user can submit marked_book resource with images', function () {
-    [, $node] = createTestSubjectAndNode();
+    [$subject, $node] = createTestSubjectAndNode();
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->post('/resources', [
+            'subject_id' => $subject->id,
             'node_id' => $node->id,
             'resource_type' => 'marked_book',
             'title' => 'Physics 1st Paper Marked Book',

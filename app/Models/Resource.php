@@ -16,6 +16,7 @@ class Resource extends Model
     use Prunable;
 
     protected $fillable = [
+        'subject_id',
         'node_id',
         'user_id',
         'resource_type',
@@ -84,6 +85,11 @@ class Resource extends Model
     public function node(): BelongsTo
     {
         return $this->belongsTo(Node::class);
+    }
+
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class);
     }
 
     public function user(): BelongsTo

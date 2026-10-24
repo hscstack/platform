@@ -4,17 +4,19 @@ import {
     ArrowRight,
     BookOpen,
     Check,
+    ChevronDown,
     Clock,
+    FileText,
     Flame,
+    GraduationCap,
+    HelpCircle,
     Loader2,
     Plus,
-    RotateCcw,
     Search,
-    SlidersHorizontal,
     User as UserIcon,
     Users,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import AdUnit from '@/components/AdUnit.vue';
 import BaseModal from '@/components/BaseModal.vue';
@@ -24,7 +26,14 @@ import ForumFeedCard from '@/components/forum/ForumFeedCard.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import ResourceFeedCard from '@/components/resources/ResourceFeedCard.vue';
+import ResourceFormModal from '@/components/resources/ResourceFormModal.vue';
 import { useAuth } from '@/lib/useAuth';
+
+interface SubjectNode {
+    id: number;
+    name: string;
+    slug: string;
+}
 
 interface Subject {
     id: number;
@@ -32,6 +41,7 @@ interface Subject {
     slug: string;
     course: 'hsc' | 'ssc';
     group?: string;
+    nodes?: SubjectNode[];
 }
 
 const props = defineProps<{
@@ -47,7 +57,27 @@ const props = defineProps<{
     notice?: any;
 }>();
 
-const { user } = useAuth();
+const { user, requireAuth } = useAuth();
+
+// Intermediate Action Modal State (Ask Question vs Upload Resource)
+const isActionChoiceModalOpen = ref(false);
+const isResourceUploadModalOpen = ref(false);
+
+const handleComposeClick = () => {
+    requireAuth('পোস্ট করতে অনুগ্রহ করে লগইন করুন।', () => {
+        isActionChoiceModalOpen.value = true;
+    });
+};
+
+const chooseAskQuestion = () => {
+    isActionChoiceModalOpen.value = false;
+    router.visit('/forum/ask');
+};
+
+const chooseUploadResource = () => {
+    isActionChoiceModalOpen.value = false;
+    isResourceUploadModalOpen.value = true;
+};
 
 const currentCourse = ref<'hsc' | 'ssc'>(props.course || 'hsc');
 const currentGroup = ref<'science' | 'commerce' | 'humanities'>(
@@ -55,40 +85,40 @@ const currentGroup = ref<'science' | 'commerce' | 'humanities'>(
 );
 const currentSort = ref<'trending' | 'recent'>(props.sort || 'trending');
 
-// Modal State
-const showFilterModal = ref(false);
-const draftCourse = ref<'hsc' | 'ssc'>(currentCourse.value);
-const draftGroup = ref<'science' | 'commerce' | 'humanities'>(
-    currentGroup.value,
-);
+// Track Selector State
+const isTrackDropdownOpen = ref(false);
+const trackDropdownRef = ref<HTMLElement | null>(null);
 
-const activeFilterCount = computed(() => {
-    let count = 0;
+const groupOptions: Array<{
+    key: 'science' | 'commerce' | 'humanities';
+    label: string;
+}> = [
+    { key: 'science', label: 'বিজ্ঞান' },
+    { key: 'commerce', label: 'ব্যবসায় শিক্ষা' },
+    { key: 'humanities', label: 'মানবিক' },
+];
 
-    if (currentGroup.value !== 'science') {
-        count++;
-    }
+const currentGroupLabel = computed(() => {
+    const found = groupOptions.find((g) => g.key === currentGroup.value);
 
-    if (currentCourse.value === 'ssc') {
-        count++;
-    }
-
-    return count;
+    return found ? found.label : 'বিজ্ঞান';
 });
 
-const openFilterModal = () => {
-    draftCourse.value = currentCourse.value;
-    draftGroup.value = currentGroup.value;
-    showFilterModal.value = true;
-};
+const selectTrack = (
+    course: 'hsc' | 'ssc',
+    group: 'science' | 'commerce' | 'humanities',
+) => {
+    isTrackDropdownOpen.value = false;
 
-const applyFilters = () => {
-    currentCourse.value = draftCourse.value;
-    currentGroup.value = draftGroup.value;
-    showFilterModal.value = false;
+    if (currentCourse.value === course && currentGroup.value === group) {
+        return;
+    }
+
+    currentCourse.value = course;
+    currentGroup.value = group;
 
     router.get(
-        '/feed',
+        '/',
         {
             course: currentCourse.value,
             group: currentGroup.value,
@@ -98,10 +128,22 @@ const applyFilters = () => {
     );
 };
 
-const resetModalFilters = () => {
-    draftCourse.value = 'hsc';
-    draftGroup.value = 'science';
+const handleWindowClick = (e: MouseEvent) => {
+    if (
+        trackDropdownRef.value &&
+        !trackDropdownRef.value.contains(e.target as Node)
+    ) {
+        isTrackDropdownOpen.value = false;
+    }
 };
+
+onMounted(() => {
+    window.addEventListener('click', handleWindowClick);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('click', handleWindowClick);
+});
 
 // Peer Search State & Handlers
 const sidebarPeerSearch = ref(user.value?.institution || '');
@@ -155,7 +197,7 @@ const switchSort = (newSort: 'trending' | 'recent') => {
 
     currentSort.value = newSort;
     router.get(
-        '/feed',
+        '/',
         {
             course: currentCourse.value,
             sort: newSort,
@@ -203,7 +245,7 @@ const loadMore = async () => {
 </script>
 
 <template>
-    <Head title="Feed — HSCStack" />
+    <Head title="Feed" />
 
     <NoticeDialog v-if="notice" :notice="notice" />
 
@@ -238,21 +280,21 @@ const loadMore = async () => {
                             </div>
                         </div>
 
-                        <!-- Prompt trigger input linking to forum question ask page -->
-                        <Link
-                            href="/forum/ask"
-                            class="group flex flex-1 items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 sm:text-sm dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800"
+                        <!-- Prompt trigger input opening intermediate choice modal -->
+                        <button
+                            type="button"
+                            @click="handleComposeClick"
+                            class="group flex flex-1 cursor-pointer items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 sm:text-sm dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800"
                         >
                             <span class="truncate">
-                                কী পড়ছেন আজ? হ্যান্ডনোট, বইয়ের লিংক শেয়ার
-                                করুন...
+                                কী পড়ছেন আজ? প্রশ্ন করুন বা নোট শেয়ার করুন...
                             </span>
                             <div
                                 class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white transition group-hover:bg-indigo-700"
                             >
                                 <Plus class="h-3.5 w-3.5" />
                             </div>
-                        </Link>
+                        </button>
                     </div>
                 </div>
 
@@ -321,24 +363,106 @@ const loadMore = async () => {
                         </button>
                     </div>
 
-                    <!-- Filter Trigger Button (Right) -->
-                    <button
-                        type="button"
-                        @click="openFilterModal"
-                        class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 sm:px-3.5 sm:py-2 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-                        title="Filter"
-                    >
-                        <SlidersHorizontal
-                            class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
-                        />
-                        <span>Filter</span>
-                        <span
-                            v-if="activeFilterCount > 0"
-                            class="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[9px] font-extrabold text-white"
+                    <!-- Track Selector Dropdown (Right) -->
+                    <div class="relative" ref="trackDropdownRef">
+                        <button
+                            type="button"
+                            @click="isTrackDropdownOpen = !isTrackDropdownOpen"
+                            class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 sm:py-2 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
                         >
-                            {{ activeFilterCount }}
-                        </span>
-                    </button>
+                            <GraduationCap
+                                class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                            />
+                            <span
+                                class="font-extrabold text-slate-900 uppercase dark:text-white"
+                                >{{ currentCourse }}</span
+                            >
+                            <span class="text-slate-300 dark:text-gray-600"
+                                >•</span
+                            >
+                            <span>{{ currentGroupLabel }}</span>
+                            <ChevronDown
+                                class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 dark:text-gray-500"
+                                :class="{ 'rotate-180': isTrackDropdownOpen }"
+                            />
+                        </button>
+
+                        <!-- Track Menu Popover -->
+                        <div
+                            v-if="isTrackDropdownOpen"
+                            class="absolute top-full right-0 z-50 mt-1.5 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-gray-800 dark:bg-gray-900"
+                        >
+                            <div
+                                class="px-2 py-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"
+                            >
+                                কোর্স ও বিভাগ পরিবর্তন করুন
+                            </div>
+
+                            <!-- HSC Options -->
+                            <div class="mt-1 space-y-0.5">
+                                <div
+                                    class="px-2 pt-1 text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400"
+                                >
+                                    এইচএসসি (HSC)
+                                </div>
+                                <button
+                                    v-for="grp in groupOptions"
+                                    :key="`hsc-${grp.key}`"
+                                    type="button"
+                                    @click="selectTrack('hsc', grp.key)"
+                                    class="flex w-full cursor-pointer items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition"
+                                    :class="[
+                                        currentCourse === 'hsc' &&
+                                        currentGroup === grp.key
+                                            ? 'bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                            : 'text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800',
+                                    ]"
+                                >
+                                    <span>{{ grp.label }}</span>
+                                    <Check
+                                        v-if="
+                                            currentCourse === 'hsc' &&
+                                            currentGroup === grp.key
+                                        "
+                                        class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                                    />
+                                </button>
+                            </div>
+
+                            <!-- SSC Options -->
+                            <div
+                                class="mt-2 space-y-0.5 border-t border-slate-100 pt-1.5 dark:border-gray-800"
+                            >
+                                <div
+                                    class="px-2 pt-1 text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400"
+                                >
+                                    এসএসসি (SSC)
+                                </div>
+                                <button
+                                    v-for="grp in groupOptions"
+                                    :key="`ssc-${grp.key}`"
+                                    type="button"
+                                    @click="selectTrack('ssc', grp.key)"
+                                    class="flex w-full cursor-pointer items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition"
+                                    :class="[
+                                        currentCourse === 'ssc' &&
+                                        currentGroup === grp.key
+                                            ? 'bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                            : 'text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-800',
+                                    ]"
+                                >
+                                    <span>{{ grp.label }}</span>
+                                    <Check
+                                        v-if="
+                                            currentCourse === 'ssc' &&
+                                            currentGroup === grp.key
+                                        "
+                                        class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Feed Stream -->
@@ -461,13 +585,8 @@ const loadMore = async () => {
                         <h3
                             class="text-sm font-bold text-slate-900 dark:text-gray-100"
                         >
-                            বিষয়ভিত্তিক নোট লাইব্রেরি
+                            বিষয়ভিত্তিক নোট আর্কাইভ
                         </h3>
-                        <span
-                            class="text-xs font-bold text-slate-400 dark:text-gray-500"
-                        >
-                            শীঘ্রই আসছে
-                        </span>
                     </div>
 
                     <p class="mb-3 text-xs text-slate-500 dark:text-gray-400">
@@ -487,13 +606,13 @@ const loadMore = async () => {
                         </button>
                     </div>
 
-                    <button
-                        type="button"
-                        class="mt-4 flex w-full cursor-default items-center justify-center gap-1.5 rounded-xl bg-slate-900/80 py-2.5 text-xs font-bold text-white dark:bg-gray-800 dark:text-gray-200"
+                    <Link
+                        href="/notes"
+                        class="mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-slate-900/80 py-2.5 text-xs font-bold text-white transition hover:bg-slate-900 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
                         <BookOpen class="h-3.5 w-3.5" />
-                        <span>পুরো নোট লাইব্রেরি</span>
-                    </button>
+                        <span>পুরো নোট আর্কাইভ</span>
+                    </Link>
                 </div>
 
                 <!-- Study Tracker Callout Widget -->
@@ -528,149 +647,75 @@ const loadMore = async () => {
         </div>
     </main>
 
-    <!-- Filter & Sort Modal -->
+    <!-- Intermediate Choice Modal: Ask Question vs Upload Resource -->
     <BaseModal
-        :is-open="showFilterModal"
+        :is-open="isActionChoiceModalOpen"
+        title="নতুন পোস্ট করুন"
+        description="আপনি কী শেয়ার করতে চান নির্বাচন করুন"
         max-width="md"
-        position="center"
-        @close="showFilterModal = false"
+        @close="isActionChoiceModalOpen = false"
     >
-        <template #header>
-            <div class="flex items-center gap-2">
+        <div class="space-y-3 p-5 sm:p-6">
+            <!-- Option 1: Ask Question (Forum) -->
+            <button
+                type="button"
+                @click="chooseAskQuestion"
+                class="group dark:bg-gray-850 flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-4 text-left shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/40 active:scale-98 dark:border-gray-800 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+            >
                 <div
-                    class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition group-hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-400"
                 >
-                    <SlidersHorizontal class="h-4 w-4" />
+                    <HelpCircle class="h-5 w-5 stroke-[2.2]" />
                 </div>
-                <h3 class="text-sm font-bold text-slate-900 dark:text-gray-100">
-                    Filter Feed
-                </h3>
-            </div>
-        </template>
+                <div class="min-w-0 flex-1">
+                    <h4
+                        class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                    >
+                        প্রশ্ন করুন (ফোরাম)
+                    </h4>
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
+                        পড়াশোনার কোনো বিষয় না বুঝলে প্রশ্ন করে সহপাঠীদের সাহায্য
+                        নিন
+                    </p>
+                </div>
+                <ArrowRight
+                    class="h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                />
+            </button>
 
-        <!-- Modal Form Fields -->
-        <div class="space-y-5 p-5">
-            <!-- 1. Curriculum -->
-            <div>
-                <label
-                    class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
+            <!-- Option 2: Upload Resource (Notes, Book, Video, Practical) -->
+            <button
+                type="button"
+                @click="chooseUploadResource"
+                class="group dark:bg-gray-850 flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-4 text-left shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/40 active:scale-98 dark:border-gray-800 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+            >
+                <div
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400"
                 >
-                    Curriculum
-                </label>
-                <div class="grid grid-cols-2 gap-2.5">
-                    <button
-                        type="button"
-                        @click="draftCourse = 'hsc'"
-                        class="flex cursor-pointer items-center justify-between rounded-xl border px-4 py-2.5 text-xs font-bold transition"
-                        :class="[
-                            draftCourse === 'hsc'
-                                ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 ring-1 ring-indigo-600/30 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-300'
-                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                        ]"
-                    >
-                        <span>HSC</span>
-                        <Check
-                            v-if="draftCourse === 'hsc'"
-                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                        />
-                    </button>
-                    <button
-                        type="button"
-                        @click="draftCourse = 'ssc'"
-                        class="flex cursor-pointer items-center justify-between rounded-xl border px-4 py-2.5 text-xs font-bold transition"
-                        :class="[
-                            draftCourse === 'ssc'
-                                ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 ring-1 ring-indigo-600/30 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-300'
-                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                        ]"
-                    >
-                        <span>SSC</span>
-                        <Check
-                            v-if="draftCourse === 'ssc'"
-                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                        />
-                    </button>
+                    <FileText class="h-5 w-5 stroke-[2.2]" />
                 </div>
-            </div>
-
-            <!-- 2. Group (Science, Commerce, Humanities) -->
-            <div>
-                <label
-                    class="mb-2 block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-gray-300"
-                >
-                    Group
-                </label>
-                <div class="grid grid-cols-3 gap-2">
-                    <button
-                        type="button"
-                        @click="draftGroup = 'science'"
-                        class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
-                        :class="[
-                            draftGroup === 'science'
-                                ? 'border-indigo-600 bg-indigo-600 text-white'
-                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                        ]"
+                <div class="min-w-0 flex-1">
+                    <h4
+                        class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
                     >
-                        Science
-                    </button>
-                    <button
-                        type="button"
-                        @click="draftGroup = 'commerce'"
-                        class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
-                        :class="[
-                            draftGroup === 'commerce'
-                                ? 'border-indigo-600 bg-indigo-600 text-white'
-                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                        ]"
-                    >
-                        Commerce
-                    </button>
-                    <button
-                        type="button"
-                        @click="draftGroup = 'humanities'"
-                        class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
-                        :class="[
-                            draftGroup === 'humanities'
-                                ? 'border-indigo-600 bg-indigo-600 text-white'
-                                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-800',
-                        ]"
-                    >
-                        Humanities
-                    </button>
+                        রিসোর্স শেয়ার করুন
+                    </h4>
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-gray-400">
+                        হ্যান্ডনোট, দাগানো বই, ভিডিও ক্লাস বা ব্যবহারিক আপলোড
+                        করুন
+                    </p>
                 </div>
-            </div>
+                <ArrowRight
+                    class="h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                />
+            </button>
         </div>
-
-        <!-- Modal Actions Footer -->
-        <template #footer>
-            <div class="flex items-center justify-between">
-                <button
-                    type="button"
-                    @click="resetModalFilters"
-                    class="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                    <RotateCcw class="h-3.5 w-3.5" />
-                    <span>Reset</span>
-                </button>
-
-                <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        @click="showFilterModal = false"
-                        class="cursor-pointer rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        @click="applyFilters"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-700"
-                    >
-                        <Check class="h-3.5 w-3.5" />
-                        <span>Apply Filters</span>
-                    </button>
-                </div>
-            </div>
-        </template>
     </BaseModal>
+
+    <!-- Upload Resource Modal (Dedicated Note/Resource Archive modal with subjects & chapters) -->
+    <ResourceFormModal
+        :is-open="isResourceUploadModalOpen"
+        :subjects="subjects"
+        @close="isResourceUploadModalOpen = false"
+    />
 </template>

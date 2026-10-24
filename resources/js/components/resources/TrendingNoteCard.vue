@@ -46,6 +46,12 @@ interface ResourceNote {
     created_at?: string;
     user?: User | null;
     node?: NodeItem | null;
+    subject?: {
+        id: number;
+        name: string;
+        course: string;
+        slug: string;
+    } | null;
 }
 
 const props = defineProps<{
@@ -103,18 +109,17 @@ const pagesLabel = computed(() => {
 
 const subtitle = computed(() => {
     const parts: string[] = [];
-    const course = props.note.node?.subject?.course;
 
-    if (course) {
-        parts.push(course.toUpperCase());
+    const chapterName = props.note.node?.name;
+    const subjectName =
+        props.note.node?.subject?.name || props.note.subject?.name;
+
+    if (chapterName) {
+        parts.push(chapterName);
     }
 
-    if (props.note.node?.subject?.name) {
-        parts.push(props.note.node.subject.name);
-    }
-
-    if (props.note.node?.name) {
-        parts.push(props.note.node.name);
+    if (subjectName) {
+        parts.push(subjectName);
     }
 
     return parts.join(' · ');
