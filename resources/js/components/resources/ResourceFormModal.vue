@@ -61,11 +61,15 @@ const props = withDefaults(
     defineProps<{
         isOpen: boolean;
         subjects?: SubjectItem[];
+        node?: { id: number; name: string; subject_id?: number } | null;
+        subject?: { id: number; name: string } | null;
         resource?: ResourceData | null;
         defaultType?: 'note' | 'video' | 'practical' | 'marked_book' | 'other';
     }>(),
     {
         subjects: () => [],
+        node: null,
+        subject: null,
         resource: null,
         defaultType: 'note',
     },
@@ -344,8 +348,9 @@ const initForm = () => {
         };
     }
 
-    selectedSubjectId.value = null;
-    selectedNodeId.value = null;
+    selectedSubjectId.value =
+        props.subject?.id || props.node?.subject_id || null;
+    selectedNodeId.value = props.node?.id || null;
     youtubeInput.value = '';
     isImportingYoutube.value = false;
     docInputMode.value = 'images';

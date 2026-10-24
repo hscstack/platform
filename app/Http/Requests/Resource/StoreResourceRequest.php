@@ -21,8 +21,20 @@ class StoreResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
-            'node_id' => ['nullable', 'integer', 'exists:nodes,id'],
+            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
+            'node_id' => [
+                'nullable',
+                'integer',
+                'exists:nodes,id',
+                function ($attribute, $value, $fail) {
+                    if ($value && $this->filled('subject_id')) {
+                        $nodeSubjectId = Node::where('id', $value)->value('subject_id');
+                        if ($nodeSubjectId && (int) $nodeSubjectId !== (int) $this->input('subject_id')) {
+                            $fail('নির্বাচিত অধ্যায়টি নির্বাচিত বিষয়ের অন্তর্ভুক্ত নয়।');
+                        }
+                    }
+                },
+            ],
             'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -37,9 +49,6 @@ class StoreResourceRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            if (! $this->filled('subject_id') && ! $this->filled('node_id')) {
-                $validator->errors()->add('subject_id', 'A subject or chapter is required.');
-            }
             ResourceValidationRules::validateItems($validator, $this->input('items', []), $this->input('resource_type'));
         });
     }

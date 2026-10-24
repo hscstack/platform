@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
-use App\Models\Node;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Notifications\ResourceVoteNotification;
@@ -263,11 +262,8 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
         $status = $isModerator ? 'approved' : 'pending';
 
-        $nodeId = $validated['node_id'] ?? null;
-        $subjectId = $validated['subject_id'] ?? null;
-        if (! $subjectId && $nodeId) {
-            $subjectId = Node::where('id', $nodeId)->value('subject_id');
-        }
+        $subjectId = (int) $validated['subject_id'];
+        $nodeId = ! empty($validated['node_id']) ? (int) $validated['node_id'] : null;
 
         Resource::create([
             'subject_id' => $subjectId,
