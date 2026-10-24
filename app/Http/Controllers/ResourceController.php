@@ -262,8 +262,10 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
         $status = $isModerator ? 'approved' : 'pending';
 
-        $subjectId = (int) $validated['subject_id'];
         $nodeId = ! empty($validated['node_id']) ? (int) $validated['node_id'] : null;
+        $subjectId = $nodeId
+            ? (int) (Node::where('id', $nodeId)->value('subject_id') ?? $validated['subject_id'])
+            : (int) $validated['subject_id'];
 
         Resource::create([
             'subject_id' => $subjectId,

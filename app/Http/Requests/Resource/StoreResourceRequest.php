@@ -22,19 +22,7 @@ class StoreResourceRequest extends FormRequest
     {
         return [
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            'node_id' => [
-                'nullable',
-                'integer',
-                'exists:nodes,id',
-                function ($attribute, $value, $fail) {
-                    if ($value && $this->filled('subject_id')) {
-                        $nodeSubjectId = Node::where('id', $value)->value('subject_id');
-                        if ($nodeSubjectId && (int) $nodeSubjectId !== (int) $this->input('subject_id')) {
-                            $fail('নির্বাচিত অধ্যায়টি নির্বাচিত বিষয়ের অন্তর্ভুক্ত নয়।');
-                        }
-                    }
-                },
-            ],
+            'node_id' => ['nullable', 'integer', 'exists:nodes,id'],
             'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
