@@ -3,6 +3,7 @@
 use App\Models\Blog;
 use App\Models\Node;
 use App\Models\Notice;
+use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -111,8 +112,26 @@ test('public resource page loads with subject, node, and enriched SEO metadata',
     $appName = config('app.name', 'HSCStack');
     $response->assertSee("Matrix o nirnayok 01 - HSC - Higher Mathematics - {$appName}", false);
     $response->assertSee('Study material: Matrix o nirnayok 01 (video) for HSC - Higher Mathematics on HSCStack.', false);
+    $response->assertSee('<meta property="og:image" content="https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg">', false);
+    $response->assertSee('<meta property="og:type" content="video.other">', false);
 
     // Ensure subsequent cache-hit request works properly without incomplete class errors
     $cachedResponse = $this->get("/resources/{$resource->id}");
     $cachedResponse->assertStatus(200);
+
+    // Verify resource with custom thumbnail
+    $thumbResource = App\Models\Resource::create([
+        'node_id' => $node->id,
+        'resource_type' => 'note',
+        'title' => 'Calculus Formula Sheet',
+        'status' => 'approved',
+        'thumbnail' => 'https://cdn.hscstack.site/thumbnails/calc.png',
+        'items' => [
+            ['format' => 'pdf', 'title' => 'Calculus PDF', 'source' => 'https://cdn.hscstack.site/docs/calc.pdf'],
+        ],
+    ]);
+
+    $thumbResponse = $this->get("/resources/{$thumbResource->id}");
+    $thumbResponse->assertStatus(200);
+    $thumbResponse->assertSee('<meta property="og:image" content="https://cdn.hscstack.site/thumbnails/calc.png">', false);
 });
