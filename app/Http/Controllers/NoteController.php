@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Resource;
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -93,18 +94,20 @@ class NoteController extends Controller
 
         $resources = $query->simplePaginate(16)->withQueryString();
 
-        // Query available subjects for filter dropdown (simple, no caching)
-        $subjects = Subject::where('is_disabled', false)
-            ->where('course', $course)
-            ->whereIn('group', [$group, 'common'])
-            ->orderBy('sort_order')
-            ->with(['nodes' => function ($q) {
-                $q->whereNull('parent_id')
-                    ->select('id', 'subject_id', 'parent_id', 'name', 'slug')
-                    ->orderBy('sort_order');
-            }])
-            ->get(['id', 'name', 'slug', 'course', 'group'])
-            ->toArray();
+        // Query available subjects for filter dropdown (cached)
+        $subjects = Cache::rememberForever("curriculum_subjects_{$course}_{$group}", function () use ($course, $group) {
+            return Subject::where('is_disabled', false)
+                ->where('course', $course)
+                ->whereIn('group', [$group, 'common'])
+                ->orderBy('sort_order')
+                ->with(['nodes' => function ($q) {
+                    $q->whereNull('parent_id')
+                        ->select('id', 'subject_id', 'parent_id', 'name', 'slug')
+                        ->orderBy('sort_order');
+                }])
+                ->get(['id', 'name', 'slug', 'course', 'group'])
+                ->toArray();
+        });
 
         return Inertia::render('Notes/Index', [
             'resources' => $resources,

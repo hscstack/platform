@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,9 +27,15 @@ class LeaderboardController extends Controller
             'all_time' => null,
         };
 
-        [$leaderboard, $currentUserRank] = $tab === 'contributors'
-            ? $this->getContributors($request->user(), $dateFilter)
-            : $this->getStudents($request->user(), $dateFilter);
+        // Cache the formatted top 50 leaderboard for 30 minutes
+        $cacheKey = "leaderboard:{$tab}:{$timeframe}";
+        $leaderboard = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($tab, $dateFilter) {
+            return $tab === 'contributors'
+                ? $this->queryContributors($dateFilter)
+                : $this->queryStudents($dateFilter);
+        });
+
+        $currentUserRank = $this->resolveUserRank($request->user(), $leaderboard, $tab, $dateFilter);
 
         return Inertia::render('Leaderboard/Index', [
             'tab' => $tab,
@@ -38,7 +45,7 @@ class LeaderboardController extends Controller
         ]);
     }
 
-    private function getContributors(?User $user, ?string $dateFilter): array
+    private function queryContributors(?string $dateFilter): array
     {
         $users = User::query()
             ->select(['id', 'name', 'username', 'image_path', 'institution', 'is_verified', 'title'])
@@ -50,12 +57,10 @@ class LeaderboardController extends Controller
             ->take(50)
             ->get();
 
-        $myScore = $user ? (int) $user->resources()->when($dateFilter, fn ($q) => $q->where('created_at', '>=', $dateFilter))->count() : 0;
-
-        return $this->formatLeaderboard($users, 'resources_count', $user, $myScore);
+        return $this->formatLeaderboard($users, 'resources_count');
     }
 
-    private function getStudents(?User $user, ?string $dateFilter): array
+    private function queryStudents(?string $dateFilter): array
     {
         $users = User::query()
             ->select(['id', 'name', 'username', 'image_path', 'institution', 'is_verified', 'title', 'curriculum', 'group'])
@@ -68,12 +73,10 @@ class LeaderboardController extends Controller
             ->take(50)
             ->get();
 
-        $myScore = $user ? (int) $user->dailyStudyLogs()->when($dateFilter, fn ($q) => $q->where('study_date', '>=', $dateFilter))->sum('total_seconds') : 0;
-
-        return $this->formatLeaderboard($users, 'total_study_seconds', $user, $myScore);
+        return $this->formatLeaderboard($users, 'total_study_seconds');
     }
 
-    private function formatLeaderboard($users, string $scoreKey, ?User $currentUser, int $myScore): array
+    private function formatLeaderboard($users, string $scoreKey): array
     {
         $leaderboard = [];
         $currentRank = 1;
@@ -104,15 +107,28 @@ class LeaderboardController extends Controller
             ];
         }
 
-        $currentUserRank = null;
-        if ($currentUser && $myScore > 0) {
-            $found = collect($leaderboard)->firstWhere('id', $currentUser->id);
-            $currentUserRank = [
-                'rank' => $found ? $found['rank'] : '50+',
-                'score' => $myScore,
-            ];
+        return $leaderboard;
+    }
+
+    private function resolveUserRank(?User $currentUser, array $leaderboard, string $tab, ?string $dateFilter): ?array
+    {
+        if (! $currentUser) {
+            return null;
         }
 
-        return [$leaderboard, $currentUserRank];
+        $myScore = $tab === 'contributors'
+            ? (int) $currentUser->resources()->when($dateFilter, fn ($q) => $q->where('created_at', '>=', $dateFilter))->count()
+            : (int) $currentUser->dailyStudyLogs()->when($dateFilter, fn ($q) => $q->where('study_date', '>=', $dateFilter))->sum('total_seconds');
+
+        if ($myScore <= 0) {
+            return null;
+        }
+
+        $found = collect($leaderboard)->firstWhere('id', $currentUser->id);
+
+        return [
+            'rank' => $found ? $found['rank'] : '50+',
+            'score' => $myScore,
+        ];
     }
 }

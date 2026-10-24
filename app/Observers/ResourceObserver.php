@@ -7,32 +7,20 @@ use Illuminate\Support\Facades\Cache;
 
 class ResourceObserver
 {
+    public function creating(Resource $resource): void
+    {
+        if (empty($resource->subject_id) && ! empty($resource->node_id)) {
+            $resource->subject_id = $resource->node?->subject_id;
+        }
+    }
+
     public function saved(Resource $resource): void
     {
-        if ($resource->status === 'approved' || $resource->wasChanged('status')) {
-            $this->clearCache($resource);
-        }
+        Cache::forget("resource_public_{$resource->id}");
     }
 
     public function deleted(Resource $resource): void
     {
-        if ($resource->status === 'approved') {
-            $this->clearCache($resource);
-        }
-    }
-
-    private function clearCache(Resource $resource): void
-    {
-        Cache::forget("resource_{$resource->id}");
-        Cache::forget("node_resources_{$resource->node_id}");
-
-        $node = $resource->node;
-        if ($node) {
-            if ($node->parent_id) {
-                Cache::forget("node_children_{$node->parent_id}");
-            } else {
-                Cache::forget("subject_page_{$node->subject_id}");
-            }
-        }
+        Cache::forget("resource_public_{$resource->id}");
     }
 }

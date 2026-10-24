@@ -34,7 +34,8 @@ const showBottomNav = computed(() =>
 
 // Whitelisted pages that show the marketing footer on desktop
 const DESKTOP_FOOTER_COMPONENTS = new Set([
-    'Home',
+    'Feed',
+    'Notes/Index',
     'Blog/Index',
     'Forum/Index',
     'Donate',
@@ -51,9 +52,9 @@ const DESKTOP_FOOTER_COMPONENTS = new Set([
 ]);
 
 const showFooter = computed(() => {
-    // Mobile / Portrait: only show on Home landing page
+    // Mobile / Portrait: only show on Feed landing page
     if (showBottomNav.value) {
-        return page.component === 'Home';
+        return page.component === 'Feed';
     }
 
     // Desktop / Landscape: only show on whitelisted discovery & marketing pages

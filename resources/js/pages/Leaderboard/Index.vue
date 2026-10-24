@@ -748,11 +748,19 @@ onBeforeUnmount(() => {
                     <li>
                         <strong
                             class="font-semibold text-slate-800 dark:text-gray-200"
+                            >র‍্যাঙ্কিং আপডেট:</strong
+                        >
+                        প্রতি ৩০ মিনিট পরপর লিডারবোর্ড র‍্যাঙ্কিং স্বয়ংক্রিয়ভাবে
+                        আপডেট হয়।
+                    </li>
+                    <li>
+                        <strong
+                            class="font-semibold text-slate-800 dark:text-gray-200"
                             >এই সপ্তাহ:</strong
                         >
                         বাংলাদেশের ক্যালেন্ডার অনুযায়ী প্রতি
-                        <strong>শনিবার রাত ১২:০০ (00:00 AM)</strong> থেকে শুরু
-                        হয়ে বর্তমান সময় পর্যন্ত।
+                        <strong>শনিবার রাত ১২:০০</strong> থেকে শুরু হয়ে বর্তমান
+                        সময় পর্যন্ত।
                     </li>
                     <li>
                         <strong

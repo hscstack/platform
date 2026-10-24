@@ -236,8 +236,8 @@
         $res = $props['resource'];
         $resTitle = data_get($res, 'title', 'Resource');
         $resType = data_get($res, 'resource_type', 'material');
-        $subjectName = data_get($props, 'subject.name') ?: data_get($res, 'node.subject.name');
-        $subjectCourse = data_get($props, 'subject.course') ?: data_get($res, 'node.subject.course');
+        $subjectName = data_get($res, 'subject.name') ?: (data_get($props, 'subject.name') ?: data_get($res, 'node.subject.name'));
+        $subjectCourse = data_get($res, 'subject.course') ?: (data_get($props, 'subject.course') ?: data_get($res, 'node.subject.course'));
         $subjectDisplay = $subjectName ? strtoupper($subjectCourse) . ' - ' . $subjectName : null;
 
         $metaTitle = $subjectDisplay
