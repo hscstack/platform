@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -247,11 +248,15 @@ class ForumController extends Controller
         $approvalMode = AppSetting::get('forum_approval_mode', 'auto');
         $moderationStatus = $approvalMode === 'auto' ? 'approved' : 'pending';
 
+        $baseSlug = Str::limit(Str::slug(Str::words(strip_tags($validated['body']), 8, '')) ?: 'post', 200, '');
+        $slug = $baseSlug.'-'.Str::lower(Str::random(6));
+
         $post = ForumPost::create([
             'user_id' => auth()->id(),
             'subject_id' => $subjectId,
             'node_id' => $nodeId,
             'curriculum' => $validated['curriculum'],
+            'slug' => $slug,
             'body' => $validated['body'],
             'image_path' => $imagePath,
             'is_locked' => false,

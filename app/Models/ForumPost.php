@@ -66,24 +66,6 @@ class ForumPost extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (ForumPost $post) {
-            if (empty($post->slug)) {
-                $excerpt = Str::words(strip_tags($post->body ?? ''), 8, '');
-                $baseSlug = Str::limit(Str::slug($excerpt) ?: 'post', 200, '');
-                $slug = $baseSlug;
-                $counter = 1;
-
-                while (static::where('slug', $slug)->exists()) {
-                    $suffix = "-{$counter}-".Str::lower(Str::random(4));
-                    $truncatedBase = Str::limit($baseSlug, 255 - strlen($suffix), '');
-                    $slug = "{$truncatedBase}{$suffix}";
-                    $counter++;
-                }
-
-                $post->slug = $slug;
-            }
-        });
-
         static::saved(function (ForumPost $post) {
             if ($post->moderation_status === 'approved') {
                 Cache::forever('forum:latest_post', [
