@@ -30,7 +30,7 @@ test('admin with manage forums permission can access forum admin index', functio
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $post = ForumPost::factory()->create(['title' => 'Test Discussion']);
+    $post = ForumPost::factory()->create(['body' => 'Test Discussion']);
 
     $response = $this->actingAs($admin)
         ->get(route('admin.forums.index'));
@@ -96,8 +96,8 @@ test('admin can update moderation status directly', function () {
 test('unpublished post is not visible on public forum index and returns 404 for regular users', function () {
     $user = User::factory()->create();
     $author = User::factory()->create();
-    $publishedPost = ForumPost::factory()->create(['title' => 'Visible Post', 'moderation_status' => 'approved']);
-    $hiddenPost = ForumPost::factory()->create(['user_id' => $author->id, 'title' => 'Hidden Post', 'moderation_status' => 'rejected']);
+    $publishedPost = ForumPost::factory()->create(['body' => 'Visible Post', 'moderation_status' => 'approved']);
+    $hiddenPost = ForumPost::factory()->create(['user_id' => $author->id, 'body' => 'Hidden Post', 'moderation_status' => 'rejected']);
 
     // Index only returns published
     $response = $this->actingAs($user)->get(route('forum.index'));
@@ -194,7 +194,7 @@ test('admin can manage forum reports status and delete reports', function () {
         'reporter_id' => $reporter->id,
         'reportable_type' => ForumPost::class,
         'reportable_id' => $post->id,
-        'content_snapshot' => $post->title,
+        'content_snapshot' => $post->body,
         'reason' => 'Inappropriate',
         'status' => 'pending',
     ]);
@@ -222,7 +222,7 @@ test('admin can toggle lock and delete using post id route binding', function ()
     $admin->assignRole('admin');
 
     $post = ForumPost::factory()->create([
-        'title' => 'Sample Post Title',
+        'body' => 'Sample Post Title',
         'slug' => 'sample-post-slug',
         'is_locked' => false,
     ]);
@@ -232,7 +232,7 @@ test('admin can toggle lock and delete using post id route binding', function ()
         'reporter_id' => $reporter->id,
         'reportable_type' => ForumPost::class,
         'reportable_id' => $post->id,
-        'content_snapshot' => $post->title,
+        'content_snapshot' => $post->body,
         'reason' => 'Spam',
         'status' => 'pending',
     ]);

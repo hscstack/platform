@@ -10,6 +10,14 @@ export type NavItem = {
 
 export const primaryNavItems: NavItem[] = [
     {
+        label: 'Feed',
+        labelBn: 'ফিড',
+        href: '/feed',
+        icon: 'dynamic_feed',
+        match: (url) => url.startsWith('/feed'),
+        showInBottom: true,
+    },
+    {
         label: 'Home',
         href: '/',
         icon: 'home',
@@ -18,14 +26,6 @@ export const primaryNavItems: NavItem[] = [
             url.startsWith('/?') ||
             url === '/ssc' ||
             url.startsWith('/ssc?'),
-        showInBottom: true,
-    },
-    {
-        label: 'Feed',
-        labelBn: 'ফিড',
-        href: '/feed',
-        icon: 'dynamic_feed',
-        match: (url) => url.startsWith('/feed'),
         showInBottom: true,
     },
     {
@@ -77,12 +77,6 @@ export const primaryNavItems: NavItem[] = [
 ];
 
 export const overflowNavItems: NavItem[] = [
-    {
-        label: 'People',
-        href: '/peers',
-        icon: 'group',
-        match: (url) => url.startsWith('/peers'),
-    },
     {
         label: 'Support Center',
         href: '/support',

@@ -316,7 +316,7 @@ class ForumController extends Controller
                 'reported_user_id' => $author?->id,
                 'reported_user_name' => $author?->name,
                 'reported_user_username' => $author?->username,
-                'content_snapshot' => $post->title."\n\n".$post->body,
+                'content_snapshot' => $post->body,
                 'reason' => $validated['reason'],
                 'status' => 'pending',
             ]);

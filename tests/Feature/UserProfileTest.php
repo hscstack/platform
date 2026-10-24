@@ -84,7 +84,6 @@ test('public profile accurately displays forum questions, answers, and activitie
         'curriculum' => 'hsc',
         'subject_id' => $subject->id,
         'node_id' => $node->id,
-        'title' => 'How to calculate cross product angle?',
         'body' => 'Need help with vector cross product.',
     ]);
 
@@ -100,7 +99,7 @@ test('public profile accurately displays forum questions, answers, and activitie
     $response->assertInertia(fn ($page) => $page
         ->component('User/Show')
         ->has('forumPosts', 1)
-        ->where('forumPosts.0.title', 'How to calculate cross product angle?')
+        ->where('forumPosts.0.body', 'Need help with vector cross product.')
         ->has('forumAnswers', 1)
         ->where('forumAnswers.0.body', 'Use A x B = |A||B|sin(theta) formula.')
     );
@@ -126,7 +125,6 @@ test('public profile excludes unapproved forum questions and answers', function 
         'curriculum' => 'hsc',
         'subject_id' => $subject->id,
         'node_id' => $node->id,
-        'title' => 'Pending Question Title',
         'body' => 'Pending post body.',
         'moderation_status' => 'pending',
     ]);

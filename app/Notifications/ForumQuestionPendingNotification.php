@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 class ForumQuestionPendingNotification extends Notification implements ShouldQueue
 {
@@ -34,11 +35,13 @@ class ForumQuestionPendingNotification extends Notification implements ShouldQue
      */
     public function toArray(object $notifiable): array
     {
+        $postSnippet = Str::limit(strip_tags($this->post->body ?? ''), 40);
+
         return [
             'type' => 'forum_pending',
             'post_id' => $this->post->id,
             'title' => 'New Question Pending Review',
-            'message' => "{$this->author->name}: \"{$this->post->title}\"",
+            'message' => "{$this->author->name}: \"{$postSnippet}\"",
             'url' => route('admin.forums.index', ['status' => 'pending']),
         ];
     }

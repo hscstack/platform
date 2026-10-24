@@ -523,9 +523,6 @@ const loadMore = async () => {
                         </Link>
                     </div>
                 </div>
-
-                <!-- Optional Present AdUnit -->
-                <AdUnit variant="sidebar" />
             </aside>
         </div>
     </main>

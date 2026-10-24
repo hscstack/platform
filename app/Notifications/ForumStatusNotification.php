@@ -6,6 +6,7 @@ use App\Models\ForumPost;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 class ForumStatusNotification extends Notification implements ShouldQueue
 {
@@ -43,8 +44,9 @@ class ForumStatusNotification extends Notification implements ShouldQueue
             'unlocked' => 'Your question was unlocked',
         ];
 
+        $postSnippet = Str::limit(strip_tags($this->post->body ?? ''), 40);
         $title = $this->actionTitle ?? ($statusLabels[$this->status] ?? 'Discussion update');
-        $message = $this->actionMessage ?? "\"{$this->post->title}\"";
+        $message = $this->actionMessage ?? "\"{$postSnippet}\"";
 
         return [
             'type' => 'forum_status',
