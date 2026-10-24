@@ -50,22 +50,22 @@ const props = defineProps<{
 const { user } = useAuth();
 
 const currentCourse = ref<'hsc' | 'ssc'>(props.course || 'hsc');
-const currentGroup = ref<'science' | 'commerce' | 'humanities'>(
-    props.group || 'science',
+const currentGroup = ref<'science' | 'commerce' | 'humanities' | null>(
+    props.group ?? null,
 );
 const currentSort = ref<'trending' | 'recent'>(props.sort || 'trending');
 
 // Modal State
 const showFilterModal = ref(false);
 const draftCourse = ref<'hsc' | 'ssc'>(currentCourse.value);
-const draftGroup = ref<'science' | 'commerce' | 'humanities'>(
+const draftGroup = ref<'science' | 'commerce' | 'humanities' | null>(
     currentGroup.value,
 );
 
 const activeFilterCount = computed(() => {
     let count = 0;
 
-    if (currentGroup.value !== 'science') {
+    if (currentGroup.value !== null) {
         count++;
     }
 
@@ -100,7 +100,7 @@ const applyFilters = () => {
 
 const resetModalFilters = () => {
     draftCourse.value = 'hsc';
-    draftGroup.value = 'science';
+    draftGroup.value = null;
 };
 
 // Peer Search State & Handlers
@@ -156,7 +156,11 @@ const switchSort = (newSort: 'trending' | 'recent') => {
     currentSort.value = newSort;
     router.get(
         '/feed',
-        { course: currentCourse.value, sort: newSort },
+        {
+            course: currentCourse.value,
+            sort: newSort,
+            ...(currentGroup.value ? { group: currentGroup.value } : {}),
+        },
         { preserveState: true, replace: true },
     );
 };
@@ -602,7 +606,10 @@ const loadMore = async () => {
                 <div class="grid grid-cols-3 gap-2">
                     <button
                         type="button"
-                        @click="draftGroup = 'science'"
+                        @click="
+                            draftGroup =
+                                draftGroup === 'science' ? null : 'science'
+                        "
                         class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
                         :class="[
                             draftGroup === 'science'
@@ -614,7 +621,10 @@ const loadMore = async () => {
                     </button>
                     <button
                         type="button"
-                        @click="draftGroup = 'commerce'"
+                        @click="
+                            draftGroup =
+                                draftGroup === 'commerce' ? null : 'commerce'
+                        "
                         class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
                         :class="[
                             draftGroup === 'commerce'
@@ -626,7 +636,12 @@ const loadMore = async () => {
                     </button>
                     <button
                         type="button"
-                        @click="draftGroup = 'humanities'"
+                        @click="
+                            draftGroup =
+                                draftGroup === 'humanities'
+                                    ? null
+                                    : 'humanities'
+                        "
                         class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
                         :class="[
                             draftGroup === 'humanities'

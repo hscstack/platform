@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use App\Models\ForumPost;
+use App\Models\ForumVote;
 use App\Models\Notice;
 use App\Models\Resource;
+use App\Models\ResourceVote;
 use App\Models\Subject;
 use App\Models\UserAppreciation;
 use Illuminate\Http\Request;
@@ -123,7 +125,7 @@ class HomeController extends Controller
             return $b;
         });
 
-        // Compute is_appreciated for authors if logged in
+        // Compute is_appreciated and user_vote if logged in
         $userId = Auth::id();
         if ($userId) {
             $authorIds = array_unique(array_filter(array_merge(
@@ -138,15 +140,28 @@ class HomeController extends Controller
                 ->flip()
                 ->all();
 
+            $forumPostVotes = ForumVote::where('user_id', $userId)
+                ->where('voteable_type', ForumPost::class)
+                ->whereIn('voteable_id', $posts->pluck('id'))
+                ->pluck('value', 'voteable_id')
+                ->all();
+
+            $resourceVotes = ResourceVote::where('user_id', $userId)
+                ->whereIn('resource_id', $resources->pluck('id'))
+                ->pluck('value', 'resource_id')
+                ->all();
+
             foreach ($posts as $p) {
                 if ($p->user) {
                     $p->user->is_appreciated = isset($appreciatedAuthorIds[$p->user->id]);
                 }
+                $p->user_vote = $forumPostVotes[$p->id] ?? null;
             }
             foreach ($resources as $r) {
                 if ($r->user) {
                     $r->user->is_appreciated = isset($appreciatedAuthorIds[$r->user->id]);
                 }
+                $r->user_vote = $resourceVotes[$r->id] ?? null;
             }
             foreach ($blogs as $b) {
                 if ($b->user) {
@@ -158,11 +173,13 @@ class HomeController extends Controller
                 if ($p->user) {
                     $p->user->is_appreciated = false;
                 }
+                $p->user_vote = null;
             }
             foreach ($resources as $r) {
                 if ($r->user) {
                     $r->user->is_appreciated = false;
                 }
+                $r->user_vote = null;
             }
             foreach ($blogs as $b) {
                 if ($b->user) {
@@ -181,7 +198,7 @@ class HomeController extends Controller
         $rIndex = 0;
         $bIndex = 0;
 
-        while ($pIndex < count($pArr) || $rIndex < count($rArr) || $bIndex < count($bArr)) {
+        while ($pIndex < count($pArr) || $rIndex < count($rArr)) {
             // Post
             if ($pIndex < count($pArr)) {
                 $merged[] = $pArr[$pIndex++];

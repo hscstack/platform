@@ -353,16 +353,20 @@ const sharePost = async () => {
             class="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3 dark:border-gray-800/80"
         >
             <div class="flex flex-wrap items-center gap-2" @click.stop>
-                <!-- Horizontal Vote Buttons -->
-                <ForumVoteButtons
-                    votableType="post"
-                    :votableId="post.id"
-                    :initialUpvotes="post.upvotes_count || 0"
-                    :initialDownvotes="post.downvotes_count || 0"
-                    :initialUserVote="post.user_vote"
-                    direction="horizontal"
-                    size="sm"
-                />
+                <!-- Horizontal Vote Pill -->
+                <div
+                    class="dark:ring-gray-750 inline-flex items-center rounded-xl bg-slate-50 p-0.5 ring-1 ring-slate-200/70 dark:bg-gray-800/80"
+                >
+                    <ForumVoteButtons
+                        votableType="post"
+                        :votableId="post.id"
+                        :initialUpvotes="post.upvotes_count || 0"
+                        :initialDownvotes="post.downvotes_count || 0"
+                        :initialUserVote="post.user_vote"
+                        direction="horizontal"
+                        size="sm"
+                    />
+                </div>
 
                 <!-- Answer Count Button -->
                 <Link

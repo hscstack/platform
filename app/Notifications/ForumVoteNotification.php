@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Str;
 
 class ForumVoteNotification extends Notification implements ShouldQueue
 {
@@ -45,7 +44,7 @@ class ForumVoteNotification extends Notification implements ShouldQueue
             $othersText = $others === 1 ? '1 other person' : "{$others} other people";
 
             $post = $isQuestion ? $item : $item->post;
-            $title = Str::limit(strip_tags($post->body ?? ''), 40);
+            $title = $post->snippet(40);
 
             $data['count'] = $count;
             $data['title'] = "{$voter->name} and {$othersText} upvoted your {$targetType}";
@@ -69,7 +68,7 @@ class ForumVoteNotification extends Notification implements ShouldQueue
     {
         $isQuestion = $this->item instanceof ForumPost;
         $post = $isQuestion ? $this->item : $this->item->post;
-        $title = Str::limit(strip_tags($post->body ?? ''), 40);
+        $title = $post->snippet(40);
         $slug = $post->slug;
 
         return [

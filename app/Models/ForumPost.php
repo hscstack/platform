@@ -69,12 +69,14 @@ class ForumPost extends Model
         static::creating(function (ForumPost $post) {
             if (empty($post->slug)) {
                 $excerpt = Str::words(strip_tags($post->body ?? ''), 8, '');
-                $baseSlug = Str::slug($excerpt) ?: 'post';
+                $baseSlug = Str::limit(Str::slug($excerpt) ?: 'post', 200, '');
                 $slug = $baseSlug;
                 $counter = 1;
 
                 while (static::where('slug', $slug)->exists()) {
-                    $slug = "{$baseSlug}-{$counter}-".Str::lower(Str::random(4));
+                    $suffix = "-{$counter}-".Str::lower(Str::random(4));
+                    $truncatedBase = Str::limit($baseSlug, 255 - strlen($suffix), '');
+                    $slug = "{$truncatedBase}{$suffix}";
                     $counter++;
                 }
 
@@ -195,5 +197,10 @@ class ForumPost extends Model
             'top' => $query->orderByDesc('vote_score')->latest(),
             default => $query->latest(),
         };
+    }
+
+    public function snippet(int $limit = 40): string
+    {
+        return Str::limit(strip_tags($this->body ?? ''), $limit);
     }
 }

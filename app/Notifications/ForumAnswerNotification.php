@@ -38,7 +38,7 @@ class ForumAnswerNotification extends Notification implements ShouldQueue
     {
         $authorName = $this->answer->user?->name ?? 'Someone';
         $snippet = Str::limit(strip_tags($this->answer->body), 80);
-        $postSnippet = Str::limit(strip_tags($this->post->body ?? ''), 40);
+        $postSnippet = $this->post->snippet(40);
         $title = $this->isReply
             ? "New reply to your answer on \"{$postSnippet}\""
             : "New answer to your question \"{$postSnippet}\"";
