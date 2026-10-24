@@ -251,42 +251,13 @@
             ? "Study material: {$resTitle} ({$resType}) for {$subjectDisplay} on HSCStack."
             : "Study material: {$resTitle} ({$resType}) on HSCStack.";
 
-        $thumbnail = data_get($res, 'thumbnail');
-        $firstItem = data_get($res, 'items.0');
-        $firstFormat = data_get($firstItem, 'format');
-
-        if ($firstFormat === 'video' || $resType === 'video') {
+        if ($resType === 'video') {
             $ogType = 'video.other';
         }
 
+        $thumbnail = data_get($res, 'thumbnail');
         if ($thumbnail) {
             $ogImage = str_starts_with($thumbnail, 'http') ? $thumbnail : \Illuminate\Support\Facades\Storage::url($thumbnail);
-        } elseif ($firstItem) {
-            $itemSource = (string) data_get($firstItem, 'source', '');
-            $itemUrl = (string) data_get($firstItem, 'url', '');
-
-            if ($firstFormat === 'video') {
-                $videoTarget = $itemSource ?: $itemUrl;
-                if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/|youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/', $videoTarget, $matches)) {
-                    $ogImage = "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
-                } elseif (preg_match('/^[a-zA-Z0-9_-]{11}$/', $videoTarget)) {
-                    $ogImage = "https://img.youtube.com/vi/{$videoTarget}/hqdefault.jpg";
-                }
-            } elseif ($firstFormat === 'image' && ($itemUrl || $itemSource)) {
-                $imageTarget = $itemUrl ?: $itemSource;
-                $ogImage = str_starts_with($imageTarget, 'http') ? $imageTarget : \Illuminate\Support\Facades\Storage::url($imageTarget);
-            }
-        } else {
-            $filePath = data_get($res, 'file_path') ?: data_get($res, 'file_url');
-            $externalUrl = data_get($res, 'external_url') ?: data_get($res, 'file_url');
-
-            if ($resType === 'video' && $externalUrl) {
-                if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $externalUrl, $matches)) {
-                    $ogImage = "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
-                }
-            } elseif ($resType === 'image' && $filePath) {
-                $ogImage = str_starts_with($filePath, 'http') ? $filePath : \Illuminate\Support\Facades\Storage::url($filePath);
-            }
         }
     } elseif ($pageComponent === 'Blog/Index') {
         $metaTitle = 'Educational Blogs & Study Guides - ' . config('app.name', 'HSCStack');

@@ -94,6 +94,7 @@ test('public resource page loads with subject, node, and enriched SEO metadata',
         'resource_type' => 'video',
         'title' => 'Matrix o nirnayok 01',
         'status' => 'approved',
+        'thumbnail' => 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
         'items' => [
             ['format' => 'video', 'title' => 'Matrix o nirnayok 01', 'source' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
         ],
