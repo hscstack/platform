@@ -651,10 +651,11 @@ const chapterUrl = computed(() => {
         </Transition>
     </Teleport>
 
-    <!-- Admin Edit Resource Modal -->
+    <!-- Edit Resource Modal (for owner/moderator) -->
     <ResourceFormModal
-        v-if="can_moderate"
+        v-if="can_moderate || is_owner"
         v-model:is-open="showEditModal"
         :resource="resource"
+        @save="() => {}"
     />
 </template>

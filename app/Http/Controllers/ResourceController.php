@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
+use App\Models\Node;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Notifications\ResourceVoteNotification;
@@ -211,7 +212,7 @@ class ResourceController extends Controller
                 'image/webp' => 'webp',
             };
 
-            $key = "resources/notes/{$userId}/".(string) Str::uuid().'.'.$extension;
+            $key = 'resources/notes/'.(string) Str::uuid().'.'.$extension;
             $signed = Storage::disk('s3')->temporaryUploadUrl(
                 $key,
                 now()->addMinutes(15),
@@ -262,8 +263,15 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
         $status = $isModerator ? 'approved' : 'pending';
 
+        $nodeId = $validated['node_id'] ?? null;
+        $subjectId = $validated['subject_id'] ?? null;
+        if (! $subjectId && $nodeId) {
+            $subjectId = Node::where('id', $nodeId)->value('subject_id');
+        }
+
         Resource::create([
-            'node_id' => $validated['node_id'],
+            'subject_id' => $subjectId,
+            'node_id' => $nodeId,
             'user_id' => Auth::id(),
             'resource_type' => $validated['resource_type'],
             'title' => $validated['title'],

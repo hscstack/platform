@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Clock, Trophy, User as UserIcon } from 'lucide-vue-next';
+import { Clock, User as UserIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
 import StopwatchWidget from '@/components/tracker/StopwatchWidget.vue';
@@ -70,19 +70,8 @@ function handleAuthRequired(
                 </div>
             </div>
 
-            <!-- Header Actions: Leaderboard + User Profile -->
+            <!-- Header Actions: User Profile -->
             <div class="flex flex-wrap items-center gap-2">
-                <Link
-                    href="/leaderboard"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-amber-200/80 bg-amber-50/70 px-2.5 py-1.5 text-xs font-bold text-amber-800 shadow-2xs transition hover:bg-amber-100 sm:px-3 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/50"
-                    title="Community Leaderboard"
-                >
-                    <Trophy
-                        class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
-                    />
-                    <span>Leaderboard</span>
-                </Link>
-
                 <Link
                     v-if="isAuthenticated && user"
                     :href="`/u/${user.username}`"

@@ -8,7 +8,6 @@ use App\Notifications\ResourceModerationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ResourceController extends BaseResourceController
@@ -127,14 +126,6 @@ class ResourceController extends BaseResourceController
 
     public function destroy(Resource $resource)
     {
-        // Clean up stored items in S3/R2
-        foreach ($resource->items as $item) {
-            $source = is_array($item) ? ($item['source'] ?? '') : ($item->source ?? '');
-            if ($source && ! str_starts_with($source, 'http://') && ! str_starts_with($source, 'https://')) {
-                Storage::disk('s3')->delete($source);
-            }
-        }
-
         $resource->delete();
 
         return redirect()->back()->with('success', 'Resource deleted successfully.');

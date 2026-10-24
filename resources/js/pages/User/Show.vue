@@ -1003,7 +1003,7 @@ const formatGroupName = (group?: string) => {
                             "
                         >
                             <NotebookPen class="h-3.5 w-3.5 shrink-0" />
-                            <span>Recent Notes</span>
+                            <span>Notes</span>
                         </button>
 
                         <button
@@ -1179,6 +1179,18 @@ const formatGroupName = (group?: string) => {
                                     />
                                 </div>
                             </Link>
+
+                            <div
+                                v-if="profileUser.username"
+                                class="pt-2 text-center"
+                            >
+                                <Link
+                                    :href="`/notes?search=@${profileUser.username}`"
+                                    class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                >
+                                    <span>View all notes &rarr;</span>
+                                </Link>
+                            </div>
                         </div>
                     </div>
 

@@ -50,12 +50,8 @@ class ResourceValidationRules
                     $validator->errors()->add("items.{$index}.source", 'PDF এবং ভিডিওর জন্য সঠিক URL লিঙ্ক প্রদান করতে হবে।');
                 }
             } elseif ($itemFormat === 'image') {
-                $isAllowedUpload = str_starts_with($source, 'resources/notes/')
-                    && preg_match('#^resources/notes/([0-9a-zA-Z_-]+/)*[0-9a-zA-Z_.-]+\.(jpg|jpeg|png|webp)$#i', $source);
-                $isExternalUrl = (str_starts_with($source, 'http://') || str_starts_with($source, 'https://')) && filter_var($source, FILTER_VALIDATE_URL);
-
-                if (! $isAllowedUpload && ! $isExternalUrl) {
-                    $validator->errors()->add("items.{$index}.source", 'ছবির জন্য একটি সঠিক আপলোড কী বা লিঙ্ক প্রদান করতে হবে।');
+                if (! is_string($source) || ! str_starts_with($source, 'resources/')) {
+                    $validator->errors()->add("items.{$index}.source", 'ছবির জন্য একটি সঠিক আপলোড কী প্রদান করতে হবে।');
                 }
             }
         }

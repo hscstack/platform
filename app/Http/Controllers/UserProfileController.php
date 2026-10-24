@@ -147,10 +147,9 @@ class UserProfileController extends Controller
 
         $notes = Resource::where('user_id', $user->id)
             ->when(! $isOwner, fn ($q) => $q->where('status', 'approved'))
-            ->with(['node:id,name,slug,subject_id', 'node.subject:id,name,course,slug'])
-            ->orderByDesc('vote_score')
+            ->with(['node:id,name,slug,subject_id', 'node.subject:id,name,course,slug', 'subject:id,name,course,slug'])
             ->latest('id')
-            ->take(8)
+            ->take(5)
             ->get();
 
         $syllabusProgress = $this->getSyllabusProgress($user);

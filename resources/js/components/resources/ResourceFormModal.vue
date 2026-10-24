@@ -32,9 +32,22 @@ interface ResourceItem {
     file?: File;
 }
 
+interface SubjectNode {
+    id: number;
+    name: string;
+}
+
+interface SubjectItem {
+    id: number;
+    name: string;
+    course?: string;
+    nodes?: SubjectNode[];
+}
+
 interface ResourceData {
     id: number;
-    node_id: number;
+    node_id?: number | null;
+    subject_id?: number | null;
     user_id?: number | null;
     resource_type: string;
     title: string;
@@ -47,13 +60,13 @@ interface ResourceData {
 const props = withDefaults(
     defineProps<{
         isOpen: boolean;
+        subjects?: SubjectItem[];
         resource?: ResourceData | null;
-        node?: { id: number; name: string } | null;
         defaultType?: 'note' | 'video' | 'practical' | 'marked_book' | 'other';
     }>(),
     {
+        subjects: () => [],
         resource: null,
-        node: null,
         defaultType: 'note',
     },
 );
@@ -65,6 +78,19 @@ const emit = defineEmits<{
 }>();
 
 const isEditing = computed(() => Boolean(props.resource?.id));
+
+const selectedSubjectId = ref<number | null>(null);
+const selectedNodeId = ref<number | null>(null);
+
+const modalAvailableChapters = computed(() => {
+    if (!props.subjects || !selectedSubjectId.value) {
+        return [];
+    }
+
+    const subj = props.subjects.find((s) => s.id === selectedSubjectId.value);
+
+    return subj?.nodes || [];
+});
 
 const isSubmitting = ref(false);
 const uploadProgress = ref<string | null>(null);
@@ -318,6 +344,8 @@ const initForm = () => {
         };
     }
 
+    selectedSubjectId.value = null;
+    selectedNodeId.value = null;
     youtubeInput.value = '';
     isImportingYoutube.value = false;
     docInputMode.value = 'images';
@@ -359,25 +387,19 @@ const toggleDeleteItem = (index: number) => {
         return;
     }
 
-    if (item.is_new || !isEditing.value) {
-        if (item.file && item.url) {
-            try {
-                URL.revokeObjectURL(item.url);
-            } catch {
-                // ignore
-            }
-
-            createdObjectUrls.value = createdObjectUrls.value.filter(
-                (u) => u !== item.url,
-            );
+    if (item.file && item.url) {
+        try {
+            URL.revokeObjectURL(item.url);
+        } catch {
+            // ignore
         }
 
-        form.value.items.splice(index, 1);
-
-        return;
+        createdObjectUrls.value = createdObjectUrls.value.filter(
+            (u) => u !== item.url,
+        );
     }
 
-    item.is_deleted = !item.is_deleted;
+    form.value.items.splice(index, 1);
 };
 
 const handleClearAllItems = () => {
@@ -390,14 +412,7 @@ const handleClearAllItems = () => {
     }
 
     cleanupObjectUrls();
-
-    if (!isEditing.value) {
-        form.value.items = [];
-    } else {
-        form.value.items = form.value.items
-            .filter((item) => !item.is_new)
-            .map((item) => ({ ...item, is_deleted: true }));
-    }
+    form.value.items = [];
 };
 
 // Add New Files Logic
@@ -664,6 +679,11 @@ const isFormValid = computed(() => {
         return false;
     }
 
+    // Subject selection only required for new uploads, not edits
+    if (!isEditing.value && !selectedSubjectId.value) {
+        return false;
+    }
+
     for (const item of active) {
         if (
             (item.format === 'video' || item.format === 'pdf') &&
@@ -684,8 +704,8 @@ const handleSubmit = async () => {
 
     errorMessage.value = null;
 
-    if (!isEditing.value && !props.node) {
-        errorMessage.value = 'ফোল্ডার বা চ্যাপ্টার নির্বাচন করা হয়নি।';
+    if (!isEditing.value && !selectedSubjectId.value) {
+        errorMessage.value = 'অনুগ্রহ করে বিষয় নির্বাচন করুন।';
 
         return;
     }
@@ -789,10 +809,6 @@ const handleSubmit = async () => {
 
         uploadProgress.value = 'সংরক্ষণ করা হচ্ছে...';
 
-        const endpoint = isEditing.value
-            ? `/resources/${props.resource!.id}`
-            : '/resources';
-
         const payload: Record<string, any> = {
             resource_type: form.value.resource_type,
             title: form.value.title.trim(),
@@ -800,11 +816,17 @@ const handleSubmit = async () => {
             items: itemsPayload,
         };
 
-        if (isEditing.value) {
-            payload.id = props.resource!.id;
-        } else {
-            payload.node_id = props.node!.id;
+        if (!isEditing.value) {
+            payload.subject_id = selectedSubjectId.value;
+
+            if (selectedNodeId.value) {
+                payload.node_id = selectedNodeId.value;
+            }
         }
+
+        const errorFallback = isEditing.value
+            ? 'রিসোর্স আপডেট করতে সমস্যা হয়েছে।'
+            : 'রিসোর্স সাবমিট করতে সমস্যা হয়েছে।';
 
         const requestOptions = {
             preserveScroll: true,
@@ -818,10 +840,7 @@ const handleSubmit = async () => {
             },
             onError: (errors: Record<string, any>) => {
                 errorMessage.value =
-                    Object.values(errors).flat().join(', ') ||
-                    (isEditing.value
-                        ? 'রিসোর্স আপডেট করতে সমস্যা হয়েছে।'
-                        : 'রিসোর্স সাবমিট করতে সমস্যা হয়েছে।');
+                    Object.values(errors).flat().join(', ') || errorFallback;
             },
             onFinish: () => {
                 isSubmitting.value = false;
@@ -830,9 +849,13 @@ const handleSubmit = async () => {
         };
 
         if (isEditing.value) {
-            router.patch(endpoint, payload, requestOptions);
+            router.patch(
+                `/resources/${props.resource!.id}`,
+                payload,
+                requestOptions,
+            );
         } else {
-            router.post(endpoint, payload, requestOptions);
+            router.post('/resources', payload, requestOptions);
         }
     } catch (err: any) {
         errorMessage.value =
@@ -848,9 +871,9 @@ const handleSubmit = async () => {
         :is-open="isOpen"
         :title="isEditing ? 'রিসোর্স সম্পাদনা' : 'নতুন রিসোর্স আপলোড'"
         :description="
-            props.node?.name
-                ? `${props.node.name} অধ্যায়ে যুক্ত করুন`
-                : 'শিক্ষার্থীদের জন্য রিসোর্স শেয়ার করুন'
+            isEditing
+                ? 'রিসোর্সের তথ্য ও পৃষ্ঠাসমূহ আপডেট করুন'
+                : 'নোট আর্কাইভে বিষয় ও অধ্যায় অনুযায়ী রিসোর্স শেয়ার করুন'
         "
         max-width="2xl"
         @close="handleClose(false)"
@@ -865,6 +888,68 @@ const handleSubmit = async () => {
         </template>
 
         <div class="space-y-4.5 p-4 sm:p-6">
+            <!-- Subject Selection (hidden when editing) -->
+            <div v-if="!isEditing">
+                <label
+                    class="mb-1.5 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                >
+                    বিষয় নির্বাচন করুন <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <select
+                        v-model="selectedSubjectId"
+                        @change="selectedNodeId = null"
+                        class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 pr-10 text-xs font-semibold text-slate-800 transition focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                        <option :value="null" disabled>বিষয় বেছে নিন...</option>
+                        <option
+                            v-for="subj in subjects"
+                            :key="subj.id"
+                            :value="subj.id"
+                        >
+                            {{ subj.name }}
+                        </option>
+                    </select>
+                    <ChevronDown
+                        class="pointer-events-none absolute top-3 right-3 h-4 w-4 text-slate-400 dark:text-gray-500"
+                    />
+                </div>
+            </div>
+
+            <!-- Chapter Selection (Shown only after user selects a subject) -->
+            <div
+                v-if="
+                    !isEditing &&
+                    selectedSubjectId &&
+                    modalAvailableChapters.length > 0
+                "
+                class="transition-all duration-200"
+            >
+                <label
+                    class="mb-1.5 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                >
+                    অধ্যায় বেছে নিন (ঐচ্ছিক)
+                </label>
+                <div class="relative">
+                    <select
+                        v-model="selectedNodeId"
+                        class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 pr-10 text-xs font-semibold text-slate-800 transition focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                        <option :value="null">পুরো বিষয়ভিত্তিক রিসোর্স</option>
+                        <option
+                            v-for="ch in modalAvailableChapters"
+                            :key="ch.id"
+                            :value="ch.id"
+                        >
+                            {{ ch.name }}
+                        </option>
+                    </select>
+                    <ChevronDown
+                        class="pointer-events-none absolute top-3 right-3 h-4 w-4 text-slate-400 dark:text-gray-500"
+                    />
+                </div>
+            </div>
+
             <!-- 1. Category Dropdown -->
             <div>
                 <label
@@ -1296,7 +1381,13 @@ const handleSubmit = async () => {
                         />
                         <Check v-else class="h-3.5 w-3.5" />
                         <span>{{
-                            isEditing ? 'সংরক্ষণ করুন' : 'আপলোড করুন'
+                            isSubmitting
+                                ? isEditing
+                                    ? 'সংরক্ষণ হচ্ছে...'
+                                    : 'আপলোড হচ্ছে...'
+                                : isEditing
+                                  ? 'সংরক্ষণ করুন'
+                                  : 'আপলোড করুন'
                         }}</span>
                     </button>
                 </div>
