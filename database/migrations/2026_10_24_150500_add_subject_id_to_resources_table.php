@@ -15,12 +15,20 @@ return new class extends Migration
         });
 
         // Backfill subject_id from nodes
-        DB::statement('
-            UPDATE resources r
-            JOIN nodes n ON r.node_id = n.id
-            SET r.subject_id = n.subject_id
-            WHERE r.subject_id IS NULL AND r.node_id IS NOT NULL
-        ');
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('
+                UPDATE resources
+                SET subject_id = (SELECT subject_id FROM nodes WHERE nodes.id = resources.node_id)
+                WHERE subject_id IS NULL AND node_id IS NOT NULL
+            ');
+        } else {
+            DB::statement('
+                UPDATE resources r
+                JOIN nodes n ON r.node_id = n.id
+                SET r.subject_id = n.subject_id
+                WHERE r.subject_id IS NULL AND r.node_id IS NOT NULL
+            ');
+        }
     }
 
     public function down(): void

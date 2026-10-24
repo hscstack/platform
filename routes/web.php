@@ -170,7 +170,6 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/api/feed', [HomeController::class, 'feed'])->name('feed.api');
 
     Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
-    Route::get('/note', fn () => redirect()->route('notes.index'));
     Route::get('/resources', [NoteController::class, 'index'])->name('resources.index');
 
     Route::get('/resources/{id}', [ResourceController::class, 'show']);
