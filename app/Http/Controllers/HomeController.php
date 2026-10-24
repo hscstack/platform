@@ -19,7 +19,7 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         $course = in_array($request->query('course'), ['hsc', 'ssc'], true) ? $request->query('course') : 'hsc';
-        $group = in_array($request->query('group'), ['science', 'commerce', 'humanities'], true) ? $request->query('group') : null;
+        $group = in_array($request->query('group'), ['science', 'commerce', 'humanities'], true) ? $request->query('group') : 'science';
         $sort = in_array($request->query('sort'), ['trending', 'recent'], true) ? $request->query('sort') : 'trending';
         $page = max(1, (int) $request->query('page', 1));
 
@@ -48,14 +48,14 @@ class HomeController extends Controller
     public function feed(Request $request)
     {
         $course = in_array($request->query('course'), ['hsc', 'ssc'], true) ? $request->query('course') : 'hsc';
-        $group = in_array($request->query('group'), ['science', 'commerce', 'humanities'], true) ? $request->query('group') : null;
+        $group = in_array($request->query('group'), ['science', 'commerce', 'humanities'], true) ? $request->query('group') : 'science';
         $sort = in_array($request->query('sort'), ['trending', 'recent'], true) ? $request->query('sort') : 'trending';
         $page = max(1, (int) $request->query('page', 1));
 
         return response()->json($this->getFeed($course, $group, $sort, $page));
     }
 
-    private function getFeed(string $course, ?string $group, string $sort, int $page = 1): array
+    private function getFeed(string $course, string $group, string $sort, int $page = 1): array
     {
         $page = max(1, $page);
         $currentUserId = Auth::id();

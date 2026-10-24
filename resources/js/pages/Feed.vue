@@ -42,7 +42,7 @@ const props = defineProps<{
     };
     subjects: Subject[];
     course: 'hsc' | 'ssc';
-    group?: 'science' | 'commerce' | 'humanities' | null;
+    group?: 'science' | 'commerce' | 'humanities';
     sort: 'trending' | 'recent';
     notice?: any;
 }>();
@@ -50,22 +50,22 @@ const props = defineProps<{
 const { user } = useAuth();
 
 const currentCourse = ref<'hsc' | 'ssc'>(props.course || 'hsc');
-const currentGroup = ref<'science' | 'commerce' | 'humanities' | null>(
-    props.group ?? null,
+const currentGroup = ref<'science' | 'commerce' | 'humanities'>(
+    props.group || 'science',
 );
 const currentSort = ref<'trending' | 'recent'>(props.sort || 'trending');
 
 // Modal State
 const showFilterModal = ref(false);
 const draftCourse = ref<'hsc' | 'ssc'>(currentCourse.value);
-const draftGroup = ref<'science' | 'commerce' | 'humanities' | null>(
+const draftGroup = ref<'science' | 'commerce' | 'humanities'>(
     currentGroup.value,
 );
 
 const activeFilterCount = computed(() => {
     let count = 0;
 
-    if (currentGroup.value !== null) {
+    if (currentGroup.value !== 'science') {
         count++;
     }
 
@@ -100,7 +100,7 @@ const applyFilters = () => {
 
 const resetModalFilters = () => {
     draftCourse.value = 'hsc';
-    draftGroup.value = null;
+    draftGroup.value = 'science';
 };
 
 // Peer Search State & Handlers
@@ -159,7 +159,7 @@ const switchSort = (newSort: 'trending' | 'recent') => {
         {
             course: currentCourse.value,
             sort: newSort,
-            ...(currentGroup.value ? { group: currentGroup.value } : {}),
+            group: currentGroup.value,
         },
         { preserveState: true, replace: true },
     );
@@ -174,11 +174,8 @@ const loadMore = async () => {
     const nextPage = currentPage.value + 1;
 
     try {
-        const groupParam = currentGroup.value
-            ? `&group=${currentGroup.value}`
-            : '';
         const res = await fetch(
-            `/api/feed?course=${currentCourse.value}&sort=${currentSort.value}${groupParam}&page=${nextPage}`,
+            `/api/feed?course=${currentCourse.value}&sort=${currentSort.value}&group=${currentGroup.value}&page=${nextPage}`,
             {
                 headers: {
                     Accept: 'application/json',
@@ -606,10 +603,7 @@ const loadMore = async () => {
                 <div class="grid grid-cols-3 gap-2">
                     <button
                         type="button"
-                        @click="
-                            draftGroup =
-                                draftGroup === 'science' ? null : 'science'
-                        "
+                        @click="draftGroup = 'science'"
                         class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
                         :class="[
                             draftGroup === 'science'
@@ -621,10 +615,7 @@ const loadMore = async () => {
                     </button>
                     <button
                         type="button"
-                        @click="
-                            draftGroup =
-                                draftGroup === 'commerce' ? null : 'commerce'
-                        "
+                        @click="draftGroup = 'commerce'"
                         class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
                         :class="[
                             draftGroup === 'commerce'
@@ -636,12 +627,7 @@ const loadMore = async () => {
                     </button>
                     <button
                         type="button"
-                        @click="
-                            draftGroup =
-                                draftGroup === 'humanities'
-                                    ? null
-                                    : 'humanities'
-                        "
+                        @click="draftGroup = 'humanities'"
                         class="flex cursor-pointer items-center justify-center rounded-xl border py-2.5 text-xs font-bold transition"
                         :class="[
                             draftGroup === 'humanities'
