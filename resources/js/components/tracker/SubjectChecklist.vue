@@ -112,7 +112,7 @@ const relevantOptionalSubjects = computed(() => {
     return props.optionalSubjects.filter(
         (s) =>
             s.course === pendingCurriculum.value &&
-            s.group === pendingGroup.value,
+            (s.group === pendingGroup.value || s.group === 'common'),
     );
 });
 
@@ -127,7 +127,7 @@ const selectedOptionalSubjectNames = computed(() => {
         .filter(
             (s) =>
                 s.course === props.course &&
-                s.group === props.group &&
+                (s.group === props.group || s.group === 'common') &&
                 set.has(s.id),
         )
         .map((s) => s.name);
@@ -135,7 +135,9 @@ const selectedOptionalSubjectNames = computed(() => {
 
 const hasAvailableOptionalSubjects = computed(() => {
     return props.optionalSubjects.some(
-        (s) => s.course === props.course && s.group === props.group,
+        (s) =>
+            s.course === props.course &&
+            (s.group === props.group || s.group === 'common'),
     );
 });
 

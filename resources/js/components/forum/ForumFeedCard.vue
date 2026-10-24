@@ -182,13 +182,34 @@ const sharePost = async () => {
     }
 
     try {
-        await navigator.clipboard.writeText(finalUrl);
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(finalUrl);
+        } else {
+            throw new Error('Clipboard API unavailable');
+        }
+
         copied.value = true;
         setTimeout(() => {
             copied.value = false;
         }, 2500);
     } catch {
-        // silent fail
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = finalUrl;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            copied.value = true;
+            setTimeout(() => {
+                copied.value = false;
+            }, 2500);
+        } catch {
+            // silent fail
+        }
     }
 };
 </script>
@@ -306,26 +327,32 @@ const sharePost = async () => {
                     </div>
                 </div>
             </div>
-
-            <!-- Subject Pill -->
-            <div v-if="post.subject" class="shrink-0" @click.stop>
-                <Link
-                    :href="`/forum?subject_id=${post.subject.id}`"
-                    class="dark:hover:bg-gray-750 rounded-lg bg-slate-100/90 px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    {{ post.subject.name }}
-                </Link>
-            </div>
         </div>
 
         <!-- 2. Body: Content with preserved newlines -->
         <div class="mt-3">
-            <!-- Chapter subtitle above question body -->
+            <!-- Chapter & Subject Subtitle above question body -->
             <div
-                v-if="post.node"
-                class="mb-1.5 truncate text-xs font-medium text-slate-500 dark:text-gray-400"
+                v-if="post.node || post.subject"
+                class="mb-1.5 flex items-center gap-1.5 truncate text-xs font-medium text-slate-500 dark:text-gray-400"
             >
-                {{ post.node.name }}
+                <span
+                    v-if="post.node"
+                    class="truncate font-medium text-slate-600 dark:text-gray-300"
+                >
+                    {{ post.node.name }}
+                </span>
+                <template v-if="post.node && post.subject">
+                    <span class="text-slate-300 dark:text-gray-600">•</span>
+                </template>
+                <Link
+                    v-if="post.subject"
+                    :href="`/forum?subject_id=${post.subject.id}`"
+                    @click.stop
+                    class="shrink-0 transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    {{ post.subject.name }}
+                </Link>
             </div>
 
             <p
@@ -337,7 +364,7 @@ const sharePost = async () => {
             <!-- Optional Attached Image -->
             <div
                 v-if="post.image_url || post.image_path"
-                class="dark:bg-gray-850 mt-3 max-h-80 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 dark:border-gray-800"
+                class="mt-3 max-h-80 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50"
             >
                 <img
                     :src="post.image_url || '/storage/' + post.image_path"
@@ -353,25 +380,21 @@ const sharePost = async () => {
             class="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3 dark:border-gray-800/80"
         >
             <div class="flex flex-wrap items-center gap-2" @click.stop>
-                <!-- Horizontal Vote Pill -->
-                <div
-                    class="dark:ring-gray-750 inline-flex items-center rounded-xl bg-slate-50 p-0.5 ring-1 ring-slate-200/70 dark:bg-gray-800/80"
-                >
-                    <ForumVoteButtons
-                        votableType="post"
-                        :votableId="post.id"
-                        :initialUpvotes="post.upvotes_count || 0"
-                        :initialDownvotes="post.downvotes_count || 0"
-                        :initialUserVote="post.user_vote"
-                        direction="horizontal"
-                        size="sm"
-                    />
-                </div>
+                <ForumVoteButtons
+                    votableType="post"
+                    :votableId="post.id"
+                    :initialUpvotes="post.upvotes_count || 0"
+                    :initialDownvotes="post.downvotes_count || 0"
+                    :initialUserVote="post.user_vote"
+                    direction="horizontal"
+                    size="sm"
+                    variant="boxed"
+                />
 
                 <!-- Answer Count Button -->
                 <Link
                     :href="`/forum/questions/${post.slug}#answers`"
-                    class="dark:bg-gray-850 inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                     <MessageSquare
                         class="h-3.5 w-3.5 text-purple-600 dark:text-purple-400"
@@ -386,7 +409,7 @@ const sharePost = async () => {
                     type="button"
                     @click="sharePost"
                     :disabled="isSharing"
-                    class="dark:bg-gray-850 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-75 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-75 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800"
                     title="Share question"
                 >
                     <Loader2

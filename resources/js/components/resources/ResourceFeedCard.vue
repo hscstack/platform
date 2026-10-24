@@ -274,13 +274,34 @@ const shareResource = async () => {
     }
 
     try {
-        await navigator.clipboard.writeText(finalUrl);
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(finalUrl);
+        } else {
+            throw new Error('Clipboard API unavailable');
+        }
+
         copied.value = true;
         setTimeout(() => {
             copied.value = false;
         }, 2500);
     } catch {
-        // silent
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = finalUrl;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            copied.value = true;
+            setTimeout(() => {
+                copied.value = false;
+            }, 2500);
+        } catch {
+            // silent
+        }
     }
 };
 </script>
@@ -400,27 +421,34 @@ const shareResource = async () => {
                     </div>
                 </div>
             </div>
-
-            <!-- Top Right: Subject Pill (matches Forum card) -->
-            <div v-if="resource.node?.subject" class="shrink-0" @click.stop>
-                <span
-                    class="rounded-lg bg-slate-100/90 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-gray-800 dark:text-gray-300"
-                >
-                    {{ resource.node.subject.name }}
-                </span>
-            </div>
         </div>
 
         <!-- 2. Body: Resource Title, Description & Preview -->
         <div class="mt-3">
-            <!-- Resource Type & Chapter Hierarchy Subtitle above the title -->
+            <!-- Resource Type, Chapter & Subject Hierarchy Subtitle above the title -->
             <div
                 class="mb-1.5 flex items-center gap-1.5 truncate text-xs font-medium text-slate-500 dark:text-gray-400"
             >
-                <span>{{ typeBadge.text }}</span>
+                <span
+                    class="shrink-0 font-medium text-indigo-600 dark:text-indigo-400"
+                    >{{ typeBadge.text }}</span
+                >
                 <template v-if="resource.node">
-                    <span class="dark:text-gray-650 text-slate-300">•</span>
-                    <span class="truncate">{{ resource.node.name }}</span>
+                    <span class="text-slate-300 dark:text-gray-600">•</span>
+                    <span
+                        class="truncate font-medium text-slate-600 dark:text-gray-300"
+                        >{{ resource.node.name }}</span
+                    >
+                </template>
+                <template v-if="resource.node?.subject">
+                    <span class="text-slate-300 dark:text-gray-600">•</span>
+                    <Link
+                        :href="`/${resource.node.subject.slug}`"
+                        @click.stop
+                        class="shrink-0 transition hover:text-indigo-600 dark:hover:text-indigo-400"
+                    >
+                        {{ resource.node.subject.name }}
+                    </Link>
                 </template>
             </div>
 
@@ -440,7 +468,7 @@ const shareResource = async () => {
             <!-- Image/Video Preview -->
             <div
                 v-if="previewImageUrl"
-                class="dark:bg-gray-850 relative mt-3 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-100 dark:border-gray-800"
+                class="relative mt-3 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-100 dark:border-gray-800 dark:bg-gray-800/50"
                 :class="[isVideo ? 'aspect-video w-full' : 'max-h-96 w-full']"
             >
                 <img
@@ -485,7 +513,7 @@ const shareResource = async () => {
             <!-- Alternative Fallback Card if no image preview -->
             <div
                 v-else
-                class="dark:bg-gray-850/60 mt-3 flex items-center gap-3 rounded-xl border border-slate-200/70 bg-slate-50/60 p-2.5 text-xs text-slate-600 transition group-hover:border-slate-300 dark:border-gray-800 dark:text-gray-300"
+                class="mt-3 flex items-center gap-3 rounded-xl border border-slate-200/70 bg-slate-50/60 p-2.5 text-xs text-slate-600 transition group-hover:border-slate-300 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300"
             >
                 <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 ring-1 ring-indigo-500/10 dark:bg-indigo-950/50 dark:text-indigo-400 dark:ring-indigo-400/20"
@@ -508,20 +536,15 @@ const shareResource = async () => {
             class="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3 dark:border-gray-800/80"
         >
             <div class="flex flex-wrap items-center gap-2" @click.stop>
-                <!-- Horizontal Vote Pill -->
-                <div
-                    class="dark:ring-gray-750 inline-flex items-center rounded-xl bg-slate-50 p-0.5 ring-1 ring-slate-200/70 dark:bg-gray-800/80"
-                >
-                    <ResourceVoteButtons
-                        :resource-id="resource.id"
-                        :initial-score="resource.vote_score || 0"
-                        :initial-upvotes="resource.upvotes_count || 0"
-                        :initial-downvotes="resource.downvotes_count || 0"
-                        :initial-user-vote="resource.user_vote"
-                        direction="horizontal"
-                        size="sm"
-                    />
-                </div>
+                <ResourceVoteButtons
+                    :resource-id="resource.id"
+                    :initial-score="resource.vote_score || 0"
+                    :initial-upvotes="resource.upvotes_count || 0"
+                    :initial-downvotes="resource.downvotes_count || 0"
+                    :initial-user-vote="resource.user_vote"
+                    direction="horizontal"
+                    size="sm"
+                />
             </div>
 
             <!-- Right: Clean Share Button (Exactly matching Forum & Blog) -->
@@ -530,7 +553,7 @@ const shareResource = async () => {
                     type="button"
                     @click="shareResource"
                     :disabled="isSharing"
-                    class="dark:bg-gray-850 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-75 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-75 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800"
                     title="Share resource"
                 >
                     <Loader2

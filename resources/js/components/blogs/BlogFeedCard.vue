@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { Check, Eye, Heart, MessageSquare, Share2 } from 'lucide-vue-next';
+import {
+    Check,
+    Eye,
+    Heart,
+    Loader2,
+    MessageSquare,
+    Share2,
+} from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAppreciation } from '@/lib/useAppreciation';
 import { useAuth } from '@/lib/useAuth';
+import { getCsrfToken } from '@/lib/useCsrf';
 import { formatTimeAgo } from '@/lib/useDate';
 
 interface User {
@@ -166,18 +174,92 @@ const toggleAppreciation = () => {
 };
 
 const copied = ref(false);
+const isSharing = ref(false);
 
-const copyLink = async () => {
-    const url = `${window.location.origin}/blogs/${props.blog.slug}`;
+const shareBlog = async () => {
+    if (isSharing.value) {
+        return;
+    }
+
+    isSharing.value = true;
+
+    const originalUrl = `${window.location.origin}/blogs/${props.blog.slug}`;
+    let finalUrl = originalUrl;
 
     try {
-        await navigator.clipboard.writeText(url);
+        const res = await fetch('/api/short-urls', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                original_url: originalUrl,
+            }),
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+
+            if (data.short_url) {
+                finalUrl = data.short_url;
+            }
+        }
+    } catch {
+        // Fallback to original URL
+    } finally {
+        isSharing.value = false;
+    }
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: props.blog.title,
+                url: finalUrl,
+            });
+            copied.value = true;
+            setTimeout(() => {
+                copied.value = false;
+            }, 2500);
+
+            return;
+        } catch {
+            // fallback to clipboard
+        }
+    }
+
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(finalUrl);
+        } else {
+            throw new Error('Clipboard API unavailable');
+        }
+
         copied.value = true;
         setTimeout(() => {
             copied.value = false;
-        }, 2000);
+        }, 2500);
     } catch {
-        // fallback
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = finalUrl;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            copied.value = true;
+            setTimeout(() => {
+                copied.value = false;
+            }, 2500);
+        } catch {
+            // fallback failed
+        }
     }
 };
 </script>
@@ -327,7 +409,7 @@ const copyLink = async () => {
             <!-- Featured Image (Attached image preview below excerpt) -->
             <div
                 v-if="blog.featured_image || blog.featured_image_path"
-                class="dark:bg-gray-850 mt-3 max-h-80 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 dark:border-gray-800"
+                class="mt-3 max-h-80 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50"
             >
                 <img
                     :src="blog.featured_image || blog.featured_image_path || ''"
@@ -355,7 +437,7 @@ const copyLink = async () => {
                     :class="[
                         isReacted
                             ? 'border-rose-200 bg-rose-50/90 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
-                            : 'dark:bg-gray-850 border-slate-200/80 bg-slate-50/70 text-slate-700 hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800',
+                            : 'border-slate-200/80 bg-slate-50/70 text-slate-700 hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800',
                     ]"
                     :title="isReacted ? 'রিঅ্যাক্ট সরান' : 'লাভ রিঅ্যাক্ট দিন'"
                 >
@@ -372,7 +454,7 @@ const copyLink = async () => {
 
                 <Link
                     :href="`/blogs/${blog.slug}#comments`"
-                    class="dark:bg-gray-850 inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                     <MessageSquare
                         class="h-3.5 w-3.5 text-purple-600 dark:text-purple-400"
@@ -392,19 +474,26 @@ const copyLink = async () => {
             <div class="flex items-center gap-2" @click.stop>
                 <button
                     type="button"
-                    @click="copyLink"
-                    class="dark:bg-gray-850 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+                    @click="shareBlog"
+                    :disabled="isSharing"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-75 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800"
                     title="Share blog"
                 >
+                    <Loader2
+                        v-if="isSharing"
+                        class="h-3.5 w-3.5 animate-spin text-indigo-600 dark:text-indigo-400"
+                    />
                     <Check
-                        v-if="copied"
+                        v-else-if="copied"
                         class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
                     />
                     <Share2
                         v-else
                         class="h-3.5 w-3.5 text-slate-500 dark:text-gray-400"
                     />
-                    <span>{{ copied ? 'Copied' : 'Share' }}</span>
+                    <span>{{
+                        isSharing ? 'Copying...' : copied ? 'Copied' : 'Share'
+                    }}</span>
                 </button>
             </div>
         </div>
