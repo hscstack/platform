@@ -26,12 +26,17 @@ class ResourceController extends Controller
         $cachedData = Cache::remember("resource_public_{$id}", now()->addHours(6), function () use ($id) {
             $resource = Resource::with([
                 'user:id,name,username,image_path',
-                'node:id,name,slug',
+                'node:id,name,slug,subject_id',
+                'node.subject:id,name,slug,course',
                 'subject:id,name,slug,course',
             ])->find($id);
 
             if (! $resource || $resource->status !== 'approved') {
                 return null;
+            }
+
+            if (! $resource->relationLoaded('subject') || ! $resource->subject) {
+                $resource->setRelation('subject', $resource->node?->subject);
             }
 
             $upvoters = ResourceVote::where('resource_id', $id)
@@ -61,9 +66,14 @@ class ResourceController extends Controller
             // Fallback for non-approved (pending / rejected) viewing by owner or moderator
             $resource = Resource::with([
                 'user:id,name,username,image_path',
-                'node:id,name,slug',
+                'node:id,name,slug,subject_id',
+                'node.subject:id,name,slug,course',
                 'subject:id,name,slug,course',
             ])->findOrFail($id);
+
+            if (! $resource->relationLoaded('subject') || ! $resource->subject) {
+                $resource->setRelation('subject', $resource->node?->subject);
+            }
 
             $isOwner = $user && $user->id === $resource->user_id;
 
