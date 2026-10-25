@@ -190,16 +190,8 @@ test('tracker only includes trackable subjects and trackable nodes flatly', func
         'is_trackable' => false,
     ]);
 
-    $rootFolderUntrackable = Node::create([
+    $chapterTrackable = Node::create([
         'subject_id' => $trackableSubject->id,
-        'name' => 'Poem Folder',
-        'slug' => 'poem-folder',
-        'is_trackable' => false,
-    ]);
-
-    $childChapterTrackable = Node::create([
-        'subject_id' => $trackableSubject->id,
-        'parent_id' => $rootFolderUntrackable->id,
         'name' => 'Real Chapter 1',
         'slug' => 'real-chapter-1',
         'is_trackable' => true,
@@ -214,7 +206,7 @@ test('tracker only includes trackable subjects and trackable nodes flatly', func
     expect(count($subjects))->toBe(1);
     expect($subjects[0]['id'])->toBe($trackableSubject->id);
     expect(count($subjects[0]['nodes']))->toBe(1);
-    expect($subjects[0]['nodes'][0]['id'])->toBe($childChapterTrackable->id);
+    expect($subjects[0]['nodes'][0]['id'])->toBe($chapterTrackable->id);
     expect($subjects[0]['nodes'][0]['name'])->toBe('Real Chapter 1');
 });
 

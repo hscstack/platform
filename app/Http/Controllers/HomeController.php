@@ -38,8 +38,7 @@ class HomeController extends Controller
 
             return $subjectsQuery->orderBy('sort_order', 'asc')
                 ->with(['nodes' => function ($q) {
-                    $q->whereNull('parent_id')
-                        ->select('id', 'subject_id', 'parent_id', 'name', 'slug')
+                    $q->select('id', 'subject_id', 'name', 'slug')
                         ->orderBy('sort_order');
                 }])
                 ->get(['id', 'name', 'slug', 'course', 'group'])

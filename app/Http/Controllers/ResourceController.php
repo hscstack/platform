@@ -96,7 +96,7 @@ class ResourceController extends Controller
         $subjects = ($isModerator || $isOwner)
             ? Subject::where('is_disabled', false)
                 ->orderBy('sort_order')
-                ->with(['nodes' => fn ($q) => $q->select('id', 'subject_id', 'parent_id', 'name', 'slug')->orderBy('sort_order')])
+                ->with(['nodes' => fn ($q) => $q->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
                 ->get(['id', 'name', 'slug', 'course', 'group'])
             : [];
 

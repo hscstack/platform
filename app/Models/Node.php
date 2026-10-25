@@ -3,17 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 
-/**
- * @property-read Node|null $parent
- */
 class Node extends Model
 {
     protected $fillable = [
         'user_id',
         'subject_id',
-        'parent_id',
         'name',
         'slug',
         'sort_order',
@@ -28,7 +23,6 @@ class Node extends Model
             'is_trackable' => 'boolean',
             'weight' => 'integer',
             'is_frozen' => 'boolean',
-            'children_count' => 'integer',
             'resources_count' => 'integer',
         ];
     }
@@ -36,63 +30,15 @@ class Node extends Model
     protected static function booted(): void
     {
         static::deleting(function (Node $node) {
-            if ($node->isEffectivelyFrozen()) {
+            if ($node->is_frozen) {
                 abort(403, 'This folder is frozen and cannot be deleted.');
             }
         });
     }
 
-    public function isEffectivelyFrozen(): bool
-    {
-        if ($this->is_frozen) {
-            return true;
-        }
-
-        return $this->parent ? $this->parent->isEffectivelyFrozen() : false;
-    }
-
-    public function getIsEffectivelyFrozenAttribute(): bool
-    {
-        return $this->isEffectivelyFrozen();
-    }
-
-    public function breadcrumb(): array
-    {
-        return Cache::remember("node_breadcrumb_{$this->id}", now()->addHours(24), function () {
-            $breadcrumb = [];
-            $node = $this;
-
-            while ($node) {
-                array_unshift($breadcrumb, [
-                    'name' => $node->name,
-                    'slug' => $node->slug,
-                ]);
-
-                $node = $node->parent;
-            }
-
-            return $breadcrumb;
-        });
-    }
-
-    public function getBreadcrumbAttribute(): array
-    {
-        return $this->breadcrumb();
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function children()
-    {
-        return $this->hasMany(Node::class, 'parent_id');
-    }
-
-    public function parent()
-    {
-        return $this->belongsTo(Node::class, 'parent_id');
     }
 
     public function subject()
