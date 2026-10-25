@@ -65,6 +65,14 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Peers',
+        labelBn: 'সহপাঠী (Peers)',
+        href: '/peers',
+        icon: 'group',
+        match: (url) => url.startsWith('/peers'),
+        showInBottom: false,
+    },
+    {
         label: 'AI',
         labelBn: 'HSCStack AI',
         href: '/ai',

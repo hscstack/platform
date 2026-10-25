@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useRemember } from '@inertiajs/vue3';
 import {
+    AlertCircle,
     ArrowRight,
     BookOpen,
     Check,
@@ -45,18 +46,24 @@ interface Subject {
     nodes?: SubjectNode[];
 }
 
-const props = defineProps<{
-    feed: {
-        data: any[];
-        has_more?: boolean;
-        page?: number;
-    };
-    subjects: Subject[];
-    course: 'hsc' | 'ssc';
-    group?: 'science' | 'commerce' | 'humanities';
-    sort: 'trending' | 'recent';
-    notice?: any;
-}>();
+const props = withDefaults(
+    defineProps<{
+        feed: {
+            data: any[];
+            has_more?: boolean;
+            page?: number;
+        };
+        subjects: Subject[];
+        course: 'hsc' | 'ssc';
+        group?: 'science' | 'commerce' | 'humanities';
+        sort: 'trending' | 'recent';
+        notice?: any;
+        allow_resource_uploads?: boolean;
+    }>(),
+    {
+        allow_resource_uploads: true,
+    },
+);
 
 const { user, requireAuth } = useAuth();
 
@@ -76,8 +83,17 @@ const chooseAskQuestion = () => {
     isAskQuestionModalOpen.value = true;
 };
 
+const isUploadDisabledModalOpen = ref(false);
+
 const chooseUploadResource = () => {
     isActionChoiceModalOpen.value = false;
+
+    if (props.allow_resource_uploads === false) {
+        isUploadDisabledModalOpen.value = true;
+
+        return;
+    }
+
     isResourceUploadModalOpen.value = true;
 };
 
@@ -741,6 +757,39 @@ const loadMore = async () => {
                     class="h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
                 />
             </button>
+        </div>
+    </BaseModal>
+
+    <!-- Upload Disabled Notice Modal -->
+    <BaseModal
+        :is-open="isUploadDisabledModalOpen"
+        title="নোট আপলোড সাময়িকভাবে বন্ধ আছে"
+        description="প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন নোট বা রিসোর্স আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।"
+        max-width="md"
+        @close="isUploadDisabledModalOpen = false"
+    >
+        <div class="space-y-4 p-5 text-center">
+            <div
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+            >
+                <AlertCircle class="h-6 w-6 stroke-[2]" />
+            </div>
+            <p
+                class="text-xs leading-relaxed text-slate-600 dark:text-gray-300"
+            >
+                বর্তমানে নতুন রিসোর্স সাবমিশন গ্রহণ করা হচ্ছে না। খুব দ্রুতই
+                পুনরায় নোট আপলোড চালু করা হবে। আপনি যেকোনো বিদ্যমান নোট ও
+                আর্কাইভ ব্রাউজ করতে পারেন।
+            </p>
+            <div class="pt-2">
+                <button
+                    type="button"
+                    @click="isUploadDisabledModalOpen = false"
+                    class="w-full cursor-pointer rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100"
+                >
+                    বুঝেছি
+                </button>
+            </div>
         </div>
     </BaseModal>
 

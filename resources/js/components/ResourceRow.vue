@@ -27,12 +27,24 @@ const props = defineProps<{
         vote_score?: number;
         upvotes_count?: number;
         downvotes_count?: number;
+        created_at?: string;
+        node?: {
+            id: number;
+            name: string;
+            slug?: string;
+            subject?: {
+                id: number;
+                name: string;
+                slug?: string;
+            } | null;
+        } | null;
         user?: {
             id: number;
             name: string;
             username: string;
         } | null;
     };
+    showStatus?: boolean;
 }>();
 
 const typeConfig = computed(() => {
@@ -64,10 +76,19 @@ const typeConfig = computed(() => {
                 badgeBg:
                     'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50',
             };
+        case 'lecture_sheet':
+            return {
+                icon: FileText,
+                label: 'লেকচার শিট',
+                countLabel: `${props.resource.items_count || 0} ফাইল`,
+                iconBg: 'bg-indigo-50 text-indigo-600 border-indigo-200/50 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20',
+                badgeBg:
+                    'bg-indigo-50 text-indigo-700 border-indigo-200/60 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-900/50',
+            };
         case 'other':
             return {
                 icon: FileText,
-                label: 'অন্যান্য',
+                label: 'লেকচার শিট',
                 countLabel: `${props.resource.items_count || 0} ফাইল`,
                 iconBg: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
                 badgeBg:
@@ -153,6 +174,30 @@ const typeConfig = computed(() => {
                         <UserIcon class="h-3 w-3 stroke-[2]" />
                         <span>{{ resource.user.name }}</span>
                     </span>
+
+                    <!-- Node / Subject Context -->
+                    <span
+                        v-if="resource.node"
+                        class="flex items-center gap-1 text-slate-500 dark:text-gray-400"
+                    >
+                        <span>•</span>
+                        <span class="max-w-[140px] truncate sm:max-w-[200px]">
+                            {{
+                                resource.node.subject?.name
+                                    ? `${resource.node.subject.name} - `
+                                    : ''
+                            }}{{ resource.node.name }}
+                        </span>
+                    </span>
+                </div>
+
+                <!-- Rejection note if rejected and present -->
+                <div
+                    v-if="resource.status === 'rejected' && resource.admin_note"
+                    class="mt-2 rounded-lg bg-rose-50 px-2.5 py-1 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                >
+                    <span class="font-bold">বাতিলের কারণ:</span>
+                    {{ resource.admin_note }}
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, router, usePage, useRemember } from '@inertiajs/vue3';
 import {
+    AlertCircle,
     Book,
     Check,
     ChevronDown,
@@ -14,6 +15,8 @@ import {
     X,
 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+
+import BaseModal from '@/components/BaseModal.vue';
 
 import EmptyState from '@/components/EmptyState.vue';
 import ResourceFormModal from '@/components/resources/ResourceFormModal.vue';
@@ -59,20 +62,26 @@ interface SimplePaginatedResources {
     path: string;
 }
 
-const props = defineProps<{
-    resources: SimplePaginatedResources;
-    subjects: SubjectItem[];
-    filters: {
-        curriculum?: 'hsc' | 'ssc';
-        course?: 'hsc' | 'ssc';
-        group?: string;
-        subject_id: number | null;
-        node_id: string | number | null;
-        type: string;
-        sort: 'trending' | 'top' | 'latest';
-        search: string;
-    };
-}>();
+const props = withDefaults(
+    defineProps<{
+        resources: SimplePaginatedResources;
+        subjects: SubjectItem[];
+        allow_resource_uploads?: boolean;
+        filters: {
+            curriculum?: 'hsc' | 'ssc';
+            course?: 'hsc' | 'ssc';
+            group?: string;
+            subject_id: number | null;
+            node_id: string | number | null;
+            type: string;
+            sort: 'trending' | 'top' | 'latest';
+            search: string;
+        };
+    }>(),
+    {
+        allow_resource_uploads: true,
+    },
+);
 
 const page = usePage();
 const { requireAuth } = useAuth();
@@ -170,8 +179,15 @@ const loadMore = async () => {
 
 // Upload modal state
 const isUploadModalOpen = ref(false);
+const isUploadDisabledModalOpen = ref(false);
 
 const openUploadModal = () => {
+    if (props.allow_resource_uploads === false) {
+        isUploadDisabledModalOpen.value = true;
+
+        return;
+    }
+
     requireAuth('রিসোর্স শেয়ার করতে অনুগ্রহ করে লগইন করুন।', () => {
         isUploadModalOpen.value = true;
     });
@@ -735,6 +751,39 @@ const resourceTypes = [
             </EmptyState>
         </div>
     </div>
+
+    <!-- Upload Disabled Notice Modal -->
+    <BaseModal
+        :is-open="isUploadDisabledModalOpen"
+        title="নোট আপলোড সাময়িকভাবে বন্ধ আছে"
+        description="প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন নোট বা রিসোর্স আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।"
+        max-width="md"
+        @close="isUploadDisabledModalOpen = false"
+    >
+        <div class="space-y-4 p-5 text-center">
+            <div
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+            >
+                <AlertCircle class="h-6 w-6 stroke-[2]" />
+            </div>
+            <p
+                class="text-xs leading-relaxed text-slate-600 dark:text-gray-300"
+            >
+                বর্তমানে নতুন রিসোর্স সাবমিশন গ্রহণ করা হচ্ছে না। খুব দ্রুতই
+                পুনরায় নোট আপলোড চালু করা হবে। আপনি যেকোনো বিদ্যমান নোট ও
+                আর্কাইভ ব্রাউজ করতে পারেন।
+            </p>
+            <div class="pt-2">
+                <button
+                    type="button"
+                    @click="isUploadDisabledModalOpen = false"
+                    class="w-full cursor-pointer rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100"
+                >
+                    বুঝেছি
+                </button>
+            </div>
+        </div>
+    </BaseModal>
 
     <!-- Upload Resource Modal (Uses unified ResourceFormModal with subjects support) -->
     <ResourceFormModal

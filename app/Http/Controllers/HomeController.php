@@ -64,6 +64,8 @@ class HomeController extends Controller
             return $data;
         });
 
+        $allowUploads = (bool) AppSetting::get('allow_resource_uploads', true);
+
         return Inertia::render('Feed', [
             'feed' => $feed,
             'subjects' => $subjects,
@@ -71,6 +73,7 @@ class HomeController extends Controller
             'group' => $group,
             'sort' => $sort,
             'notice' => $notice,
+            'allow_resource_uploads' => $allowUploads,
         ]);
     }
 

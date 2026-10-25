@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\Resource;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -118,9 +119,12 @@ class NoteController extends Controller
                 ->toArray();
         });
 
+        $allowUploads = (bool) AppSetting::get('allow_resource_uploads', true);
+
         return Inertia::render('Notes/Index', [
             'resources' => $resources,
             'subjects' => $subjects,
+            'allow_resource_uploads' => $allowUploads,
             'filters' => [
                 'curriculum' => $course,
                 'course' => $course,

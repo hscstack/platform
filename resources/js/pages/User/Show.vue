@@ -225,10 +225,26 @@ const handleVerifiedKeyDown = (e: KeyboardEvent) => {
     }
 };
 
+const checkHashAndTriggerModal = () => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const hash = window.location.hash;
+
+    if (hash === '#appreciators') {
+        showAppreciatorsModal.value = true;
+    } else if (hash === '#appreciating') {
+        showAppreciatingModal.value = true;
+    }
+};
+
 onMounted(() => {
     if (typeof window !== 'undefined') {
         window.addEventListener('click', handleVerifiedClickOutside);
         window.addEventListener('keydown', handleVerifiedKeyDown);
+        window.addEventListener('hashchange', checkHashAndTriggerModal);
+        checkHashAndTriggerModal();
     }
 });
 
@@ -236,6 +252,7 @@ onBeforeUnmount(() => {
     if (typeof window !== 'undefined') {
         window.removeEventListener('click', handleVerifiedClickOutside);
         window.removeEventListener('keydown', handleVerifiedKeyDown);
+        window.removeEventListener('hashchange', checkHashAndTriggerModal);
     }
 });
 
@@ -482,6 +499,45 @@ const handleAppreciate = () => {
     );
 };
 
+const handleToggleUserAppreciation = (person: {
+    id: number;
+    unappreciated?: boolean;
+    is_appreciated?: boolean;
+}) => {
+    if (!currentUser.value) {
+        guestModalAction.value = 'appreciate';
+        showGuestModal.value = true;
+
+        return;
+    }
+
+    // Toggle optimistic status
+    const currentlyAppreciated =
+        person.unappreciated !== undefined
+            ? !person.unappreciated
+            : Boolean(person.is_appreciated);
+
+    const nextAppreciated = !currentlyAppreciated;
+
+    // Set flag for UI
+    person.is_appreciated = nextAppreciated;
+    person.unappreciated = !nextAppreciated;
+
+    router.post(
+        `/u/${person.id}/appreciate`,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            except: ['suggestedUsers'],
+            onError: () => {
+                person.is_appreciated = currentlyAppreciated;
+                person.unappreciated = !currentlyAppreciated;
+            },
+        },
+    );
+};
+
 const timeAgo = formatTimeAgo;
 const formatGroupName = (group?: string) => {
     if (!group) {
@@ -597,7 +653,7 @@ const formatGroupName = (group?: string) => {
                         </div>
 
                         <!-- Name, Verified Badge, Username & Institution -->
-                        <div class="min-w-0 flex-1 space-y-1">
+                        <div class="relative min-w-0 flex-1 space-y-1">
                             <div
                                 class="flex flex-wrap items-center gap-1.5 sm:gap-2"
                             >
@@ -610,7 +666,7 @@ const formatGroupName = (group?: string) => {
                                 <div
                                     v-if="profileUser.is_verified"
                                     ref="verifiedBadgeContainerRef"
-                                    class="relative inline-flex items-center"
+                                    class="inline-flex items-center"
                                 >
                                     <button
                                         type="button"
@@ -638,7 +694,7 @@ const formatGroupName = (group?: string) => {
                                     >
                                         <div
                                             v-if="showVerifiedPrompt"
-                                            class="absolute top-full -left-20 z-50 mt-2 w-64 max-w-[calc(100vw-4rem)] rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl sm:left-0 sm:w-80 dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-2xl"
+                                            class="absolute top-full left-0 z-50 mt-2 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl sm:w-80 dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-2xl"
                                             role="dialog"
                                             aria-label="Verified contributor information"
                                         >
@@ -1731,13 +1787,46 @@ const formatGroupName = (group?: string) => {
                     v-if="appreciatorsList && appreciatorsList.length > 0"
                     class="-mx-1 max-h-72 divide-y divide-slate-100 overflow-y-auto px-1 dark:divide-gray-800/80"
                 >
-                    <UserListItem
+                    <div
                         v-for="person in appreciatorsList"
                         :key="person.id"
-                        :user="person"
-                        theme="rose"
-                        @click="showAppreciatorsModal = false"
-                    />
+                        class="flex items-center justify-between gap-2"
+                    >
+                        <UserListItem
+                            :user="person"
+                            theme="rose"
+                            class="min-w-0 flex-1"
+                            @click="showAppreciatorsModal = false"
+                        />
+                        <button
+                            v-if="currentUser && currentUser.id !== person.id"
+                            type="button"
+                            @click.stop="handleToggleUserAppreciation(person)"
+                            class="cursor-pointer p-1.5 transition active:scale-90"
+                            :title="
+                                person.unappreciated !== undefined
+                                    ? person.unappreciated
+                                        ? 'Appreciate'
+                                        : 'Appreciating'
+                                    : person.is_appreciated
+                                      ? 'Appreciating'
+                                      : 'Appreciate'
+                            "
+                        >
+                            <Heart
+                                class="h-4 w-4"
+                                :class="
+                                    person.unappreciated !== undefined
+                                        ? person.unappreciated
+                                            ? 'stroke-[2] text-slate-400 dark:text-gray-500'
+                                            : 'fill-rose-500 text-rose-500'
+                                        : person.is_appreciated
+                                          ? 'fill-rose-500 text-rose-500'
+                                          : 'stroke-[2] text-slate-400 dark:text-gray-500'
+                                "
+                            />
+                        </button>
+                    </div>
 
                     <div v-if="appreciatorsHasMore" class="py-3 text-center">
                         <button
@@ -1827,40 +1916,30 @@ const formatGroupName = (group?: string) => {
                             @click="showAppreciatingModal = false"
                         />
                         <button
-                            v-if="isOwnProfile"
+                            v-if="currentUser && currentUser.id !== person.id"
                             type="button"
-                            @click.stop="
-                                person.unappreciated = !person.unappreciated;
-                                router.post(
-                                    `/u/${person.id}/appreciate`,
-                                    {},
-                                    {
-                                        preserveScroll: true,
-                                        preserveState: true,
-                                        except: [
-                                            'appreciating',
-                                            'suggestedUsers',
-                                        ],
-                                        onError: () => {
-                                            person.unappreciated =
-                                                !person.unappreciated;
-                                        },
-                                    },
-                                );
-                            "
+                            @click.stop="handleToggleUserAppreciation(person)"
                             class="cursor-pointer p-1.5 transition active:scale-90"
                             :title="
-                                person.unappreciated
-                                    ? 'Appreciate'
-                                    : 'Appreciating'
+                                person.unappreciated !== undefined
+                                    ? person.unappreciated
+                                        ? 'Appreciate'
+                                        : 'Appreciating'
+                                    : person.is_appreciated
+                                      ? 'Appreciating'
+                                      : 'Appreciate'
                             "
                         >
                             <Heart
                                 class="h-4 w-4"
                                 :class="
-                                    person.unappreciated
-                                        ? 'stroke-[2] text-slate-400 dark:text-gray-500'
-                                        : 'fill-rose-500 text-rose-500'
+                                    person.unappreciated !== undefined
+                                        ? person.unappreciated
+                                            ? 'stroke-[2] text-slate-400 dark:text-gray-500'
+                                            : 'fill-rose-500 text-rose-500'
+                                        : person.is_appreciated
+                                          ? 'fill-rose-500 text-rose-500'
+                                          : 'stroke-[2] text-slate-400 dark:text-gray-500'
                                 "
                             />
                         </button>

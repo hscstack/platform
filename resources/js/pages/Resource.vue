@@ -10,6 +10,7 @@ import {
     Check,
     Loader2,
     Pencil,
+    MessageSquare,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -213,6 +214,47 @@ const subtitle = computed(() => {
 
     return parts.join(' · ');
 });
+
+const backHref = computed(() => {
+    const user = currentUser.value;
+    const curriculum = user?.curriculum || 'hsc';
+    const group = user?.group || 'science';
+
+    return `/notes?curriculum=${curriculum}&group=${group}`;
+});
+
+const handleBackClick = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+        window.history.back();
+    } else {
+        router.visit(backHref.value);
+    }
+};
+
+const scrollToComments = () => {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const el = document.getElementById('comments');
+
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+    }
+};
+
+const totalCommentsCount = computed(() => {
+    const list = props.comments || [];
+    let count = list.length;
+
+    for (const c of list) {
+        if (c.replies && c.replies.length > 0) {
+            count += c.replies.length;
+        }
+    }
+
+    return count;
+});
 </script>
 
 <template>
@@ -407,13 +449,14 @@ const subtitle = computed(() => {
             <div class="flex items-center justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
                     <!-- Clear Back Button -->
-                    <Link
-                        href="/notes"
-                        class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-xs transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    <button
+                        type="button"
+                        @click="handleBackClick"
+                        class="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-xs transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                         title="নোট আর্কাইভে ফিরে যান"
                     >
                         <ArrowLeft class="h-4 w-4 stroke-[2.3]" />
-                    </Link>
+                    </button>
 
                     <h1
                         class="truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl md:text-3xl dark:text-gray-100"
@@ -533,6 +576,34 @@ const subtitle = computed(() => {
                 <p class="leading-relaxed whitespace-pre-line">
                     {{ resource.description }}
                 </p>
+            </div>
+
+            <!-- Quick Jump to Comments Bar (Ideal for long multi-image notes) -->
+            <div
+                v-if="
+                    primaryFormat === 'image' &&
+                    (resource.items || []).length > 2
+                "
+                class="mt-4 flex items-center justify-between rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div
+                    class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-gray-300"
+                >
+                    <span
+                        class="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                    >
+                        <MessageSquare class="h-3.5 w-3.5" />
+                    </span>
+                    <span> আলোচনা ({{ totalCommentsCount }} টি মন্তব্য) </span>
+                </div>
+                <button
+                    type="button"
+                    @click="scrollToComments"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-400"
+                >
+                    <span>মন্তব্যে যান</span>
+                    <span class="text-xs">&darr;</span>
+                </button>
             </div>
         </header>
 
