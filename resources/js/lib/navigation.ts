@@ -6,6 +6,7 @@ export type NavItem = {
     icon: string;
     match: (url: string) => boolean;
     showInBottom?: boolean;
+    showInNavRail?: boolean;
 };
 
 export const primaryNavItems: NavItem[] = [
@@ -71,6 +72,7 @@ export const primaryNavItems: NavItem[] = [
         icon: 'group',
         match: (url) => url.startsWith('/peers'),
         showInBottom: false,
+        showInNavRail: false,
     },
     {
         label: 'AI',

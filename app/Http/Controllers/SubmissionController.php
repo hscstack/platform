@@ -27,8 +27,6 @@ class SubmissionController extends Controller
         $status = $request->query('status');
         $query = Resource::where('user_id', $user->id)
             ->with(['node.subject'])
-            // Eager count items for display in submission row previews
-            ->withCount('items')
             ->latest();
 
         if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {

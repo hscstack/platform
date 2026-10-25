@@ -99,7 +99,7 @@ const currentSort = ref<'trending' | 'top' | 'latest'>(
 );
 const searchInput = ref<string>(props.filters.search || '');
 
-// Local Resource List & Load More with useRemember
+// Local Resource List & Load More with useRemember (Preserves infinite scrolled items on browser back)
 const resourceList = useRemember<ResourceItem[]>(
     props.resources?.data || [],
     'notes_list',
@@ -109,6 +109,28 @@ const nextPageUrl = useRemember<string | null>(
     'notes_next_url',
 );
 const isLoadingMore = ref(false);
+
+// Clean refresh / direct navigation safeguard:
+// On page refresh (F5) or direct URL change, discard remembered history state to avoid flash of mismatched notes
+if (typeof window !== 'undefined') {
+    const navEntry = performance.getEntriesByType('navigation')[0] as
+        | PerformanceNavigationTiming
+        | undefined;
+    const isReload = navEntry?.type === 'reload';
+    const firstCourse = resourceList.value[0]?.subject?.course;
+    const currentCourseFilter =
+        props.filters.curriculum || props.filters.course;
+
+    if (
+        isReload ||
+        (firstCourse &&
+            currentCourseFilter &&
+            firstCourse !== currentCourseFilter)
+    ) {
+        resourceList.value = props.resources?.data || [];
+        nextPageUrl.value = props.resources?.next_page_url || null;
+    }
+}
 
 watch(
     () => [
@@ -755,8 +777,7 @@ const resourceTypes = [
     <!-- Upload Disabled Notice Modal -->
     <BaseModal
         :is-open="isUploadDisabledModalOpen"
-        title="নোট আপলোড সাময়িকভাবে বন্ধ আছে"
-        description="প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন নোট বা রিসোর্স আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।"
+        title="নোট আপলোড স্থগিত"
         max-width="md"
         @close="isUploadDisabledModalOpen = false"
     >
@@ -766,12 +787,15 @@ const resourceTypes = [
             >
                 <AlertCircle class="h-6 w-6 stroke-[2]" />
             </div>
+            <p class="text-sm font-semibold text-slate-800 dark:text-gray-100">
+                প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন রিসোর্স
+                আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।
+            </p>
             <p
-                class="text-xs leading-relaxed text-slate-600 dark:text-gray-300"
+                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
             >
-                বর্তমানে নতুন রিসোর্স সাবমিশন গ্রহণ করা হচ্ছে না। খুব দ্রুতই
-                পুনরায় নোট আপলোড চালু করা হবে। আপনি যেকোনো বিদ্যমান নোট ও
-                আর্কাইভ ব্রাউজ করতে পারেন।
+                খুব দ্রুতই পুনরায় নোট আপলোড চালু করা হবে। এই সময়ে আপনি যেকোনো
+                বিদ্যমান নোট ও আর্কাইভ ব্রাউজ ও পড়তে পারেন।
             </p>
             <div class="pt-2">
                 <button

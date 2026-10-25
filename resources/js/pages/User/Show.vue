@@ -653,7 +653,7 @@ const formatGroupName = (group?: string) => {
                         </div>
 
                         <!-- Name, Verified Badge, Username & Institution -->
-                        <div class="relative min-w-0 flex-1 space-y-1">
+                        <div class="min-w-0 flex-1 space-y-1">
                             <div
                                 class="flex flex-wrap items-center gap-1.5 sm:gap-2"
                             >
@@ -666,7 +666,7 @@ const formatGroupName = (group?: string) => {
                                 <div
                                     v-if="profileUser.is_verified"
                                     ref="verifiedBadgeContainerRef"
-                                    class="inline-flex items-center"
+                                    class="relative inline-flex items-center"
                                 >
                                     <button
                                         type="button"
@@ -694,7 +694,7 @@ const formatGroupName = (group?: string) => {
                                     >
                                         <div
                                             v-if="showVerifiedPrompt"
-                                            class="absolute top-full left-0 z-50 mt-2 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl sm:w-80 dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-2xl"
+                                            class="absolute top-full left-0 z-50 mt-1.5 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl sm:w-80 dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-2xl"
                                             role="dialog"
                                             aria-label="Verified contributor information"
                                         >

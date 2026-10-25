@@ -763,8 +763,7 @@ const loadMore = async () => {
     <!-- Upload Disabled Notice Modal -->
     <BaseModal
         :is-open="isUploadDisabledModalOpen"
-        title="নোট আপলোড সাময়িকভাবে বন্ধ আছে"
-        description="প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন নোট বা রিসোর্স আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।"
+        title="নোট আপলোড স্থগিত"
         max-width="md"
         @close="isUploadDisabledModalOpen = false"
     >
@@ -774,12 +773,15 @@ const loadMore = async () => {
             >
                 <AlertCircle class="h-6 w-6 stroke-[2]" />
             </div>
+            <p class="text-sm font-semibold text-slate-800 dark:text-gray-100">
+                প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন রিসোর্স
+                আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।
+            </p>
             <p
-                class="text-xs leading-relaxed text-slate-600 dark:text-gray-300"
+                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
             >
-                বর্তমানে নতুন রিসোর্স সাবমিশন গ্রহণ করা হচ্ছে না। খুব দ্রুতই
-                পুনরায় নোট আপলোড চালু করা হবে। আপনি যেকোনো বিদ্যমান নোট ও
-                আর্কাইভ ব্রাউজ করতে পারেন।
+                খুব দ্রুতই পুনরায় নোট আপলোড চালু করা হবে। এই সময়ে আপনি যেকোনো
+                বিদ্যমান নোট ও আর্কাইভ ব্রাউজ ও পড়তে পারেন।
             </p>
             <div class="pt-2">
                 <button

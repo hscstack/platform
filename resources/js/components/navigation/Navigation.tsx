@@ -271,6 +271,9 @@ export const SiteRail = defineComponent({
                     ?.has_unread_blogs,
             ),
         );
+        const navRailItems = computed(() =>
+            allNavItems.filter((item) => item.showInNavRail !== false),
+        );
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
             if (match) {
@@ -326,7 +329,7 @@ export const SiteRail = defineComponent({
                         {props.collapsed ? (
                             /* Collapsed: Compact YouTube Mini-Guide (strictly w-[72px] fixed) */
                             <nav class="flex w-[72px] flex-col items-center space-y-1 px-1">
-                                {allNavItems.map((item) => {
+                                {navRailItems.value.map((item) => {
                                     const active = isActive(
                                         item.href,
                                         item.match,
@@ -445,7 +448,7 @@ export const SiteRail = defineComponent({
                         ) : (
                             /* Expanded: Standard 280px Guide */
                             <nav class="w-[280px] space-y-1 px-2.5">
-                                {allNavItems.map((item) => {
+                                {navRailItems.value.map((item) => {
                                     const active = isActive(
                                         item.href,
                                         item.match,
