@@ -361,7 +361,7 @@ test('deleting a post cleans up all child answer images from storage', function 
         'curriculum' => 'hsc',
         'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post with Image Answers Testing image cleanup.',
-        'image_path' => 'forum/posts/test_post.png',
+        'images' => ['forum/posts/test_post.png'],
     ]);
     Storage::put('forum/posts/test_post.png', 'fake post image');
 
