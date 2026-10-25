@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Crown, HeartHandshake } from 'lucide-vue-next';
 import { computed } from 'vue';
 import UserCard from '@/components/UserCard.vue';
 
@@ -77,17 +76,9 @@ const communityContributors = computed(() => {
     <main class="mx-auto max-w-6xl space-y-16 px-4 pb-32 sm:px-6">
         <!-- Group 1: Board of Directors (Company Members) -->
         <section v-if="boardMembers.length > 0" class="space-y-6">
-            <div
-                class="flex flex-col items-center text-center sm:items-start sm:text-left"
-            >
-                <div
-                    class="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-50/80 px-3.5 py-1 text-xs font-bold text-amber-800 shadow-2xs dark:border-amber-500/20 dark:bg-amber-950/40 dark:text-amber-300"
-                >
-                    <Crown class="h-3.5 w-3.5" />
-                    <span>Company Leadership</span>
-                </div>
+            <div class="text-center sm:text-left">
                 <h2
-                    class="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white"
+                    class="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white"
                 >
                     Board of Directors
                 </h2>
@@ -112,25 +103,17 @@ const communityContributors = computed(() => {
 
         <!-- Group 2: Community Contributors & Maintainers -->
         <section class="space-y-6">
-            <div
-                class="flex flex-col items-center text-center sm:items-start sm:text-left"
-            >
-                <div
-                    class="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50/80 px-3.5 py-1 text-xs font-bold text-indigo-700 shadow-2xs dark:border-indigo-500/20 dark:bg-indigo-950/40 dark:text-indigo-300"
-                >
-                    <HeartHandshake class="h-3.5 w-3.5" />
-                    <span>Open Community</span>
-                </div>
+            <div class="text-center sm:text-left">
                 <h2
-                    class="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white"
+                    class="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white"
                 >
                     Community Contributors
                 </h2>
                 <p
                     class="mt-1 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
                 >
-                    ক্যাম্পাস প্রোমোটার, ওপেন সোর্স ডেভেলপার এবং রিসোর্স কিউরেটর
-                    যারা নিয়মিত প্ল্যাটফর্মটিকে সমৃদ্ধ করছেন।
+                    দেশব্যাপী ছড়িয়ে থাকা উদ্যমী স্বেচ্ছাসেবী শিক্ষার্থীরা,
+                    যাঁরা প্রতিনিয়ত HSCStack-কে আরও সমৃদ্ধ করতে অবদান রাখছেন।
                 </p>
             </div>
 
