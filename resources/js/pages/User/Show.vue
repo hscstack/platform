@@ -210,20 +210,38 @@ const showSyllabusModal = ref(false);
 const showShareModal = ref(false);
 const showVerifiedPrompt = ref(false);
 const verifiedBadgeContainerRef = ref<HTMLElement | null>(null);
+const showUnverifiedPrompt = ref(false);
+const unverifiedBadgeContainerRef = ref<HTMLElement | null>(null);
 
 const handleVerifiedClickOutside = (e: MouseEvent) => {
+    const target = e.target as Node;
+
     if (
         showVerifiedPrompt.value &&
         verifiedBadgeContainerRef.value &&
-        !verifiedBadgeContainerRef.value.contains(e.target as Node)
+        !verifiedBadgeContainerRef.value.contains(target)
     ) {
         showVerifiedPrompt.value = false;
+    }
+
+    if (
+        showUnverifiedPrompt.value &&
+        unverifiedBadgeContainerRef.value &&
+        !unverifiedBadgeContainerRef.value.contains(target)
+    ) {
+        showUnverifiedPrompt.value = false;
     }
 };
 
 const handleVerifiedKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && showVerifiedPrompt.value) {
-        showVerifiedPrompt.value = false;
+    if (e.key === 'Escape') {
+        if (showVerifiedPrompt.value) {
+            showVerifiedPrompt.value = false;
+        }
+
+        if (showUnverifiedPrompt.value) {
+            showUnverifiedPrompt.value = false;
+        }
     }
 };
 
@@ -657,7 +675,7 @@ const formatGroupName = (group?: string) => {
                         <!-- Name, Verified Badge, Username & Institution -->
                         <div class="min-w-0 flex-1 space-y-1">
                             <div
-                                class="flex flex-wrap items-center gap-1.5 sm:gap-2"
+                                class="relative flex flex-wrap items-center gap-1.5 sm:gap-2"
                             >
                                 <h1
                                     class="truncate text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-gray-100"
@@ -668,7 +686,7 @@ const formatGroupName = (group?: string) => {
                                 <div
                                     v-if="profileUser.is_verified"
                                     ref="verifiedBadgeContainerRef"
-                                    class="relative inline-flex items-center"
+                                    class="inline-flex items-center"
                                 >
                                     <button
                                         type="button"
@@ -736,6 +754,98 @@ const formatGroupName = (group?: string) => {
                                                         কর্তৃক এই অ্যাকাউন্টটি
                                                         যাচাইকৃত।
                                                     </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Transition>
+                                </div>
+
+                                <div
+                                    v-else-if="isOwnProfile"
+                                    ref="unverifiedBadgeContainerRef"
+                                    class="inline-flex items-center"
+                                >
+                                    <button
+                                        type="button"
+                                        @click.stop="
+                                            showUnverifiedPrompt =
+                                                !showUnverifiedPrompt
+                                        "
+                                        class="inline-flex cursor-pointer rounded-full text-slate-300 opacity-60 transition hover:text-slate-400 hover:opacity-100 focus:outline-none dark:text-gray-600 dark:hover:text-gray-400"
+                                        :aria-expanded="showUnverifiedPrompt"
+                                        aria-haspopup="dialog"
+                                        aria-label="How to get verified"
+                                        title="Get Verified"
+                                    >
+                                        <BadgeCheck
+                                            class="h-5 w-5 stroke-[1.5]"
+                                        />
+                                    </button>
+
+                                    <!-- Floating unverified / how-to-get-verified popover -->
+                                    <Transition
+                                        enter-active-class="transition duration-150 ease-out"
+                                        enter-from-class="opacity-0 translate-y-1 scale-95"
+                                        enter-to-class="opacity-100 translate-y-0 scale-100"
+                                        leave-active-class="transition duration-100 ease-in"
+                                        leave-from-class="opacity-100 translate-y-0 scale-100"
+                                        leave-to-class="opacity-0 translate-y-1 scale-95"
+                                    >
+                                        <div
+                                            v-if="showUnverifiedPrompt"
+                                            class="absolute top-full left-0 z-50 mt-1.5 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl sm:w-80 dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-2xl"
+                                            role="dialog"
+                                            aria-label="How to get verified information"
+                                        >
+                                            <div
+                                                class="flex items-start gap-2.5"
+                                            >
+                                                <div
+                                                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-400"
+                                                >
+                                                    <BadgeCheck
+                                                        class="h-4 w-4"
+                                                    />
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <div
+                                                        class="flex items-center justify-between gap-1.5"
+                                                    >
+                                                        <p
+                                                            class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
+                                                        >
+                                                            ভেরিফাইড ব্যাজ
+                                                            কীভাবে পাবেন?
+                                                        </p>
+                                                        <span
+                                                            class="inline-flex shrink-0 items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-400"
+                                                        >
+                                                            Contributor
+                                                        </span>
+                                                    </div>
+                                                    <p
+                                                        class="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                                                    >
+                                                        HSCStack কন্ট্রিবিউটর
+                                                        হলে ভেরিফাইড ব্যাজ
+                                                        প্রদান করা হয়।
+                                                    </p>
+                                                    <div
+                                                        class="mt-2.5 flex items-center gap-2 border-t border-slate-100 pt-1 dark:border-gray-800/80"
+                                                    >
+                                                        <Link
+                                                            href="/join"
+                                                            class="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                                        >
+                                                            <span
+                                                                >বিস্তারিত
+                                                                জানতে</span
+                                                            >
+                                                            <ArrowRight
+                                                                class="h-3 w-3"
+                                                            />
+                                                        </Link>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
