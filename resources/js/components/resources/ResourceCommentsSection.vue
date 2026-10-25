@@ -179,86 +179,6 @@ const renderCommentContent = (content: string) => {
             </h2>
         </div>
 
-        <!-- Comment Input Box -->
-        <div
-            class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
-        >
-            <!-- Replying Indicator Banner -->
-            <div
-                v-if="replyingTo"
-                class="mb-3 flex items-center justify-between rounded-xl bg-indigo-50/70 px-3 py-1.5 text-xs text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
-            >
-                <div class="flex items-center gap-1.5 font-medium">
-                    <CornerDownRight class="h-3.5 w-3.5" />
-                    <span
-                        >Replying to
-                        <strong>@{{ replyingTo.username }}</strong></span
-                    >
-                </div>
-                <button
-                    type="button"
-                    @click="cancelReply"
-                    class="cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-gray-200"
-                >
-                    <X class="h-3.5 w-3.5" />
-                </button>
-            </div>
-
-            <form @submit.prevent="submitComment">
-                <div class="relative">
-                    <textarea
-                        ref="textareaRef"
-                        v-model="commentForm.content"
-                        rows="3"
-                        :placeholder="
-                            replyingTo
-                                ? `Replying to @${replyingTo.username}...`
-                                : 'Ask a question, share feedback, or mention someone with @username...'
-                        "
-                        maxlength="1000"
-                        class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-900 transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
-                    ></textarea>
-                </div>
-
-                <div class="mt-3 flex items-center justify-between">
-                    <span class="text-xs text-slate-400 dark:text-gray-500">
-                        {{ 1000 - commentForm.content.length }} characters
-                        remaining
-                    </span>
-
-                    <div class="flex items-center gap-2">
-                        <Link
-                            v-if="!currentUser"
-                            href="/login"
-                            class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
-                        >
-                            <LogIn class="h-3.5 w-3.5" />
-                            <span>Sign in to comment</span>
-                        </Link>
-
-                        <button
-                            v-else
-                            type="submit"
-                            :disabled="
-                                commentForm.processing ||
-                                !commentForm.content.trim()
-                            "
-                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <Loader2
-                                v-if="commentForm.processing"
-                                class="h-3.5 w-3.5 animate-spin"
-                            />
-                            <Send v-else class="h-3.5 w-3.5" />
-                            <span>{{
-                                replyingTo ? 'Post Reply' : 'Post Comment'
-                            }}</span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
         <!-- Comments List -->
         <div class="space-y-4">
             <div
@@ -503,6 +423,86 @@ const renderCommentContent = (content: string) => {
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Comment Input Box -->
+        <div
+            class="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <!-- Replying Indicator Banner -->
+            <div
+                v-if="replyingTo"
+                class="mb-3 flex items-center justify-between rounded-xl bg-indigo-50/70 px-3 py-1.5 text-xs text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
+            >
+                <div class="flex items-center gap-1.5 font-medium">
+                    <CornerDownRight class="h-3.5 w-3.5" />
+                    <span
+                        >Replying to
+                        <strong>@{{ replyingTo.username }}</strong></span
+                    >
+                </div>
+                <button
+                    type="button"
+                    @click="cancelReply"
+                    class="cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-gray-200"
+                >
+                    <X class="h-3.5 w-3.5" />
+                </button>
+            </div>
+
+            <form @submit.prevent="submitComment">
+                <div class="relative">
+                    <textarea
+                        ref="textareaRef"
+                        v-model="commentForm.content"
+                        rows="3"
+                        :placeholder="
+                            replyingTo
+                                ? `Replying to @${replyingTo.username}...`
+                                : 'Ask a question, share feedback, or mention someone with @username...'
+                        "
+                        maxlength="1000"
+                        class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-900 transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
+                    ></textarea>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-xs text-slate-400 dark:text-gray-500">
+                        {{ 1000 - commentForm.content.length }} characters
+                        remaining
+                    </span>
+
+                    <div class="flex items-center gap-2">
+                        <Link
+                            v-if="!currentUser"
+                            href="/login"
+                            class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                        >
+                            <LogIn class="h-3.5 w-3.5" />
+                            <span>Sign in to comment</span>
+                        </Link>
+
+                        <button
+                            v-else
+                            type="submit"
+                            :disabled="
+                                commentForm.processing ||
+                                !commentForm.content.trim()
+                            "
+                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <Loader2
+                                v-if="commentForm.processing"
+                                class="h-3.5 w-3.5 animate-spin"
+                            />
+                            <Send v-else class="h-3.5 w-3.5" />
+                            <span>{{
+                                replyingTo ? 'Post Reply' : 'Post Comment'
+                            }}</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </section>
 </template>
