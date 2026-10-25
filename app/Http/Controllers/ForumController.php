@@ -220,11 +220,15 @@ class ForumController extends Controller
             'subject_id' => ['nullable', 'exists:subjects,id'],
             'node_id' => ['nullable', 'exists:nodes,id'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:4'],
+            'images.*' => ['string'],
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('forum/posts');
+        $images = [];
+        if (! empty($validated['images'])) {
+            $images = array_slice($validated['images'], 0, 4);
+        } elseif ($request->hasFile('image')) {
+            $images = [$request->file('image')->store('forum/posts')];
         }
 
         $subjectId = $validated['subject_id'] ?? null;
@@ -258,7 +262,7 @@ class ForumController extends Controller
             'curriculum' => $validated['curriculum'],
             'slug' => $slug,
             'body' => $validated['body'],
-            'image_path' => $imagePath,
+            'images' => ! empty($images) ? $images : null,
             'is_locked' => false,
             'moderation_status' => $moderationStatus,
         ]);

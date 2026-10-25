@@ -40,6 +40,10 @@ export interface CurrentUserRank {
 interface Props {
     tab: 'students' | 'contributors';
     timeframe: 'this_week' | 'this_month' | 'all_time';
+    curriculum?: 'hsc' | 'ssc' | null;
+    group?: string | null;
+    batch?: string | null;
+    scope?: string | null;
     leaderboard: LeaderboardUser[];
     currentUserRank: CurrentUserRank | null;
 }
@@ -48,16 +52,62 @@ const props = defineProps<Props>();
 
 const { user } = useAuth();
 
+function applyLeaderboardFilters(
+    updates: Partial<
+        Record<
+            'tab' | 'timeframe' | 'curriculum' | 'group' | 'batch' | 'scope',
+            any
+        >
+    >,
+) {
+    const current = {
+        tab: props.tab,
+        timeframe: props.timeframe,
+        curriculum: props.curriculum || undefined,
+        group: props.group || undefined,
+        batch: props.batch || undefined,
+        scope: props.scope || undefined,
+    };
+
+    const merged = { ...current, ...updates };
+
+    // If curriculum changed to ssc and current batch was hsc, reset batch
+    if (
+        merged.curriculum === 'ssc' &&
+        merged.batch &&
+        merged.batch.startsWith('hsc_')
+    ) {
+        merged.batch = undefined;
+    }
+
+    // If curriculum changed to hsc and current batch was ssc, reset batch
+    if (
+        merged.curriculum === 'hsc' &&
+        merged.batch &&
+        merged.batch.startsWith('ssc_')
+    ) {
+        merged.batch = undefined;
+    }
+
+    // Clean up undefined / null
+    Object.keys(merged).forEach((k) => {
+        if (!merged[k as keyof typeof merged]) {
+            delete merged[k as keyof typeof merged];
+        }
+    });
+
+    router.get('/leaderboard', merged, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+}
+
 function switchTab(newTab: 'students' | 'contributors') {
     if (props.tab === newTab) {
         return;
     }
 
-    router.get(
-        '/leaderboard',
-        { tab: newTab, timeframe: props.timeframe },
-        { preserveState: true, preserveScroll: true },
-    );
+    applyLeaderboardFilters({ tab: newTab });
 }
 
 function switchTimeframe(
@@ -67,11 +117,23 @@ function switchTimeframe(
         return;
     }
 
-    router.get(
-        '/leaderboard',
-        { tab: props.tab, timeframe: newTimeframe },
-        { preserveState: true, preserveScroll: true },
-    );
+    applyLeaderboardFilters({ timeframe: newTimeframe });
+}
+
+function switchCurriculum(newCurriculum: 'hsc' | 'ssc' | null) {
+    applyLeaderboardFilters({ curriculum: newCurriculum });
+}
+
+function switchGroup(newGroup: string | null) {
+    applyLeaderboardFilters({ group: newGroup });
+}
+
+function switchBatch(newBatch: string | null) {
+    applyLeaderboardFilters({ batch: newBatch });
+}
+
+function switchScope(newScope: string | null) {
+    applyLeaderboardFilters({ scope: newScope });
 }
 
 function formatStudyTime(seconds: number): string {
@@ -261,6 +323,231 @@ onBeforeUnmount(() => {
                 />
                 <span>শীর্ষ কন্ট্রিবিউটর</span>
             </button>
+        </div>
+
+        <!-- Customizable Filters Bar (Curriculum, Group, Batch, Appreciation Scope) -->
+        <div
+            v-if="tab === 'students'"
+            class="mb-6 space-y-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+        >
+            <!-- Row 1: Curriculum & Group -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+                <!-- Curriculum Pills -->
+                <div class="flex items-center gap-1">
+                    <span
+                        class="mr-1 text-[11px] font-bold text-slate-400 uppercase dark:text-gray-500"
+                        >কারিকুলাম:</span
+                    >
+                    <button
+                        type="button"
+                        @click="switchCurriculum(null)"
+                        :class="[
+                            !curriculum
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                        ]"
+                        class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                    >
+                        সকল
+                    </button>
+                    <button
+                        type="button"
+                        @click="switchCurriculum('hsc')"
+                        :class="[
+                            curriculum === 'hsc'
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                        ]"
+                        class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                    >
+                        HSC
+                    </button>
+                    <button
+                        type="button"
+                        @click="switchCurriculum('ssc')"
+                        :class="[
+                            curriculum === 'ssc'
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                        ]"
+                        class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                    >
+                        SSC
+                    </button>
+                </div>
+
+                <!-- Group (Department) Pills -->
+                <div class="flex items-center gap-1">
+                    <span
+                        class="mr-1 text-[11px] font-bold text-slate-400 uppercase dark:text-gray-500"
+                        >বিভাগ:</span
+                    >
+                    <button
+                        type="button"
+                        @click="switchGroup(null)"
+                        :class="[
+                            !group
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                        ]"
+                        class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                    >
+                        সকল
+                    </button>
+                    <button
+                        type="button"
+                        @click="switchGroup('science')"
+                        :class="[
+                            group === 'science'
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                        ]"
+                        class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                    >
+                        বিজ্ঞান
+                    </button>
+                    <button
+                        type="button"
+                        @click="switchGroup('humanities')"
+                        :class="[
+                            group === 'humanities'
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                        ]"
+                        class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                    >
+                        মানবিক
+                    </button>
+                    <button
+                        type="button"
+                        @click="switchGroup('commerce')"
+                        :class="[
+                            group === 'commerce'
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                        ]"
+                        class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                    >
+                        ব্যবসায় শিক্ষা
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row 2: Batch Pills -->
+            <div
+                class="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2.5 dark:border-gray-800"
+            >
+                <span
+                    class="mr-1 text-[11px] font-bold text-slate-400 uppercase dark:text-gray-500"
+                    >ব্যাচ:</span
+                >
+                <button
+                    type="button"
+                    @click="switchBatch(null)"
+                    :class="[
+                        !batch
+                            ? 'bg-indigo-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                >
+                    সকল ব্যাচ
+                </button>
+                <button
+                    v-for="b in curriculum === 'ssc'
+                        ? [
+                              { key: 'ssc_25', label: 'SSC 25' },
+                              { key: 'ssc_26', label: 'SSC 26' },
+                              { key: 'ssc_27', label: 'SSC 27' },
+                          ]
+                        : curriculum === 'hsc'
+                          ? [
+                                { key: 'hsc_25', label: 'HSC 25' },
+                                { key: 'hsc_26', label: 'HSC 26' },
+                                { key: 'hsc_27', label: 'HSC 27' },
+                                { key: 'hsc_28', label: 'HSC 28' },
+                            ]
+                          : [
+                                { key: 'hsc_25', label: 'HSC 25' },
+                                { key: 'hsc_26', label: 'HSC 26' },
+                                { key: 'hsc_27', label: 'HSC 27' },
+                                { key: 'hsc_28', label: 'HSC 28' },
+                                { key: 'ssc_25', label: 'SSC 25' },
+                                { key: 'ssc_26', label: 'SSC 26' },
+                                { key: 'ssc_27', label: 'SSC 27' },
+                            ]"
+                    :key="b.key"
+                    type="button"
+                    @click="switchBatch(b.key)"
+                    :class="[
+                        batch === b.key
+                            ? 'bg-indigo-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                >
+                    {{ b.label }}
+                </button>
+            </div>
+
+            <!-- Row 3: Appreciation Network Filter (Only when logged in) -->
+            <div
+                v-if="user"
+                class="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2.5 dark:border-gray-800"
+            >
+                <span
+                    class="mr-1 text-[11px] font-bold text-slate-400 uppercase dark:text-gray-500"
+                    >নেটওয়ার্ক:</span
+                >
+                <button
+                    type="button"
+                    @click="switchScope(null)"
+                    :class="[
+                        !scope
+                            ? 'bg-indigo-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                >
+                    গ্লোবাল (সকল শিক্ষার্থী)
+                </button>
+                <button
+                    type="button"
+                    @click="switchScope('appreciating')"
+                    :class="[
+                        scope === 'appreciating'
+                            ? 'bg-indigo-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                >
+                    যাদের আমি এপ্রিশিয়েট করি
+                </button>
+                <button
+                    type="button"
+                    @click="switchScope('appreciators')"
+                    :class="[
+                        scope === 'appreciators'
+                            ? 'bg-indigo-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                >
+                    যারা আমাকে এপ্রিশিয়েট করে
+                </button>
+                <button
+                    type="button"
+                    @click="switchScope('mutual')"
+                    :class="[
+                        scope === 'mutual'
+                            ? 'bg-indigo-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                    ]"
+                    class="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                >
+                    পারস্পরিক বন্ধু (Mutual)
+                </button>
+            </div>
         </div>
 
         <!-- Tab 1-line Description -->

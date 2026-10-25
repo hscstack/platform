@@ -51,6 +51,7 @@ export interface OptionalSubjectItem {
 interface Props {
     course: 'hsc' | 'ssc';
     group?: 'science' | 'humanities' | 'commerce';
+    batch?: string | null;
     subjects: SubjectItem[];
     optionalSubjectIds?: number[];
     optionalSubjects?: OptionalSubjectItem[];
@@ -60,6 +61,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
     group: 'science',
+    batch: null,
     optionalSubjectIds: () => [],
     optionalSubjects: () => [],
 });
@@ -93,16 +95,24 @@ function toggleExpand(subjectId: number) {
 const showSwitchConfirmModal = ref(false);
 const pendingCurriculum = ref<'hsc' | 'ssc'>(props.course);
 const pendingGroup = ref<'science' | 'humanities' | 'commerce'>(props.group);
+const pendingBatch = ref<string>(props.batch || '');
 const pendingOptionalSubjectIds = ref<Set<number>>(
     new Set(props.optionalSubjectIds),
 );
 const isSwitching = ref(false);
 
 watch(
-    () => [props.course, props.group, props.optionalSubjectIds] as const,
-    ([newCourse, newGroup, newOptionals]) => {
+    () =>
+        [
+            props.course,
+            props.group,
+            props.batch,
+            props.optionalSubjectIds,
+        ] as const,
+    ([newCourse, newGroup, newBatch, newOptionals]) => {
         pendingCurriculum.value = newCourse;
         pendingGroup.value = newGroup;
+        pendingBatch.value = newBatch || '';
         pendingOptionalSubjectIds.value = new Set(newOptionals);
     },
 );
@@ -158,6 +168,7 @@ function openSwitchModal() {
 
     pendingCurriculum.value = props.course;
     pendingGroup.value = props.group;
+    pendingBatch.value = props.batch || '';
     pendingOptionalSubjectIds.value = new Set(props.optionalSubjectIds);
     showSwitchConfirmModal.value = true;
 }
@@ -180,6 +191,7 @@ function confirmSwitchCurriculum() {
         {
             curriculum: pendingCurriculum.value,
             group: pendingGroup.value,
+            batch: pendingBatch.value || null,
             optional_subject_ids: Array.from(pendingOptionalSubjectIds.value),
         },
         {
@@ -441,6 +453,11 @@ onMounted(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     // Run once on mount in case already scrolled
     handleScroll();
+
+    // Auto-prompt modal if authenticated user has not set their exam batch yet
+    if (props.isAuthenticated && !props.batch) {
+        openSwitchModal();
+    }
 });
 
 onUnmounted(() => {
@@ -972,6 +989,42 @@ onUnmounted(() => {
                             >
                                 Commerce
                             </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Batch Selection -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                    >
+                        ব্যাচ নির্বাচন করুন (Exam Batch)
+                    </label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button
+                            v-for="b in pendingCurriculum === 'hsc'
+                                ? [
+                                      { key: 'hsc_25', label: 'HSC 25' },
+                                      { key: 'hsc_26', label: 'HSC 26' },
+                                      { key: 'hsc_27', label: 'HSC 27' },
+                                      { key: 'hsc_28', label: 'HSC 28' },
+                                  ]
+                                : [
+                                      { key: 'ssc_25', label: 'SSC 25' },
+                                      { key: 'ssc_26', label: 'SSC 26' },
+                                      { key: 'ssc_27', label: 'SSC 27' },
+                                  ]"
+                            :key="b.key"
+                            type="button"
+                            @click="pendingBatch = b.key"
+                            :class="[
+                                pendingBatch === b.key
+                                    ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border p-2.5 text-center transition"
+                        >
+                            <span class="text-xs font-bold">{{ b.label }}</span>
                         </button>
                     </div>
                 </div>

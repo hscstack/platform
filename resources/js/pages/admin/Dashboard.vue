@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     Users,
@@ -16,6 +16,8 @@ import {
     UserCheck,
     Radio,
     Mail,
+    Sliders,
+    Trash2,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -29,10 +31,38 @@ const props = defineProps<{
 
 const stats = ref<any>(null);
 const isLoading = ref(false);
+const isClearingCache = ref(false);
 const hasFetched = ref(false);
 const errorMsg = ref<string | null>(null);
 
+const clearCache = () => {
+    if (
+        !confirm('Are you sure you want to clear the entire application cache?')
+    ) {
+        return;
+    }
+
+    isClearingCache.value = true;
+    router.post(
+        '/admin/clear-cache',
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isClearingCache.value = false;
+            },
+        },
+    );
+};
+
 const adminTools = [
+    {
+        name: 'Platform Settings',
+        href: '/admin/settings/platform',
+        icon: Sliders,
+        color: 'text-violet-600 bg-violet-50 dark:bg-violet-500/10 dark:text-violet-400',
+        permission: 'manage platform settings',
+    },
     {
         name: 'Resource Moderation',
         href: '/admin/moderation/resources',
@@ -153,27 +183,47 @@ const fetchAnalytics = async (refresh = false) => {
                 </p>
             </div>
 
-            <!-- On-Demand Load / Reload Button -->
-            <button
-                type="button"
-                @click="fetchAnalytics(hasFetched)"
-                :disabled="isLoading"
-                class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
-            >
-                <RefreshCw
-                    class="h-3.5 w-3.5"
-                    :class="{ 'animate-spin': isLoading }"
-                />
-                <span>{{
-                    hasFetched
-                        ? isLoading
-                            ? 'Refreshing...'
-                            : 'Reload Analytics'
-                        : isLoading
-                          ? 'Loading...'
-                          : 'Load Analytics'
-                }}</span>
-            </button>
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2">
+                <button
+                    v-if="can('clear cache')"
+                    type="button"
+                    @click="clearCache"
+                    :disabled="isClearingCache"
+                    class="inline-flex w-fit items-center gap-2 rounded-xl border border-rose-200 bg-white px-3.5 py-2 text-xs font-semibold text-rose-700 shadow-2xs transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800 active:scale-95 disabled:opacity-50 dark:border-rose-900/40 dark:bg-gray-800 dark:text-rose-400 dark:hover:border-rose-700/60 dark:hover:bg-rose-500/10"
+                    title="Clear application cache"
+                >
+                    <Trash2
+                        class="h-3.5 w-3.5"
+                        :class="{ 'animate-pulse': isClearingCache }"
+                    />
+                    <span>{{
+                        isClearingCache ? 'Clearing...' : 'Clear Cache'
+                    }}</span>
+                </button>
+
+                <!-- On-Demand Load / Reload Button -->
+                <button
+                    type="button"
+                    @click="fetchAnalytics(hasFetched)"
+                    :disabled="isLoading"
+                    class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
+                >
+                    <RefreshCw
+                        class="h-3.5 w-3.5"
+                        :class="{ 'animate-spin': isLoading }"
+                    />
+                    <span>{{
+                        hasFetched
+                            ? isLoading
+                                ? 'Refreshing...'
+                                : 'Reload Analytics'
+                            : isLoading
+                              ? 'Loading...'
+                              : 'Load Analytics'
+                    }}</span>
+                </button>
+            </div>
         </div>
 
         <!-- Management Tools Grid -->

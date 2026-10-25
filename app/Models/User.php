@@ -55,6 +55,7 @@ class User extends Authenticatable
         'activity_privacy',
         'curriculum',
         'group',
+        'batch',
         'allow_pokes',
         'facebook',
         'instagram',

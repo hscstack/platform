@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\PeerSettingsController;
+use App\Http\Controllers\Admin\PlatformSettingsController as AdminPlatformSettingsController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -60,12 +61,21 @@ Route::middleware('permission:edit notice')->group(function () {
     Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->name('notice.update');
 });
 
+// Platform Settings
+Route::middleware('permission:manage platform settings')->group(function () {
+    Route::get('/settings/platform', [AdminPlatformSettingsController::class, 'index'])->name('platform.settings');
+    Route::post('/settings/platform', [AdminPlatformSettingsController::class, 'update'])->name('platform.settings.update');
+    // Backward compatibility alias
+    Route::get('/platform/settings', [AdminPlatformSettingsController::class, 'index']);
+    Route::post('/platform/settings', [AdminPlatformSettingsController::class, 'update']);
+});
+
 // Cache
 Route::post('/clear-cache', function () {
     Cache::flush();
 
     return back()->with('success', 'Cache cleared.');
-})->middleware('permission:clear cache');
+})->middleware('permission:clear cache')->name('cache.clear');
 
 // Users
 Route::get('/users', [AdminUserController::class, 'index'])->middleware('permission:view users')->name('users.index');

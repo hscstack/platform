@@ -3,7 +3,6 @@ import { Link, Head, usePage, useForm, router } from '@inertiajs/vue3';
 import {
     Calendar,
     User,
-    Eye,
     ArrowLeft,
     ArrowRight,
     PenLine,
@@ -454,13 +453,6 @@ const formatTimeAgo = (dateStr: string) => {
                         class="text-slate-500 dark:text-gray-400"
                         >{{ formattedDate }}</time
                     >
-                </div>
-
-                <div
-                    class="flex items-center gap-1.5 text-slate-500 dark:text-gray-400"
-                >
-                    <Eye class="h-4 w-4 text-slate-400 dark:text-gray-500" />
-                    <span>{{ blog.views }} views</span>
                 </div>
 
                 <button

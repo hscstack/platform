@@ -6,6 +6,7 @@ use App\Models\Resource;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,9 +24,9 @@ class NoteController extends Controller
             $group = 'science';
         }
 
-        $sort = $request->query('sort', 'top');
-        if (! in_array($sort, ['top', 'latest'], true)) {
-            $sort = 'top';
+        $sort = $request->query('sort', 'trending');
+        if (! in_array($sort, ['trending', 'top', 'latest'], true)) {
+            $sort = 'trending';
         }
 
         $type = $request->query('type', 'all');
@@ -88,8 +89,16 @@ class NoteController extends Controller
 
         if ($sort === 'latest') {
             $query->latest('id');
-        } else {
+        } elseif ($sort === 'top') {
             $query->orderByDesc('vote_score')->latest('id');
+        } else {
+            // Trending with time decay
+            $isSqlite = DB::getDriverName() === 'sqlite';
+            if ($isSqlite) {
+                $query->orderByRaw('(vote_score / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+            } else {
+                $query->orderByRaw('(vote_score / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+            }
         }
 
         $resources = $query->simplePaginate(16)->withQueryString();

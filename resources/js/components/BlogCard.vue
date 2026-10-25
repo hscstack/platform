@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import {
-    ArrowRight,
-    BookOpen,
-    Eye,
-    Heart,
-    MessageSquare,
-} from 'lucide-vue-next';
+import { ArrowRight, BookOpen, Heart, MessageSquare } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useAuth } from '@/lib/useAuth';
 import { formatTimeAgo } from '@/lib/useDate';
@@ -166,14 +160,6 @@ const isAuthor = computed(() => {
                     <span class="inline-flex items-center gap-1">
                         <MessageSquare class="h-3.5 w-3.5 stroke-[2]" />
                         <span>{{ blog.comments_count || 0 }}</span>
-                    </span>
-
-                    <span
-                        v-if="blog.views"
-                        class="inline-flex items-center gap-1"
-                    >
-                        <Eye class="h-3.5 w-3.5 stroke-[2]" />
-                        <span>{{ blog.views }}</span>
                     </span>
                 </div>
 

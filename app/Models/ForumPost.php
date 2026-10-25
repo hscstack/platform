@@ -24,7 +24,7 @@ class ForumPost extends Model
         'curriculum',
         'slug',
         'body',
-        'image_path',
+        'images',
         'is_locked',
         'moderation_status',
         'vote_score',
@@ -35,11 +35,13 @@ class ForumPost extends Model
 
     protected $appends = [
         'image_url',
+        'image_urls',
     ];
 
     protected function casts(): array
     {
         return [
+            'images' => 'array',
             'is_locked' => 'boolean',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
@@ -53,15 +55,29 @@ class ForumPost extends Model
         return 'slug';
     }
 
-    public function getImageUrlAttribute(): ?string
+    public function getImageUrlsAttribute(): array
     {
-        if (! $this->image_path) {
-            return null;
+        $images = $this->images;
+        if (! is_array($images) || empty($images)) {
+            return [];
         }
 
-        return str($this->image_path)->startsWith(['http://', 'https://'])
-            ? $this->image_path
-            : Storage::url($this->image_path);
+        return array_values(array_map(function ($img) {
+            if (! $img) {
+                return null;
+            }
+
+            return str($img)->startsWith(['http://', 'https://'])
+                ? $img
+                : Storage::url($img);
+        }, array_filter($images)));
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        $urls = $this->image_urls;
+
+        return $urls[0] ?? null;
     }
 
     protected static function booted(): void

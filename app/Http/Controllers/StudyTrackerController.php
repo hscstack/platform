@@ -175,6 +175,7 @@ class StudyTrackerController extends Controller
         $validated = $request->validate([
             'curriculum' => 'required|string|in:hsc,ssc',
             'group' => 'required|string|in:science,humanities,commerce',
+            'batch' => 'nullable|string|max:32',
             'optional_subject_ids' => 'nullable|array',
             'optional_subject_ids.*' => 'integer|exists:subjects,id',
         ]);
@@ -182,10 +183,11 @@ class StudyTrackerController extends Controller
         $request->user()->update([
             'curriculum' => $validated['curriculum'],
             'group' => $validated['group'],
+            'batch' => $validated['batch'] ?? $request->user()->batch,
             'optional_subject_ids' => $validated['optional_subject_ids'] ?? [],
         ]);
 
-        return redirect()->route('tracker.index')
+        return back()
             ->with('success', 'Curriculum updated to '.strtoupper($validated['curriculum']).' ('.ucfirst($validated['group']).').');
     }
 }

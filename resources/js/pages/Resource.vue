@@ -15,6 +15,7 @@ import { computed, ref, watch } from 'vue';
 
 import NoteReader from '@/components/resources/NoteReader.vue';
 import PdfViewer from '@/components/resources/PdfViewer.vue';
+import ResourceCommentsSection from '@/components/resources/ResourceCommentsSection.vue';
 import ResourceFormModal from '@/components/resources/ResourceFormModal.vue';
 import ResourceVoteButtons from '@/components/resources/ResourceVoteButtons.vue';
 import VideoSeriesPlayer from '@/components/resources/VideoSeriesPlayer.vue';
@@ -74,8 +75,10 @@ interface Upvoter {
 
 const props = defineProps<{
     resource: ResourceData;
+    subjects?: any[];
     userVote?: number | null;
     upvoters?: Upvoter[];
+    comments?: any[];
     can_moderate?: boolean;
     is_owner?: boolean;
 }>();
@@ -516,7 +519,8 @@ const subtitle = computed(() => {
                     <span
                         class="font-medium text-slate-700 underline-offset-2 group-hover:underline dark:text-gray-300"
                     >
-                        {{ localUpvoters.length }} জন আপভোট করেছেন
+                        {{ localUpvoters.length }}
+                        {{ localUpvoters.length === 1 ? 'upvote' : 'upvotes' }}
                     </span>
                 </button>
             </div>
@@ -549,6 +553,13 @@ const subtitle = computed(() => {
             <!-- 3. Multi-Image Note Reader -->
             <NoteReader v-else :items="resource.items || []" />
         </main>
+
+        <!-- Resource Comments / Discussion Section -->
+        <ResourceCommentsSection
+            :resource-id="resource.id"
+            :resource-author-id="resource.user_id"
+            :comments="comments || []"
+        />
     </div>
 
     <!-- Upvoters Modal (Forum Style) -->
@@ -662,6 +673,7 @@ const subtitle = computed(() => {
         v-if="can_moderate || is_owner"
         v-model:is-open="showEditModal"
         :resource="resource"
+        :subjects="subjects || []"
         @save="() => {}"
     />
 </template>

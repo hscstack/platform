@@ -64,7 +64,12 @@ const props = withDefaults(
         node?: { id: number; name: string; subject_id?: number } | null;
         subject?: { id: number; name: string } | null;
         resource?: ResourceData | null;
-        defaultType?: 'note' | 'video' | 'practical' | 'marked_book' | 'other';
+        defaultType?:
+            | 'note'
+            | 'lecture_sheet'
+            | 'video'
+            | 'practical'
+            | 'marked_book';
     }>(),
     {
         subjects: () => [],
@@ -107,10 +112,10 @@ const form = ref({
     description: '',
     resource_type: 'note' as
         | 'note'
+        | 'lecture_sheet'
         | 'video'
         | 'practical'
-        | 'marked_book'
-        | 'other',
+        | 'marked_book',
     items: [] as ResourceItem[],
 });
 
@@ -339,6 +344,12 @@ const initForm = () => {
                 ? JSON.parse(JSON.stringify(props.resource.items))
                 : [],
         };
+        selectedSubjectId.value =
+            props.resource.subject_id ||
+            props.subject?.id ||
+            props.node?.subject_id ||
+            null;
+        selectedNodeId.value = props.resource.node_id || props.node?.id || null;
     } else {
         form.value = {
             title: '',
@@ -346,11 +357,11 @@ const initForm = () => {
             resource_type: props.defaultType || 'note',
             items: [],
         };
+        selectedSubjectId.value =
+            props.subject?.id || props.node?.subject_id || null;
+        selectedNodeId.value = props.node?.id || null;
     }
 
-    selectedSubjectId.value =
-        props.subject?.id || props.node?.subject_id || null;
-    selectedNodeId.value = props.node?.id || null;
     youtubeInput.value = '';
     isImportingYoutube.value = false;
     docInputMode.value = 'images';
@@ -819,15 +830,9 @@ const handleSubmit = async () => {
             title: form.value.title.trim(),
             description: form.value.description.trim() || null,
             items: itemsPayload,
+            subject_id: selectedSubjectId.value,
+            node_id: selectedNodeId.value || null,
         };
-
-        if (!isEditing.value) {
-            payload.subject_id = selectedSubjectId.value;
-
-            if (selectedNodeId.value) {
-                payload.node_id = selectedNodeId.value;
-            }
-        }
 
         const errorFallback = isEditing.value
             ? 'রিসোর্স আপডেট করতে সমস্যা হয়েছে।'
@@ -893,8 +898,8 @@ const handleSubmit = async () => {
         </template>
 
         <div class="space-y-4.5 p-4 sm:p-6">
-            <!-- Subject Selection (hidden when editing) -->
-            <div v-if="!isEditing">
+            <!-- Subject Selection -->
+            <div v-if="subjects && subjects.length > 0">
                 <label
                     class="mb-1.5 block text-xs font-bold text-slate-700 dark:text-gray-300"
                 >
@@ -923,11 +928,7 @@ const handleSubmit = async () => {
 
             <!-- Chapter Selection (Shown only after user selects a subject) -->
             <div
-                v-if="
-                    !isEditing &&
-                    selectedSubjectId &&
-                    modalAvailableChapters.length > 0
-                "
+                v-if="selectedSubjectId && modalAvailableChapters.length > 0"
                 class="transition-all duration-200"
             >
                 <label
@@ -968,10 +969,10 @@ const handleSubmit = async () => {
                         class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 pr-10 text-xs font-semibold text-slate-800 transition focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                     >
                         <option value="note">হ্যান্ডনোট</option>
+                        <option value="lecture_sheet">লেকচার শিট</option>
                         <option value="marked_book">দাগানো বই</option>
                         <option value="video">ভিডিও লেকচার</option>
                         <option value="practical">ব্যবহারিক</option>
-                        <option value="other">অন্যান্য</option>
                     </select>
                     <ChevronDown
                         class="pointer-events-none absolute top-3 right-3 h-4 w-4 text-slate-400 dark:text-gray-500"

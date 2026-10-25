@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useRemember } from '@inertiajs/vue3';
 import {
     ArrowRight,
     BookOpen,
@@ -22,6 +22,7 @@ import AdUnit from '@/components/AdUnit.vue';
 import BaseModal from '@/components/BaseModal.vue';
 import BlogFeedCard from '@/components/blogs/BlogFeedCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import AskQuestionModal from '@/components/forum/AskQuestionModal.vue';
 import ForumFeedCard from '@/components/forum/ForumFeedCard.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -62,6 +63,7 @@ const { user, requireAuth } = useAuth();
 // Intermediate Action Modal State (Ask Question vs Upload Resource)
 const isActionChoiceModalOpen = ref(false);
 const isResourceUploadModalOpen = ref(false);
+const isAskQuestionModalOpen = ref(false);
 
 const handleComposeClick = () => {
     requireAuth('পোস্ট করতে অনুগ্রহ করে লগইন করুন।', () => {
@@ -71,7 +73,7 @@ const handleComposeClick = () => {
 
 const chooseAskQuestion = () => {
     isActionChoiceModalOpen.value = false;
-    router.visit('/forum/ask');
+    isAskQuestionModalOpen.value = true;
 };
 
 const chooseUploadResource = () => {
@@ -137,12 +139,47 @@ const handleWindowClick = (e: MouseEvent) => {
     }
 };
 
+// Feed Infinite Scroll Observer
+const feedSentinelRef = ref<HTMLElement | null>(null);
+let feedObserver: IntersectionObserver | null = null;
+
 onMounted(() => {
     window.addEventListener('click', handleWindowClick);
+
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+        feedObserver = new IntersectionObserver(
+            (entries) => {
+                if (
+                    entries[0]?.isIntersecting &&
+                    hasMore.value &&
+                    !isLoadingMore.value
+                ) {
+                    loadMore();
+                }
+            },
+            { rootMargin: '350px' },
+        );
+
+        if (feedSentinelRef.value) {
+            feedObserver.observe(feedSentinelRef.value);
+        }
+    }
+});
+
+watch(feedSentinelRef, (el) => {
+    if (feedObserver && el) {
+        feedObserver.disconnect();
+        feedObserver.observe(el);
+    }
 });
 
 onUnmounted(() => {
     window.removeEventListener('click', handleWindowClick);
+
+    if (feedObserver) {
+        feedObserver.disconnect();
+        feedObserver = null;
+    }
 });
 
 // Peer Search State & Handlers
@@ -175,18 +212,18 @@ const handleSidebarPeerSearch = () => {
     goToPeersSearch(sidebarPeerSearch.value);
 };
 
-// Feed state & progressive loading
-const items = ref<any[]>([...(props.feed?.data || [])]);
-const hasMore = ref(Boolean(props.feed?.has_more));
-const currentPage = ref(props.feed?.page || 1);
+// Feed state & progressive loading with useRemember for browser back-button retention
+const items = useRemember<any[]>([...(props.feed?.data || [])], 'feed_items');
+const hasMore = useRemember(Boolean(props.feed?.has_more), 'feed_has_more');
+const currentPage = useRemember(props.feed?.page || 1, 'feed_page');
 const isLoadingMore = ref(false);
 
 watch(
-    () => props.feed,
-    (newFeed) => {
-        items.value = [...(newFeed?.data || [])];
-        hasMore.value = Boolean(newFeed?.has_more);
-        currentPage.value = newFeed?.page || 1;
+    () => [props.course, props.group, props.sort],
+    () => {
+        items.value = [...(props.feed?.data || [])];
+        hasMore.value = Boolean(props.feed?.has_more);
+        currentPage.value = props.feed?.page || 1;
     },
 );
 
@@ -494,23 +531,18 @@ const loadMore = async () => {
                         />
                     </template>
 
-                    <!-- Load More Button -->
+                    <!-- Infinite Scroll Sentinel & Loader -->
                     <div class="pt-4 text-center">
-                        <button
+                        <div
                             v-if="hasMore"
-                            type="button"
-                            @click="loadMore"
-                            :disabled="isLoadingMore"
-                            class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                            ref="feedSentinelRef"
+                            class="flex justify-center py-4"
                         >
                             <Loader2
                                 v-if="isLoadingMore"
-                                class="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400"
+                                class="h-5 w-5 animate-spin text-indigo-600 dark:text-indigo-400"
                             />
-                            <span>{{
-                                isLoadingMore ? 'Loading more...' : 'Load More'
-                            }}</span>
-                        </button>
+                        </div>
                         <p
                             v-else
                             class="text-xs font-medium text-slate-400 dark:text-gray-500"
@@ -717,5 +749,13 @@ const loadMore = async () => {
         :is-open="isResourceUploadModalOpen"
         :subjects="subjects"
         @close="isResourceUploadModalOpen = false"
+    />
+
+    <!-- Ask Question Modal (Modal replacement for /forum/ask) -->
+    <AskQuestionModal
+        v-model:is-open="isAskQuestionModalOpen"
+        :subjects="subjects"
+        :initial-curriculum="currentCourse"
+        @close="isAskQuestionModalOpen = false"
     />
 </template>

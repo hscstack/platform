@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\User;
 use App\Models\UserAppreciation;
 use App\Notifications\UserAppreciationNotification;
@@ -26,7 +27,11 @@ class AuthController extends Controller
             return redirect()->route('me');
         }
 
-        return Inertia::render('auth/Login');
+        $allowRegistration = (bool) AppSetting::get('allow_registration', true);
+
+        return Inertia::render('auth/Login', [
+            'allowRegistration' => $allowRegistration,
+        ]);
     }
 
     public function redirectToGoogle(Request $request)
@@ -81,6 +86,12 @@ class AuthController extends Controller
                 : route('profile.edit');
 
             return redirect()->intended($defaultUrl);
+        }
+
+        // Check if registration is paused
+        $allowRegistration = (bool) AppSetting::get('allow_registration', true);
+        if (! $allowRegistration) {
+            return redirect()->route('login')->with('error', 'রেজিস্ট্রেশন সাময়িকভাবে স্থগিত রাখা হয়েছে। পূর্বে তৈরিকৃত অ্যাকাউন্ট দিয়ে লগইন করতে পারেন।');
         }
 
         $rawName = $googleUser->getName() ?? $googleUser->getNickname() ?? '';

@@ -29,7 +29,6 @@ class BlogController extends Controller
                 'featured_image_path',
                 'is_published',
                 'is_featured',
-                'views',
                 'created_at',
             ])
             ->with('user:id,name,username')
@@ -143,7 +142,6 @@ class BlogController extends Controller
     public function show(Blog $blog)
     {
         $blog->load('user:id,name,username,image_path,is_verified');
-        $blog->increment('views');
 
         $reactionsCount = $blog->reactions()->count();
 

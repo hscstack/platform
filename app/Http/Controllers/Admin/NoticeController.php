@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Notice\UpdateNoticeRequest;
-use App\Models\Notice;
+use App\Models\AppSetting;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -12,41 +13,63 @@ class NoticeController extends Controller
 {
     public function edit()
     {
+        $rawNotice = AppSetting::get('site_notice');
+        $notice = is_array($rawNotice) ? $rawNotice : (json_decode($rawNotice ?? '', true) ?: [
+            'title' => null,
+            'message' => null,
+            'image' => null,
+            'show_button' => false,
+            'button_title' => null,
+            'button_link' => null,
+            'is_active' => false,
+        ]);
+
+        if (! empty($notice['image'])) {
+            $notice['image'] = str($notice['image'])->startsWith(['http://', 'https://'])
+                ? $notice['image']
+                : Storage::url($notice['image']);
+        }
+
         return Inertia::render('admin/NoticeEdit', [
-            'notice' => Notice::singleton(),
+            'notice' => $notice,
         ]);
     }
 
     public function update(UpdateNoticeRequest $request)
     {
-        $notice = Notice::singleton();
+        $rawNotice = AppSetting::get('site_notice');
+        $existing = is_array($rawNotice) ? $rawNotice : (json_decode($rawNotice ?? '', true) ?: []);
+
         $data = $request->validated();
 
         if ($request->boolean('remove_image')) {
-            $rawImage = $notice->getRawOriginal('image');
+            $rawImage = $existing['image'] ?? null;
             if ($rawImage && ! str($rawImage)->startsWith(['http://', 'https://'])) {
                 Storage::delete($rawImage);
             }
-            $data['image'] = null;
+            $existing['image'] = null;
         }
 
         if ($request->hasFile('image')) {
-            $rawImage = $notice->getRawOriginal('image');
+            $rawImage = $existing['image'] ?? null;
             if ($rawImage && ! str($rawImage)->startsWith(['http://', 'https://'])) {
                 Storage::delete($rawImage);
             }
 
             $path = $request->file('image')->store('notices');
-            $data['image'] = $path;
-        } else {
-            if (! $request->boolean('remove_image')) {
-                unset($data['image']);
-            }
+            $existing['image'] = $path;
         }
 
-        unset($data['remove_image']);
+        $existing['title'] = $data['title'] ?? null;
+        $existing['message'] = $data['message'] ?? null;
+        $existing['show_button'] = (bool) ($data['show_button'] ?? false);
+        $existing['button_title'] = $data['button_title'] ?? null;
+        $existing['button_link'] = $data['button_link'] ?? null;
+        $existing['is_active'] = (bool) ($data['is_active'] ?? false);
+        $existing['updated_at'] = now()->toDateTimeString();
 
-        $notice->update($data);
+        AppSetting::set('site_notice', json_encode($existing));
+        Cache::forget('active_notice_for_display');
 
         return redirect()->route('admin.notice.edit')->with('success', 'Notice updated.');
     }
