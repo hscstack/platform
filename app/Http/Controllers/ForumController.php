@@ -290,7 +290,14 @@ class ForumController extends Controller
     {
         abort_unless(auth()->id() === $post->user_id || auth()->user()?->can('manage forums'), 403);
 
-        if ($post->image_path) {
+        $postImages = $post->images ?? [];
+        if (is_array($postImages)) {
+            foreach ($postImages as $img) {
+                if ($img && ! str($img)->startsWith(['http://', 'https://'])) {
+                    Storage::delete($img);
+                }
+            }
+        } elseif (! empty($post->image_path)) {
             Storage::delete($post->image_path);
         }
 

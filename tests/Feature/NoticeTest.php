@@ -79,12 +79,15 @@ test('admin can delete an existing notice image', function () {
 
     Storage::assertExists($path);
 
-    $this->actingAs($admin)->post('/admin/notice', [
+    $response = $this->actingAs($admin)->post('/admin/notice', [
         'title' => 'Notice 2',
         'message' => 'Notice 2 message',
         'remove_image' => true,
+        'show_button' => false,
         'is_active' => true,
     ]);
+
+    $response->assertSessionHasNoErrors();
 
     $raw = AppSetting::get('site_notice');
     $notice = is_array($raw) ? $raw : json_decode($raw, true);

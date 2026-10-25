@@ -188,8 +188,8 @@ class StudyTrackerController extends Controller
             'optional_subject_ids' => $validated['optional_subject_ids'] ?? [],
         ]);
 
-        // Return back so user stays on the referring page instead of being redirected
-        return back()
+        // Return back or redirect to tracker index if no referrer
+        return redirect()->intended(route('tracker.index'))
             ->with('success', 'Curriculum updated to '.strtoupper($validated['curriculum']).' ('.ucfirst($validated['group']).').');
     }
 }
