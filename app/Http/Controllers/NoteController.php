@@ -93,7 +93,8 @@ class NoteController extends Controller
         } elseif ($sort === 'top') {
             $query->orderByDesc('vote_score')->latest('id');
         } else {
-            // Trending with time decay
+            // Trending with time decay formula: (vote_score / (hours_old + 2))
+            // Surfaces high-engagement recent notes ahead of older static posts.
             $isSqlite = DB::getDriverName() === 'sqlite';
             if ($isSqlite) {
                 $query->orderByRaw('(vote_score / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');

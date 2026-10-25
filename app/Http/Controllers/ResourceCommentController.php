@@ -16,7 +16,7 @@ class ResourceCommentController extends Controller
     {
         $user = auth()->user();
 
-        // Check if user is suspended
+        // Check if user is suspended from community interactions
         if ($user && $user->isBanned()) {
             return back()->with('error', 'You are temporarily suspended from community participation.');
         }
@@ -29,7 +29,9 @@ class ResourceCommentController extends Controller
         $parentId = $validated['parent_id'] ?? null;
         if ($parentId) {
             $parent = ResourceComment::where('resource_id', $resource->id)->find($parentId);
-            // Flatten to 1 level deep: if parent is itself a reply, point to its parent (the root)
+            // Flatten comments to 1-level deep hierarchy:
+            // If replying to an existing reply, automatically attach to the root comment ($parent->parent_id)
+            // instead of creating infinitely nested deep sub-threads.
             $parentId = $parent?->parent_id ?: $parent?->id;
         }
 
@@ -41,7 +43,7 @@ class ResourceCommentController extends Controller
 
         $mentionedUserIds = [];
 
-        // Parse @mentions
+        // Parse @username mentions in the comment body and dispatch notification to up to 5 mentioned users
         if (preg_match_all('/@([a-zA-Z0-9_]+)/', $comment->content, $matches)) {
             $mentionedUsernames = array_unique(array_filter($matches[1], fn ($u) => strcasecmp($u, $user->username) !== 0));
             if (! empty($mentionedUsernames)) {
@@ -56,7 +58,7 @@ class ResourceCommentController extends Controller
             }
         }
 
-        // Notify author if not self and not already notified via mention
+        // Notify the resource author if the commenter is someone else and hasn't already been notified via @mention
         if ($resource->user_id !== $user->id && ! in_array($resource->user_id, $mentionedUserIds, true)) {
             $resource->user?->notify(new ResourceCommentNotification($resource, $comment));
         }
@@ -66,6 +68,7 @@ class ResourceCommentController extends Controller
 
     public function destroy(ResourceComment $comment)
     {
+        // Enforce deletion permission: only comment author or moderators can delete comments
         abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('moderate resources'), 403);
 
         $comment->delete();

@@ -9,11 +9,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Add JSON images column to support multiple attachments per forum post
         Schema::table('forum_posts', function (Blueprint $table) {
             $table->json('images')->nullable()->after('image_path');
         });
 
-        // Backfill existing image_path into images array
+        // Backfill existing single image_path into images array
         DB::table('forum_posts')
             ->whereNotNull('image_path')
             ->where('image_path', '!=', '')
@@ -26,6 +27,7 @@ return new class extends Migration
                     ]);
             });
 
+        // Drop the legacy single-image column
         Schema::table('forum_posts', function (Blueprint $table) {
             $table->dropColumn('image_path');
         });

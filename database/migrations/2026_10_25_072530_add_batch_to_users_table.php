@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Add batch identifier column to users table (e.g., HSC 26) with index for leaderboard filtering
         Schema::table('users', function (Blueprint $table) {
             $table->string('batch', 32)->nullable()->after('group');
             $table->index('batch');

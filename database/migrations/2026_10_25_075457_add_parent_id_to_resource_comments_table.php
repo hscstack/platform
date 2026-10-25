@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Add self-referencing foreign key for nested replies (1-level flattened comments)
         Schema::table('resource_comments', function (Blueprint $table) {
             $table->foreignId('parent_id')
                 ->nullable()

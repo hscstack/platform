@@ -85,6 +85,8 @@ class UserProfileController extends Controller
             }
         }
 
+        // Fetch appreciator and appreciating lists for profile modal with reciprocal appreciation flags.
+        // Determines if the currently logged-in user also appreciates each person in the list.
         $authId = auth()->id();
 
         $rawAppreciators = $user->appreciators()

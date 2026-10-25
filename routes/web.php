@@ -77,6 +77,7 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
     Route::patch('/resources/{resource}', [ResourceController::class, 'update'])->middleware('can:update,resource')->name('resources.update');
     Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
+    // Resource discussion comments and replies
     Route::post('/resources/{resource}/comments', [ResourceCommentController::class, 'store'])->name('resources.comments.store');
     Route::delete('/resources/comments/{comment}', [ResourceCommentController::class, 'destroy'])->name('resources.comments.destroy');
 

@@ -14,6 +14,7 @@ class UpdateResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Optional target subject and node IDs for resource re-assignment
             'subject_id' => ['sometimes', 'nullable', 'integer', 'exists:subjects,id'],
             'node_id' => ['sometimes', 'nullable', 'integer', 'exists:nodes,id'],
             'title' => ['required', 'string', 'max:255'],

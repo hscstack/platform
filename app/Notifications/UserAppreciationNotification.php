@@ -70,6 +70,7 @@ class UserAppreciationNotification extends Notification implements ShouldQueue
             'type' => 'user_appreciation',
             'title' => "{$this->appreciator->name} appreciated you!",
             'message' => "You have {$this->totalAppreciations} community appreciations.",
+            // Deep link to user's profile with #appreciators hash so the appreciation modal auto-opens
             'url' => route('user.profile', $notifiable->username).'#appreciators',
             'appreciator_id' => $this->appreciator->id,
             'total_appreciations' => $this->totalAppreciations,

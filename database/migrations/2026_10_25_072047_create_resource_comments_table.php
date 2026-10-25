@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Table for user discussions and feedback on community resources
         Schema::create('resource_comments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained()->cascadeOnDelete();

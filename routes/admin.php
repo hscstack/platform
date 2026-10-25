@@ -61,16 +61,16 @@ Route::middleware('permission:edit notice')->group(function () {
     Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->name('notice.update');
 });
 
-// Platform Settings
+// Platform Settings (Feature flags, registration pause, upload locks)
 Route::middleware('permission:manage platform settings')->group(function () {
     Route::get('/settings/platform', [AdminPlatformSettingsController::class, 'index'])->name('platform.settings');
     Route::post('/settings/platform', [AdminPlatformSettingsController::class, 'update'])->name('platform.settings.update');
-    // Backward compatibility alias
+    // Backward compatibility alias for platform settings routes
     Route::get('/platform/settings', [AdminPlatformSettingsController::class, 'index']);
     Route::post('/platform/settings', [AdminPlatformSettingsController::class, 'update']);
 });
 
-// Cache
+// Cache Flush Action
 Route::post('/clear-cache', function () {
     Cache::flush();
 

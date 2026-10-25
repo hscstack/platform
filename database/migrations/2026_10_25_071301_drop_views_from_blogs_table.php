@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Drop blog views counter column from blogs table
         Schema::table('blogs', function (Blueprint $table) {
             $table->dropColumn('views');
         });

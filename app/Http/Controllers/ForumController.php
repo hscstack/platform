@@ -224,6 +224,8 @@ class ForumController extends Controller
             'images.*' => ['string'],
         ]);
 
+        // Multi-image upload: accept an array of uploaded image paths (up to 4)
+        // or support legacy single file upload for backwards compatibility.
         $images = [];
         if (! empty($validated['images'])) {
             $images = array_slice($validated['images'], 0, 4);

@@ -132,6 +132,9 @@ class Resource extends Model
         return $this->hasMany(ResourceVote::class)->where('value', -1);
     }
 
+    /**
+     * Top-level and nested comments associated with this resource.
+     */
     public function comments(): HasMany
     {
         return $this->hasMany(ResourceComment::class);

@@ -33,7 +33,8 @@ class DeleteUnusedImages extends Command
             Blog::whereNotNull('featured_image_path')->pluck('featured_image_path')->toArray()
         );
 
-        // Notice images — read from app_settings
+        // Notice images — read from app_settings instead of dropped notices table.
+        // We parse JSON or array payload and collect non-HTTP storage paths to prevent deletion.
         $rawNotice = AppSetting::get('site_notice');
         $noticeData = is_array($rawNotice) ? $rawNotice : json_decode($rawNotice ?? '', true);
         $noticeImages = [];

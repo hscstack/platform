@@ -29,6 +29,7 @@ class BlogController extends Controller
                 'featured_image_path',
                 'is_published',
                 'is_featured',
+                // Views column dropped as part of blog metrics cleanup
                 'created_at',
             ])
             ->with('user:id,name,username')

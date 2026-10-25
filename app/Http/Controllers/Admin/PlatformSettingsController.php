@@ -9,6 +9,10 @@ use Inertia\Inertia;
 
 class PlatformSettingsController extends Controller
 {
+    /**
+     * Display the platform settings management dashboard view.
+     * Loads current maintenance flags: user registration pause and resource upload pause.
+     */
     public function index()
     {
         return Inertia::render('admin/PlatformSettings', [
@@ -19,6 +23,9 @@ class PlatformSettingsController extends Controller
         ]);
     }
 
+    /**
+     * Update platform maintenance toggles in app_settings table.
+     */
     public function update(Request $request)
     {
         $validated = $request->validate([

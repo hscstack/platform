@@ -18,21 +18,33 @@ class ResourceComment extends Model
         'content',
     ];
 
+    /**
+     * Parent resource being discussed.
+     */
     public function resource(): BelongsTo
     {
         return $this->belongsTo(Resource::class);
     }
 
+    /**
+     * Author of this comment.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Parent comment if this is a reply (flattened 1 level deep).
+     */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(ResourceComment::class, 'parent_id');
     }
 
+    /**
+     * Child replies under this comment in chronological order.
+     */
     public function replies(): HasMany
     {
         return $this->hasMany(ResourceComment::class, 'parent_id')->oldest('id');

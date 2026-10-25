@@ -55,6 +55,7 @@ class User extends Authenticatable
         'activity_privacy',
         'curriculum',
         'group',
+        // Academic passing/target batch year (e.g. HSC 26)
         'batch',
         'allow_pokes',
         'facebook',

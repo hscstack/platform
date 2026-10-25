@@ -41,6 +41,7 @@ class ForumPost extends Model
     protected function casts(): array
     {
         return [
+            // Decode JSON array of image file paths from database column
             'images' => 'array',
             'is_locked' => 'boolean',
             'vote_score' => 'integer',
@@ -55,6 +56,9 @@ class ForumPost extends Model
         return 'slug';
     }
 
+    /**
+     * Resolve public storage or external URLs for all attached images.
+     */
     public function getImageUrlsAttribute(): array
     {
         $images = $this->images;
@@ -73,6 +77,9 @@ class ForumPost extends Model
         }, array_filter($images)));
     }
 
+    /**
+     * Backward compatibility accessor for the primary/first image URL.
+     */
     public function getImageUrlAttribute(): ?string
     {
         $urls = $this->image_urls;

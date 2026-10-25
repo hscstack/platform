@@ -40,6 +40,7 @@ class UpdateProfileRequest extends FormRequest
             'about' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'institution' => ['sometimes', 'nullable', 'string', 'max:255', new CleanText],
             'activity_privacy' => ['sometimes', 'string', Rule::in(['public', 'appreciators_only', 'private'])],
+            // User's academic batch (e.g. HSC 26, HSC 27, SSC 26)
             'batch' => ['sometimes', 'nullable', 'string', 'max:32'],
             'allow_pokes' => ['sometimes', 'boolean'],
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],

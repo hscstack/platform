@@ -9,6 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Migrate legacy singleton notice row into app_settings key-value store ('site_notice')
         if (Schema::hasTable('notices')) {
             $first = DB::table('notices')->first();
             if ($first) {
@@ -29,6 +30,7 @@ return new class extends Migration
                 );
             }
 
+            // Drop legacy notices table
             Schema::dropIfExists('notices');
         }
     }

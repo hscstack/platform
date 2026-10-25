@@ -24,6 +24,7 @@ class Blog extends Model
         'meta_title',
         'meta_description',
         'seo_tags',
+        // 'views' attribute removed to simplify blog counters
         'featured_image_path',
     ];
 

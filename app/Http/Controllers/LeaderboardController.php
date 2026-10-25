@@ -22,6 +22,9 @@ class LeaderboardController extends Controller
             ? $request->input('timeframe')
             : 'this_month';
 
+        // Leaderboard multi-dimensional filtering options:
+        // Filter students by curriculum ('hsc', 'ssc'), academic group, exam batch,
+        // and social network scope ('appreciating', 'appreciators', 'mutual').
         $curriculum = in_array($request->input('curriculum'), ['hsc', 'ssc'], true)
             ? $request->input('curriculum')
             : null;
@@ -35,6 +38,7 @@ class LeaderboardController extends Controller
             $batch = null;
         }
 
+        // Calculate scoped user IDs if user filtered by social connections
         $appreciationScope = in_array($request->input('scope'), ['appreciating', 'appreciators', 'mutual'], true)
             ? $request->input('scope')
             : null;

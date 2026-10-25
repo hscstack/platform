@@ -27,6 +27,8 @@ class AuthController extends Controller
             return redirect()->route('me');
         }
 
+        // Check if registration is paused globally in platform settings.
+        // Send state to Login page so user sees alert banner before clicking Google Login.
         $allowRegistration = (bool) AppSetting::get('allow_registration', true);
 
         return Inertia::render('auth/Login', [
@@ -88,7 +90,8 @@ class AuthController extends Controller
             return redirect()->intended($defaultUrl);
         }
 
-        // Check if registration is paused
+        // Guardrail: If user is new (does not exist in database) and registration is paused,
+        // redirect back to login page with clear explanatory error message in Bangla.
         $allowRegistration = (bool) AppSetting::get('allow_registration', true);
         if (! $allowRegistration) {
             return redirect()->route('login')->with('error', 'রেজিস্ট্রেশন সাময়িকভাবে স্থগিত রাখা হয়েছে। পূর্বে তৈরিকৃত অ্যাকাউন্ট দিয়ে লগইন করতে পারেন।');

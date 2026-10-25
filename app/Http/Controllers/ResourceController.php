@@ -92,6 +92,7 @@ class ResourceController extends Controller
             ? ResourceVote::where('resource_id', $id)->where('user_id', auth()->id())->value('value')
             : null;
 
+        // Fetch subjects hierarchy for re-assignment modal if user is owner or moderator
         $subjects = ($isModerator || $isOwner)
             ? Subject::where('is_disabled', false)
                 ->orderBy('sort_order')
@@ -99,6 +100,7 @@ class ResourceController extends Controller
                 ->get(['id', 'name', 'slug', 'course', 'group'])
             : [];
 
+        // Fetch top-level comments and 1-level deep replies for resource discussion
         $comments = ResourceComment::where('resource_id', $id)
             ->whereNull('parent_id')
             ->with([
@@ -217,6 +219,7 @@ class ResourceController extends Controller
 
     public function ensureCanSubmit(int $incomingCount = 1): void
     {
+        // Guard check: Ensure uploads are not globally paused in app settings (unless moderator)
         $allowUploads = (bool) AppSetting::get('allow_resource_uploads', true);
         if (! $allowUploads && ! Auth::user()?->can('moderate resources')) {
             throw ValidationException::withMessages([
@@ -375,6 +378,7 @@ class ResourceController extends Controller
             'items' => $validated['items'],
         ];
 
+        // Handle node_id re-assignment and automatically sync subject_id from the node's parent subject
         if (array_key_exists('node_id', $validated)) {
             $nodeId = ! empty($validated['node_id']) ? (int) $validated['node_id'] : null;
             $updateData['node_id'] = $nodeId;
@@ -387,6 +391,7 @@ class ResourceController extends Controller
             }
         }
 
+        // Direct subject_id assignment fallback if node_id was not updated
         if (array_key_exists('subject_id', $validated) && empty($updateData['subject_id'])) {
             if (! empty($validated['subject_id'])) {
                 $updateData['subject_id'] = (int) $validated['subject_id'];

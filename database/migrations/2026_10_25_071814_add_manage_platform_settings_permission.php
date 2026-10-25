@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Register permission for controlling maintenance, registrations, and uploads
         $perm = Permission::findOrCreate('manage platform settings', 'web');
         $admin = Role::where('name', 'admin')->first();
         if ($admin && ! $admin->hasPermissionTo('manage platform settings')) {

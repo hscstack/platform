@@ -29,11 +29,13 @@ class BackupToDrive extends Command
         parent::__construct();
 
         $timestamp = now()->format('Y-m-d_His');
+        // Retrieve platform release version from config (app.version) or fallback to v1.0.0 for archive naming
         $version = config('app.version') ?: 'v1.0.0';
 
         $this->backupDir = storage_path('app/backups');
         $this->databaseDumpPath = $this->backupDir.'/database.sql.gz';
         $this->s3TarPath = $this->backupDir.'/s3.tar';
+        // Format archive name with version prefix so Google Drive backups can be identified by release
         $this->finalArchivePath = $this->backupDir."/backup_{$version}_{$timestamp}.tar.gz";
     }
 

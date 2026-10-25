@@ -22,6 +22,7 @@ class ResourceCommentMentionNotification extends Notification implements ShouldQ
 
     public function via(object $notifiable): array
     {
+        // Store mention notification directly in user notifications database table
         return ['database'];
     }
 
@@ -29,6 +30,7 @@ class ResourceCommentMentionNotification extends Notification implements ShouldQ
     {
         $snippet = Str::limit(strip_tags($this->comment->content), 80);
 
+        // Include deep link to #comments anchor on resource page
         return [
             'type' => 'user_mention',
             'title' => "@{$this->sender->username} mentioned you on \"{$this->resource->title}\"",

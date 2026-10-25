@@ -134,6 +134,8 @@ class HomeController extends Controller
             $blogsQuery->latest('id');
         } else {
             // Trending with time decay formula: (score / (hours_old + 2))
+            // Divides raw upvote/reaction points by elapsed hours (+2 smoothing buffer)
+            // so fresh content with good engagement surfaces ahead of older static posts.
             $isSqlite = DB::getDriverName() === 'sqlite';
             if ($isSqlite) {
                 $postsQuery->orderByRaw('(vote_score / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
