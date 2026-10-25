@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, usePage, useRemember } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import {
     AlertCircle,
     Book,
@@ -99,38 +99,19 @@ const currentSort = ref<'trending' | 'top' | 'latest'>(
 );
 const searchInput = ref<string>(props.filters.search || '');
 
-// Local Resource List & Load More with useRemember (Preserves infinite scrolled items on browser back)
-const resourceList = useRemember<ResourceItem[]>(
-    props.resources?.data || [],
-    'notes_list',
-);
-const nextPageUrl = useRemember<string | null>(
-    props.resources?.next_page_url || null,
-    'notes_next_url',
-);
+// Local Resource List & Load More
+const resourceList = ref<ResourceItem[]>(props.resources?.data || []);
+const nextPageUrl = ref<string | null>(props.resources?.next_page_url || null);
 const isLoadingMore = ref(false);
 
-// Clean refresh / direct navigation safeguard:
-// On page refresh (F5) or direct URL change, discard remembered history state to avoid flash of mismatched notes
-if (typeof window !== 'undefined') {
-    const navEntry = performance.getEntriesByType('navigation')[0] as
-        | PerformanceNavigationTiming
-        | undefined;
-    const isReload = navEntry?.type === 'reload';
-    const firstCourse = resourceList.value[0]?.subject?.course;
-    const currentCourseFilter =
-        props.filters.curriculum || props.filters.course;
-
-    if (
-        isReload ||
-        (firstCourse &&
-            currentCourseFilter &&
-            firstCourse !== currentCourseFilter)
-    ) {
-        resourceList.value = props.resources?.data || [];
-        nextPageUrl.value = props.resources?.next_page_url || null;
-    }
-}
+watch(
+    () => props.resources,
+    (newVal) => {
+        resourceList.value = newVal?.data || [];
+        nextPageUrl.value = newVal?.next_page_url || null;
+    },
+    { deep: true },
+);
 
 watch(
     () => [
@@ -151,9 +132,6 @@ watch(
         selectedType.value = props.filters.type || 'all';
         currentSort.value = props.filters.sort || 'trending';
         searchInput.value = props.filters.search || '';
-
-        resourceList.value = props.resources?.data || [];
-        nextPageUrl.value = props.resources?.next_page_url || null;
     },
 );
 

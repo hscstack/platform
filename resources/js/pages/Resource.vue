@@ -223,14 +223,6 @@ const backHref = computed(() => {
     return `/notes?curriculum=${curriculum}&group=${group}`;
 });
 
-const handleBackClick = () => {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-        window.history.back();
-    } else {
-        router.visit(backHref.value);
-    }
-};
-
 const scrollToComments = () => {
     if (typeof document === 'undefined') {
         return;
@@ -449,14 +441,13 @@ const totalCommentsCount = computed(() => {
             <div class="flex items-center justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
                     <!-- Clear Back Button -->
-                    <button
-                        type="button"
-                        @click="handleBackClick"
-                        class="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-xs transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                    <Link
+                        :href="backHref"
+                        class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-xs transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                         title="নোট আর্কাইভে ফিরে যান"
                     >
                         <ArrowLeft class="h-4 w-4 stroke-[2.3]" />
-                    </button>
+                    </Link>
 
                     <h1
                         class="truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl md:text-3xl dark:text-gray-100"

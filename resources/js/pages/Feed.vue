@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useRemember } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     AlertCircle,
     ArrowRight,
@@ -228,18 +228,18 @@ const handleSidebarPeerSearch = () => {
     goToPeersSearch(sidebarPeerSearch.value);
 };
 
-// Feed state & progressive loading with useRemember for browser back-button retention
-const items = useRemember<any[]>([...(props.feed?.data || [])], 'feed_items');
-const hasMore = useRemember(Boolean(props.feed?.has_more), 'feed_has_more');
-const currentPage = useRemember(props.feed?.page || 1, 'feed_page');
+// Feed state & progressive loading
+const items = ref<any[]>([...(props.feed?.data || [])]);
+const hasMore = ref(Boolean(props.feed?.has_more));
+const currentPage = ref(props.feed?.page || 1);
 const isLoadingMore = ref(false);
 
 watch(
-    () => [props.course, props.group, props.sort],
-    () => {
-        items.value = [...(props.feed?.data || [])];
-        hasMore.value = Boolean(props.feed?.has_more);
-        currentPage.value = props.feed?.page || 1;
+    () => props.feed,
+    (newFeed) => {
+        items.value = [...(newFeed?.data || [])];
+        hasMore.value = Boolean(newFeed?.has_more);
+        currentPage.value = newFeed?.page || 1;
     },
 );
 
