@@ -37,6 +37,7 @@ class UserProfileController extends Controller
             'facebook' => $user->facebook,
             'instagram' => $user->instagram,
             'github' => $user->github,
+            'website' => $user->website,
             'created_at' => $user->created_at?->format('M Y') ?? '2026',
             'is_verified' => $user->is_verified,
             'is_online' => $user->isOnline(),

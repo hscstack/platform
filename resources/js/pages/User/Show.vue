@@ -15,6 +15,7 @@ import {
     FileText,
     FlaskConical,
     Github,
+    Globe,
     GraduationCap,
     Heart,
     HelpCircle,
@@ -57,6 +58,7 @@ const props = defineProps<{
         facebook: string | null;
         instagram: string | null;
         github: string | null;
+        website: string | null;
         created_at: string;
         is_verified?: boolean;
         is_online?: boolean;
@@ -951,6 +953,21 @@ const formatGroupName = (group?: string) => {
                             title="GitHub Profile"
                         >
                             <Github class="h-3.5 w-3.5" />
+                        </a>
+                        <a
+                            v-if="profileUser.website"
+                            :href="
+                                profileUser.website.startsWith('http://') ||
+                                profileUser.website.startsWith('https://')
+                                    ? profileUser.website
+                                    : `https://${profileUser.website}`
+                            "
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-indigo-400"
+                            title="Personal Website"
+                        >
+                            <Globe class="h-3.5 w-3.5" />
                         </a>
                     </div>
 

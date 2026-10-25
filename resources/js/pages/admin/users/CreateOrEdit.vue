@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { UserPlus, Loader2, Save, BadgeCheck, Sparkles } from 'lucide-vue-next';
+import {
+    UserPlus,
+    Loader2,
+    Save,
+    BadgeCheck,
+    Sparkles,
+    Crown,
+} from 'lucide-vue-next';
 import { watch } from 'vue';
 
 const props = defineProps({
@@ -22,6 +29,7 @@ const form = useForm({
     username: props.user?.username || '',
     email: props.user?.email || '',
     is_verified: Boolean(props.user?.is_verified ?? false),
+    is_board_member: Boolean(props.user?.is_board_member ?? false),
     priority: props.user?.priority ?? 0,
     role: props.user?.roles?.[0]?.name || '',
     permissions: props.user?.permissions?.map((p) => p.name) || ['view admin'],
@@ -33,6 +41,7 @@ const form = useForm({
     facebook: props.user?.facebook || '',
     github: props.user?.github || '',
     instagram: props.user?.instagram || '',
+    website: props.user?.website || '',
 });
 
 watch(
@@ -265,6 +274,59 @@ const submitForm = () => {
                     class="mt-2 text-sm text-rose-600"
                 >
                     {{ form.errors.is_verified }}
+                </p>
+            </div>
+
+            <!-- Board of Directors Option -->
+            <div
+                class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition dark:border-gray-800 dark:bg-gray-800/40"
+            >
+                <div class="flex items-center justify-between">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                        >
+                            <Crown class="h-5 w-5" />
+                        </div>
+                        <div>
+                            <label
+                                for="is_board_member"
+                                class="text-sm font-semibold text-slate-900 select-none dark:text-gray-100"
+                            >
+                                Board of Directors (Company Member)
+                            </label>
+                            <p
+                                class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                Marks this user as a core company member.
+                                Grouped in the top "Board of Directors" section
+                                on the /about-us team page.
+                            </p>
+                        </div>
+                    </div>
+                    <label
+                        class="relative inline-flex shrink-0 cursor-pointer items-center"
+                    >
+                        <input
+                            type="checkbox"
+                            id="is_board_member"
+                            v-model="form.is_board_member"
+                            :disabled="form.processing"
+                            class="peer sr-only"
+                        />
+                        <div
+                            class="peer h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-indigo-600 peer-focus:ring-2 peer-focus:ring-indigo-500/20 peer-focus:outline-none dark:bg-gray-700 dark:peer-checked:bg-indigo-600"
+                        ></div>
+                        <div
+                            class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:translate-x-full dark:bg-gray-200"
+                        ></div>
+                    </label>
+                </div>
+                <p
+                    v-if="form.errors.is_board_member"
+                    class="mt-2 text-sm text-rose-600"
+                >
+                    {{ form.errors.is_board_member }}
                 </p>
             </div>
 
@@ -548,6 +610,33 @@ const submitForm = () => {
                         class="mt-1 text-sm text-rose-600"
                     >
                         {{ form.errors.instagram }}
+                    </p>
+                </div>
+
+                <div>
+                    <label
+                        for="website"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >Website</label
+                    >
+                    <input
+                        v-model="form.website"
+                        type="text"
+                        id="website"
+                        placeholder="Personal Website URL"
+                        :disabled="form.processing"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        :class="
+                            form.errors.website
+                                ? 'border-rose-500 focus:ring-rose-500/20'
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
+                        "
+                    />
+                    <p
+                        v-if="form.errors.website"
+                        class="mt-1 text-sm text-rose-600"
+                    >
+                        {{ form.errors.website }}
                     </p>
                 </div>
             </div>

@@ -46,6 +46,7 @@ class UpdateProfileRequest extends FormRequest
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
             'github' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'website' => ['sometimes', 'nullable', 'string', 'max:255'],
             'receive_emails' => ['sometimes', 'boolean'],
         ];
     }

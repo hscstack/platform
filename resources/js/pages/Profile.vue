@@ -63,6 +63,7 @@ const form = useForm({
     facebook: user.value?.facebook || '',
     github: user.value?.github || '',
     instagram: user.value?.instagram || '',
+    website: (user.value as any)?.website || '',
     receive_emails: user.value?.receive_emails ?? true,
 });
 
@@ -881,6 +882,33 @@ const submitForm = () => {
                             class="mt-1 text-xs text-rose-600"
                         >
                             {{ form.errors.instagram }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="website"
+                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Website
+                        </label>
+                        <input
+                            v-model="form.website"
+                            type="text"
+                            id="website"
+                            placeholder="https://yourwebsite.com"
+                            :disabled="form.processing"
+                            class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
+                            :class="{
+                                'border-rose-500 focus:ring-rose-500/20':
+                                    form.errors.website,
+                            }"
+                        />
+                        <p
+                            v-if="form.errors.website"
+                            class="mt-1 text-xs text-rose-600"
+                        >
+                            {{ form.errors.website }}
                         </p>
                     </div>
                 </div>
