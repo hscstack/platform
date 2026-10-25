@@ -95,3 +95,24 @@ test('admin can delete an existing notice image', function () {
     expect($notice['image'])->toBeNull();
     Storage::assertMissing($path);
 });
+
+test('admin can update notice with a video url', function () {
+    $admin = adminUserWithPermissions(['view admin', 'edit notice']);
+
+    $response = $this->actingAs($admin)->post('/admin/notice', [
+        'title' => 'Tutorial Video Notice',
+        'message' => 'Watch our quick tutorial reel',
+        'video_url' => 'https://www.youtube.com/shorts/dQw4w9WgXcQ',
+        'show_button' => false,
+        'is_active' => true,
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    $response->assertRedirect(route('admin.notice.edit'));
+
+    $raw = AppSetting::get('site_notice');
+    $notice = is_array($raw) ? $raw : json_decode($raw, true);
+
+    expect($notice['video_url'])->toBe('https://www.youtube.com/shorts/dQw4w9WgXcQ')
+        ->and($notice['title'])->toBe('Tutorial Video Notice');
+});

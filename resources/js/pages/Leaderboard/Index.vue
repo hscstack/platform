@@ -200,7 +200,7 @@ const activeFilterLabels = computed(() => {
         const scopeLabels: Record<string, string> = {
             appreciating: 'যাদের এপ্রিশিয়েট করি',
             appreciators: 'আমার এপ্রিশিয়েটর',
-            mutual: 'পারস্পরিক বন্ধু',
+            mutual: 'মিউচুয়াল',
         };
         list.push(scopeLabels[props.scope] || props.scope);
     }
@@ -1125,7 +1125,7 @@ onBeforeUnmount(() => {
                 <label
                     class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
                 >
-                    কারিকুলাম (Curriculum)
+                    কারিকুলাম
                 </label>
                 <div class="grid grid-cols-3 gap-2">
                     <button
@@ -1137,7 +1137,7 @@ onBeforeUnmount(() => {
                         :class="[
                             !modalCurriculum
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
                     >
@@ -1153,7 +1153,7 @@ onBeforeUnmount(() => {
                         :class="[
                             modalCurriculum === 'hsc'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
                     >
@@ -1169,7 +1169,7 @@ onBeforeUnmount(() => {
                         :class="[
                             modalCurriculum === 'ssc'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
                     >
@@ -1183,7 +1183,7 @@ onBeforeUnmount(() => {
                 <label
                     class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
                 >
-                    বিভাগ (Stream)
+                    বিভাগ
                 </label>
                 <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <button
@@ -1192,7 +1192,7 @@ onBeforeUnmount(() => {
                         :class="[
                             !modalGroup
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
                     >
@@ -1204,7 +1204,7 @@ onBeforeUnmount(() => {
                         :class="[
                             modalGroup === 'science'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
                     >
@@ -1216,7 +1216,7 @@ onBeforeUnmount(() => {
                         :class="[
                             modalGroup === 'humanities'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
                     >
@@ -1228,7 +1228,7 @@ onBeforeUnmount(() => {
                         :class="[
                             modalGroup === 'commerce'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
                     >
@@ -1242,7 +1242,7 @@ onBeforeUnmount(() => {
                 <label
                     class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
                 >
-                    একাডেমিক ব্যাচ (Batch)
+                    ব্যাচ
                 </label>
                 <div class="flex flex-wrap items-center gap-2">
                     <button
@@ -1251,7 +1251,7 @@ onBeforeUnmount(() => {
                         :class="[
                             !modalBatch
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-semibold transition"
                     >
@@ -1286,7 +1286,7 @@ onBeforeUnmount(() => {
                         :class="[
                             modalBatch === b.key
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-semibold transition"
                     >
@@ -1300,7 +1300,7 @@ onBeforeUnmount(() => {
                 <label
                     class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
                 >
-                    সোশ্যাল নেটওয়ার্ক (Community Scope)
+                    সোশ্যাল নেটওয়ার্ক
                 </label>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button
@@ -1309,11 +1309,11 @@ onBeforeUnmount(() => {
                         :class="[
                             !modalScope
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
                     >
-                        গ্লোবাল (সকল শিক্ষার্থী)
+                        ১. গ্লোবাল (সকল শিক্ষার্থী)
                     </button>
                     <button
                         type="button"
@@ -1321,11 +1321,11 @@ onBeforeUnmount(() => {
                         :class="[
                             modalScope === 'appreciating'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
                     >
-                        যাদের আমি এপ্রিশিয়েট করি
+                        ২. যাদের আমি এপ্রিশিয়েট করি
                     </button>
                     <button
                         type="button"
@@ -1333,11 +1333,11 @@ onBeforeUnmount(() => {
                         :class="[
                             modalScope === 'appreciators'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
                     >
-                        যারা আমাকে এপ্রিশিয়েট করে
+                        ৩. যারা আমাকে এপ্রিশিয়েট করে
                     </button>
                     <button
                         type="button"
@@ -1345,13 +1345,20 @@ onBeforeUnmount(() => {
                         :class="[
                             modalScope === 'mutual'
                                 ? 'bg-indigo-600 font-bold text-white shadow-xs'
-                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300',
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
                         ]"
                         class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
                     >
-                        পারস্পরিক বন্ধু (Mutual)
+                        ৪. মিউচুয়াল
                     </button>
                 </div>
+                <p
+                    class="text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                >
+                    💡 মিউচুয়াল সিলেক্ট করলে আপনার এপ্রিশিয়েটর অথবা আপনি যাদের
+                    এপ্রিশিয়েট করছেন (২ ও ৩ নম্বর তালিকা) উভয়েই একসাথে যুক্ত
+                    থাকবে।
+                </p>
             </div>
 
             <!-- 5. Remember this choice (localStorage) -->

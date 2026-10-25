@@ -20,6 +20,7 @@ class NoticeController extends Controller
             'title' => null,
             'message' => null,
             'image' => null,
+            'video_url' => null,
             'show_button' => false,
             'button_title' => null,
             'button_link' => null,
@@ -69,6 +70,7 @@ class NoticeController extends Controller
         // Update notice metadata fields in key-value structure
         $existing['title'] = $data['title'] ?? null;
         $existing['message'] = $data['message'] ?? null;
+        $existing['video_url'] = $data['video_url'] ?? null;
         $existing['show_button'] = (bool) ($data['show_button'] ?? false);
         $existing['button_title'] = $data['button_title'] ?? null;
         $existing['button_link'] = $data['button_link'] ?? null;
