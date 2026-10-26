@@ -9,9 +9,14 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+const props = defineProps<{
+    allowRegistration?: boolean;
+}>();
+
 const page = usePage();
 const flashError = computed(() => page.props.flash?.error);
 const flashSuccess = computed(() => page.props.flash?.success);
+const isRegistrationAllowed = computed(() => props.allowRegistration ?? true);
 
 const redirectParam =
     typeof window !== 'undefined'
@@ -59,6 +64,23 @@ const googleAuthUrl = redirectParam
                     class="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"
                 />
                 <div class="flex-1">{{ flashError }}</div>
+            </div>
+
+            <!-- Registration Paused Informational Banner -->
+            <div
+                v-else-if="!isRegistrationAllowed"
+                class="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-xs font-medium text-amber-900 backdrop-blur-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+            >
+                <AlertCircle
+                    class="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+                />
+                <div class="flex-1 leading-relaxed">
+                    <strong class="font-bold"
+                        >রেজিস্ট্রেশন সাময়িকভাবে স্থগিত:</strong
+                    >
+                    বর্তমানে নতুন একাউন্ট তৈরি করা বন্ধ রয়েছে। শুধুমাত্র পূর্বে
+                    তৈরিকৃত একাউন্ট দিয়ে লগইন করা যাবে।
+                </div>
             </div>
 
             <!-- Flash Success Alert -->

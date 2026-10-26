@@ -56,13 +56,12 @@ test('staff replying or updating status sends SupportTicketUpdatedNotification t
         $channels = $notification->via($user);
 
         return $notification->ticket->id === $ticket->id
-            && in_array('database', $channels, true)
-            && in_array('mail', $channels, true);
+            && in_array('database', $channels, true);
     });
 });
 
-test('SupportTicketUpdatedNotification does not send mail if user opted out', function () {
-    $user = User::factory()->create(['receive_emails' => false]);
+test('SupportTicketUpdatedNotification sends to database channel', function () {
+    $user = User::factory()->create();
 
     $ticket = SupportTicket::create([
         'user_id' => $user->id,

@@ -6,7 +6,6 @@ use App\Models\AppSetting;
 use App\Models\Blog;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
-use App\Models\Notice;
 use App\Models\Resource;
 use App\Models\SupportTicket;
 use App\Models\User;
@@ -34,7 +33,6 @@ class DeleteUnusedImages extends Command
             Blog::whereNotNull('featured_image_path')->pluck('featured_image_path')->toArray()
         );
 
-        // Notice images — read from app_settings
         $rawNotice = AppSetting::get('site_notice');
         $noticeData = is_array($rawNotice) ? $rawNotice : json_decode($rawNotice ?? '', true);
         $noticeImages = [];

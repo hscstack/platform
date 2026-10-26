@@ -23,7 +23,7 @@ class StoreResourceRequest extends FormRequest
         return [
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
             'node_id' => ['nullable', 'integer', 'exists:nodes,id'],
-            'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
+            'resource_type' => ['required', 'string', 'in:note,lecture_sheet,practical,marked_book,other,video'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
