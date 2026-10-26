@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\PeerSettingsController;
+use App\Http\Controllers\Admin\PlatformSettingsController as AdminPlatformSettingsController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -58,6 +59,12 @@ Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy
 Route::middleware('permission:edit notice')->group(function () {
     Route::get('/notice', [AdminNoticeController::class, 'edit'])->name('notice.edit');
     Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->name('notice.update');
+});
+
+// Platform Settings
+Route::middleware('permission:manage platform settings')->group(function () {
+    Route::get('/settings/platform', [AdminPlatformSettingsController::class, 'index'])->name('platform.settings');
+    Route::post('/settings/platform', [AdminPlatformSettingsController::class, 'update'])->name('platform.settings.update');
 });
 
 // Cache
