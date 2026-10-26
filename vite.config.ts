@@ -42,8 +42,11 @@ export default defineConfig(({ mode }) => {
             }),
             VitePWA({
                 registerType: 'autoUpdate',
+                scope: '/',
+                base: '/',
                 workbox: {
                     mode: isLocal ? 'development' : 'production',
+                    navigateFallback: null,
                     importScripts: ['/push-sw.js'],
                     runtimeCaching: [
                         {
@@ -82,6 +85,7 @@ export default defineConfig(({ mode }) => {
                     name: 'HSCStack',
                     short_name: 'HSCStack',
                     start_url: '/',
+                    scope: '/',
                     display: 'standalone',
                     background_color: '#f8fafc',
                     theme_color: '#f8fafc',
