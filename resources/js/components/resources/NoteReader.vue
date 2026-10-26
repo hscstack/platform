@@ -43,7 +43,7 @@ const goToNext = () => {
 </script>
 
 <template>
-    <div class="relative mx-auto w-full sm:max-w-xl md:max-w-2xl">
+    <div class="relative mx-auto w-full">
         <!-- Minimal Top Info -->
         <div
             class="mb-4 flex items-center justify-between px-1 text-xs text-slate-400 dark:text-gray-500"
@@ -54,8 +54,14 @@ const goToNext = () => {
             <span class="text-[11px]"> (ছবিতে ক্লিক করে জুম করুন) </span>
         </div>
 
-        <!-- Continuous Document Pages (Clean, natural document flow) -->
-        <div class="space-y-6 sm:space-y-8">
+        <!-- Continuous Document Pages (1 column on mobile, 2 columns on PC for balance) -->
+        <div
+            :class="[
+                items.length > 1
+                    ? 'grid grid-cols-1 items-start gap-6 sm:gap-8 md:grid-cols-2'
+                    : 'mx-auto max-w-2xl space-y-6',
+            ]"
+        >
             <div
                 v-for="(item, index) in items"
                 :key="item.id || index"
