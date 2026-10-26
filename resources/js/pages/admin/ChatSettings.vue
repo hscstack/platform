@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import {
     MessageCircle,
     Save,
@@ -8,7 +8,6 @@ import {
     Trash2,
     Loader2,
     Activity,
-    Flag,
     ShieldAlert,
     Smile,
     Plus,
@@ -28,7 +27,6 @@ interface ChatSettingsProps {
         max_messages: number;
         max_length: number;
         profanity_filter_enabled: boolean;
-        banned_words: string;
         allowed_emojis?: string[];
         bot_username?: string;
         auto_ban_enabled: boolean;
@@ -72,7 +70,6 @@ const form = useForm({
     max_messages: props.settings.max_messages ?? 200,
     max_length: props.settings.max_length ?? 280,
     profanity_filter_enabled: props.settings.profanity_filter_enabled ?? true,
-    banned_words: props.settings.banned_words ?? '',
     allowed_emojis:
         props.settings.allowed_emojis &&
         props.settings.allowed_emojis.length > 0
@@ -235,33 +232,6 @@ const formatDurationText = (minutes: number) => {
                     }}
                 </span>
             </div>
-        </div>
-
-        <!-- Global Chat Management Route Tabs -->
-        <div
-            class="flex items-center gap-2 border-b border-slate-200 dark:border-gray-800"
-        >
-            <Link
-                href="/admin/chat"
-                class="flex items-center gap-2 border-b-2 border-indigo-600 px-4 py-2.5 text-xs font-bold text-indigo-600 transition-all dark:border-indigo-400 dark:text-indigo-400"
-            >
-                <MessageCircle class="h-4 w-4" />
-                <span>Chat Configuration</span>
-            </Link>
-
-            <Link
-                href="/admin/chat/reports"
-                class="flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-xs font-bold text-slate-500 transition-all hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-                <Flag class="h-4 w-4 text-rose-500" />
-                <span>Reported Messages</span>
-                <span
-                    v-if="pendingReportsCount && pendingReportsCount > 0"
-                    class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
-                >
-                    {{ pendingReportsCount }}
-                </span>
-            </Link>
         </div>
 
         <!-- Metric Statistics Cards -->
@@ -658,8 +628,8 @@ const formatDurationText = (minutes: number) => {
                         <p
                             class="mt-0.5 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            Automatically detects and blocks vulgar, abusive,
-                            and inappropriate words before they can be sent.
+                            Automatically detects and blocks words using the
+                            centralized platform banned words list.
                         </p>
                     </div>
 
@@ -686,27 +656,6 @@ const formatDurationText = (minutes: number) => {
                             "
                         />
                     </button>
-                </div>
-
-                <!-- Banned Words List (Textarea) -->
-                <div v-if="form.profanity_filter_enabled" class="space-y-2">
-                    <label
-                        class="block text-xs font-semibold text-slate-600 dark:text-gray-400"
-                    >
-                        Banned Words & Offensive Roots (separated by commas or
-                        newlines):
-                    </label>
-                    <textarea
-                        v-model="form.banned_words"
-                        rows="4"
-                        placeholder="Enter offensive words or roots separated by commas or new lines..."
-                        class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-200 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
-                    ></textarea>
-                    <p class="text-[11px] text-slate-400 dark:text-gray-500">
-                        The filter automatically collapses repeated letters and
-                        replaces common leet-speak substitutions (e.g. @ &rarr;
-                        a, $ &rarr; s, 0 &rarr; o).
-                    </p>
                 </div>
             </div>
 

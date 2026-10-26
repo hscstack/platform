@@ -9,6 +9,7 @@ use Spatie\Permission\Models\Role;
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
     Permission::findOrCreate('manage chat', 'web');
+    Permission::findOrCreate('manage reports', 'web');
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->syncPermissions(Permission::all());
 });

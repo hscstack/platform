@@ -67,7 +67,7 @@ test('ChatReportNotification array data contains report link and snippet', funct
     $data = $notification->toArray($admin);
     expect($data['type'])->toBe('chat_report')
         ->and($data['title'])->toBe('Chat message reported')
-        ->and($data['url'])->toBe(route('admin.chat.reports.index'))
+        ->and($data['url'])->toBe(route('admin.reports.index', ['type' => 'chat']))
         ->and($data['report_id'])->toBe($report->id)
         ->and($data['message'])->toContain('@student_rahim');
 });

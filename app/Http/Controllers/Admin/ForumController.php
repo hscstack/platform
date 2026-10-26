@@ -213,9 +213,6 @@ class ForumController extends Controller
 
     public function settings()
     {
-        $bannedWords = AppSetting::get('global_chat_banned_words', '');
-        $bannedWordsText = is_array($bannedWords) ? implode(', ', $bannedWords) : (string) $bannedWords;
-
         return Inertia::render('admin/forums/Settings', [
             'settings' => [
                 'approval_mode' => (string) AppSetting::get('forum_approval_mode', 'auto'),
@@ -224,7 +221,6 @@ class ForumController extends Controller
                 'disabled_reason' => (string) AppSetting::get('forum_disabled_reason', ''),
                 'auto_unpublish_threshold' => (int) AppSetting::get('forum_auto_unpublish_threshold', 3),
                 'profanity_filter_enabled' => (bool) AppSetting::get('global_chat_profanity_filter_enabled', true),
-                'banned_words' => $bannedWordsText,
             ],
             'pendingReportsCount' => Report::where('status', 'pending')->whereIn('reportable_type', [ForumPost::class, ForumAnswer::class])->count(),
         ]);
@@ -239,7 +235,6 @@ class ForumController extends Controller
             'disabled_reason' => ['nullable', 'string', 'max:255'],
             'auto_unpublish_threshold' => ['required', 'integer', 'min:0', 'max:50'],
             'profanity_filter_enabled' => ['required', 'boolean'],
-            'banned_words' => ['nullable', 'string'],
         ]);
 
         AppSetting::set('forum_approval_mode', $validated['approval_mode'], 'string');
@@ -248,7 +243,6 @@ class ForumController extends Controller
         AppSetting::set('forum_disabled_reason', $validated['disabled_reason'] ?? '', 'string');
         AppSetting::set('forum_auto_unpublish_threshold', $validated['auto_unpublish_threshold'], 'integer');
         AppSetting::set('global_chat_profanity_filter_enabled', $validated['profanity_filter_enabled'], 'boolean');
-        AppSetting::set('global_chat_banned_words', $validated['banned_words'] ?? '', 'string');
 
         return back()->with('success', 'Forum settings updated successfully.');
     }

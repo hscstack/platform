@@ -81,6 +81,11 @@ class RolePermissionSeeder extends Seeder
          */
         Permission::findOrCreate('manage products');
 
+        /*
+         * Centralized Report and User Moderation management
+         */
+        Permission::findOrCreate('manage reports');
+
         $admin->syncPermissions(Permission::all());
         // Administrators have unrestricted access to all features.
 

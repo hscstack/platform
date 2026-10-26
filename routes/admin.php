@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailController as AdminEmailController;
 use App\Http\Controllers\Admin\ForumController as AdminForumController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -81,17 +82,23 @@ Route::middleware('permission:send email')->group(function () {
 // Chat Management & Settings
 Route::middleware('permission:manage chat')->group(function () {
     Route::get('/chat', [ChatSettingsController::class, 'edit'])->name('chat.edit');
-    Route::get('/chat/reports', [ChatSettingsController::class, 'reports'])->name('chat.reports.index');
     Route::post('/chat/settings', [ChatSettingsController::class, 'update'])->name('chat.settings.update');
     Route::post('/chat/clear', [ChatSettingsController::class, 'clearMessages'])->name('chat.clear');
-    Route::patch('/chat/reports/{report}/status', [ChatSettingsController::class, 'updateReportStatus'])->name('chat.reports.update-status');
-    Route::delete('/chat/reports/clear', [ChatSettingsController::class, 'clearReports'])->name('chat.reports.clear');
-    Route::delete('/chat/reports/{report}', [ChatSettingsController::class, 'deleteReport'])->name('chat.reports.destroy');
 });
 
-// User Moderation & Suspensions (Accessible by Chat and Forum moderators)
-Route::middleware('permission:manage chat|manage forums')->group(function () {
-    Route::post('/chat/users/{user}/ban', [ChatSettingsController::class, 'updateUserBan'])->name('chat.users.ban');
+// Centralized Reports & Moderation (Only users with `manage reports` can access reports & ban users)
+Route::middleware('permission:manage reports')->group(function () {
+    Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::patch('/reports/{report}/status', [AdminReportController::class, 'updateStatus'])->name('reports.update-status');
+    Route::delete('/reports/clear', [AdminReportController::class, 'clear'])->name('reports.clear');
+    Route::delete('/reports/{report}', [AdminReportController::class, 'destroy'])->name('reports.destroy');
+
+    // Centralized user suspension action (with backward-compatible route name for existing modals)
+    Route::post('/reports/users/{user}/ban', [AdminReportController::class, 'updateUserBan'])->name('users.ban');
+    Route::post('/chat/users/{user}/ban', [AdminReportController::class, 'updateUserBan'])->name('chat.users.ban');
+
+    // Platform-wide Banned Words & Safety settings
+    Route::post('/reports/banned-words', [AdminReportController::class, 'updateBannedWords'])->name('reports.banned-words.update');
 });
 
 // Support Tickets
@@ -107,11 +114,6 @@ Route::middleware('permission:manage forums')->group(function () {
     Route::patch('/forums/{post:id}/lock', [AdminForumController::class, 'toggleLock'])->name('forums.lock');
     Route::patch('/forums/{post:id}/status', [AdminForumController::class, 'updateModerationStatus'])->name('forums.update-status');
     Route::delete('/forums/{post:id}', [AdminForumController::class, 'destroy'])->name('forums.destroy');
-
-    Route::get('/forums/reports', [AdminForumController::class, 'reports'])->name('forums.reports.index');
-    Route::patch('/forums/reports/{report}/status', [AdminForumController::class, 'updateReportStatus'])->name('forums.reports.update-status');
-    Route::delete('/forums/reports/clear', [AdminForumController::class, 'clearReports'])->name('forums.reports.clear');
-    Route::delete('/forums/reports/{report}', [AdminForumController::class, 'deleteReport'])->name('forums.reports.destroy');
 
     Route::get('/forums/settings', [AdminForumController::class, 'settings'])->name('forums.settings.edit');
     Route::post('/forums/settings', [AdminForumController::class, 'updateSettings'])->name('forums.settings.update');

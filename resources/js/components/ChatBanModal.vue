@@ -93,7 +93,7 @@ const submitBan = () => {
         : null;
 
     router.post(
-        `/admin/chat/users/${props.user.id}/ban`,
+        `/admin/reports/users/${props.user.id}/ban`,
         {
             banned_until: isoDate,
         },

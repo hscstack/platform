@@ -4,7 +4,6 @@ import {
     AlertCircle,
     ArrowDown,
     AtSign,
-    Ban,
     Check,
     Copy,
     Flag,
@@ -24,8 +23,6 @@ import {
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
-import ChatBanModal from '@/components/ChatBanModal.vue';
-import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import UserListItem from '@/components/UserListItem.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
@@ -1426,23 +1423,6 @@ const isGroupedWithPrevious = (idx: number) => {
     return currTime - prevTime < 120000;
 };
 
-const isBanModalOpen = ref(false);
-const selectedUserToBan = ref<ChatBanUser | null>(null);
-
-const openBanModal = (user: ChatUser) => {
-    if (!user.id) {
-        return;
-    }
-
-    closeMobileActions();
-    selectedUserToBan.value = {
-        id: user.id,
-        name: user.name,
-        username: user.username,
-    };
-    isBanModalOpen.value = true;
-};
-
 let removeNavigateListener: (() => void) | null = null;
 
 const handleVisibilityOrFocus = () => {
@@ -1986,22 +1966,6 @@ onUnmounted(() => {
                                 <Reply class="h-3.5 w-3.5" />
                             </button>
 
-                            <!-- Ban (Staff) - stays visible on deleted messages -->
-                            <button
-                                v-if="
-                                    (can('manage chat') || canDelete) &&
-                                    msg.user?.id &&
-                                    Number(currentUser?.id) !==
-                                        Number(msg.user.id)
-                                "
-                                type="button"
-                                @click.stop="openBanModal(msg.user)"
-                                class="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                :title="`Ban @${msg.user.username || msg.user.name}`"
-                            >
-                                <Ban class="h-3.5 w-3.5" />
-                            </button>
-
                             <!-- Report (active messages only) -->
                             <button
                                 v-if="
@@ -2515,21 +2479,6 @@ onUnmounted(() => {
                         <!-- Ban User (Staff) - stays visible on deleted messages -->
                         <button
                             v-if="
-                                (can('manage chat') || canDelete) &&
-                                mobileActionMessage.user?.id &&
-                                Number(currentUser?.id) !==
-                                    Number(mobileActionMessage.user.id)
-                            "
-                            type="button"
-                            @click="openBanModal(mobileActionMessage.user)"
-                            class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 font-semibold text-rose-600 hover:bg-rose-50 active:scale-98 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                        >
-                            <Ban class="h-4 w-4" />
-                            <span>Ban User</span>
-                        </button>
-
-                        <button
-                            v-if="
                                 canDelete &&
                                 !mobileActionMessage.is_deleted &&
                                 !mobileActionMessage.deleted_at
@@ -2799,13 +2748,6 @@ onUnmounted(() => {
                 </div>
             </div>
         </Teleport>
-
-        <!-- Reusable Quick Ban Moderation Modal (Staff) -->
-        <ChatBanModal
-            :is-open="isBanModalOpen"
-            :user="selectedUserToBan"
-            @close="isBanModalOpen = false"
-        />
 
         <!-- PWA Install Modal Prompt -->
         <PwaInstallPrompt variant="modal" />

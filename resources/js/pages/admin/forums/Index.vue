@@ -9,11 +9,8 @@ import {
     Search,
     ExternalLink,
     HelpCircle,
-    Ban,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
-import ChatBanModal from '@/components/ChatBanModal.vue';
-import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
 
@@ -115,25 +112,6 @@ const deletePost = (post: ForumPostItem) => {
         });
     }
 };
-
-const isBanModalOpen = ref(false);
-const selectedUser = ref<ChatBanUser | null>(null);
-
-const openBanModal = (post: ForumPostItem) => {
-    if (!post.user) {
-        return;
-    }
-
-    selectedUser.value = {
-        id: post.user.id,
-        name: post.user.name,
-        username: post.user.username,
-        banned_until: (post.user as any).banned_until || null,
-        is_banned: (post.user as any).is_banned ?? false,
-    };
-
-    isBanModalOpen.value = true;
-};
 </script>
 
 <template>
@@ -168,17 +146,11 @@ const openBanModal = (post: ForumPostItem) => {
                 </Link>
 
                 <Link
-                    href="/admin/forums/reports"
+                    href="/admin/reports?type=forum_post"
                     class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                 >
                     <Flag class="h-3.5 w-3.5 text-rose-500" />
-                    <span>Reports</span>
-                    <span
-                        v-if="pendingReportsCount && pendingReportsCount > 0"
-                        class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
-                    >
-                        {{ pendingReportsCount }}
-                    </span>
+                    <span>Central Reports</span>
                 </Link>
 
                 <Link
@@ -417,17 +389,6 @@ const openBanModal = (post: ForumPostItem) => {
                                 <div
                                     class="flex items-center justify-end gap-1.5"
                                 >
-                                    <!-- Suspend Author button -->
-                                    <button
-                                        v-if="post.user"
-                                        type="button"
-                                        @click="openBanModal(post)"
-                                        class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                                        :title="`Moderate / Suspend @${post.user.username}`"
-                                    >
-                                        <Ban class="h-3.5 w-3.5" />
-                                    </button>
-
                                     <!-- Lock button -->
                                     <button
                                         type="button"
@@ -474,12 +435,5 @@ const openBanModal = (post: ForumPostItem) => {
                 />
             </div>
         </div>
-
-        <!-- Suspension Modal -->
-        <ChatBanModal
-            :is-open="isBanModalOpen"
-            :user="selectedUser"
-            @close="isBanModalOpen = false"
-        />
     </div>
 </template>

@@ -21,13 +21,18 @@ class Report extends Model
         'content_snapshot',
         'message_sent_at',
         'reason',
+        'details',
         'status',
+        'reviewed_by',
+        'reviewed_at',
+        'action_taken',
     ];
 
     protected function casts(): array
     {
         return [
             'message_sent_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -39,6 +44,11 @@ class Report extends Model
     public function reportedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reported_user_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function reportable(): MorphTo
