@@ -4,6 +4,7 @@ use App\Models\AppSetting;
 use App\Models\Node;
 use App\Models\Resource;
 use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia;
 
@@ -29,10 +30,33 @@ test('notice is displayed on homepage and invalidated upon update', function () 
     expect(Cache::has('active_notice_for_display'))->toBeFalse();
 });
 
-test('the about us page loads successfully', function () {
+test('the about us page loads successfully and separates board members', function () {
+    Cache::forget('about_us_info');
+
+    $boardUser = User::factory()->create([
+        'name' => 'Founder User',
+        'is_verified' => true,
+        'is_board_member' => true,
+        'priority' => 10,
+    ]);
+
+    $teamUser = User::factory()->create([
+        'name' => 'Contributor User',
+        'is_verified' => true,
+        'is_board_member' => false,
+        'priority' => 5,
+    ]);
+
     $response = $this->get('/about-us');
 
     $response->assertStatus(200);
+    $response->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('platform/AboutUs')
+        ->where('users.0.name', 'Founder User')
+        ->where('users.0.is_board_member', true)
+        ->where('users.1.name', 'Contributor User')
+        ->where('users.1.is_board_member', false)
+    );
 });
 
 test('the products page loads successfully', function () {
