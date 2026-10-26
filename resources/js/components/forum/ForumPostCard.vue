@@ -11,6 +11,8 @@ interface User {
     username: string;
     image_path?: string | null;
     image_url?: string | null;
+    images?: string[] | null;
+    image_urls?: string[] | null;
     institution?: string | null;
     is_verified?: boolean;
 }
@@ -39,6 +41,8 @@ interface ForumPost {
     body: string;
     image_path?: string | null;
     image_url?: string | null;
+    images?: string[] | null;
+    image_urls?: string[] | null;
     vote_score: number;
     upvotes_count?: number;
     downvotes_count?: number;
@@ -131,7 +135,18 @@ defineProps<{
 
                 <!-- Attached Image Indicator (if any) -->
                 <div
-                    v-if="post.image_url"
+                    v-if="post.image_urls && post.image_urls.length > 0"
+                    class="mt-2 inline-flex items-center gap-1 text-xs text-slate-400 dark:text-gray-500"
+                >
+                    <ImageIcon class="h-3.5 w-3.5" />
+                    <span
+                        >{{ post.image_urls.length }}
+                        {{ post.image_urls.length === 1 ? 'image' : 'images' }}
+                        attached</span
+                    >
+                </div>
+                <div
+                    v-else-if="post.image_url"
                     class="mt-2 inline-flex items-center gap-1 text-xs text-slate-400 dark:text-gray-500"
                 >
                     <ImageIcon class="h-3.5 w-3.5" />

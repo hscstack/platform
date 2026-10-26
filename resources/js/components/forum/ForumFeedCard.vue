@@ -16,6 +16,8 @@ interface User {
     username: string;
     image_path?: string | null;
     image_url?: string | null;
+    images?: string[] | null;
+    image_urls?: string[] | null;
     institution?: string | null;
     is_verified?: boolean;
     is_appreciated?: boolean;
@@ -44,6 +46,8 @@ interface ForumPost {
     body: string;
     image_path?: string | null;
     image_url?: string | null;
+    images?: string[] | null;
+    image_urls?: string[] | null;
     vote_score: number;
     upvotes_count?: number;
     downvotes_count?: number;
@@ -361,9 +365,49 @@ const sharePost = async () => {
                 {{ post.body }}
             </p>
 
-            <!-- Optional Attached Image -->
+            <!-- Optional Attached Images (Multi-image grid) -->
             <div
-                v-if="post.image_url || post.image_path"
+                v-if="post.image_urls && post.image_urls.length > 0"
+                class="mt-3 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50"
+            >
+                <div
+                    v-if="post.image_urls.length === 1"
+                    class="max-h-80 overflow-hidden"
+                >
+                    <img
+                        :src="post.image_urls[0]"
+                        :alt="post.body.slice(0, 50)"
+                        loading="lazy"
+                        class="max-h-80 w-full object-cover transition duration-300 group-hover:scale-101"
+                    />
+                </div>
+                <div
+                    v-else
+                    class="grid gap-1.5 p-1"
+                    :class="
+                        post.image_urls.length === 2
+                            ? 'grid-cols-2'
+                            : post.image_urls.length === 3
+                              ? 'grid-cols-3'
+                              : 'grid-cols-2 sm:grid-cols-4'
+                    "
+                >
+                    <div
+                        v-for="(imgUrl, i) in post.image_urls"
+                        :key="i"
+                        class="aspect-square overflow-hidden rounded-lg bg-slate-100 dark:bg-gray-900"
+                    >
+                        <img
+                            :src="imgUrl"
+                            :alt="`${post.body.slice(0, 30)} - ${i + 1}`"
+                            loading="lazy"
+                            class="h-full w-full object-cover transition duration-300 hover:scale-105"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div
+                v-else-if="post.image_url || post.image_path"
                 class="mt-3 max-h-80 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 dark:border-gray-800 dark:bg-gray-800/50"
             >
                 <img
