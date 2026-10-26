@@ -68,7 +68,7 @@ const goToNext = () => {
                 class="group"
             >
                 <div
-                    class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs transition hover:border-slate-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+                    class="min-h-[260px] overflow-hidden rounded-2xl border border-slate-200/90 bg-slate-100/70 shadow-xs transition hover:border-slate-300 hover:shadow-md sm:min-h-[380px] dark:border-gray-800 dark:bg-gray-900"
                 >
                     <img
                         :src="item.url || item.source"

@@ -231,9 +231,39 @@ const scrollToComments = () => {
 
     const el = document.getElementById('comments');
 
-    if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+    if (!el) {
+        return;
     }
+
+    el.scrollIntoView({ behavior: 'smooth' });
+
+    // For long multi-image notes (e.g. 50+ images), lazy image layout shifts
+    // can cause the initial smooth scroll destination to fall short.
+    // We poll and readjust until the comments section is within the viewport.
+    let attempts = 0;
+    const adjustScroll = () => {
+        attempts++;
+        const target = document.getElementById('comments');
+
+        if (!target) {
+            return;
+        }
+
+        const rect = target.getBoundingClientRect();
+
+        // If comments is still below the viewport bottom
+        if (rect.top > window.innerHeight) {
+            target.scrollIntoView({
+                behavior: attempts > 1 ? 'auto' : 'smooth',
+            });
+
+            if (attempts < 12) {
+                setTimeout(adjustScroll, 250);
+            }
+        }
+    };
+
+    setTimeout(adjustScroll, 300);
 };
 
 const totalCommentsCount = computed(() => {
@@ -787,7 +817,7 @@ onUnmounted(() => {
             @click="scrollToTop"
             title="উপরে যান"
             aria-label="Scroll to top"
-            class="fixed right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.5rem)] z-50 flex h-9.5 w-9.5 cursor-pointer items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg ring-1 ring-black/10 backdrop-blur-xs transition duration-150 hover:scale-105 hover:bg-indigo-600 active:scale-95 sm:right-6 sm:bottom-6 sm:h-10 sm:w-10 dark:bg-gray-800/90 dark:text-gray-100 dark:ring-white/10 dark:hover:bg-indigo-600 dark:hover:text-white"
+            class="fixed right-4 bottom-[8.5rem] z-50 flex h-9.5 w-9.5 cursor-pointer items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg ring-1 ring-black/10 backdrop-blur-xs transition duration-150 hover:scale-105 hover:bg-indigo-600 active:scale-95 sm:right-6 sm:bottom-20 sm:h-10 sm:w-10 dark:bg-gray-800/90 dark:text-gray-100 dark:ring-white/10 dark:hover:bg-indigo-600 dark:hover:text-white"
         >
             <ArrowUp class="h-4 w-4 stroke-[2.3]" />
         </button>
