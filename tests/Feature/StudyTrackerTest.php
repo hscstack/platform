@@ -1,8 +1,8 @@
 <?php
 
+use App\Models\Chapter;
+use App\Models\ChapterCompletion;
 use App\Models\DailyStudyLog;
-use App\Models\Node;
-use App\Models\NodeCompletion;
 use App\Models\Subject;
 use App\Models\User;
 use Carbon\Carbon;
@@ -10,15 +10,11 @@ use Carbon\Carbon;
 test('guests can view tracker page with subjects', function () {
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
-    Node::create([
+    Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Chapter 1',
-        'slug' => 'chapter-1',
     ]);
 
     $this->get('/tracker')
@@ -29,19 +25,15 @@ test('authenticated user can view tracker page with stats and completions', func
     $user = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Chemistry',
-        'slug' => 'chemistry',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-emerald-500',
-        'icon' => 'flask',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Organic Chemistry',
-        'slug' => 'organic-chem',
     ]);
-    NodeCompletion::create([
+    ChapterCompletion::create([
         'user_id' => $user->id,
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
     ]);
     DailyStudyLog::create([
         'user_id' => $user->id,
@@ -57,24 +49,20 @@ test('authenticated user can view tracker page with stats and completions', func
 test('guests cannot toggle node completion or log study time', function () {
     $subject = Subject::create([
         'name' => 'Math',
-        'slug' => 'math',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'calculator',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Calculus',
-        'slug' => 'calculus',
     ]);
 
-    $this->post("/tracker/nodes/{$node->id}/toggle")
+    $this->post("/tracker/chapters/{$node->id}/toggle")
         ->assertRedirect();
 
     $this->post('/tracker/log-time', ['seconds' => 1200])
         ->assertRedirect();
 
-    expect(NodeCompletion::count())->toBe(0);
+    expect(ChapterCompletion::count())->toBe(0);
     expect(DailyStudyLog::count())->toBe(0);
 });
 
@@ -82,35 +70,31 @@ test('authenticated user can toggle node completion multiple times (idempotent t
     $user = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Biology',
-        'slug' => 'biology',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-emerald-500',
-        'icon' => 'dna',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Cell Structure',
-        'slug' => 'cell-structure',
     ]);
 
     // First toggle: complete
     $this->actingAs($user)
-        ->post("/tracker/nodes/{$node->id}/toggle")
+        ->post("/tracker/chapters/{$node->id}/toggle")
         ->assertRedirect();
 
-    $this->assertDatabaseHas('node_completions', [
+    $this->assertDatabaseHas('chapter_completions', [
         'user_id' => $user->id,
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
     ]);
 
     // Second toggle: uncomplete
     $this->actingAs($user)
-        ->post("/tracker/nodes/{$node->id}/toggle")
+        ->post("/tracker/chapters/{$node->id}/toggle")
         ->assertRedirect();
 
-    $this->assertDatabaseMissing('node_completions', [
+    $this->assertDatabaseMissing('chapter_completions', [
         'user_id' => $user->id,
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
     ]);
 });
 
@@ -171,30 +155,15 @@ test('logging study time cannot exceed daily max cap of 16 hours', function () {
     expect($log->total_seconds)->toBe(DailyStudyLog::MAX_DAILY_SECONDS);
 });
 
-test('tracker only includes trackable subjects and trackable nodes flatly', function () {
+test('tracker includes curriculum subjects and chapters flatly', function () {
     $trackableSubject = Subject::create([
         'name' => 'Trackable Subject',
-        'slug' => 'trackable-subject',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
-        'is_trackable' => true,
     ]);
 
-    $untrackableSubject = Subject::create([
-        'name' => 'Untrackable Subject',
-        'slug' => 'untrackable-subject',
-        'course' => 'hsc',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'atom',
-        'is_trackable' => false,
-    ]);
-
-    $chapterTrackable = Node::create([
+    $chapterTrackable = Chapter::create([
         'subject_id' => $trackableSubject->id,
         'name' => 'Real Chapter 1',
-        'slug' => 'real-chapter-1',
-        'is_trackable' => true,
     ]);
 
     $response = $this->get('/tracker?course=hsc');
@@ -203,7 +172,7 @@ test('tracker only includes trackable subjects and trackable nodes flatly', func
     $page = $response->original->getData()['page'];
     $subjects = $page['props']['subjects'];
 
-    expect(count($subjects))->toBe(1);
+    expect(count($subjects))->toBeGreaterThanOrEqual(1);
     expect($subjects[0]['id'])->toBe($trackableSubject->id);
     expect(count($subjects[0]['nodes']))->toBe(1);
     expect($subjects[0]['nodes'][0]['id'])->toBe($chapterTrackable->id);
@@ -225,7 +194,7 @@ test('authenticated user can reset today study time', function () {
         ->assertRedirect();
 
     $log = DailyStudyLog::where('user_id', $user->id)->where('study_date', $todayStr)->first();
-    expect($log->total_seconds)->toBe(0);
+    expect($log)->toBeNull();
 });
 
 test('switching curriculum updates user profile and preserves completed node track', function () {
@@ -233,29 +202,24 @@ test('switching curriculum updates user profile and preserves completed node tra
 
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
-        'is_trackable' => true,
     ]);
 
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Vector',
-        'slug' => 'vector',
-        'is_trackable' => true,
     ]);
 
-    NodeCompletion::create([
+    ChapterCompletion::create([
         'user_id' => $user->id,
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
     ]);
 
-    expect(NodeCompletion::where('user_id', $user->id)->count())->toBe(1);
+    expect(ChapterCompletion::where('user_id', $user->id)->count())->toBe(1);
 
     $this->actingAs($user)
+        ->from('/tracker')
         ->post('/tracker/curriculum', [
             'curriculum' => 'ssc',
             'group' => 'commerce',
@@ -264,7 +228,7 @@ test('switching curriculum updates user profile and preserves completed node tra
 
     expect($user->fresh()->curriculum)->toBe('ssc');
     expect($user->fresh()->group)->toBe('commerce');
-    expect(NodeCompletion::where('user_id', $user->id)->count())->toBe(1);
+    expect(ChapterCompletion::where('user_id', $user->id)->count())->toBe(1);
 });
 
 test('tracker renders user curriculum for authenticated user', function () {

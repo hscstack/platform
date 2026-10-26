@@ -228,12 +228,15 @@ class CommerceHumanitiesSubjectSeeder extends Seeder
 
         foreach ($subjects as $subject) {
             DB::table('subjects')->updateOrInsert(
-                ['slug' => $subject['slug']],
-                array_merge($subject, [
-                    'is_trackable' => true,
+                ['name' => $subject['name'], 'course' => $subject['course']],
+                [
+                    'name' => $subject['name'],
+                    'course' => $subject['course'],
+                    'group' => $subject['group'],
+                    'sort_order' => $subject['sort_order'],
                     'updated_at' => now(),
                     'created_at' => now(),
-                ])
+                ]
             );
         }
     }

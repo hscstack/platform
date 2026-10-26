@@ -36,10 +36,6 @@ class ResourceController extends BaseResourceController
 
         $resources = $query->paginate(20)->withQueryString();
 
-        $resources->getCollection()->each(function ($res) {
-            $res->node?->append('breadcrumb');
-        });
-
         return Inertia::render('admin/moderation/Resources', [
             'resources' => $resources,
             'currentStatus' => $status,

@@ -4,8 +4,6 @@ namespace App\Http\Requests\Subject;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class UpdateSubjectRequest extends FormRequest
 {
@@ -17,15 +15,6 @@ class UpdateSubjectRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
-        if ($this->filled('slug')) {
-            $this->merge([
-                'slug' => Str::slug($this->slug),
-            ]);
-        }
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -33,17 +22,11 @@ class UpdateSubjectRequest extends FormRequest
      */
     public function rules(): array
     {
-        $subject = $this->route('subject');
-
         return [
             'name' => ['sometimes', 'string', 'max:100', 'min:3'],
-            'tailwind_format' => ['sometimes', 'string', 'max:100'],
-            'icon' => ['sometimes', 'string', 'max:50'],
             'sort_order' => ['sometimes', 'integer'],
-            'slug' => ['sometimes', 'string', 'max:100', Rule::unique('subjects', 'slug')->ignore($subject->id)],
             'course' => ['sometimes', 'string', 'in:ssc,hsc'],
             'group' => ['sometimes', 'string', 'in:science,humanities,commerce,common'],
-            'is_trackable' => ['sometimes', 'boolean'],
             'is_optional' => ['sometimes', 'boolean'],
             'is_disabled' => ['sometimes', 'boolean'],
         ];

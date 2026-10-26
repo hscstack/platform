@@ -15,14 +15,17 @@ class NoteController extends Controller
 {
     public function index(Request $request): Response
     {
+        $subjectId = $request->query('subject') ?? $request->query('subject_id');
+        $targetSubject = $subjectId ? Subject::find($subjectId) : null;
+
         $course = $request->query('curriculum') ?? $request->query('course');
         if (! in_array($course, ['hsc', 'ssc'], true)) {
-            $course = $request->cookie('preferred_course') === 'ssc' ? 'ssc' : 'hsc';
+            $course = $targetSubject?->course ?? ($request->cookie('preferred_course') === 'ssc' ? 'ssc' : 'hsc');
         }
 
-        $group = $request->query('group', 'science');
+        $group = $request->query('group');
         if (! in_array($group, ['science', 'commerce', 'humanities'], true)) {
-            $group = 'science';
+            $group = ($targetSubject && $targetSubject->group !== 'common') ? $targetSubject->group : 'science';
         }
 
         $sort = $request->query('sort', 'trending');
@@ -31,16 +34,15 @@ class NoteController extends Controller
         }
 
         $type = $request->query('type', 'all');
-        $subjectId = $request->query('subject_id');
-        $nodeId = $request->query('node_id');
+        $chapterId = $request->query('chapter_id') ?? $request->query('node_id');
         $search = trim($request->query('search', ''));
 
         $query = Resource::query()
             ->approved()
             ->with([
                 'user:id,name,username,image_path,institution,is_verified',
-                'subject:id,name,course,slug,group',
-                'node:id,name,slug,subject_id',
+                'subject:id,name,course,group',
+                'chapter:id,name,subject_id',
             ]);
 
         // Filter by course and group (unless searching specific @username without explicit track)
@@ -52,7 +54,7 @@ class NoteController extends Controller
                 $q->whereHas('subject', function ($s) use ($course, $group) {
                     $s->where('course', $course)
                         ->whereIn('group', [$group, 'common']);
-                })->orWhereHas('node.subject', function ($s) use ($course, $group) {
+                })->orWhereHas('chapter.subject', function ($s) use ($course, $group) {
                     $s->where('course', $course)
                         ->whereIn('group', [$group, 'common']);
                 });
@@ -62,14 +64,14 @@ class NoteController extends Controller
         if ($subjectId) {
             $query->where(function ($q) use ($subjectId) {
                 $q->where('subject_id', $subjectId)
-                    ->orWhereHas('node', fn ($n) => $n->where('subject_id', $subjectId));
+                    ->orWhereHas('chapter', fn ($n) => $n->where('subject_id', $subjectId));
             });
         }
 
-        if ($nodeId === 'whole' || $nodeId === 'general') {
-            $query->whereNull('node_id');
-        } elseif (! empty($nodeId) && is_numeric($nodeId)) {
-            $query->where('node_id', (int) $nodeId);
+        if ($chapterId === 'whole' || $chapterId === 'general') {
+            $query->whereNull('chapter_id');
+        } elseif (! empty($chapterId) && is_numeric($chapterId)) {
+            $query->where('chapter_id', (int) $chapterId);
         }
 
         if (in_array($type, ['note', 'video', 'practical', 'other'], true)) {
@@ -109,11 +111,17 @@ class NoteController extends Controller
                 ->where('course', $course)
                 ->whereIn('group', [$group, 'common'])
                 ->orderBy('sort_order')
-                ->with(['nodes' => function ($q) {
-                    $q->select('id', 'subject_id', 'name', 'slug')
+                ->with(['chapters' => function ($q) {
+                    $q->select('id', 'subject_id', 'name')
                         ->orderBy('sort_order');
                 }])
-                ->get(['id', 'name', 'slug', 'course', 'group'])
+                ->get(['id', 'name', 'course', 'group'])
+                ->map(function ($s) {
+                    $arr = $s->toArray();
+                    $arr['nodes'] = $arr['chapters'] ?? [];
+
+                    return $arr;
+                })
                 ->toArray();
         });
 
@@ -128,7 +136,8 @@ class NoteController extends Controller
                 'course' => $course,
                 'group' => $group,
                 'subject_id' => $subjectId ? (int) $subjectId : null,
-                'node_id' => $nodeId,
+                'chapter_id' => $chapterId,
+                'node_id' => $chapterId,
                 'type' => $type,
                 'sort' => $sort,
                 'search' => $search,

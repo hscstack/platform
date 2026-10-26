@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * @property-read Node $node
+ * @property-read Chapter $chapter
  */
 class Resource extends Model
 {
@@ -17,7 +17,7 @@ class Resource extends Model
 
     protected $fillable = [
         'subject_id',
-        'node_id',
+        'chapter_id',
         'user_id',
         'resource_type',
         'title',
@@ -82,9 +82,24 @@ class Resource extends Model
         return count($this->items);
     }
 
+    public function chapter(): BelongsTo
+    {
+        return $this->belongsTo(Chapter::class);
+    }
+
     public function node(): BelongsTo
     {
-        return $this->belongsTo(Node::class);
+        return $this->chapter();
+    }
+
+    public function getNodeIdAttribute()
+    {
+        return $this->chapter_id;
+    }
+
+    public function setNodeIdAttribute($value)
+    {
+        $this->attributes['chapter_id'] = $value;
     }
 
     public function subject(): BelongsTo

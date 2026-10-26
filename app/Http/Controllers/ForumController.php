@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\AppSetting;
+use App\Models\Chapter;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\ForumVote;
-use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
+use App\Notifications\ForumAnswerNotification;
+use App\Notifications\ForumMentionNotification;
 use App\Notifications\ForumQuestionPendingNotification;
 use App\Notifications\ForumReportNotification;
 use App\Notifications\ForumStatusNotification;
+use App\Notifications\ForumVoteNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -66,11 +69,16 @@ class ForumController extends Controller
         }
 
         $subjects = Cache::remember('forum_filter_subjects', now()->addDay(), function () {
-            return Subject::where('is_trackable', true)
-                ->select('id', 'name', 'course', 'slug')
-                ->with(['nodes' => fn ($q) => $q->where('is_trackable', true)->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
+            return Subject::select('id', 'name', 'course')
+                ->with(['chapters' => fn ($q) => $q->select('id', 'subject_id', 'name')->orderBy('sort_order')])
                 ->orderBy('sort_order')
                 ->get()
+                ->map(function ($s) {
+                    $sArray = $s->toArray();
+                    $sArray['nodes'] = $sArray['chapters'] ?? [];
+
+                    return $sArray;
+                })
                 ->toArray();
         });
 
@@ -96,8 +104,8 @@ class ForumController extends Controller
 
         $post->load([
             'user:id,name,username,image_path,institution,is_verified',
-            'subject:id,name,course,slug',
-            'node:id,name,slug',
+            'subject:id,name,course',
+            'chapter:id,name',
         ]);
 
         $answers = $post->directAnswers()
@@ -238,7 +246,8 @@ class ForumController extends Controller
             'body' => ['required', 'string', 'min:5', 'max:30000', new CleanText],
             'curriculum' => ['required', 'in:hsc,ssc'],
             'subject_id' => ['nullable', 'exists:subjects,id'],
-            'node_id' => ['nullable', 'exists:nodes,id'],
+            'chapter_id' => ['nullable', 'exists:chapters,id'],
+            'node_id' => ['nullable', 'exists:chapters,id'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'images' => ['nullable', 'array', 'max:4'],
             'images.*' => ['string', 'max:255', 'regex:#^forum/posts/[A-Za-z0-9._/-]+$#', 'not_regex:#\\.\\.#'],
@@ -252,21 +261,21 @@ class ForumController extends Controller
         }
 
         $subjectId = $validated['subject_id'] ?? null;
-        $nodeId = $validated['node_id'] ?? null;
+        $chapterId = $validated['chapter_id'] ?? $validated['node_id'] ?? null;
 
         if ($subjectId) {
             $subject = Subject::find($subjectId);
             if (! $subject || $subject->course !== $validated['curriculum']) {
                 $subjectId = null;
-                $nodeId = null;
-            } elseif ($nodeId) {
-                $nodeExists = Node::where('id', $nodeId)->where('subject_id', $subjectId)->exists();
-                if (! $nodeExists) {
-                    $nodeId = null;
+                $chapterId = null;
+            } elseif ($chapterId) {
+                $chapterExists = Chapter::where('id', $chapterId)->where('subject_id', $subjectId)->exists();
+                if (! $chapterExists) {
+                    $chapterId = null;
                 }
             }
         } else {
-            $nodeId = null;
+            $chapterId = null;
         }
 
         $approvalMode = AppSetting::get('forum_approval_mode', 'auto');
@@ -278,7 +287,7 @@ class ForumController extends Controller
         $post = ForumPost::create([
             'user_id' => auth()->id(),
             'subject_id' => $subjectId,
-            'node_id' => $nodeId,
+            'chapter_id' => $chapterId,
             'curriculum' => $validated['curriculum'],
             'slug' => $slug,
             'body' => $validated['body'],
@@ -393,5 +402,236 @@ class ForumController extends Controller
             'message' => 'Question reported successfully. Our moderation team will review it.',
             'report_id' => $report->id,
         ], 201);
+    }
+
+    public function storeAnswer(Request $request, ForumPost $post): RedirectResponse
+    {
+        $user = auth()->user();
+
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
+        if (! $post->isApproved()) {
+            return back()->with('error', 'This discussion is currently not open for new replies.');
+        }
+
+        if ($post->is_locked) {
+            return back()->with('error', 'This discussion has been locked. New replies are disabled.');
+        }
+
+        $isCommentsEnabled = (bool) AppSetting::get('forum_comments_enabled', true);
+        if (! $isCommentsEnabled && (! $user || ! $user->can('view admin'))) {
+            $reason = AppSetting::get('forum_disabled_reason', 'Submitting comments is temporarily paused.');
+
+            return back()->with('error', $reason ?: 'Submitting comments is temporarily paused.');
+        }
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'min:2', 'max:1000', new CleanText],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'parent_id' => ['nullable', 'exists:forum_answers,id'],
+            'reply_to_user_id' => ['nullable', 'exists:users,id'],
+        ]);
+
+        $parentId = $validated['parent_id'] ?? null;
+        if ($parentId) {
+            $parent = ForumAnswer::where('forum_post_id', $post->id)->findOrFail($parentId);
+            $parentId = $parent->parent_id ?: $parent->id;
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('forum/answers');
+        }
+
+        $answer = $post->answers()->create([
+            'user_id' => $user->id,
+            'parent_id' => $parentId,
+            'body' => $validated['body'],
+            'image_path' => $imagePath,
+        ]);
+
+        $post->increment('answers_count');
+
+        $mentionedUserIds = [];
+
+        if (preg_match_all('/@([a-zA-Z0-9_]+)/', $validated['body'], $matches)) {
+            $mentionedUsernames = array_unique(array_filter($matches[1], fn ($u) => strcasecmp($u, $user->username) !== 0));
+            if (! empty($mentionedUsernames)) {
+                $mentionedUsers = User::whereIn('username', array_slice($mentionedUsernames, 0, 5))
+                    ->select(['id', 'name', 'username', 'email'])
+                    ->get();
+
+                if ($mentionedUsers->isNotEmpty()) {
+                    Notification::send($mentionedUsers, new ForumMentionNotification($post, $answer, $user));
+                    $mentionedUserIds = $mentionedUsers->pluck('id')->all();
+                }
+            }
+        }
+
+        if (isset($parent)) {
+            $parentAuthor = $parent->user;
+            if ($parentAuthor && $parentAuthor->id !== $user->id && empty($mentionedUserIds)) {
+                $parentAuthor->notify(new ForumAnswerNotification($post, $answer, true));
+                $mentionedUserIds[] = $parentAuthor->id;
+            }
+        } elseif ($post->user_id && $post->user_id !== $user->id && ! in_array($post->user_id, $mentionedUserIds, true)) {
+            $post->user?->notify(new ForumAnswerNotification($post, $answer, false));
+        }
+
+        return back()->with('success', 'Answer posted!');
+    }
+
+    public function destroyAnswer(ForumAnswer $answer): RedirectResponse
+    {
+        abort_unless(auth()->id() === $answer->user_id || auth()->user()?->can('manage forums'), 403);
+
+        $post = $answer->post;
+        $replies = $answer->replies;
+        $repliesCount = $replies->count();
+
+        DB::transaction(function () use ($answer, $replies, $post, $repliesCount) {
+            if ($answer->image_path) {
+                Storage::delete($answer->image_path);
+            }
+
+            foreach ($replies as $reply) {
+                if ($reply->image_path) {
+                    Storage::delete($reply->image_path);
+                }
+            }
+
+            $answer->delete();
+
+            if ($post) {
+                $post->decrement('answers_count', 1 + $repliesCount);
+            }
+        });
+
+        return back()->with('success', 'Deleted.');
+    }
+
+    public function reportAnswer(Request $request, ForumAnswer $answer): JsonResponse
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        if ($answer->reports()->where('reporter_id', $user->id)->exists()) {
+            return response()->json([
+                'message' => 'You have already reported this answer.',
+            ], 422);
+        }
+
+        $author = $answer->user;
+
+        $report = $answer->reports()->create([
+            'reporter_id' => $user->id,
+            'reported_user_id' => $author?->id,
+            'reported_user_name' => $author?->name,
+            'reported_user_username' => $author?->username,
+            'content_snapshot' => $answer->body,
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
+
+        $moderators = User::permission('manage forums')
+            ->select(['id', 'name', 'email'])
+            ->get();
+
+        if ($moderators->isNotEmpty()) {
+            Notification::send($moderators, new ForumReportNotification($report, $user));
+        }
+
+        return response()->json([
+            'message' => 'Answer reported successfully. Our moderation team will review it.',
+            'report_id' => $report->id,
+        ], 201);
+    }
+
+    public function votePost(Request $request, ForumPost $post): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
+        $validated = $request->validate([
+            'value' => ['required', 'in:1,-1'],
+        ]);
+
+        $this->performVote($post, (int) $validated['value'], $user);
+
+        return back();
+    }
+
+    public function voteAnswer(Request $request, ForumAnswer $answer): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($user && $user->isBanned()) {
+            $bannedUntilFormatted = $user->banned_until->diffForHumans();
+
+            return back()->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
+        }
+
+        $validated = $request->validate([
+            'value' => ['required', 'in:1,-1'],
+        ]);
+
+        $this->performVote($answer, (int) $validated['value'], $user);
+
+        return back();
+    }
+
+    private function performVote($model, int $value, $user): void
+    {
+        $userId = $user->id;
+        $isFirstTimeUpvote = false;
+
+        DB::transaction(function () use ($model, $userId, $value, &$isFirstTimeUpvote) {
+            $locked = $model::where('id', $model->id)->lockForUpdate()->first();
+            if (! $locked) {
+                return;
+            }
+
+            $existing = $locked->votes()->where('user_id', $userId)->lockForUpdate()->first();
+
+            if ($existing) {
+                if ($existing->value === $value) {
+                    $existing->delete();
+                } else {
+                    $existing->update(['value' => $value]);
+                }
+            } else {
+                $locked->votes()->create([
+                    'user_id' => $userId,
+                    'value' => $value,
+                ]);
+
+                if ($value === 1) {
+                    $isFirstTimeUpvote = true;
+                }
+            }
+
+            $upvotes = (int) $locked->votes()->where('value', 1)->count();
+            $downvotes = (int) $locked->votes()->where('value', -1)->count();
+
+            $locked->updateQuietly([
+                'upvotes_count' => $upvotes,
+                'downvotes_count' => $downvotes,
+                'vote_score' => $upvotes - $downvotes,
+            ]);
+        });
+
+        if ($isFirstTimeUpvote && $model->user_id !== $userId) {
+            ForumVoteNotification::sendTo($model->user, $model, $user);
+        }
     }
 }

@@ -1,9 +1,9 @@
 <?php
 
 use App\Models\AppSetting;
+use App\Models\Chapter;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
-use App\Models\Node;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -65,11 +65,10 @@ test('authenticated user can create a question', function () {
         'icon' => 'calculator',
         'sort_order' => 1,
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'user_id' => $user->id,
         'name' => 'Integration',
-        'slug' => 'integration',
     ]);
 
     $response = $this->actingAs($user)->post('/forum', [
@@ -316,10 +315,9 @@ test('invalid subject course or mismatched node resets invalid fields on store',
         'icon' => 'calculator',
         'sort_order' => 2,
     ]);
-    $sscNode = Node::create([
+    $sscNode = Chapter::create([
         'subject_id' => $sscSubject->id,
         'name' => 'Algebra Chapter',
-        'slug' => 'algebra-chapter',
         'sort_order' => 1,
     ]);
 

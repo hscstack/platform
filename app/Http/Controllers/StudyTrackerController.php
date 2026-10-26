@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Chapter;
+use App\Models\ChapterCompletion;
 use App\Models\DailyStudyLog;
-use App\Models\Node;
-use App\Models\NodeCompletion;
 use App\Models\Subject;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -21,7 +21,6 @@ class StudyTrackerController extends Controller
         $optionalSubjectIds = (array) ($user?->optional_subject_ids ?? []);
 
         $subjectsQuery = Subject::where('course', $course)
-            ->where('is_trackable', true)
             ->where(function ($query) use ($group, $optionalSubjectIds) {
                 $query->where(function ($q) use ($group) {
                     $q->where('is_optional', false)
@@ -39,17 +38,21 @@ class StudyTrackerController extends Controller
             ->orderBy('sort_order', 'asc');
 
         $subjects = $subjectsQuery
-            ->with(['nodes' => function ($query) {
-                $query->where('is_trackable', true)
-                    ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
+            ->with(['chapters' => function ($query) {
+                $query->orderBy('sort_order', 'asc')
+                    ->select('id', 'subject_id', 'name', 'sort_order', 'weight');
             }])
-            ->get(['id', 'name', 'slug', 'course', 'group', 'sort_order', 'is_optional'])
+            ->get(['id', 'name', 'course', 'group', 'sort_order', 'is_optional'])
             ->toArray();
 
-        // All trackable optional subjects for curriculum modal (so user can toggle optional subjects on/off)
-        $groupSubjects = Subject::where('is_trackable', true)
-            ->where('is_optional', true)
+        // Support frontend property alias 'nodes' for smooth transition
+        foreach ($subjects as &$subj) {
+            $subj['nodes'] = $subj['chapters'] ?? [];
+        }
+        unset($subj);
+
+        // All optional subjects for curriculum modal (so user can toggle optional subjects on/off)
+        $groupSubjects = Subject::where('is_optional', true)
             ->orderBy('sort_order', 'asc')
             ->get(['id', 'name', 'course', 'group', 'is_optional'])
             ->toArray();
@@ -61,6 +64,7 @@ class StudyTrackerController extends Controller
                 'subjects' => $subjects,
                 'optionalSubjectIds' => [],
                 'optionalSubjects' => $groupSubjects,
+                'completedChapterIds' => [],
                 'completedNodeIds' => [],
                 'todaySeconds' => 0,
                 'stats' => [
@@ -73,8 +77,8 @@ class StudyTrackerController extends Controller
             ]);
         }
 
-        $completedNodeIds = NodeCompletion::where('user_id', $user->id)
-            ->pluck('node_id')
+        $completedChapterIds = ChapterCompletion::where('user_id', $user->id)
+            ->pluck('chapter_id')
             ->toArray();
 
         $todayStr = Carbon::today()->format('Y-m-d');
@@ -91,30 +95,31 @@ class StudyTrackerController extends Controller
             'subjects' => $subjects,
             'optionalSubjectIds' => $optionalSubjectIds,
             'optionalSubjects' => $groupSubjects,
-            'completedNodeIds' => $completedNodeIds,
+            'completedChapterIds' => $completedChapterIds,
+            'completedNodeIds' => $completedChapterIds,
             'todaySeconds' => $todaySeconds,
             'stats' => $studyData['stats'],
             'heatmapData' => $studyData['heatmapData'],
         ]);
     }
 
-    public function toggleNode(Request $request, Node $node)
+    public function toggleChapter(Request $request, Chapter $chapter)
     {
         $user = $request->user();
         if (! $user) {
             return back()->with('error', 'Authentication required');
         }
 
-        $existing = NodeCompletion::where('user_id', $user->id)
-            ->where('node_id', $node->id)
+        $existing = ChapterCompletion::where('user_id', $user->id)
+            ->where('chapter_id', $chapter->id)
             ->first();
 
         if ($existing) {
             $existing->delete();
         } else {
-            NodeCompletion::create([
+            ChapterCompletion::create([
                 'user_id' => $user->id,
-                'node_id' => $node->id,
+                'chapter_id' => $chapter->id,
             ]);
         }
 
@@ -161,33 +166,35 @@ class StudyTrackerController extends Controller
             return back()->with('error', 'Authentication required');
         }
 
-        $todayStr = Carbon::today()->format('Y-m-d');
         DailyStudyLog::where('user_id', $user->id)
-            ->where('study_date', $todayStr)
-            ->update(['total_seconds' => 0]);
+            ->where('study_date', Carbon::today()->format('Y-m-d'))
+            ->delete();
 
-        return back();
+        return back()->with('success', 'Reset today');
     }
 
     public function updateCurriculum(Request $request)
     {
+        $user = $request->user();
+        if (! $user) {
+            return back()->with('error', 'Authentication required');
+        }
+
         $validated = $request->validate([
-            'curriculum' => 'required|string|in:hsc,ssc',
-            'group' => 'required|string|in:science,humanities,commerce',
-            'batch' => 'nullable|string|max:32',
+            'curriculum' => 'required|in:hsc,ssc',
+            'group' => 'required|in:science,humanities,commerce',
+            'batch' => 'nullable|string|max:10',
             'optional_subject_ids' => 'nullable|array',
             'optional_subject_ids.*' => 'integer|exists:subjects,id',
         ]);
 
-        $request->user()->update([
+        $user->update([
             'curriculum' => $validated['curriculum'],
             'group' => $validated['group'],
-            'batch' => $validated['batch'] ?? $request->user()->batch,
+            'batch' => $validated['batch'] ?? null,
             'optional_subject_ids' => $validated['optional_subject_ids'] ?? [],
         ]);
 
-        // Return back or redirect to tracker index if no referrer
-        return redirect()->intended(route('tracker.index'))
-            ->with('success', 'Curriculum updated to '.strtoupper($validated['curriculum']).' ('.ucfirst($validated['group']).').');
+        return back()->with('success', 'Curriculum preferences updated');
     }
 }

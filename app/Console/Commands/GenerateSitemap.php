@@ -4,8 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Blog;
 use App\Models\ForumPost;
-use App\Models\Node;
-use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Spatie\Sitemap\Sitemap;
@@ -47,43 +45,7 @@ class GenerateSitemap extends Command
             );
         }
 
-        // 2. Subjects
-        Subject::where('is_disabled', false)->orderBy('name')->get()->each(function ($subject) use ($sitemap) {
-            $sitemap->add(
-                Url::create(url($subject->slug))
-                    ->setLastModificationDate($subject->updated_at)
-            );
-        });
-
-        // 3. Subject Nodes (Chapters & Topic Nodes, filtering out resource sub-tabs)
-        $ignoredSlugs = [
-            'class', 'klas', 'classes',
-            'handnote', 'hzandnot', 'handnotes',
-            'dagano-boi', 'dagano-bi', 'marked-book',
-        ];
-
-        $allNodes = Node::with('subject:id,slug')
-            ->whereNotNull('subject_id')
-            ->get(['id', 'subject_id', 'slug', 'updated_at']);
-
-        foreach ($allNodes as $node) {
-            if (! $node->subject || ! $node->slug) {
-                continue;
-            }
-
-            if (in_array(strtolower($node->slug), $ignoredSlugs, true)) {
-                continue;
-            }
-
-            $nodePath = '/'.$node->subject->slug.'/'.$node->slug;
-
-            $sitemap->add(
-                Url::create(url($nodePath))
-                    ->setLastModificationDate($node->updated_at)
-            );
-        }
-
-        // 4. Published Blogs
+        // 2. Published Blogs
         Blog::where('is_published', true)
             ->orderByDesc('updated_at')
             ->get(['slug', 'updated_at'])

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Admin\PeerSettingsController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Models\AppSetting;
+use App\Models\ChapterCompletion;
 use App\Models\DailyStudyLog;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
-use App\Models\NodeCompletion;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
@@ -122,7 +122,7 @@ class UserProfileController extends Controller
         $pokeEnabled = (bool) AppSetting::get('peer_poke_enabled', true);
         $canPoke = $pokeEnabled && ! $isOwner && ($user->allow_pokes ?? true);
         $isPokeOnCooldown = $canPoke && auth()->check() && Cache::has('study_poke:'.auth()->id().":{$user->id}");
-        $pokePresets = $pokeEnabled ? PeerSettingsController::getPresets() : [];
+        $pokePresets = $pokeEnabled ? SettingsController::getPresets() : [];
         $pokeData = [
             'enabled' => $pokeEnabled,
             'canPoke' => $canPoke,
@@ -218,7 +218,7 @@ class UserProfileController extends Controller
             'preset_id' => 'required|string',
         ]);
 
-        $presets = PeerSettingsController::getPresets();
+        $presets = SettingsController::getPresets();
         $selectedPreset = collect($presets)->firstWhere('id', $validated['preset_id']);
 
         if (! $selectedPreset) {
@@ -283,7 +283,6 @@ class UserProfileController extends Controller
         $optionalSubjectIds = (array) ($user->optional_subject_ids ?? []);
 
         $subjectsQuery = Subject::where('course', $course)
-            ->where('is_trackable', true)
             ->where(function ($query) use ($group, $optionalSubjectIds) {
                 $query->where(function ($q) use ($group) {
                     $q->where('is_optional', false)
@@ -301,18 +300,17 @@ class UserProfileController extends Controller
             ->orderBy('sort_order', 'asc');
 
         $trackableSubjects = $subjectsQuery
-            ->with(['nodes' => function ($query) {
-                $query->where('is_trackable', true)
-                    ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
+            ->with(['chapters' => function ($query) {
+                $query->orderBy('sort_order', 'asc')
+                    ->select('id', 'subject_id', 'name', 'sort_order', 'weight');
             }])
-            ->get(['id', 'name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
+            ->get(['id', 'name', 'course', 'sort_order']);
 
-        $completedNodeIds = NodeCompletion::where('user_id', $user->id)
-            ->pluck('node_id')
+        $completedChapterIds = ChapterCompletion::where('user_id', $user->id)
+            ->pluck('chapter_id')
             ->toArray();
 
-        $completedSet = array_flip($completedNodeIds);
+        $completedSet = array_flip($completedChapterIds);
 
         $subjectBreakdown = [];
         $totalChapters = 0;
@@ -321,27 +319,27 @@ class UserProfileController extends Controller
         $validSubjectsCount = 0;
 
         foreach ($trackableSubjects as $subj) {
-            $subjTotalChapters = $subj->nodes->count();
+            $subjTotalChapters = $subj->chapters->count();
             $subjCompletedChapters = 0;
             $subjTotalWeight = 0;
             $subjCompletedWeight = 0;
 
             $chaptersList = [];
 
-            foreach ($subj->nodes as $node) {
-                $nodeWeight = (int) ($node->weight ?: 2);
-                $subjTotalWeight += $nodeWeight;
-                $isDone = isset($completedSet[$node->id]);
+            foreach ($subj->chapters as $chapter) {
+                $chapterWeight = (int) ($chapter->weight ?: 2);
+                $subjTotalWeight += $chapterWeight;
+                $isDone = isset($completedSet[$chapter->id]);
 
                 if ($isDone) {
                     $subjCompletedChapters++;
-                    $subjCompletedWeight += $nodeWeight;
+                    $subjCompletedWeight += $chapterWeight;
                 }
 
                 $chaptersList[] = [
-                    'id' => $node->id,
-                    'name' => $node->name,
-                    'weight' => $nodeWeight,
+                    'id' => $chapter->id,
+                    'name' => $chapter->name,
+                    'weight' => $chapterWeight,
                     'is_completed' => $isDone,
                 ];
             }
@@ -358,10 +356,7 @@ class UserProfileController extends Controller
             $subjectBreakdown[] = [
                 'id' => $subj->id,
                 'name' => $subj->name,
-                'slug' => $subj->slug,
                 'course' => $subj->course,
-                'tailwind_format' => $subj->tailwind_format,
-                'icon' => $subj->icon,
                 'completed' => $subjCompletedChapters,
                 'total' => $subjTotalChapters,
                 'percent' => $subjPercent,

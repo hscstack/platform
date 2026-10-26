@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
@@ -19,20 +19,14 @@ test('notes index page loads successfully with inertia component', function () {
 test('notes index filters by subject and course', function () {
     $physics = Subject::create([
         'name' => 'Physics 1st Paper',
-        'slug' => 'physics-1st',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
 
     $math = Subject::create([
         'name' => 'General Math',
-        'slug' => 'general-math',
         'course' => 'ssc',
         'group' => 'science',
-        'tailwind_format' => 'bg-blue-500',
-        'icon' => 'calculator',
     ]);
 
     $author = User::factory()->create();
@@ -79,17 +73,13 @@ test('notes index filters by subject and course', function () {
 test('notes index filters subject-wide resources when node_id is whole', function () {
     $subject = Subject::create([
         'name' => 'Chemistry',
-        'slug' => 'chemistry-hsc',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-emerald-500',
-        'icon' => 'flask',
     ]);
 
-    $chapter = Node::create([
+    $chapter = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Atomic Structure',
-        'slug' => 'atomic-structure',
     ]);
 
     $author = User::factory()->create();
@@ -97,7 +87,7 @@ test('notes index filters subject-wide resources when node_id is whole', functio
     // 1. Whole-book / subject-wide resource (node_id = null)
     Resource::create([
         'subject_id' => $subject->id,
-        'node_id' => null,
+        'chapter_id' => null,
         'user_id' => $author->id,
         'resource_type' => 'other',
         'title' => 'Full Chemistry Textbook PDF',
@@ -109,7 +99,7 @@ test('notes index filters subject-wide resources when node_id is whole', functio
     // 2. Chapter-specific resource (node_id = chapter->id)
     Resource::create([
         'subject_id' => $subject->id,
-        'node_id' => $chapter->id,
+        'chapter_id' => $chapter->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Atomic Structure Handnote',

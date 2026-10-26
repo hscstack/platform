@@ -1,13 +1,9 @@
 <?php
 
-use App\Http\Controllers\AboutUsController;
-use App\Http\Controllers\AccountDeletionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\ForumAnswerController;
 use App\Http\Controllers\ForumController;
-use App\Http\Controllers\ForumVoteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\NoteController;
@@ -15,11 +11,9 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ResourceCommentController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\StudyTrackerController;
-use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Http\Request;
@@ -41,8 +35,8 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
 
     // Signed Account Deletion by User
     Route::withoutMiddleware(['auth'])->middleware(['throttle:6,1'])->group(function () {
-        Route::get('/account/delete/verify/{user}', [AccountDeletionController::class, 'showConfirm'])->name('account.delete.verify');
-        Route::post('/account/delete/verify/{user}', [AccountDeletionController::class, 'confirmDelete'])->middleware('signed')->name('account.delete.confirm');
+        Route::get('/account/delete/verify/{user}', [ProfileController::class, 'showConfirm'])->name('account.delete.verify');
+        Route::post('/account/delete/verify/{user}', [ProfileController::class, 'confirmDelete'])->middleware('signed')->name('account.delete.confirm');
     });
 
     // Blog Authoring & Management
@@ -77,12 +71,13 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
     Route::patch('/resources/{resource}', [ResourceController::class, 'update'])->middleware('can:update,resource')->name('resources.update');
     Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
-    Route::post('/resources/{resource}/comments', [ResourceCommentController::class, 'store'])->name('resources.comments.store');
-    Route::delete('/resources/comments/{comment}', [ResourceCommentController::class, 'destroy'])->name('resources.comments.destroy');
+    Route::post('/resources/{resource}/comments', [ResourceController::class, 'storeComment'])->name('resources.comments.store');
+    Route::delete('/resources/comments/{comment}', [ResourceController::class, 'destroyComment'])->name('resources.comments.destroy');
 
     // My Submissions
-    Route::get('/my-submissions', [SubmissionController::class, 'index'])->name('submissions.index');
-    Route::post('/tracker/nodes/{node}/toggle', [StudyTrackerController::class, 'toggleNode'])->name('tracker.nodes.toggle');
+    Route::get('/my-submissions', [ResourceController::class, 'mySubmissions'])->name('submissions.index');
+    Route::post('/tracker/chapters/{chapter}/toggle', [StudyTrackerController::class, 'toggleChapter'])->name('tracker.chapters.toggle');
+    Route::post('/tracker/nodes/{chapter}/toggle', [StudyTrackerController::class, 'toggleChapter'])->name('tracker.nodes.toggle');
     Route::post('/tracker/log-time', [StudyTrackerController::class, 'logTime'])->name('tracker.log-time');
     Route::post('/tracker/reset-today', [StudyTrackerController::class, 'resetToday'])->name('tracker.reset-today');
     Route::post('/tracker/curriculum', [StudyTrackerController::class, 'updateCurriculum'])->name('tracker.curriculum');
@@ -97,11 +92,11 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/forum/questions', [ForumController::class, 'store'])->name('forum.questions.store');
     Route::delete('/forum/posts/{post:id}', [ForumController::class, 'destroy'])->name('forum.destroy');
     Route::post('/forum/posts/{post:id}/report', [ForumController::class, 'report'])->name('forum.posts.report');
-    Route::post('/forum/posts/{post:id}/answers', [ForumAnswerController::class, 'store'])->name('forum.answers.store');
-    Route::delete('/forum/answers/{answer}', [ForumAnswerController::class, 'destroy'])->name('forum.answers.destroy');
-    Route::post('/forum/answers/{answer}/report', [ForumAnswerController::class, 'report'])->name('forum.answers.report');
-    Route::post('/forum/posts/{post:id}/vote', [ForumVoteController::class, 'votePost'])->name('forum.posts.vote');
-    Route::post('/forum/answers/{answer}/vote', [ForumVoteController::class, 'voteAnswer'])->name('forum.answers.vote');
+    Route::post('/forum/posts/{post:id}/answers', [ForumController::class, 'storeAnswer'])->name('forum.answers.store');
+    Route::delete('/forum/answers/{answer}', [ForumController::class, 'destroyAnswer'])->name('forum.answers.destroy');
+    Route::post('/forum/answers/{answer}/report', [ForumController::class, 'reportAnswer'])->name('forum.answers.report');
+    Route::post('/forum/posts/{post:id}/vote', [ForumController::class, 'votePost'])->name('forum.posts.vote');
+    Route::post('/forum/answers/{answer}/vote', [ForumController::class, 'voteAnswer'])->name('forum.answers.vote');
 
     Route::get('/me', function (Request $request) {
         return redirect()->route('user.profile', ['username' => $request->user()->username]);
@@ -146,7 +141,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::permanentRedirect('/projects', '/products');
 
-    Route::get('/about-us', [AboutUsController::class, 'index']);
+    Route::get('/about-us', [HomeController::class, 'aboutUs']);
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

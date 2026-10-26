@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Models\Subject;
@@ -12,18 +12,14 @@ beforeEach(function () {
     $this->author = User::factory()->create();
     $this->subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics-vote-test',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
-    $this->node = Node::create([
+    $this->node = Chapter::create([
         'subject_id' => $this->subject->id,
         'name' => 'Mechanics',
-        'slug' => 'mechanics',
     ]);
     $this->resource = Resource::create([
-        'node_id' => $this->node->id,
+        'chapter_id' => $this->node->id,
         'user_id' => $this->author->id,
         'resource_type' => 'note',
         'title' => 'Newtonian Mechanics Note',

@@ -144,9 +144,9 @@ class User extends Authenticatable
         return $this->last_seen_at[$section] ?? null;
     }
 
-    public function nodeCompletions(): HasMany
+    public function chapterCompletions(): HasMany
     {
-        return $this->hasMany(NodeCompletion::class);
+        return $this->hasMany(ChapterCompletion::class);
     }
 
     public function dailyStudyLogs(): HasMany
@@ -162,11 +162,6 @@ class User extends Authenticatable
     public function blogs(): HasMany
     {
         return $this->hasmany(Blog::class);
-    }
-
-    public function nodes(): HasMany
-    {
-        return $this->hasMany(Node::class);
     }
 
     public function resourceVotes(): HasMany

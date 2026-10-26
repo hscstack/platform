@@ -20,6 +20,7 @@ class ForumPost extends Model
     protected $fillable = [
         'user_id',
         'subject_id',
+        'chapter_id',
         'node_id',
         'curriculum',
         'slug',
@@ -102,9 +103,24 @@ class ForumPost extends Model
         return $this->belongsTo(Subject::class);
     }
 
+    public function chapter(): BelongsTo
+    {
+        return $this->belongsTo(Chapter::class);
+    }
+
     public function node(): BelongsTo
     {
-        return $this->belongsTo(Node::class);
+        return $this->chapter();
+    }
+
+    public function getNodeIdAttribute()
+    {
+        return $this->chapter_id;
+    }
+
+    public function setNodeIdAttribute($value)
+    {
+        $this->attributes['chapter_id'] = $value;
     }
 
     public function answers(): HasMany
@@ -170,8 +186,9 @@ class ForumPost extends Model
             }
         });
 
-        $query->when($filters['node_id'] ?? null, function ($q, $nodeId) {
-            $q->where('node_id', $nodeId);
+        $chapterId = $filters['chapter_id'] ?? $filters['node_id'] ?? null;
+        $query->when($chapterId, function ($q, $cid) {
+            $q->where('chapter_id', $cid);
         });
 
         $query->when($filters['status'] ?? null, function ($q, $status) {

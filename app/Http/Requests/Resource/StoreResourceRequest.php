@@ -2,19 +2,12 @@
 
 namespace App\Http\Requests\Resource;
 
-use App\Models\Node;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreResourceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        if ($this->filled('node_id')) {
-            $node = Node::find($this->input('node_id'));
-
-            return ! ($node?->is_frozen);
-        }
-
         return true;
     }
 
@@ -22,7 +15,8 @@ class StoreResourceRequest extends FormRequest
     {
         return [
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            'node_id' => ['nullable', 'integer', 'exists:nodes,id'],
+            'chapter_id' => ['nullable', 'integer', 'exists:chapters,id'],
+            'node_id' => ['nullable', 'integer', 'exists:chapters,id'],
             'resource_type' => ['required', 'string', 'in:note,lecture_sheet,practical,marked_book,other,video'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

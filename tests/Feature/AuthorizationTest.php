@@ -33,8 +33,6 @@ test('users without manage curriculum permission cannot create subjects', functi
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Blocked Subject',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
@@ -146,13 +144,10 @@ test('users without manage curriculum permission cannot create node via post', f
     $admin = adminUserWithPermissions(['view admin']);
     $subject = Subject::create([
         'name' => 'Chemistry',
-        'slug' => 'chemistry',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-emerald-500',
-        'icon' => 'flask',
     ]);
 
-    $response = $this->actingAs($admin)->post("/admin/subjects/{$subject->id}/nodes", [
+    $response = $this->actingAs($admin)->post("/admin/subjects/{$subject->id}/chapters", [
         'name' => 'Unauthorized Folder',
     ]);
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
@@ -20,17 +20,12 @@ function createTestSubjectAndNode(bool $isFrozen = false): array
 {
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
 
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Chapter 1',
-        'slug' => 'chapter-1',
-        'is_frozen' => $isFrozen,
     ]);
 
     return [$subject, $node];
@@ -41,7 +36,7 @@ test('guest cannot upload documents', function () {
 
     $this->post('/resources', [
         'subject_id' => $subject->id,
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'resource_type' => 'note',
         'title' => 'Test Note',
         'items' => [
@@ -60,7 +55,7 @@ test('banned user cannot upload resources', function () {
     $response = $this->actingAs($user)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Banned User Note',
             'items' => [
@@ -80,7 +75,7 @@ test('public authenticated user submits document with pending status', function 
     $this->actingAs($user)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'My Community Note',
             'description' => 'Detailed notes',
@@ -112,7 +107,7 @@ test('moderator user uploading document gets auto-approved', function () {
     $this->actingAs($moderator)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Moderator Note',
             'items' => [
@@ -139,7 +134,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
         Resource::create([
             'user_id' => $user->id,
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => "Pending Note {$i}",
             'status' => 'pending',
@@ -150,7 +145,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
     $this->actingAs($user)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Exceeding Quota',
             'items' => [
@@ -165,7 +160,7 @@ test('regular users are blocked after 20 pending submissions while verified can 
     $this->actingAs($user->fresh())
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Allowed For Verified',
             'items' => [
@@ -183,7 +178,7 @@ test('cannot submit resource with mixed formats', function () {
     $this->actingAs($user)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Mixed Formats Note',
             'items' => [
@@ -204,7 +199,7 @@ test('cannot submit video resource with non-video formats or note resource with 
     $this->actingAs($user)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'video',
             'title' => 'Video with Image',
             'items' => [
@@ -217,7 +212,7 @@ test('cannot submit video resource with non-video formats or note resource with 
     $this->actingAs($user)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'note',
             'title' => 'Note with Video',
             'items' => [
@@ -298,7 +293,7 @@ test('user can submit marked_book resource with images', function () {
     $this->actingAs($user)
         ->post('/resources', [
             'subject_id' => $subject->id,
-            'node_id' => $node->id,
+            'chapter_id' => $node->id,
             'resource_type' => 'marked_book',
             'title' => 'Physics 1st Paper Marked Book',
             'items' => [
