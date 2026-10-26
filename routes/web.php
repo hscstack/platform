@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
@@ -112,6 +113,11 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
+
+    // Web Push Subscriptions
+    Route::get('/api/webpush/key', [PushSubscriptionController::class, 'key'])->name('webpush.key');
+    Route::post('/api/webpush/subscribe', [PushSubscriptionController::class, 'store'])->name('webpush.subscribe');
+    Route::post('/api/webpush/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('webpush.unsubscribe');
 
     // Global Chat Actions
     Route::post('/api/chat/messages', [ChatController::class, 'store'])->name('chat.messages.store');

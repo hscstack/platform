@@ -39,6 +39,14 @@ defineProps({
         type: Number,
         default: 0,
     },
+    pushSubscribersCount: {
+        type: Number,
+        default: 0,
+    },
+    pushUsersCount: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const page = usePage();
@@ -286,12 +294,39 @@ const submitForm = () => {
                         <span
                             class="font-semibold text-slate-500 dark:text-gray-400"
                         >
-                            Total Subscribers:
+                            Email Subscribers:
                         </span>
                         <span
                             class="ml-1 font-bold text-slate-900 dark:text-gray-100"
                         >
                             {{ recipientCount }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Browser Push Subscribers Badge -->
+                <div
+                    class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-gray-800 dark:bg-gray-950"
+                    title="Active browser push notification devices"
+                >
+                    <Bell
+                        class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                    />
+                    <div class="text-xs">
+                        <span
+                            class="font-semibold text-slate-500 dark:text-gray-400"
+                        >
+                            Push Devices:
+                        </span>
+                        <span
+                            class="ml-1 font-bold text-emerald-600 dark:text-emerald-400"
+                        >
+                            {{ pushSubscribersCount }}
+                        </span>
+                        <span
+                            class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                        >
+                            ({{ pushUsersCount }} users)
                         </span>
                     </div>
                 </div>

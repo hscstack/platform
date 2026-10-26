@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class StudyPokeNotification extends Notification implements ShouldQueue
 {
@@ -25,7 +27,17 @@ class StudyPokeNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', WebPushChannel::class];
+    }
+
+    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title("{$this->sender->name} poked you! {$this->icon}")
+            ->icon($this->sender->image_url ?: '/favicon.png')
+            ->body($this->message)
+            ->action('View Profile', 'view_profile')
+            ->data(['url' => route('user.profile', ['username' => $this->sender->username])]);
     }
 
     /**

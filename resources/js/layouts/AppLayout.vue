@@ -13,6 +13,7 @@ import {
     SiteDrawer as OverflowDrawer,
     SiteRail as SideRail,
 } from '@/components/navigation/Navigation';
+import PushNotificationModal from '@/components/PushNotificationModal.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
 import { useBreakpoint } from '@/lib/useBreakpoint';
 import { useOrientation } from '@/lib/useOrientation';
@@ -133,5 +134,6 @@ const drawerOpen = ref(false);
         <ToastNotification />
         <InAppBrowserPrompt />
         <GuestLoginPrompt />
+        <PushNotificationModal />
     </div>
 </template>
