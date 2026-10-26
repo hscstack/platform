@@ -1091,12 +1091,12 @@ export const SiteDrawer = defineComponent({
             // Ensure Platform Guide is first in the phone drawer
             return items.sort((a, b) => {
                 if (a.href === '/guide') {
-return -1;
-}
+                    return -1;
+                }
 
                 if (b.href === '/guide') {
-return 1;
-}
+                    return 1;
+                }
 
                 return 0;
             });
