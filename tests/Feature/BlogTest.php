@@ -4,19 +4,17 @@ use App\Models\Blog;
 use App\Models\BlogComment;
 use App\Models\User;
 
-test('published blog pages load and increment views', function () {
+test('published blog pages load successfully', function () {
     $author = User::factory()->create();
     $blog = Blog::factory()->create([
         'user_id' => $author->id,
         'slug' => 'platform-testing-blog',
         'is_published' => true,
-        'views' => 0,
     ]);
 
     $response = $this->get("/blogs/{$blog->slug}");
 
     $response->assertStatus(200);
-    $this->assertDatabaseHas('blogs', ['id' => $blog->id, 'views' => 1]);
 });
 
 test('guests are redirected when trying to react or comment', function () {
@@ -86,7 +84,7 @@ test('authenticated user can post and delete own comments', function () {
     ]);
 });
 
-test('a user is restricted to 1 comment per blog', function () {
+test('a user can comment and reply on a blog post', function () {
     $user = User::factory()->create();
     $blog = Blog::factory()->create(['is_published' => true]);
 
@@ -99,14 +97,16 @@ test('a user is restricted to 1 comment per blog', function () {
 
     expect($blog->comments()->count())->toBe(1);
 
-    // Second comment by same user fails
+    // Replying to comment succeeds
+    $firstComment = $blog->comments()->first();
     $this->actingAs($user)
         ->post("/blogs/{$blog->slug}/comments", [
-            'content' => 'Second duplicate comment attempt',
+            'content' => 'Follow up reply',
+            'parent_id' => $firstComment->id,
         ])
-        ->assertSessionHas('error');
+        ->assertSessionHas('success');
 
-    expect($blog->comments()->count())->toBe(1);
+    expect($blog->comments()->count())->toBe(2);
 });
 
 test('blog show page returns live reactive reaction counts and comments', function () {

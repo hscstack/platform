@@ -24,7 +24,6 @@ class Blog extends Model
         'meta_title',
         'meta_description',
         'seo_tags',
-        'views',
         'featured_image_path',
     ];
 
@@ -35,7 +34,6 @@ class Blog extends Model
     protected $casts = [
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
-        'views' => 'integer',
     ];
 
     public function getFeaturedImageAttribute(): ?string

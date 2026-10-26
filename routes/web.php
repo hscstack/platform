@@ -15,6 +15,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResourceCommentController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\StudyTrackerController;
@@ -76,6 +77,8 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
     Route::patch('/resources/{resource}', [ResourceController::class, 'update'])->middleware('can:update,resource')->name('resources.update');
     Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
+    Route::post('/resources/{resource}/comments', [ResourceCommentController::class, 'store'])->name('resources.comments.store');
+    Route::delete('/resources/comments/{comment}', [ResourceCommentController::class, 'destroy'])->name('resources.comments.destroy');
 
     // My Submissions
     Route::get('/my-submissions', [SubmissionController::class, 'index'])->name('submissions.index');
@@ -173,5 +176,5 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
     Route::get('/resources', [NoteController::class, 'index'])->name('resources.index');
 
-    Route::get('/resources/{id}', [ResourceController::class, 'show']);
+    Route::get('/resources/{id}', [ResourceController::class, 'show'])->name('resources.show');
 });
