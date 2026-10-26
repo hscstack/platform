@@ -51,36 +51,27 @@ class UserProfileController extends Controller
             : false;
 
         // Suggested members: 1 contributor + 3 general users (cached for 10 minutes to avoid expensive inRandomOrder queries)
-        $suggestedUserIds = Cache::remember("suggested_users_profile_{$user->id}", now()->addMinutes(10), function () use ($user) {
-            $contributorId = User::where('id', '!=', $user->id)
+        $suggestedUsers = Cache::remember("suggested_users_profile_v2_{$user->id}", now()->addMinutes(10), function () use ($user) {
+            $contributorUsers = User::where('id', '!=', $user->id)
                 ->whereNotNull('username')
                 ->where('is_verified', true)
+                ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
                 ->inRandomOrder()
-                ->value('id');
+                ->take(1)
+                ->get();
 
-            $excludedIds = array_filter([$user->id, $contributorId]);
-            $remainingNeeded = 4 - ($contributorId ? 1 : 0);
+            $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
+            $remainingNeeded = 4 - $contributorUsers->count();
 
-            $randomIds = User::whereNotIn('id', $excludedIds)
+            $randomUsers = User::whereNotIn('id', $excludedIds)
                 ->whereNotNull('username')
+                ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
                 ->inRandomOrder()
                 ->take($remainingNeeded)
-                ->pluck('id')
-                ->all();
+                ->get();
 
-            $allIds = array_filter(array_merge($contributorId ? [$contributorId] : [], $randomIds));
-            shuffle($allIds);
-
-            return $allIds;
+            return $contributorUsers->concat($randomUsers)->shuffle()->values()->toArray();
         });
-
-        $suggestedUsers = ! empty($suggestedUserIds)
-            ? User::whereIn('id', $suggestedUserIds)
-                ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
-                ->get()
-                ->sortBy(fn ($u) => array_search($u->id, $suggestedUserIds))
-                ->values()
-            : collect();
 
         $isOwner = auth()->id() === $user->id;
         $activityPrivacy = $user->activity_privacy ?? 'public';

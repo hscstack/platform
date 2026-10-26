@@ -27,7 +27,11 @@ class HomeController extends Controller
         $sort = in_array($request->query('sort'), ['trending', 'recent'], true) ? $request->query('sort') : 'trending';
         $page = max(1, (int) $request->query('page', 1));
 
-        $feed = $this->getFeed($course, $group, $sort, $page);
+        $feed = ! Auth::check()
+            ? Cache::remember("guest_home_feed_{$course}_{$group}_{$sort}_{$page}", now()->addMinutes(3), function () use ($course, $group, $sort, $page) {
+                return $this->getFeed($course, $group, $sort, $page);
+            })
+            : $this->getFeed($course, $group, $sort, $page);
 
         $subjects = Cache::rememberForever("curriculum_subjects_{$course}_{$group}", function () use ($course, $group) {
             $subjectsQuery = Subject::where('is_disabled', false)
@@ -154,77 +158,23 @@ class HomeController extends Controller
             }
         }
 
-        // For guests (public traffic), cache base IDs for 3 minutes to avoid computing time-decay ranking on every load
-        if (! $currentUserId) {
-            $cacheKey = "home_feed_base_ids:{$course}:{$group}:{$sort}:{$page}";
-            [$postIds, $resourceIds, $blogIds] = Cache::remember($cacheKey, now()->addMinutes(3), function () use ($postsQuery, $resourcesQuery, $blogsQuery, $page) {
-                return [
-                    $postsQuery->forPage($page, 6)->pluck('id')->all(),
-                    $resourcesQuery->forPage($page, 4)->pluck('id')->all(),
-                    $blogsQuery->forPage($page, 2)->pluck('id')->all(),
-                ];
-            });
+        $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
+            $p->feed_type = 'forum_post';
 
-            $posts = ! empty($postIds)
-                ? ForumPost::whereIn('id', $postIds)
-                    ->with(['user:id,name,username,image_path,institution,is_verified', 'chapter:id,name,subject_id', 'chapter.subject:id,name,course,group', 'subject:id,name,course,group'])
-                    ->withCount('answers')
-                    ->get()
-                    ->sortBy(fn ($p) => array_search($p->id, $postIds))
-                    ->values()
-                    ->map(function ($item) {
-                        $item->feed_type = 'forum_post';
+            return $p;
+        });
 
-                        return $item;
-                    })
-                : collect();
+        $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
+            $r->feed_type = 'resource';
 
-            $resources = ! empty($resourceIds)
-                ? Resource::whereIn('id', $resourceIds)
-                    ->with(['user:id,name,username,image_path,institution,is_verified', 'chapter:id,name,subject_id', 'chapter.subject:id,name,course,group', 'subject:id,name,course,group'])
-                    ->withCount('comments')
-                    ->get()
-                    ->sortBy(fn ($r) => array_search($r->id, $resourceIds))
-                    ->values()
-                    ->map(function ($item) {
-                        $item->feed_type = 'resource';
+            return $r;
+        });
 
-                        return $item;
-                    })
-                : collect();
+        $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
+            $b->feed_type = 'blog';
 
-            $blogs = ! empty($blogIds)
-                ? Blog::whereIn('id', $blogIds)
-                    ->with(['user:id,name,username,image_path,institution,is_verified'])
-                    ->withCount(['reactions', 'comments'])
-                    ->get()
-                    ->sortBy(fn ($b) => array_search($b->id, $blogIds))
-                    ->values()
-                    ->map(function ($item) {
-                        $item->feed_type = 'blog';
-
-                        return $item;
-                    })
-                : collect();
-        } else {
-            $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
-                $p->feed_type = 'forum_post';
-
-                return $p;
-            });
-
-            $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
-                $r->feed_type = 'resource';
-
-                return $r;
-            });
-
-            $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
-                $b->feed_type = 'blog';
-
-                return $b;
-            });
-        }
+            return $b;
+        });
 
         // Compute is_appreciated and user_vote if logged in
         $userId = Auth::id();
@@ -328,7 +278,7 @@ class HomeController extends Controller
         }
 
         return [
-            'data' => $merged,
+            'data' => collect($merged)->toArray(),
             'has_more' => ($posts->count() === 6 || $resources->count() === 4 || $blogs->count() === 2),
             'page' => $page,
         ];
