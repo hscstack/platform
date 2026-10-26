@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
-import ResourceRow from '@/components/ResourceRow.vue';
+import TrendingNoteCard from '@/components/resources/TrendingNoteCard.vue';
 
 interface Submission {
     id: number;
@@ -177,20 +177,21 @@ const tabs = [
         </div>
 
         <!-- Submissions List -->
-        <div v-if="submissions.data.length > 0" class="space-y-3">
+        <div v-if="submissions.data.length > 0" class="space-y-6">
             <div
-                class="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xs dark:divide-gray-800/80 dark:border-gray-800 dark:bg-gray-900"
+                class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
             >
-                <ResourceRow
+                <TrendingNoteCard
                     v-for="item in submissions.data"
                     :key="item.id"
-                    :resource="item"
+                    :note="item"
                     show-status
+                    hide-author
                 />
             </div>
 
             <!-- Pagination -->
-            <div class="pt-4">
+            <div class="pt-2">
                 <Pagination
                     :links="submissions.links"
                     :from="submissions.from"
