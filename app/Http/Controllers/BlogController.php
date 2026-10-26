@@ -6,10 +6,13 @@ use App\Http\Requests\Blog\StoreBlogRequest;
 use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Blog;
 use App\Models\BlogComment;
+use App\Models\User;
+use App\Notifications\BlogCommentMentionNotification;
 use App\Notifications\BlogCommentNotification;
 use App\Notifications\BlogReactionNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -155,9 +158,14 @@ class BlogController extends Controller
             ->filter()
             ->values();
 
+        // Fetch top-level comments and 1-level deep replies for blog discussion
         $comments = $blog->comments()
-            ->with(['user:id,name,username,image_path,institution,is_verified'])
-            ->latest()
+            ->whereNull('parent_id')
+            ->with([
+                'user:id,name,username,image_path,institution,is_verified',
+                'replies' => fn ($q) => $q->with(['user:id,name,username,image_path,institution,is_verified']),
+            ])
+            ->latest('id')
             ->get();
 
         $isReacted = auth()->check()
@@ -200,23 +208,45 @@ class BlogController extends Controller
             return back()->with('error', 'You are temporarily suspended from community participation.');
         }
 
-        $userId = $user->id;
-
-        if ($blog->comments()->where('user_id', $userId)->exists()) {
-            return back()->with('error', 'You have already posted a comment on this blog.');
-        }
-
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:1000'],
+            'parent_id' => ['nullable', 'integer', 'exists:blog_comments,id'],
         ]);
 
+        $parentId = $validated['parent_id'] ?? null;
+        if ($parentId) {
+            $parent = BlogComment::where('blog_id', $blog->id)->find($parentId);
+            // Flatten comments to 1-level deep hierarchy:
+            // If replying to an existing reply, automatically attach to the root comment ($parent->parent_id)
+            $parentId = $parent?->parent_id ?: $parent?->id;
+        }
+
         $comment = $blog->comments()->create([
-            'user_id' => $userId,
+            'user_id' => $user->id,
+            'parent_id' => $parentId,
             'content' => trim($validated['content']),
         ]);
 
-        if ($blog->user_id !== $userId) {
-            $blog->user->notify(new BlogCommentNotification($blog, $comment));
+        $mentionedUserIds = [];
+
+        // Parse @username mentions in the comment body and dispatch notification to up to 5 mentioned users
+        if (preg_match_all('/@([a-zA-Z0-9_]+)/', $comment->content, $matches)) {
+            $mentionedUsernames = array_unique(array_filter($matches[1], fn ($u) => strcasecmp($u, $user->username) !== 0));
+            if (! empty($mentionedUsernames)) {
+                $mentionedUsers = User::whereIn('username', array_slice($mentionedUsernames, 0, 5))
+                    ->select(['id', 'name', 'username', 'email'])
+                    ->get();
+
+                if ($mentionedUsers->isNotEmpty()) {
+                    Notification::send($mentionedUsers, new BlogCommentMentionNotification($blog, $comment, $user));
+                    $mentionedUserIds = $mentionedUsers->pluck('id')->all();
+                }
+            }
+        }
+
+        // Notify the blog author if the commenter is someone else and hasn't already been notified via @mention
+        if ($blog->user_id !== $user->id && ! in_array($blog->user_id, $mentionedUserIds, true)) {
+            $blog->user?->notify(new BlogCommentNotification($blog, $comment));
         }
 
         return back()->with('success', 'Comment posted successfully.');
@@ -224,7 +254,7 @@ class BlogController extends Controller
 
     public function destroyComment(BlogComment $comment)
     {
-        abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('view admin'), 403);
+        abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('moderate resources') || auth()->user()?->can('view admin'), 403);
 
         $comment->delete();
 

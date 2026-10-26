@@ -7,6 +7,7 @@ use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\User;
 use App\Notifications\ForumAnswerNotification;
+use App\Notifications\ForumMentionNotification;
 use App\Notifications\ForumReportNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
@@ -48,7 +49,7 @@ class ForumAnswerController extends Controller
         }
 
         $validated = $request->validate([
-            'body' => ['required', 'string', 'min:2', 'max:10000', new CleanText],
+            'body' => ['required', 'string', 'min:2', 'max:1000', new CleanText],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'parent_id' => ['nullable', 'exists:forum_answers,id'],
             'reply_to_user_id' => ['nullable', 'exists:users,id'],
@@ -75,21 +76,34 @@ class ForumAnswerController extends Controller
 
         $post->increment('answers_count');
 
-        $targetUser = null;
-        $isReply = false;
+        $mentionedUserIds = [];
 
-        if (isset($parent)) {
-            $isReply = true;
-            if (preg_match('/@([a-zA-Z0-9_]+)/', $validated['body'], $matches)) {
-                $targetUser = User::where('username', $matches[1])->first();
+        // Parse @username mentions in the answer body and dispatch notification to up to 5 mentioned users
+        if (preg_match_all('/@([a-zA-Z0-9_]+)/', $validated['body'], $matches)) {
+            $mentionedUsernames = array_unique(array_filter($matches[1], fn ($u) => strcasecmp($u, $user->username) !== 0));
+            if (! empty($mentionedUsernames)) {
+                $mentionedUsers = User::whereIn('username', array_slice($mentionedUsernames, 0, 5))
+                    ->select(['id', 'name', 'username', 'email'])
+                    ->get();
+
+                if ($mentionedUsers->isNotEmpty()) {
+                    Notification::send($mentionedUsers, new ForumMentionNotification($post, $answer, $user));
+                    $mentionedUserIds = $mentionedUsers->pluck('id')->all();
+                }
             }
-            $targetUser = $targetUser ?: $parent->user;
-        } elseif ($post->user_id) {
-            $targetUser = $post->user;
         }
 
-        if ($targetUser && $targetUser->id !== $user->id) {
-            $targetUser->notify(new ForumAnswerNotification($post, $answer, $isReply));
+        // Notify parent answer author or post author if not already notified via @mention
+        if (isset($parent)) {
+            $parentAuthor = $parent->user;
+            if ($parentAuthor && $parentAuthor->id !== $user->id && ! in_array($parentAuthor->id, $mentionedUserIds, true)) {
+                $parentAuthor->notify(new ForumAnswerNotification($post, $answer, true));
+                $mentionedUserIds[] = $parentAuthor->id;
+            }
+        }
+
+        if ($post->user_id && $post->user_id !== $user->id && ! in_array($post->user_id, $mentionedUserIds, true)) {
+            $post->user?->notify(new ForumAnswerNotification($post, $answer, false));
         }
 
         return back()->with('success', 'Answer posted!');

@@ -85,7 +85,7 @@ const submitComment = () => {
 
 const cancelReply = () => {
     replyingTo.value = null;
-    commentForm.parent_id = null;
+    commentForm.reset();
 };
 
 const deleteComment = (commentId: number) => {
