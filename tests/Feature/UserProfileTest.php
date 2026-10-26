@@ -281,3 +281,44 @@ test('public profile accurately displays syllabus progress and subject breakdown
         ->where('syllabusProgress.subjects.1.percent', 100)
     );
 });
+
+test('user can update website and view it on public profile', function () {
+    $user = User::factory()->create([
+        'username' => 'web_creator',
+        'website' => 'https://example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->put('/profile', [
+            'name' => $user->name,
+            'website' => 'https://myportfolio.site',
+        ])
+        ->assertRedirect();
+
+    expect($user->fresh()->website)->toBe('https://myportfolio.site');
+
+    $this->get('/u/web_creator')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('User/Show')
+            ->where('profileUser.website', 'https://myportfolio.site')
+        );
+});
+
+test('user can update batch via curriculum endpoint', function () {
+    $user = User::factory()->create([
+        'curriculum' => 'hsc',
+        'group' => 'science',
+        'batch' => 'hsc_26',
+    ]);
+
+    $this->actingAs($user)
+        ->post('/tracker/curriculum', [
+            'curriculum' => 'hsc',
+            'group' => 'science',
+            'batch' => 'hsc_27',
+        ])
+        ->assertRedirect();
+
+    expect($user->fresh()->batch)->toBe('hsc_27');
+});

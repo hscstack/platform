@@ -33,6 +33,7 @@ const form = useForm({
     facebook: props.user?.facebook || '',
     github: props.user?.github || '',
     instagram: props.user?.instagram || '',
+    website: props.user?.website || '',
 });
 
 watch(
@@ -548,6 +549,33 @@ const submitForm = () => {
                         class="mt-1 text-sm text-rose-600"
                     >
                         {{ form.errors.instagram }}
+                    </p>
+                </div>
+
+                <div>
+                    <label
+                        for="website"
+                        class="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-gray-300"
+                        >Website</label
+                    >
+                    <input
+                        v-model="form.website"
+                        type="text"
+                        id="website"
+                        placeholder="Personal Website URL"
+                        :disabled="form.processing"
+                        class="w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+                        :class="
+                            form.errors.website
+                                ? 'border-rose-500 focus:ring-rose-500/20'
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 dark:border-gray-600'
+                        "
+                    />
+                    <p
+                        v-if="form.errors.website"
+                        class="mt-1 text-sm text-rose-600"
+                    >
+                        {{ form.errors.website }}
                     </p>
                 </div>
             </div>

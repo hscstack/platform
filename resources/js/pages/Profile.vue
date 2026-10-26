@@ -36,6 +36,7 @@ const isUnverified = computed(() => {
 const showCurriculumConfirmModal = ref(false);
 const pendingCurriculum = ref<'hsc' | 'ssc'>('hsc');
 const pendingGroup = ref<'science' | 'humanities' | 'commerce'>('science');
+const pendingBatch = ref<string>('');
 const isSwitchingCurriculum = ref(false);
 const isCompressingAvatar = ref(false);
 const avatarPreview = ref<string | null>(null);
@@ -47,6 +48,7 @@ const currentGroup = computed(
         (user.value?.group as 'science' | 'humanities' | 'commerce') ||
         'science',
 );
+const currentBatch = computed(() => user.value?.batch || '');
 
 const form = useForm({
     _method: 'PUT',
@@ -61,6 +63,7 @@ const form = useForm({
     facebook: user.value?.facebook || '',
     github: user.value?.github || '',
     instagram: user.value?.instagram || '',
+    website: (user.value as any)?.website || '',
     receive_emails: user.value?.receive_emails ?? true,
 });
 
@@ -142,6 +145,7 @@ const openCurriculumModal = (
         initialGroup ||
         (user.value?.group as 'science' | 'humanities' | 'commerce') ||
         'science';
+    pendingBatch.value = user.value?.batch || '';
     showCurriculumConfirmModal.value = true;
 };
 
@@ -160,6 +164,7 @@ const confirmSwitchCurriculum = () => {
         {
             curriculum: pendingCurriculum.value,
             group: pendingGroup.value,
+            batch: pendingBatch.value || null,
         },
         {
             preserveScroll: true,
@@ -618,6 +623,46 @@ const submitForm = () => {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Batch Selection Display & Trigger -->
+                    <div>
+                        <span
+                            class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                        >
+                            পরীক্ষার ব্যাচ (Exam Batch)
+                        </span>
+                        <div
+                            @click="
+                                openCurriculumModal(
+                                    currentCurriculum,
+                                    currentGroup,
+                                )
+                            "
+                            class="group flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-2xs transition hover:border-indigo-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-700"
+                        >
+                            <div class="flex items-center gap-2">
+                                <GraduationCap
+                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                />
+                                <span
+                                    class="text-sm font-semibold text-slate-900 dark:text-gray-100"
+                                >
+                                    {{
+                                        currentBatch
+                                            ? currentBatch
+                                                  .toUpperCase()
+                                                  .replace('_', ' ')
+                                            : 'কোনো ব্যাচ নির্বাচন করা হয়নি'
+                                    }}
+                                </span>
+                            </div>
+                            <span
+                                class="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                            >
+                                পরিবর্তন করুন
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -837,6 +882,33 @@ const submitForm = () => {
                             class="mt-1 text-xs text-rose-600"
                         >
                             {{ form.errors.instagram }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="website"
+                            class="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-gray-300"
+                        >
+                            Website
+                        </label>
+                        <input
+                            v-model="form.website"
+                            type="text"
+                            id="website"
+                            placeholder="https://yourwebsite.com"
+                            :disabled="form.processing"
+                            class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
+                            :class="{
+                                'border-rose-500 focus:ring-rose-500/20':
+                                    form.errors.website,
+                            }"
+                        />
+                        <p
+                            v-if="form.errors.website"
+                            class="mt-1 text-xs text-rose-600"
+                        >
+                            {{ form.errors.website }}
                         </p>
                     </div>
                 </div>
@@ -1317,6 +1389,42 @@ const submitForm = () => {
                             >
                                 Commerce
                             </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Batch Selection -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                    >
+                        ব্যাচ নির্বাচন করুন (Exam Batch)
+                    </label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button
+                            v-for="b in pendingCurriculum === 'hsc'
+                                ? [
+                                      { key: 'hsc_25', label: 'HSC 25' },
+                                      { key: 'hsc_26', label: 'HSC 26' },
+                                      { key: 'hsc_27', label: 'HSC 27' },
+                                      { key: 'hsc_28', label: 'HSC 28' },
+                                  ]
+                                : [
+                                      { key: 'ssc_25', label: 'SSC 25' },
+                                      { key: 'ssc_26', label: 'SSC 26' },
+                                      { key: 'ssc_27', label: 'SSC 27' },
+                                  ]"
+                            :key="b.key"
+                            type="button"
+                            @click="pendingBatch = b.key"
+                            :class="[
+                                pendingBatch === b.key
+                                    ? 'border-indigo-600 bg-indigo-50/60 text-indigo-950 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border p-2.5 text-center transition"
+                        >
+                            <span class="text-xs font-bold">{{ b.label }}</span>
                         </button>
                     </div>
                 </div>
