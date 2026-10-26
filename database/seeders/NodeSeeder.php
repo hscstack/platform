@@ -160,7 +160,6 @@ class NodeSeeder extends Seeder
 
                 DB::table('nodes')->insert([
                     'subject_id' => $subjectId,
-                    'parent_id' => null,
                     'name' => $chapter,
                     'slug' => Str::slug($chapter.'-'.$subjectName),
                     'sort_order' => $index,

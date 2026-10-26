@@ -45,7 +45,7 @@ Route::post('/nodes/{node}/toggle-freeze', [AdminNodeController::class, 'toggleF
 
 Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middleware('permission:delete nodes')->name('nodes.destroy');
 
-Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
+Route::get('/subjects/{subject:slug}/nodes', [AdminNodeController::class, 'show'])->name('nodes.index');
 
 Route::middleware('permission:moderate resources')->group(function () {
     Route::get('/moderation/resources', [AdminResourceController::class, 'moderationIndex'])->name('resources.moderation.index');

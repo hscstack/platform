@@ -50,9 +50,8 @@ class ResourceSeeder extends Seeder
             'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
         ];
 
-        // Pick leaf nodes (nodes without children) across various subjects
-        $leafNodes = Node::whereDoesntHave('children')
-            ->with('subject')
+        // Pick nodes across various subjects
+        $leafNodes = Node::with('subject')
             ->take(50)
             ->get();
 

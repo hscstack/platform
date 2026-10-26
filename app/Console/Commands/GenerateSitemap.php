@@ -64,9 +64,7 @@ class GenerateSitemap extends Command
 
         $allNodes = Node::with('subject:id,slug')
             ->whereNotNull('subject_id')
-            ->get(['id', 'subject_id', 'parent_id', 'slug', 'updated_at']);
-
-        $nodesById = $allNodes->keyBy('id');
+            ->get(['id', 'subject_id', 'slug', 'updated_at']);
 
         foreach ($allNodes as $node) {
             if (! $node->subject || ! $node->slug) {
@@ -77,17 +75,7 @@ class GenerateSitemap extends Command
                 continue;
             }
 
-            $slugs = [$node->slug];
-            $curr = $node;
-
-            while ($curr->parent_id && isset($nodesById[$curr->parent_id])) {
-                $curr = $nodesById[$curr->parent_id];
-                if ($curr->slug) {
-                    array_unshift($slugs, $curr->slug);
-                }
-            }
-
-            $nodePath = '/'.$node->subject->slug.'/'.implode('/', $slugs);
+            $nodePath = '/'.$node->subject->slug.'/'.$node->slug;
 
             $sitemap->add(
                 Url::create(url($nodePath))
