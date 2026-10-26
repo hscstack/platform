@@ -90,7 +90,9 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
 
     // Forum Authenticated Actions
     Route::get('/forum/ask', [ForumController::class, 'create'])->name('forum.create');
+    Route::middleware('throttle:10,1')->post('/forum/upload-url', [ForumController::class, 'generateUploadUrl'])->name('forum.upload-url');
     Route::post('/forum', [ForumController::class, 'store'])->name('forum.store');
+    Route::post('/forum/questions', [ForumController::class, 'store'])->name('forum.questions.store');
     Route::delete('/forum/posts/{post:id}', [ForumController::class, 'destroy'])->name('forum.destroy');
     Route::post('/forum/posts/{post:id}/report', [ForumController::class, 'report'])->name('forum.posts.report');
     Route::post('/forum/posts/{post:id}/answers', [ForumAnswerController::class, 'store'])->name('forum.answers.store');
