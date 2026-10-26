@@ -73,13 +73,13 @@ class ResourceController extends Controller
             // Fallback for non-approved (pending / rejected) viewing by owner or moderator
             $resource = Resource::with([
                 'user:id,name,username,image_path',
-                'node:id,name,slug,subject_id',
-                'node.subject:id,name,slug,course',
-                'subject:id,name,slug,course',
+                'chapter:id,name,subject_id',
+                'chapter.subject:id,name,course',
+                'subject:id,name,course',
             ])->findOrFail($id);
 
             if (! $resource->relationLoaded('subject') || ! $resource->subject) {
-                $resource->setRelation('subject', $resource->node?->subject);
+                $resource->setRelation('subject', $resource->chapter?->subject);
             }
 
             $isOwner = $user && $user->id === $resource->user_id;
@@ -99,8 +99,8 @@ class ResourceController extends Controller
         $subjects = ($isModerator || $isOwner)
             ? Subject::where('is_disabled', false)
                 ->orderBy('sort_order')
-                ->with(['nodes' => fn ($q) => $q->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
-                ->get(['id', 'name', 'slug', 'course', 'group'])
+                ->with(['chapters' => fn ($q) => $q->select('id', 'subject_id', 'name')->orderBy('sort_order')])
+                ->get(['id', 'name', 'course', 'group'])
             : [];
 
         $comments = ResourceComment::where('resource_id', $id)

@@ -149,7 +149,7 @@ class UserProfileController extends Controller
 
         $forumPosts = ForumPost::where('user_id', $user->id)
             ->approved()
-            ->with(['subject:id,name,course,slug', 'node:id,name,slug'])
+            ->with(['subject:id,name,course', 'chapter:id,name'])
             ->latest()
             ->take(5)
             ->get();
@@ -169,7 +169,7 @@ class UserProfileController extends Controller
 
         $notes = Resource::where('user_id', $user->id)
             ->when(! $isOwner, fn ($q) => $q->where('status', 'approved'))
-            ->with(['node:id,name,slug,subject_id', 'node.subject:id,name,course,slug', 'subject:id,name,course,slug'])
+            ->with(['chapter:id,name,subject_id', 'chapter.subject:id,name,course', 'subject:id,name,course'])
             ->latest('id')
             ->take(5)
             ->get();
