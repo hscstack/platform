@@ -475,11 +475,13 @@ class ForumController extends Controller
         if (isset($parent)) {
             $parentAuthor = $parent->user;
             if ($parentAuthor && $parentAuthor->id !== $user->id && empty($mentionedUserIds)) {
-                $parentAuthor->notify(new ForumAnswerNotification($post, $answer, true));
+                ForumAnswerNotification::sendTo($parentAuthor, $post, $answer, true);
                 $mentionedUserIds[] = $parentAuthor->id;
             }
         } elseif ($post->user_id && $post->user_id !== $user->id && ! in_array($post->user_id, $mentionedUserIds, true)) {
-            $post->user?->notify(new ForumAnswerNotification($post, $answer, false));
+            if ($post->user) {
+                ForumAnswerNotification::sendTo($post->user, $post, $answer, false);
+            }
         }
 
         return back()->with('success', 'Answer posted!');

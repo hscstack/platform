@@ -575,7 +575,9 @@ class ResourceController extends Controller
         }
 
         if ($resource->user_id !== $user->id && ! in_array($resource->user_id, $mentionedUserIds, true)) {
-            $resource->user?->notify(new ResourceCommentNotification($resource, $comment));
+            if ($resource->user) {
+                ResourceCommentNotification::sendTo($resource->user, $resource, $comment);
+            }
         }
 
         return back()->with('success', 'Comment posted successfully.');

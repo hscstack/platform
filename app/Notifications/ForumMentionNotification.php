@@ -5,39 +5,23 @@ namespace App\Notifications;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
-use Illuminate\Support\Str;
 
-class ForumMentionNotification extends Notification implements ShouldQueue
+class ForumMentionNotification extends UserMentionNotification
 {
-    use Queueable;
-
     public function __construct(
         public ForumPost $post,
         public ForumAnswer $answer,
         public User $sender,
-    ) {}
+    ) {
+        $context = $post ? "discussion \"{$post->snippet(40)}\"" : 'Forum';
 
-    public function via(object $notifiable): array
-    {
-        return ['database'];
-    }
-
-    public function toArray(object $notifiable): array
-    {
-        $snippet = Str::limit(strip_tags($this->answer->body), 80);
-        $postSnippet = $this->post->snippet(40);
-
-        return [
-            'type' => 'user_mention',
-            'title' => "@{$this->sender->username} mentioned you on \"{$postSnippet}\"",
-            'message' => "\"{$snippet}\"",
-            'url' => route('forum.show', $this->post->slug),
-            'post_id' => $this->post->id,
-            'answer_id' => $this->answer->id,
-            'sender_id' => $this->sender->id,
-        ];
+        parent::__construct(
+            sender: $sender,
+            contextTitle: $context,
+            content: $answer->body,
+            url: route('forum.show', $post->slug),
+            itemType: 'forum_post',
+            itemId: $post->id,
+        );
     }
 }

@@ -245,7 +245,9 @@ class BlogController extends Controller
 
         // Notify the blog author if the commenter is someone else and hasn't already been notified via @mention
         if ($blog->user_id !== $user->id && ! in_array($blog->user_id, $mentionedUserIds, true)) {
-            $blog->user?->notify(new BlogCommentNotification($blog, $comment));
+            if ($blog->user) {
+                BlogCommentNotification::sendTo($blog->user, $blog, $comment);
+            }
         }
 
         return back()->with('success', 'Comment posted successfully.');
