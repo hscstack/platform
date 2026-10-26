@@ -497,17 +497,6 @@ test('author and admin can view pending or flagged questions but other users get
     $this->get(route('forum.show', $pendingPost))->assertInertia(fn ($page) => $page->component('errors/404'));
 });
 
-test('suspended user cannot access ask question page', function () {
-    $suspendedUser = User::factory()->create([
-        'banned_until' => now()->addDays(2),
-    ]);
-
-    $this->actingAs($suspendedUser)
-        ->get('/forum/ask')
-        ->assertRedirect(route('forum.index'))
-        ->assertSessionHas('error');
-});
-
 test('suspended user cannot create forum questions', function () {
     $suspendedUser = User::factory()->create([
         'banned_until' => now()->addDays(2),

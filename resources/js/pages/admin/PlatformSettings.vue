@@ -17,7 +17,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post('/admin/platform/settings', {
+    form.post('/admin/settings/platform', {
         preserveScroll: true,
     });
 };
