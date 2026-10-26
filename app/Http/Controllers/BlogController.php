@@ -7,9 +7,9 @@ use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Blog;
 use App\Models\BlogComment;
 use App\Models\User;
-use App\Notifications\BlogCommentMentionNotification;
 use App\Notifications\BlogCommentNotification;
 use App\Notifications\BlogReactionNotification;
+use App\Notifications\UserMentionNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
@@ -237,7 +237,17 @@ class BlogController extends Controller
                     ->get();
 
                 if ($mentionedUsers->isNotEmpty()) {
-                    Notification::send($mentionedUsers, new BlogCommentMentionNotification($blog, $comment, $user));
+                    Notification::send(
+                        $mentionedUsers,
+                        new UserMentionNotification(
+                            sender: $user,
+                            contextTitle: "\"{$blog->title}\"",
+                            content: $comment->content,
+                            url: route('blogs.show', $blog->slug).'#comments',
+                            itemType: 'blog',
+                            itemId: $blog->id,
+                        )
+                    );
                     $mentionedUserIds = $mentionedUsers->pluck('id')->all();
                 }
             }

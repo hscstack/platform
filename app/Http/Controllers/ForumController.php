@@ -10,11 +10,11 @@ use App\Models\ForumVote;
 use App\Models\Subject;
 use App\Models\User;
 use App\Notifications\ForumAnswerNotification;
-use App\Notifications\ForumMentionNotification;
 use App\Notifications\ForumQuestionPendingNotification;
 use App\Notifications\ForumReportNotification;
 use App\Notifications\ForumStatusNotification;
 use App\Notifications\ForumVoteNotification;
+use App\Notifications\UserMentionNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -466,7 +466,17 @@ class ForumController extends Controller
                     ->get();
 
                 if ($mentionedUsers->isNotEmpty()) {
-                    Notification::send($mentionedUsers, new ForumMentionNotification($post, $answer, $user));
+                    Notification::send(
+                        $mentionedUsers,
+                        new UserMentionNotification(
+                            sender: $user,
+                            contextTitle: "discussion \"{$post->snippet(40)}\"",
+                            content: $answer->body,
+                            url: route('forum.show', $post->slug),
+                            itemType: 'forum_post',
+                            itemId: $post->id,
+                        )
+                    );
                     $mentionedUserIds = $mentionedUsers->pluck('id')->all();
                 }
             }

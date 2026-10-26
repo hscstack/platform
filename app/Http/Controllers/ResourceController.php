@@ -11,9 +11,9 @@ use App\Models\ResourceComment;
 use App\Models\ResourceVote;
 use App\Models\Subject;
 use App\Models\User;
-use App\Notifications\ResourceCommentMentionNotification;
 use App\Notifications\ResourceCommentNotification;
 use App\Notifications\ResourceVoteNotification;
+use App\Notifications\UserMentionNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -568,7 +568,17 @@ class ResourceController extends Controller
                     ->get();
 
                 if ($mentionedUsers->isNotEmpty()) {
-                    Notification::send($mentionedUsers, new ResourceCommentMentionNotification($resource, $comment, $user));
+                    Notification::send(
+                        $mentionedUsers,
+                        new UserMentionNotification(
+                            sender: $user,
+                            contextTitle: "\"{$resource->title}\"",
+                            content: $comment->content,
+                            url: route('resources.show', $resource->id).'#comments',
+                            itemType: 'resource',
+                            itemId: $resource->id,
+                        )
+                    );
                     $mentionedUserIds = $mentionedUsers->pluck('id')->all();
                 }
             }
