@@ -27,7 +27,11 @@ class HomeController extends Controller
         $sort = in_array($request->query('sort'), ['trending', 'recent'], true) ? $request->query('sort') : 'trending';
         $page = max(1, (int) $request->query('page', 1));
 
-        $feed = $this->getFeed($course, $group, $sort, $page);
+        $feed = ! Auth::check()
+            ? Cache::remember("guest_home_feed_{$course}_{$group}_{$sort}_{$page}", now()->addMinutes(3), function () use ($course, $group, $sort, $page) {
+                return $this->getFeed($course, $group, $sort, $page);
+            })
+            : $this->getFeed($course, $group, $sort, $page);
 
         $subjects = Cache::rememberForever("curriculum_subjects_{$course}_{$group}", function () use ($course, $group) {
             $subjectsQuery = Subject::where('is_disabled', false)
@@ -154,47 +158,23 @@ class HomeController extends Controller
             }
         }
 
-        // For guests (public traffic), cache base query results for 3 minutes to avoid computing time-decay on every load
-        if (! $currentUserId) {
-            $cacheKey = "home_feed_base:{$course}:{$group}:{$sort}:{$page}";
-            [$posts, $resources, $blogs] = Cache::remember($cacheKey, now()->addMinutes(3), function () use ($postsQuery, $resourcesQuery, $blogsQuery, $page) {
-                $p = $postsQuery->forPage($page, 6)->get()->map(function ($item) {
-                    $item->feed_type = 'forum_post';
+        $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
+            $p->feed_type = 'forum_post';
 
-                    return $item;
-                });
-                $r = $resourcesQuery->forPage($page, 4)->get()->map(function ($item) {
-                    $item->feed_type = 'resource';
+            return $p;
+        });
 
-                    return $item;
-                });
-                $b = $blogsQuery->forPage($page, 2)->get()->map(function ($item) {
-                    $item->feed_type = 'blog';
+        $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
+            $r->feed_type = 'resource';
 
-                    return $item;
-                });
+            return $r;
+        });
 
-                return [$p, $r, $b];
-            });
-        } else {
-            $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
-                $p->feed_type = 'forum_post';
+        $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
+            $b->feed_type = 'blog';
 
-                return $p;
-            });
-
-            $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
-                $r->feed_type = 'resource';
-
-                return $r;
-            });
-
-            $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
-                $b->feed_type = 'blog';
-
-                return $b;
-            });
-        }
+            return $b;
+        });
 
         // Compute is_appreciated and user_vote if logged in
         $userId = Auth::id();
@@ -298,7 +278,7 @@ class HomeController extends Controller
         }
 
         return [
-            'data' => $merged,
+            'data' => collect($merged)->toArray(),
             'has_more' => ($posts->count() === 6 || $resources->count() === 4 || $blogs->count() === 2),
             'page' => $page,
         ];

@@ -51,7 +51,7 @@ class UserProfileController extends Controller
             : false;
 
         // Suggested members: 1 contributor + 3 general users (cached for 10 minutes to avoid expensive inRandomOrder queries)
-        $suggestedUsers = Cache::remember("suggested_users_profile_{$user->id}", now()->addMinutes(10), function () use ($user) {
+        $suggestedUsers = Cache::remember("suggested_users_profile_v2_{$user->id}", now()->addMinutes(10), function () use ($user) {
             $contributorUsers = User::where('id', '!=', $user->id)
                 ->whereNotNull('username')
                 ->where('is_verified', true)
@@ -70,7 +70,7 @@ class UserProfileController extends Controller
                 ->take($remainingNeeded)
                 ->get();
 
-            return $contributorUsers->concat($randomUsers)->shuffle()->values();
+            return $contributorUsers->concat($randomUsers)->shuffle()->values()->toArray();
         });
 
         $isOwner = auth()->id() === $user->id;
