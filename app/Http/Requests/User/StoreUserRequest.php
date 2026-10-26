@@ -40,6 +40,7 @@ class StoreUserRequest extends FormRequest
             'facebook' => ['nullable', 'string', 'max:255'],
             'instagram' => ['nullable', 'string', 'max:255'],
             'github' => ['nullable', 'string', 'max:255'],
+            'website' => ['nullable', 'string', 'max:255'],
         ];
     }
 

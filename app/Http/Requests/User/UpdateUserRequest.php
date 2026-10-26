@@ -45,6 +45,7 @@ class UpdateUserRequest extends FormRequest
             'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
             'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
             'github' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'website' => ['sometimes', 'nullable', 'string', 'max:255'],
             'is_verified' => ['sometimes', 'boolean'],
             'priority' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:1000000'],
             'role' => ['sometimes', 'nullable', 'string'],
