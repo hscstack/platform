@@ -110,7 +110,10 @@ const handleChapterModalClose = () => {
 
         <!-- Chapters List -->
         <div class="flex flex-1 flex-col gap-2">
-            <div v-if="chapterList.length > 0" class="flex flex-col gap-2">
+            <div
+                v-if="chapterList.length > 0"
+                class="grid grid-cols-2 gap-2.5 sm:gap-3"
+            >
                 <ChapterRow
                     v-for="chapter in chapterList"
                     :key="`chapter-${chapter.id}`"
