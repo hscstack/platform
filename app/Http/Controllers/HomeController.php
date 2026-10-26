@@ -154,23 +154,47 @@ class HomeController extends Controller
             }
         }
 
-        $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
-            $p->feed_type = 'forum_post';
+        // For guests (public traffic), cache base query results for 3 minutes to avoid computing time-decay on every load
+        if (! $currentUserId) {
+            $cacheKey = "home_feed_base:{$course}:{$group}:{$sort}:{$page}";
+            [$posts, $resources, $blogs] = Cache::remember($cacheKey, now()->addMinutes(3), function () use ($postsQuery, $resourcesQuery, $blogsQuery, $page) {
+                $p = $postsQuery->forPage($page, 6)->get()->map(function ($item) {
+                    $item->feed_type = 'forum_post';
 
-            return $p;
-        });
+                    return $item;
+                });
+                $r = $resourcesQuery->forPage($page, 4)->get()->map(function ($item) {
+                    $item->feed_type = 'resource';
 
-        $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
-            $r->feed_type = 'resource';
+                    return $item;
+                });
+                $b = $blogsQuery->forPage($page, 2)->get()->map(function ($item) {
+                    $item->feed_type = 'blog';
 
-            return $r;
-        });
+                    return $item;
+                });
 
-        $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
-            $b->feed_type = 'blog';
+                return [$p, $r, $b];
+            });
+        } else {
+            $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
+                $p->feed_type = 'forum_post';
 
-            return $b;
-        });
+                return $p;
+            });
+
+            $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
+                $r->feed_type = 'resource';
+
+                return $r;
+            });
+
+            $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
+                $b->feed_type = 'blog';
+
+                return $b;
+            });
+        }
 
         // Compute is_appreciated and user_vote if logged in
         $userId = Auth::id();
