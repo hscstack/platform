@@ -54,7 +54,10 @@ const getFilterUrl = (course: string, group: string) => {
                 </h3>
             </div>
 
-            <div v-if="can('create subjects')" class="flex items-center gap-2">
+            <div
+                v-if="can('manage curriculum')"
+                class="flex items-center gap-2"
+            >
                 <button
                     type="button"
                     @click="openCreateModal"

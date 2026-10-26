@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import BulkNodeModal from '@/components/admin/BulkNodeModal.vue';
 import CreateNodeModal from '@/components/admin/CreateNodeModal.vue';
@@ -20,34 +20,6 @@ const props = defineProps<{
 
 const isDirectlyFrozen = computed(() => Boolean(props.parent?.is_frozen));
 const isFrozen = computed(() => isDirectlyFrozen.value);
-
-const isTogglingFreeze = ref(false);
-
-const toggleFreeze = () => {
-    if (!props.parent?.id) {
-        return;
-    }
-
-    let message = 'Are you sure you want to freeze this folder?';
-
-    if (props.parent.is_frozen) {
-        message = 'Are you sure you want to unfreeze this folder?';
-    }
-
-    if (confirm(message)) {
-        isTogglingFreeze.value = true;
-        router.post(
-            `/admin/nodes/${props.parent.id}/toggle-freeze`,
-            {},
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    isTogglingFreeze.value = false;
-                },
-            },
-        );
-    }
-};
 
 const isBulkModalOpen = ref(false);
 const isSingleModalOpen = ref(false);
@@ -132,8 +104,7 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
             :back-url="backUrl"
             :is-frozen="isFrozen"
             :is-directly-frozen="isDirectlyFrozen"
-            :is-toggling-freeze="isTogglingFreeze"
-            @toggle-freeze="toggleFreeze"
+            :is-toggling-freeze="false"
             @create-single-folder="openCreateNodeModal"
             @create-bulk-folder="isBulkModalOpen = true"
         />

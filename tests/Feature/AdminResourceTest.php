@@ -12,9 +12,8 @@ use Spatie\Permission\Models\Role;
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
     Permission::findOrCreate('moderate resources', 'web');
-    Permission::findOrCreate('edit resources', 'web');
-    Permission::findOrCreate('delete resources', 'web');
-    Permission::findOrCreate('create nodes', 'web');
+    Permission::findOrCreate('manage resources', 'web');
+    Permission::findOrCreate('manage curriculum', 'web');
 
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->syncPermissions(Permission::all());
@@ -269,9 +268,9 @@ test('regular user cannot delete resources without permission', function () {
     expect(Resource::find($resource->id))->not->toBeNull();
 });
 
-test('user with delete resources permission can delete a resource', function () {
+test('user with manage resources permission can delete a resource', function () {
     $user = User::factory()->create();
-    $user->givePermissionTo(['view admin', 'delete resources']);
+    $user->givePermissionTo(['view admin', 'manage resources']);
 
     $subject = Subject::create([
         'name' => 'Biology',
@@ -358,7 +357,7 @@ test('rejected resources are pruned after 15 days via model:prune', function () 
 test('batch node creation respects should_track_top_folders parameter', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
-    $admin->givePermissionTo('create nodes');
+    $admin->givePermissionTo('manage curriculum');
 
     $subject = Subject::create([
         'name' => 'Biology',
@@ -387,7 +386,7 @@ test('batch node creation respects should_track_top_folders parameter', function
         ->and($topNode->is_trackable)->toBeTrue();
 });
 
-test('user with edit resources permission can update any resource and author can update own resource', function () {
+test('user with manage resources permission can update any resource and author can update own resource', function () {
     $subject = Subject::create([
         'name' => 'Physics',
         'slug' => 'physics-update-test',
@@ -403,7 +402,7 @@ test('user with edit resources permission can update any resource and author can
 
     $author = User::factory()->create();
     $editor = User::factory()->create();
-    $editor->givePermissionTo('edit resources');
+    $editor->givePermissionTo('manage resources');
     $otherUser = User::factory()->create();
 
     $resource = Resource::create([
@@ -449,7 +448,7 @@ test('user with edit resources permission can update any resource and author can
         ->and($resource->items[0]['source'])->toBe('resources/notes/p2.webp')
         ->and($resource->thumbnail)->toContain('resources/notes/p2.webp');
 
-    // 3. User with edit resources permission can update any resource
+    // 3. User with manage resources permission can update any resource
     $this->actingAs($editor)
         ->patch("/resources/{$resource->id}", [
             'title' => 'Editor Fixed Title',

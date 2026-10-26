@@ -74,8 +74,8 @@ test('admin can filter staff members with search query', function () {
 });
 
 test('admin can update user is_verified status independently of roles', function () {
-    Permission::findOrCreate('edit users', 'web');
-    $admin = adminUserWithPermissions(['view admin', 'view users', 'edit users']);
+    Permission::findOrCreate('manage users', 'web');
+    $admin = adminUserWithPermissions(['view admin', 'view users', 'manage users']);
     $admin->assignRole('admin');
 
     $student = User::factory()->create(['is_verified' => false]);
@@ -101,8 +101,8 @@ test('admin can update user is_verified status independently of roles', function
 });
 
 test('admin can create user with is_verified status', function () {
-    Permission::findOrCreate('create users', 'web');
-    $admin = adminUserWithPermissions(['view admin', 'view users', 'create users']);
+    Permission::findOrCreate('manage users', 'web');
+    $admin = adminUserWithPermissions(['view admin', 'view users', 'manage users']);
     $admin->assignRole('admin');
 
     $response = $this->actingAs($admin)->post('/admin/users', [

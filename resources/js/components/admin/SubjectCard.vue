@@ -76,12 +76,11 @@ const handleDelete = () => {
 
         <!-- Right: Actions -->
         <div
-            v-if="can('edit subjects') || can('delete subjects')"
+            v-if="can('manage curriculum')"
             class="flex shrink-0 items-center gap-1"
             @click.stop
         >
             <button
-                v-if="can('edit subjects')"
                 type="button"
                 @click="emit('edit', subject)"
                 class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
@@ -91,7 +90,6 @@ const handleDelete = () => {
             </button>
 
             <button
-                v-if="can('delete subjects')"
                 type="button"
                 @click="handleDelete"
                 class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"

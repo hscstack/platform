@@ -158,7 +158,7 @@ const clearSearch = () => {
                     </button>
                 </div>
 
-                <div v-if="can('create users')" class="sm:hidden">
+                <div v-if="can('manage users')" class="sm:hidden">
                     <Link
                         href="/admin/users/create"
                         class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700 active:scale-95"
@@ -193,7 +193,7 @@ const clearSearch = () => {
                     </button>
                 </div>
 
-                <div v-if="can('create users')" class="hidden sm:block">
+                <div v-if="can('manage users')" class="hidden sm:block">
                     <Link
                         href="/admin/users/create"
                         class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors duration-150 hover:bg-indigo-700 active:scale-95"

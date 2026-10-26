@@ -28,26 +28,15 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('view admin');
 
         /*
-         * Subject management
+         * Curriculum management (Subjects & Flat Chapters)
          */
-        Permission::findOrCreate('create subjects');
-        Permission::findOrCreate('edit subjects');
-        Permission::findOrCreate('delete subjects');
-
-        /*
-         * Node (folder) management
-         */
-        Permission::findOrCreate('create nodes');
-        Permission::findOrCreate('edit nodes');
-        Permission::findOrCreate('delete nodes');
-        Permission::findOrCreate('freeze nodes');
+        Permission::findOrCreate('manage curriculum');
 
         /*
          * Resource management
          */
-        Permission::findOrCreate('edit resources');
-        Permission::findOrCreate('delete resources');
         Permission::findOrCreate('moderate resources');
+        Permission::findOrCreate('manage resources');
 
         /*
          * Blog management
@@ -56,28 +45,21 @@ class RolePermissionSeeder extends Seeder
         Permission::findOrCreate('manage blogs');
 
         /*
-         * Notice management
+         * Platform Settings & Maintenance
          */
-        Permission::findOrCreate('edit notice');
+        Permission::findOrCreate('manage settings');
 
         /*
-         * User management.
+         * User management
          */
         Permission::findOrCreate('view users');
-        Permission::findOrCreate('create users');
-        Permission::findOrCreate('edit users');
-        Permission::findOrCreate('delete users');
+        Permission::findOrCreate('manage users');
         Permission::findOrCreate('impersonate users');
 
         /*
          * Email management
          */
         Permission::findOrCreate('send email');
-
-        /*
-         * Maintenance
-         */
-        Permission::findOrCreate('clear cache');
 
         /*
          * Global Chat management
@@ -93,11 +75,6 @@ class RolePermissionSeeder extends Seeder
          * Forum management
          */
         Permission::findOrCreate('manage forums');
-
-        /*
-         * Peer & Poke management
-         */
-        Permission::findOrCreate('manage peers');
 
         /*
          * Product management

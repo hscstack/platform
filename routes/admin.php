@@ -18,35 +18,22 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [DashboardController::class, 'index'])->name('index');
 Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
 
-// Subjects
+// Subjects & Chapters
 Route::get('/subjects', [AdminSubjectController::class, 'index'])->name('subjects.index');
-
-Route::middleware('permission:create subjects')->group(function () {
-    Route::post('/subjects', [AdminSubjectController::class, 'store'])->name('subjects.store');
-});
-
-Route::middleware('permission:edit subjects')->group(function () {
-    Route::patch('/subjects/edit/{subject}', [AdminSubjectController::class, 'update'])->name('subjects.update');
-});
-
-Route::delete('/subjects/{subject}', [AdminSubjectController::class, 'destroy'])->middleware('permission:delete subjects')->name('subjects.destroy');
-
-// Nodes (Folders)
-Route::middleware('permission:create nodes')->group(function () {
-    Route::post('/subjects/{subject}/nodes/batch', [AdminNodeController::class, 'batchStore'])->name('nodes.batch');
-    Route::post('/subjects/{subject}/nodes', [AdminNodeController::class, 'store'])->name('nodes.store');
-});
-
-Route::middleware('permission:edit nodes')->group(function () {
-    Route::patch('/subjects/{subject}/nodes/{node}', [AdminNodeController::class, 'update'])->name('nodes.patch');
-});
-
-Route::post('/nodes/{node}/toggle-freeze', [AdminNodeController::class, 'toggleFreeze'])->middleware('permission:freeze nodes')->name('nodes.toggle-freeze');
-
-Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middleware('permission:delete nodes')->name('nodes.destroy');
-
 Route::get('/subjects/{subject:slug}/nodes', [AdminNodeController::class, 'show'])->name('nodes.index');
 
+Route::middleware('permission:manage curriculum')->group(function () {
+    Route::post('/subjects', [AdminSubjectController::class, 'store'])->name('subjects.store');
+    Route::patch('/subjects/edit/{subject}', [AdminSubjectController::class, 'update'])->name('subjects.update');
+    Route::delete('/subjects/{subject}', [AdminSubjectController::class, 'destroy'])->name('subjects.destroy');
+
+    Route::post('/subjects/{subject}/nodes/batch', [AdminNodeController::class, 'batchStore'])->name('nodes.batch');
+    Route::post('/subjects/{subject}/nodes', [AdminNodeController::class, 'store'])->name('nodes.store');
+    Route::patch('/subjects/{subject}/nodes/{node}', [AdminNodeController::class, 'update'])->name('nodes.patch');
+    Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->name('nodes.destroy');
+});
+
+// Resources
 Route::middleware('permission:moderate resources')->group(function () {
     Route::get('/moderation/resources', [AdminResourceController::class, 'moderationIndex'])->name('resources.moderation.index');
     Route::post('/resources/approve', [AdminResourceController::class, 'approve'])->name('resources.approve');
@@ -55,40 +42,36 @@ Route::middleware('permission:moderate resources')->group(function () {
 
 Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy'])->middleware('can:delete,resource');
 
-// Notice
-Route::middleware('permission:edit notice')->group(function () {
-    Route::get('/notice', [AdminNoticeController::class, 'edit'])->name('notice.edit');
-    Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->name('notice.update');
-});
-
-// Platform Settings
-Route::middleware('permission:manage platform settings')->group(function () {
+// Platform Settings & Maintenance
+Route::middleware('permission:manage settings')->group(function () {
     Route::get('/settings/platform', [AdminPlatformSettingsController::class, 'index'])->name('platform.settings');
     Route::post('/settings/platform', [AdminPlatformSettingsController::class, 'update'])->name('platform.settings.update');
+
+    Route::get('/notice', [AdminNoticeController::class, 'edit'])->name('notice.edit');
+    Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->name('notice.update');
+
+    Route::get('/peers/settings', [PeerSettingsController::class, 'edit'])->name('peers.settings.edit');
+    Route::post('/peers/settings', [PeerSettingsController::class, 'update'])->name('peers.settings.update');
+
+    Route::post('/clear-cache', function () {
+        Cache::flush();
+
+        return back()->with('success', 'Cache cleared.');
+    })->name('cache.clear');
 });
-
-// Cache
-Route::post('/clear-cache', function () {
-    Cache::flush();
-
-    return back()->with('success', 'Cache cleared.');
-})->middleware('permission:clear cache');
 
 // Users
 Route::get('/users', [AdminUserController::class, 'index'])->middleware('permission:view users')->name('users.index');
 
-Route::middleware('permission:create users')->group(function () {
+Route::middleware('permission:manage users')->group(function () {
     Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
     Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-});
-
-Route::middleware('permission:edit users')->group(function () {
     Route::get('/users/edit/{user}', [AdminUserController::class, 'edit'])->name('users.edit');
     Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{user}/send-delete-link', [AdminUserController::class, 'sendDeleteLink'])->name('users.send-delete-link');
 });
 
-Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->middleware('permission:delete users')->name('users.destroy');
-Route::post('/users/{user}/send-delete-link', [AdminUserController::class, 'sendDeleteLink'])->middleware('permission:delete users')->name('users.send-delete-link');
 Route::post('/users/{user}/login', [AdminUserController::class, 'loginAs'])->middleware('permission:impersonate users')->name('users.login-as');
 
 // Emails
@@ -135,9 +118,4 @@ Route::middleware('permission:manage forums')->group(function () {
 
     Route::get('/forums/settings', [AdminForumController::class, 'settings'])->name('forums.settings.edit');
     Route::post('/forums/settings', [AdminForumController::class, 'updateSettings'])->name('forums.settings.update');
-});
-
-Route::middleware('permission:manage peers')->group(function () {
-    Route::get('/peers/settings', [PeerSettingsController::class, 'edit'])->name('peers.settings.edit');
-    Route::post('/peers/settings', [PeerSettingsController::class, 'update'])->name('peers.settings.update');
 });
