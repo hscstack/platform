@@ -37,6 +37,7 @@ class UserProfileController extends Controller
             'facebook' => $user->facebook,
             'instagram' => $user->instagram,
             'github' => $user->github,
+            'website' => $user->website,
             'created_at' => $user->created_at?->format('M Y') ?? '2026',
             'is_verified' => $user->is_verified,
             'is_online' => $user->isOnline(),
@@ -85,17 +86,38 @@ class UserProfileController extends Controller
             }
         }
 
-        $appreciators = $user->appreciators()
+        $authId = auth()->id();
+
+        $rawAppreciators = $user->appreciators()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
             ->latest('user_appreciations.id')
             ->take(15)
             ->get();
 
-        $appreciating = $user->appreciatingUsers()
+        $rawAppreciating = $user->appreciatingUsers()
             ->select(['users.id', 'users.name', 'users.username', 'users.image_path', 'users.institution', 'users.is_verified'])
             ->latest('user_appreciations.id')
             ->take(15)
             ->get();
+
+        $allModalUserIds = $rawAppreciators->pluck('id')->concat($rawAppreciating->pluck('id'))->unique();
+        $myAppreciatingIds = $authId && $allModalUserIds->isNotEmpty()
+            ? UserAppreciation::where('appreciator_id', $authId)->whereIn('user_id', $allModalUserIds)->pluck('user_id')->flip()->toArray()
+            : [];
+
+        $appreciators = $rawAppreciators->map(function ($u) use ($myAppreciatingIds) {
+            $data = $u->toArray();
+            $data['is_appreciated'] = isset($myAppreciatingIds[$u->id]);
+
+            return $data;
+        });
+
+        $appreciating = $rawAppreciating->map(function ($u) use ($myAppreciatingIds) {
+            $data = $u->toArray();
+            $data['is_appreciated'] = isset($myAppreciatingIds[$u->id]);
+
+            return $data;
+        });
 
         $pokeEnabled = (bool) AppSetting::get('peer_poke_enabled', true);
         $canPoke = $pokeEnabled && ! $isOwner && ($user->allow_pokes ?? true);
@@ -281,9 +303,8 @@ class UserProfileController extends Controller
         $trackableSubjects = $subjectsQuery
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
-                    ->with('parent:id,name,sort_order')
                     ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'parent_id', 'name', 'slug', 'sort_order', 'weight');
+                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
             ->get(['id', 'name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
 
@@ -322,12 +343,6 @@ class UserProfileController extends Controller
                     'name' => $node->name,
                     'weight' => $nodeWeight,
                     'is_completed' => $isDone,
-                    'parent_id' => $node->parent_id,
-                    'parent' => $node->parent ? [
-                        'id' => $node->parent->id,
-                        'name' => $node->parent->name,
-                        'sort_order' => $node->parent->sort_order,
-                    ] : null,
                 ];
             }
 
@@ -376,8 +391,20 @@ class UserProfileController extends Controller
             ->latest('user_appreciations.id')
             ->simplePaginate(15);
 
+        $authId = auth()->id();
+        $myAppreciatingIds = $authId
+            ? UserAppreciation::where('appreciator_id', $authId)->whereIn('user_id', $paginator->pluck('id'))->pluck('user_id')->flip()->toArray()
+            : [];
+
+        $items = collect($paginator->items())->map(function ($u) use ($myAppreciatingIds) {
+            $data = $u->toArray();
+            $data['is_appreciated'] = isset($myAppreciatingIds[$u->id]);
+
+            return $data;
+        })->all();
+
         return response()->json([
-            'users' => $paginator->items(),
+            'users' => $items,
             'has_more' => $paginator->hasMorePages(),
             'current_page' => $paginator->currentPage(),
         ]);
@@ -393,8 +420,20 @@ class UserProfileController extends Controller
             ->latest('user_appreciations.id')
             ->simplePaginate(15);
 
+        $authId = auth()->id();
+        $myAppreciatingIds = $authId
+            ? UserAppreciation::where('appreciator_id', $authId)->whereIn('user_id', $paginator->pluck('id'))->pluck('user_id')->flip()->toArray()
+            : [];
+
+        $items = collect($paginator->items())->map(function ($u) use ($myAppreciatingIds) {
+            $data = $u->toArray();
+            $data['is_appreciated'] = isset($myAppreciatingIds[$u->id]);
+
+            return $data;
+        })->all();
+
         return response()->json([
-            'users' => $paginator->items(),
+            'users' => $items,
             'has_more' => $paginator->hasMorePages(),
             'current_page' => $paginator->currentPage(),
         ]);

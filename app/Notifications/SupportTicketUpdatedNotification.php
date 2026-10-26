@@ -5,7 +5,6 @@ namespace App\Notifications;
 use App\Models\SupportTicket;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
@@ -18,45 +17,13 @@ class SupportTicketUpdatedNotification extends Notification implements ShouldQue
     ) {}
 
     /**
-     * Get the notification's delivery channels.
+     * Get the notification's delivery channels (In-app database only).
      *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if (! empty($notifiable->email) && ($notifiable->receive_emails ?? true)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
-    {
-        $statusLabel = ucfirst(str_replace('_', ' ', $this->ticket->status));
-        $lines = [
-            "Your support ticket #{$this->ticket->ticket_number} (\"{$this->ticket->subject}\") has an update from our team.",
-            "Current Status: {$statusLabel}",
-        ];
-
-        if ($this->ticket->admin_reply) {
-            $lines[] = "Staff Reply: \"{$this->ticket->admin_reply}\"";
-        }
-
-        return (new MailMessage)
-            ->subject("Support Ticket #{$this->ticket->ticket_number} Updated 🎫")
-            ->view('emails.default', [
-                'subject' => "Ticket #{$this->ticket->ticket_number} Updated",
-                'greeting' => "Hello {$notifiable->name},",
-                'lines' => $lines,
-                'actionText' => 'View My Tickets',
-                'actionUrl' => route('support.my-tickets'),
-            ]);
+        return ['database'];
     }
 
     /**

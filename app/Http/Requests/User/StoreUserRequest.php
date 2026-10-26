@@ -29,6 +29,7 @@ class StoreUserRequest extends FormRequest
             'username' => ['nullable', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_]+$/', 'unique:users,username', new CleanText],
             'email' => ['required', 'email', 'unique:users,email'],
             'is_verified' => ['sometimes', 'boolean'],
+            'is_board_member' => ['sometimes', 'boolean'],
             'priority' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:1000000'],
             'role' => ['nullable', 'string'],
             'permissions' => ['nullable', 'array'],
@@ -40,6 +41,7 @@ class StoreUserRequest extends FormRequest
             'facebook' => ['nullable', 'string', 'max:255'],
             'instagram' => ['nullable', 'string', 'max:255'],
             'github' => ['nullable', 'string', 'max:255'],
+            'website' => ['nullable', 'string', 'max:255'],
         ];
     }
 
