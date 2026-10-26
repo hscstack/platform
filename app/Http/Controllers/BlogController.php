@@ -254,7 +254,7 @@ class BlogController extends Controller
 
     public function destroyComment(BlogComment $comment)
     {
-        abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('moderate resources') || auth()->user()?->can('view admin'), 403);
+        abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('manage blogs'), 403);
 
         $comment->delete();
 

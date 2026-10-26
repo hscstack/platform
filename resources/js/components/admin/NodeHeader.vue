@@ -19,7 +19,6 @@ defineProps<{
     backUrl: string;
     isFrozen: boolean;
     isDirectlyFrozen: boolean;
-    isInheritedFrozen: boolean;
     isTogglingFreeze: boolean;
 }>();
 
@@ -143,16 +142,12 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                     :class="
                         isDirectlyFrozen
                             ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
-                            : isInheritedFrozen
-                              ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-900/50'
-                              : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/50'
+                            : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/50'
                     "
                     :title="
                         isDirectlyFrozen
                             ? 'Unfreeze this folder'
-                            : isInheritedFrozen
-                              ? 'Freeze this folder individually'
-                              : 'Freeze this folder'
+                            : 'Freeze this folder'
                     "
                 >
                     <Unlock
@@ -161,13 +156,7 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
                         :stroke-width="2"
                     />
                     <Lock v-else class="h-3.5 w-3.5" :stroke-width="2" />
-                    <span>{{
-                        isDirectlyFrozen
-                            ? 'Unfreeze'
-                            : isInheritedFrozen
-                              ? 'Freeze Individually'
-                              : 'Freeze'
-                    }}</span>
+                    <span>{{ isDirectlyFrozen ? 'Unfreeze' : 'Freeze' }}</span>
                 </button>
 
                 <!-- Add Folder Dropdown -->

@@ -19,13 +19,7 @@ const props = defineProps<{
 }>();
 
 const isDirectlyFrozen = computed(() => Boolean(props.parent?.is_frozen));
-const isInheritedFrozen = computed(
-    () =>
-        !isDirectlyFrozen.value && Boolean(props.parent?.is_effectively_frozen),
-);
-const isFrozen = computed(
-    () => isDirectlyFrozen.value || isInheritedFrozen.value,
-);
+const isFrozen = computed(() => isDirectlyFrozen.value);
 
 const isTogglingFreeze = ref(false);
 
@@ -38,9 +32,6 @@ const toggleFreeze = () => {
 
     if (props.parent.is_frozen) {
         message = 'Are you sure you want to unfreeze this folder?';
-    } else if (isInheritedFrozen.value) {
-        message =
-            'প্যারেন্ট ফোল্ডার আনলক করা হলেও এই ফোল্ডারটি যাতে লক থাকে, সেজন্য কি এটিকে আলাদাভাবে ফ্রিজ করতে চান?';
     }
 
     if (confirm(message)) {
@@ -141,7 +132,6 @@ const adminBreadcrumbs = computed<BreadcrumbItem[]>(() => {
             :back-url="backUrl"
             :is-frozen="isFrozen"
             :is-directly-frozen="isDirectlyFrozen"
-            :is-inherited-frozen="isInheritedFrozen"
             :is-toggling-freeze="isTogglingFreeze"
             @toggle-freeze="toggleFreeze"
             @create-single-folder="openCreateNodeModal"
