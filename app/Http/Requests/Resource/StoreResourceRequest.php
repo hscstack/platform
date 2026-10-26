@@ -12,7 +12,7 @@ class StoreResourceRequest extends FormRequest
         if ($this->filled('node_id')) {
             $node = Node::find($this->input('node_id'));
 
-            return ! ($node?->isEffectivelyFrozen());
+            return ! ($node?->is_frozen);
         }
 
         return true;

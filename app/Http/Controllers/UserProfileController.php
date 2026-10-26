@@ -345,8 +345,6 @@ class UserProfileController extends Controller
                     'name' => $node->name,
                     'weight' => $nodeWeight,
                     'is_completed' => $isDone,
-                    'parent_id' => null,
-                    'parent' => null,
                 ];
             }
 

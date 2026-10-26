@@ -26,7 +26,6 @@ import { useAuth } from '@/lib/useAuth';
 interface NodeItem {
     id: number;
     subject_id?: number;
-    parent_id?: number | null;
     name: string;
     slug: string;
 }

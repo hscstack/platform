@@ -19,16 +19,10 @@ import SyllabusShareModal from '@/components/tracker/SyllabusShareModal.vue';
 export interface TopLevelNode {
     id: number;
     subject_id: number;
-    parent_id?: number | null;
     name: string;
     slug: string;
     sort_order?: number;
     weight?: number;
-    parent?: {
-        id: number;
-        name: string;
-        sort_order?: number;
-    } | null;
 }
 
 export interface SubjectItem {
@@ -311,42 +305,8 @@ export interface NodeGroup {
 
 function getSubjectGroups(subject: SubjectItem): NodeGroup[] {
     const nodes = subject.nodes || [];
-    const hasAnyParent = nodes.some((n) => n.parent_id && n.parent?.name);
 
-    if (!hasAnyParent) {
-        return [{ name: null, nodes }];
-    }
-
-    const groupsMap = new Map<
-        string,
-        { sort: number; nodes: TopLevelNode[] }
-    >();
-    const noParentNodes: TopLevelNode[] = [];
-
-    for (const node of nodes) {
-        if (node.parent?.name) {
-            const parentName = node.parent.name;
-            const parentSort = node.parent.sort_order ?? 999;
-
-            if (!groupsMap.has(parentName)) {
-                groupsMap.set(parentName, { sort: parentSort, nodes: [] });
-            }
-
-            groupsMap.get(parentName)!.nodes.push(node);
-        } else {
-            noParentNodes.push(node);
-        }
-    }
-
-    const result: NodeGroup[] = Array.from(groupsMap.entries())
-        .sort((a, b) => a[1].sort - b[1].sort)
-        .map(([name, data]) => ({ name, nodes: data.nodes }));
-
-    if (noParentNodes.length > 0) {
-        result.push({ name: 'অন্যান্য অধ্যায়', nodes: noParentNodes });
-    }
-
-    return result;
+    return [{ name: null, nodes }];
 }
 
 // Collapsed state for sub-groups with names (default: 1st group expanded (index 0), others collapsed)
