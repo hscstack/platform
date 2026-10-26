@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Notifications\UserSuspensionNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -57,5 +58,6 @@ test('UserSuspensionNotification does not route to mail if user opted out', func
     $user = User::factory()->create(['receive_emails' => false]);
 
     $notification = new UserSuspensionNotification(isBanned: true, bannedUntilFormatted: 'in 3 days');
-    expect($notification->via($user))->toBe(['database']);
+    expect($notification->via($user))->toContain('database', WebPushChannel::class)
+        ->and($notification->via($user))->not->toContain('mail');
 });

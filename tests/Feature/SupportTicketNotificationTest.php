@@ -6,6 +6,7 @@ use App\Notifications\SupportTicketCreatedNotification;
 use App\Notifications\SupportTicketUpdatedNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -72,5 +73,5 @@ test('SupportTicketUpdatedNotification sends to database channel', function () {
     ]);
 
     $notification = new SupportTicketUpdatedNotification($ticket);
-    expect($notification->via($user))->toBe(['database']);
+    expect($notification->via($user))->toContain('database', WebPushChannel::class);
 });

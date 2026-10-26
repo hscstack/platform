@@ -9,8 +9,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
-use NotificationChannels\WebPush\WebPushChannel;
-use NotificationChannels\WebPush\WebPushMessage;
 
 class BlogCommentNotification extends Notification implements ShouldQueue
 {
@@ -62,20 +60,7 @@ class BlogCommentNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database', WebPushChannel::class];
-    }
-
-    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
-    {
-        $commenterName = $this->comment->user?->name ?? 'Someone';
-        $snippet = Str::limit(strip_tags($this->comment->content), 80);
-
-        return (new WebPushMessage)
-            ->title("New comment on \"{$this->blog->title}\"")
-            ->icon('/favicon.png')
-            ->body("{$commenterName}: \"{$snippet}\"")
-            ->action('View Blog', 'view_blog')
-            ->data(['url' => route('blogs.show', $this->blog->slug).'#comments']);
+        return ['database'];
     }
 
     public function toArray(object $notifiable): array

@@ -7,8 +7,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
-use NotificationChannels\WebPush\WebPushChannel;
-use NotificationChannels\WebPush\WebPushMessage;
 
 class UserMentionNotification extends Notification implements ShouldQueue
 {
@@ -30,19 +28,7 @@ class UserMentionNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database', WebPushChannel::class];
-    }
-
-    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
-    {
-        $snippet = Str::limit(strip_tags($this->content), 80);
-
-        return (new WebPushMessage)
-            ->title("@{$this->sender->username} mentioned you in {$this->contextTitle}")
-            ->icon($this->sender->image_url ?: '/favicon.png')
-            ->body("\"{$snippet}\"")
-            ->action('View', 'view_mention')
-            ->data(['url' => $this->url]);
+        return ['database'];
     }
 
     /**

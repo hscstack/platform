@@ -8,6 +8,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class ResourceModerationNotification extends Notification implements ShouldQueue
 {
@@ -59,7 +61,31 @@ class ResourceModerationNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', WebPushChannel::class];
+    }
+
+    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
+    {
+        $url = $this->status === 'rejected'
+            ? '/my-submissions?status=rejected'
+            : '/my-submissions?status=approved';
+
+        $resourceTitle = $this->resource->title ?? 'Resource';
+
+        $title = $this->status === 'rejected'
+            ? 'Resource Submission Rejected'
+            : 'Resource Submission Approved';
+
+        $message = $this->status === 'rejected'
+            ? ($this->feedback ? "\"{$resourceTitle}\": {$this->feedback}" : "Your resource \"{$resourceTitle}\" was rejected.")
+            : "Your resource \"{$resourceTitle}\" was approved and is now live.";
+
+        return (new WebPushMessage)
+            ->title($title)
+            ->icon('/favicon.png')
+            ->body($message)
+            ->action('View Submission', 'view_submission')
+            ->data(['url' => url($url)]);
     }
 
     public function toArray(object $notifiable): array
