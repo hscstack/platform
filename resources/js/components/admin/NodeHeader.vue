@@ -5,8 +5,6 @@ import {
     ChevronDown,
     ChevronRight,
     FolderPlus,
-    Lock,
-    Unlock,
 } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';
 import UploadResourceDropdown from '@/components/resources/UploadResourceDropdown.vue';
@@ -23,7 +21,6 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'toggle-freeze'): void;
     (e: 'create-single-folder'): void;
     (e: 'create-bulk-folder'): void;
 }>();
@@ -132,36 +129,9 @@ onUnmounted(() => document.removeEventListener('click', closeDropdowns));
             </div>
 
             <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-                <!-- Toggle Freeze Button -->
-                <button
-                    v-if="parent?.id && can('freeze nodes')"
-                    type="button"
-                    :disabled="isTogglingFreeze"
-                    @click="emit('toggle-freeze')"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50 sm:px-3"
-                    :class="
-                        isDirectlyFrozen
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
-                            : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/50'
-                    "
-                    :title="
-                        isDirectlyFrozen
-                            ? 'Unfreeze this folder'
-                            : 'Freeze this folder'
-                    "
-                >
-                    <Unlock
-                        v-if="isDirectlyFrozen"
-                        class="h-3.5 w-3.5"
-                        :stroke-width="2"
-                    />
-                    <Lock v-else class="h-3.5 w-3.5" :stroke-width="2" />
-                    <span>{{ isDirectlyFrozen ? 'Unfreeze' : 'Freeze' }}</span>
-                </button>
-
                 <!-- Add Folder Dropdown -->
                 <div
-                    v-if="!isFrozen && can('create nodes')"
+                    v-if="can('manage curriculum')"
                     ref="folderDropdownRef"
                     class="relative inline-block"
                 >

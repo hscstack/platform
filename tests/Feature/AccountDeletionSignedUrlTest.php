@@ -26,12 +26,12 @@ class AccountDeletionSignedUrlTest extends TestCase
 
         Permission::findOrCreate('view admin');
         Permission::findOrCreate('view users');
-        Permission::findOrCreate('delete users');
+        Permission::findOrCreate('manage users');
 
         $this->admin = User::factory()->create([
             'email' => 'admin@example.com',
         ]);
-        $this->admin->givePermissionTo(['view admin', 'view users', 'delete users']);
+        $this->admin->givePermissionTo(['view admin', 'view users', 'manage users']);
 
         $this->targetUser = User::factory()->create([
             'name' => 'Target User',

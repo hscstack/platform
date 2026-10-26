@@ -61,7 +61,7 @@ const adminTools = [
         href: '/admin/settings/platform',
         icon: Sliders,
         color: 'text-violet-600 bg-violet-50 dark:bg-violet-500/10 dark:text-violet-400',
-        permission: 'manage platform settings',
+        permission: 'manage settings',
     },
     {
         name: 'Resource Moderation',
@@ -75,6 +75,7 @@ const adminTools = [
         href: '/admin/subjects',
         icon: BookOpen,
         color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400',
+        permission: 'manage curriculum',
     },
     {
         name: 'Manage Forum',
@@ -95,7 +96,7 @@ const adminTools = [
         href: '/admin/notice',
         icon: Bell,
         color: 'text-purple-600 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400',
-        permission: 'edit notice',
+        permission: 'manage settings',
     },
     {
         name: 'Global Chat',
@@ -116,7 +117,7 @@ const adminTools = [
         href: '/admin/peers/settings',
         icon: Radio,
         color: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-400',
-        permission: 'manage peers',
+        permission: 'manage settings',
     },
     {
         name: 'Send Emails',
@@ -186,7 +187,7 @@ const fetchAnalytics = async (refresh = false) => {
             <!-- Action Buttons -->
             <div class="flex items-center gap-2">
                 <button
-                    v-if="can('clear cache')"
+                    v-if="can('manage settings')"
                     type="button"
                     @click="clearCache"
                     :disabled="isClearingCache"

@@ -178,17 +178,6 @@ class NodeController extends Controller
         return back()->with('success', "Successfully generated {$createdCount} chapters!");
     }
 
-    public function toggleFreeze(Node $node)
-    {
-        $node->update([
-            'is_frozen' => ! $node->is_frozen,
-        ]);
-
-        $status = $node->is_frozen ? 'frozen' : 'unfrozen';
-
-        return back()->with('success', "Chapter has been {$status} successfully.");
-    }
-
     public function destroy(Node $node)
     {
         $node->delete();

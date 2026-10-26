@@ -393,8 +393,8 @@ class ResourceController extends Controller
             }
         }
 
-        // If an approved resource is edited by someone without 'edit resources', return it to pending for re-review
-        $canEditDirectly = $user && $user->can('edit resources');
+        // If an approved resource is edited by someone without manage/moderate permissions, return it to pending for re-review
+        $canEditDirectly = $user && ($user->can('manage resources') || $user->can('moderate resources'));
         if (! $canEditDirectly && $resource->status === 'approved') {
             $updateData['status'] = 'pending';
             $updateData['reviewed_by'] = null;

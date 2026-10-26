@@ -4,7 +4,7 @@ use App\Models\Node;
 use App\Models\Subject;
 
 test('admin can create a subject', function () {
-    $admin = adminUserWithPermissions(['view admin', 'create subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Platform Testing',
@@ -29,7 +29,7 @@ test('admin can create a subject', function () {
 });
 
 test('admin can update a subject', function () {
-    $admin = adminUserWithPermissions(['view admin', 'edit subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     $subject = Subject::create([
         'name' => 'Platform Testing',
@@ -63,7 +63,7 @@ test('admin can update a subject', function () {
 });
 
 test('admin can delete a subject', function () {
-    $admin = adminUserWithPermissions(['view admin', 'delete subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     $subject = Subject::create([
         'name' => 'Platform Testing',
@@ -86,7 +86,7 @@ test('admin can delete a subject', function () {
 });
 
 test('admin can create a subject with custom slug', function () {
-    $admin = adminUserWithPermissions(['view admin', 'create subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Custom Slug Subject',
@@ -109,7 +109,7 @@ test('admin can create a subject with custom slug', function () {
 });
 
 test('admin can update a subject with custom slug', function () {
-    $admin = adminUserWithPermissions(['view admin', 'edit subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     $subject = Subject::create([
         'name' => 'Existing Subject',
@@ -135,7 +135,7 @@ test('admin can update a subject with custom slug', function () {
 });
 
 test('invalid subject creation is rejected by validation', function () {
-    $admin = adminUserWithPermissions(['view admin', 'create subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => '',
@@ -158,7 +158,7 @@ test('invalid subject creation is rejected by validation', function () {
 });
 
 test('admin can create subjects with same name in different courses', function () {
-    $admin = adminUserWithPermissions(['view admin', 'create subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     Subject::create([
         'name' => 'Physics',
@@ -191,7 +191,7 @@ test('admin can create subjects with same name in different courses', function (
 });
 
 test('admin can toggle disable on a subject', function () {
-    $admin = adminUserWithPermissions(['view admin', 'create subjects', 'edit subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Disabled Subject',
@@ -286,7 +286,7 @@ test('disabled subjects return 404 for everyone including admins', function () {
         ->assertInertia(fn ($page) => $page->component('errors/404'));
 
     // Admin user with permissions also gets 404
-    $admin = adminUserWithPermissions(['edit subjects']);
+    $admin = adminUserWithPermissions(['manage curriculum']);
     $this->actingAs($admin)
         ->get('/hidden-subject')
         ->assertInertia(fn ($page) => $page->component('errors/404'));
@@ -297,7 +297,7 @@ test('disabled subjects return 404 for everyone including admins', function () {
 });
 
 test('admin can define and edit subject type group and optional status', function () {
-    $admin = adminUserWithPermissions(['view admin', 'create subjects', 'edit subjects']);
+    $admin = adminUserWithPermissions(['view admin', 'manage curriculum']);
 
     // Create a common subject
     $response = $this->actingAs($admin)->post('/admin/subjects', [

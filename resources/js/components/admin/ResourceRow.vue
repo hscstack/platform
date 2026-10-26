@@ -22,7 +22,7 @@ const props = defineProps<{
 const canDelete = computed(() => {
     return (
         !props.isFrozen &&
-        (can('delete resources') || can('moderate resources'))
+        (can('manage resources') || can('moderate resources'))
     );
 });
 

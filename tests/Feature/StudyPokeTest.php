@@ -140,8 +140,8 @@ test('guest viewing user profile sees pokeData with canPoke true', function () {
         );
 });
 
-test('admin can update peer and poke settings with manage peers permission', function () {
-    $permission = Permission::findOrCreate('manage peers');
+test('admin can update peer and poke settings with manage settings permission', function () {
+    $permission = Permission::findOrCreate('manage settings');
     $adminRole = Role::findOrCreate('admin');
     $adminRole->givePermissionTo($permission);
 

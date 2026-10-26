@@ -6,20 +6,19 @@ use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
-    Permission::findOrCreate('manage platform settings', 'web');
-    Permission::findOrCreate('clear cache', 'web');
+    Permission::findOrCreate('manage settings', 'web');
 });
 
-test('admin with manage platform settings permission can view platform settings', function () {
+test('admin with manage settings permission can view platform settings', function () {
     $user = User::factory()->create();
-    $user->givePermissionTo(['view admin', 'manage platform settings']);
+    $user->givePermissionTo(['view admin', 'manage settings']);
 
     $this->actingAs($user)
         ->get('/admin/settings/platform')
         ->assertStatus(200);
 });
 
-test('admin without manage platform settings permission cannot access platform settings', function () {
+test('admin without manage settings permission cannot access platform settings', function () {
     $user = User::factory()->create();
     $user->givePermissionTo('view admin');
 
@@ -31,7 +30,7 @@ test('admin without manage platform settings permission cannot access platform s
 
 test('admin can update platform settings toggles', function () {
     $user = User::factory()->create();
-    $user->givePermissionTo(['view admin', 'manage platform settings']);
+    $user->givePermissionTo(['view admin', 'manage settings']);
 
     $this->actingAs($user)
         ->post('/admin/settings/platform', [

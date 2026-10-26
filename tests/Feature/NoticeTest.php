@@ -5,7 +5,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 test('admin can view the notice edit page', function () {
-    $admin = adminUserWithPermissions(['view admin', 'edit notice']);
+    $admin = adminUserWithPermissions(['view admin', 'manage settings']);
 
     $response = $this->actingAs($admin)->get('/admin/notice');
 
@@ -13,7 +13,7 @@ test('admin can view the notice edit page', function () {
 });
 
 test('admin can update notice without image', function () {
-    $admin = adminUserWithPermissions(['view admin', 'edit notice']);
+    $admin = adminUserWithPermissions(['view admin', 'manage settings']);
 
     $response = $this->actingAs($admin)->post('/admin/notice', [
         'title' => 'Test Notice Title',
@@ -40,7 +40,7 @@ test('admin can update notice without image', function () {
 
 test('admin can upload a notice image and store only the path', function () {
     Storage::fake();
-    $admin = adminUserWithPermissions(['view admin', 'edit notice']);
+    $admin = adminUserWithPermissions(['view admin', 'manage settings']);
 
     $file = UploadedFile::fake()->image('notice.png', 800, 600);
 
@@ -65,7 +65,7 @@ test('admin can upload a notice image and store only the path', function () {
 
 test('admin can delete an existing notice image', function () {
     Storage::fake();
-    $admin = adminUserWithPermissions(['view admin', 'edit notice']);
+    $admin = adminUserWithPermissions(['view admin', 'manage settings']);
 
     $file = UploadedFile::fake()->image('notice.png', 800, 600);
     $path = $file->store('notices');
@@ -97,7 +97,7 @@ test('admin can delete an existing notice image', function () {
 });
 
 test('admin can update notice with a video url', function () {
-    $admin = adminUserWithPermissions(['view admin', 'edit notice']);
+    $admin = adminUserWithPermissions(['view admin', 'manage settings']);
 
     $response = $this->actingAs($admin)->post('/admin/notice', [
         'title' => 'Tutorial Video Notice',
