@@ -374,9 +374,6 @@ test('batch node creation respects should_track_top_folders parameter', function
                 [
                     'name' => 'Chapter 1 Cell',
                     'slug' => 'ch-1-cell',
-                    'children' => [
-                        ['name' => 'Classes', 'slug' => 'classes'],
-                    ],
                 ],
             ],
             'should_track_top_folders' => true,
@@ -385,12 +382,9 @@ test('batch node creation respects should_track_top_folders parameter', function
         ->assertSessionHas('success');
 
     $topNode = Node::where('slug', 'ch-1-cell')->first();
-    $subNode = Node::where('slug', 'classes')->where('parent_id', $topNode->id)->first();
 
     expect($topNode)->not->toBeNull()
-        ->and($topNode->is_trackable)->toBeTrue()
-        ->and($subNode)->not->toBeNull()
-        ->and($subNode->is_trackable)->toBeFalse();
+        ->and($topNode->is_trackable)->toBeTrue();
 });
 
 test('user with edit resources permission can update any resource and author can update own resource', function () {

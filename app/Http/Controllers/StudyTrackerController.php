@@ -41,9 +41,8 @@ class StudyTrackerController extends Controller
         $subjects = $subjectsQuery
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
-                    ->with('parent:id,name,sort_order')
                     ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'parent_id', 'name', 'slug', 'sort_order', 'weight');
+                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
             ->get(['id', 'name', 'slug', 'course', 'group', 'sort_order', 'is_optional'])
             ->toArray();

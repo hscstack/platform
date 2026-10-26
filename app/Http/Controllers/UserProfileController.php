@@ -281,9 +281,8 @@ class UserProfileController extends Controller
         $trackableSubjects = $subjectsQuery
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
-                    ->with('parent:id,name,sort_order')
                     ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'parent_id', 'name', 'slug', 'sort_order', 'weight');
+                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
             ->get(['id', 'name', 'slug', 'course', 'tailwind_format', 'icon', 'sort_order']);
 
@@ -322,12 +321,6 @@ class UserProfileController extends Controller
                     'name' => $node->name,
                     'weight' => $nodeWeight,
                     'is_completed' => $isDone,
-                    'parent_id' => $node->parent_id,
-                    'parent' => $node->parent ? [
-                        'id' => $node->parent->id,
-                        'name' => $node->parent->name,
-                        'sort_order' => $node->parent->sort_order,
-                    ] : null,
                 ];
             }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Node;
 
-use App\Models\Node;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -13,26 +12,19 @@ class StoreNodeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        if ($parentId = $this->input('parent_id')) {
-            $parent = Node::find($parentId);
-
-            return ! ($parent?->isEffectivelyFrozen());
-        }
-
         return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:200', 'min:2'],
             'slug' => ['nullable', 'string', 'max:200'],
-            'parent_id' => ['nullable', 'integer'],
             'sort_order' => ['sometimes', 'integer'],
             'is_trackable' => ['sometimes', 'boolean'],
             'weight' => ['sometimes', 'integer', 'in:1,2,3'],

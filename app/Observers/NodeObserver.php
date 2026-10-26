@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Helpers\CacheHelper;
 use App\Models\Node;
-use Illuminate\Support\Facades\Cache;
 
 class NodeObserver
 {
@@ -25,10 +24,6 @@ class NodeObserver
 
     private function clearNodeCache(Node $node): void
     {
-        Cache::forget("node_breadcrumb_{$node->id}");
-
-        if ($node->parent_id === null) {
-            CacheHelper::clearHomePage();
-        }
+        CacheHelper::clearHomePage();
     }
 }
