@@ -5,6 +5,7 @@ use App\Models\ForumPost;
 use App\Models\Subject;
 use App\Models\User;
 use App\Notifications\ForumAnswerNotification;
+use App\Notifications\ForumMentionNotification;
 use App\Notifications\ForumReportNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
@@ -195,9 +196,8 @@ test('replying with @mention sends ForumAnswerNotification to the mentioned user
     ]);
 
     // Notification is sent to @sub_replier
-    Notification::assertSentTo($mentionedUser, ForumAnswerNotification::class, function ($notification) use ($post) {
-        return $notification->post->id === $post->id
-            && $notification->isReply === true;
+    Notification::assertSentTo($mentionedUser, ForumMentionNotification::class, function ($notification) use ($post) {
+        return $notification->post->id === $post->id;
     });
 
     // Root author is NOT sent the notification since @mention took priority

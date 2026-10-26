@@ -38,8 +38,6 @@ class BlogFactory extends Factory
             'meta_description' => fake()->sentence(),
 
             'seo_tags' => implode(',', fake()->words(5)),
-
-            'views' => fake()->numberBetween(0, 1000),
         ];
     }
 }

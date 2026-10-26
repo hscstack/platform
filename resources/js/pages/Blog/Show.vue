@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Link, Head, usePage, useForm, router } from '@inertiajs/vue3';
+import { Link, Head, router } from '@inertiajs/vue3';
 import {
     Calendar,
     User,
-    Eye,
     ArrowLeft,
     ArrowRight,
     PenLine,
@@ -11,15 +10,12 @@ import {
     Heart,
     MessageSquare,
     Trash2,
-    Send,
-    LogIn,
     X,
-    Loader2,
 } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import AuthModal from '@/components/AuthModal.vue';
+import BlogCommentsSection from '@/components/blogs/BlogCommentsSection.vue';
 import UserListItem from '@/components/UserListItem.vue';
-import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
 
 const props = defineProps({
@@ -45,7 +41,6 @@ const props = defineProps({
     },
 });
 
-const page = usePage();
 const {
     user: currentUser,
     requireAuth,
@@ -53,7 +48,6 @@ const {
     authModalMessage,
     can,
 } = useAuth();
-const canAccessAdmin = computed(() => page.props.auth?.can_access_admin);
 
 const canEdit = computed(() => {
     return (
@@ -247,59 +241,17 @@ const handleReactionClick = () => {
     );
 };
 
-// Comment Form
-const commentForm = useForm({
-    content: '',
+const totalCommentsCount = computed(() => {
+    let count = props.comments.length;
+
+    for (const c of props.comments) {
+        if (c.replies) {
+            count += c.replies.length;
+        }
+    }
+
+    return count;
 });
-
-const hasUserCommented = computed(() => {
-    if (!currentUser.value?.id) {
-        return false;
-    }
-
-    const currentId = Number(currentUser.value.id);
-
-    return props.comments.some((c: any) => {
-        const commentUserId = Number(c.user_id ?? c.user?.id);
-
-        return commentUserId === currentId;
-    });
-});
-
-const handleCommentInputClick = () => {
-    requireAuth('Please sign in to join the conversation and leave a comment.');
-};
-
-const submitComment = () => {
-    if (
-        !requireAuth(
-            'Please sign in to join the conversation and leave a comment.',
-        )
-    ) {
-        return;
-    }
-
-    if (!commentForm.content.trim() || commentForm.processing) {
-        return;
-    }
-
-    commentForm.post(`/blogs/${props.blog.slug}/comments`, {
-        preserveScroll: true,
-        onSuccess: () => {
-            commentForm.reset();
-        },
-    });
-};
-
-const deleteComment = (commentId: number) => {
-    if (!confirm('Are you sure you want to delete this comment?')) {
-        return;
-    }
-
-    router.delete(`/blogs/comments/${commentId}`, {
-        preserveScroll: true,
-    });
-};
 
 const formattedDate = computed(() => {
     if (!props.blog.created_at) {
@@ -318,48 +270,6 @@ const formattedDate = computed(() => {
         year: 'numeric',
     }).format(date);
 });
-
-const formatTimeAgo = (dateStr: string) => {
-    if (!dateStr) {
-        return '';
-    }
-
-    const date = new Date(dateStr);
-
-    if (isNaN(date.getTime())) {
-        return '';
-    }
-
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
-    if (seconds < 60) {
-        return 'just now';
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m ago`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h ago`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    if (days < 30) {
-        return `${days}d ago`;
-    }
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(date);
-};
 </script>
 
 <template>
@@ -456,13 +366,6 @@ const formatTimeAgo = (dateStr: string) => {
                     >
                 </div>
 
-                <div
-                    class="flex items-center gap-1.5 text-slate-500 dark:text-gray-400"
-                >
-                    <Eye class="h-4 w-4 text-slate-400 dark:text-gray-500" />
-                    <span>{{ blog.views }} views</span>
-                </div>
-
                 <button
                     type="button"
                     @click="showReactorsModal = true"
@@ -482,7 +385,7 @@ const formatTimeAgo = (dateStr: string) => {
                     <MessageSquare
                         class="h-4 w-4 text-slate-400 dark:text-gray-500"
                     />
-                    <span>{{ comments.length }} comments</span>
+                    <span>{{ totalCommentsCount }} comments</span>
                 </a>
 
                 <!-- Author/Admin Actions -->
@@ -666,216 +569,12 @@ const formatTimeAgo = (dateStr: string) => {
         </div>
 
         <!-- Comments Section -->
-        <section
-            id="comments"
-            class="mt-4 border-t border-slate-200/80 pt-4 dark:border-gray-800"
-        >
-            <div class="mb-4 flex items-center justify-between">
-                <h2
-                    class="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-gray-100"
-                >
-                    <MessageSquare
-                        class="h-5 w-5 text-indigo-600 dark:text-indigo-400"
-                    />
-                    <span>Comments</span>
-                    <span
-                        class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-300"
-                    >
-                        {{ comments.length }}
-                    </span>
-                </h2>
-            </div>
-
-            <!-- Comment Input Box or Already Commented Notice -->
-            <div
-                v-if="hasUserCommented"
-                class="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-sm text-slate-700 dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:text-gray-300"
-            >
-                <div
-                    class="flex items-center gap-2 font-semibold text-indigo-700 dark:text-indigo-300"
-                >
-                    <MessageSquare class="h-4 w-4" />
-                    <span>You've already commented on this post</span>
-                </div>
-                <p class="mt-1 text-xs text-slate-600 dark:text-gray-400">
-                    Each user is limited to 1 comment per article. You can
-                    delete your existing comment below if you wish to post a new
-                    one.
-                </p>
-            </div>
-
-            <div
-                v-else
-                class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900"
-            >
-                <form @submit.prevent="submitComment">
-                    <div class="relative">
-                        <textarea
-                            v-model="commentForm.content"
-                            @click="handleCommentInputClick"
-                            rows="3"
-                            placeholder="Share your thoughts or ask a question..."
-                            maxlength="1000"
-                            class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-900 transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:bg-gray-800"
-                        ></textarea>
-                    </div>
-
-                    <div class="mt-3 flex items-center justify-between">
-                        <span class="text-xs text-slate-400 dark:text-gray-500">
-                            {{ 1000 - commentForm.content.length }} characters
-                            remaining
-                        </span>
-
-                        <div class="flex items-center gap-2">
-                            <button
-                                v-if="!currentUser"
-                                type="button"
-                                @click="handleCommentInputClick"
-                                class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
-                            >
-                                <LogIn class="h-3.5 w-3.5" />
-                                <span>Sign in to comment</span>
-                            </button>
-
-                            <button
-                                v-else
-                                type="submit"
-                                :disabled="
-                                    commentForm.processing ||
-                                    !commentForm.content.trim()
-                                "
-                                class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <Loader2
-                                    v-if="commentForm.processing"
-                                    class="h-3.5 w-3.5 animate-spin"
-                                />
-                                <Send v-else class="h-3.5 w-3.5" />
-                                <span>Post Comment</span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Comments List -->
-            <div class="space-y-3">
-                <div
-                    v-if="comments.length === 0"
-                    class="rounded-2xl border border-dashed border-slate-200 p-8 text-center dark:border-gray-800"
-                >
-                    <MessageSquare
-                        class="mx-auto h-8 w-8 text-slate-300 dark:text-gray-600"
-                    />
-                    <p
-                        class="mt-2 text-sm font-medium text-slate-600 dark:text-gray-400"
-                    >
-                        No comments yet.
-                    </p>
-                    <p class="mt-0.5 text-xs text-slate-400 dark:text-gray-500">
-                        Be the first to share your thoughts on this article!
-                    </p>
-                </div>
-
-                <div
-                    v-for="comment in comments"
-                    :key="comment.id"
-                    class="group rounded-2xl border border-slate-100 bg-white p-4.5 shadow-2xs transition hover:border-slate-200 dark:border-gray-800/80 dark:bg-gray-900/90 dark:hover:border-gray-700"
-                >
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="flex items-start gap-3">
-                            <Link
-                                :href="
-                                    comment.user?.username
-                                        ? `/u/${comment.user.username}`
-                                        : '#'
-                                "
-                                class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700 transition hover:ring-2 hover:ring-indigo-400 dark:bg-indigo-950 dark:text-indigo-300"
-                            >
-                                <img
-                                    v-if="
-                                        comment.user?.image_url ||
-                                        comment.user?.image_path
-                                    "
-                                    :src="
-                                        comment.user?.image_url ||
-                                        '/storage/' + comment.user?.image_path
-                                    "
-                                    :alt="comment.user?.name"
-                                    class="h-full w-full object-cover"
-                                />
-                                <span v-else class="text-xs uppercase">
-                                    {{ comment.user?.name?.charAt(0) || 'U' }}
-                                </span>
-                            </Link>
-
-                            <div class="min-w-0">
-                                <div
-                                    class="flex flex-wrap items-center gap-1.5"
-                                >
-                                    <Link
-                                        :href="
-                                            comment.user?.username
-                                                ? `/u/${comment.user.username}`
-                                                : '#'
-                                        "
-                                        class="inline-flex items-center gap-1 text-sm font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                                    >
-                                        <span>{{
-                                            comment.user?.name || 'Anonymous'
-                                        }}</span>
-                                        <VerifiedBadge
-                                            v-if="comment.user?.is_verified"
-                                        />
-                                    </Link>
-                                    <span
-                                        v-if="comment.user_id === blog.user_id"
-                                        class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
-                                    >
-                                        Author
-                                    </span>
-                                </div>
-                                <p
-                                    v-if="comment.user?.institution"
-                                    class="truncate text-xs font-medium text-slate-500 dark:text-gray-400"
-                                >
-                                    {{ comment.user.institution }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Top-Right Actions & Timestamp -->
-                        <div class="flex shrink-0 items-center gap-2">
-                            <span
-                                class="text-xs text-slate-400 dark:text-gray-500"
-                            >
-                                {{ formatTimeAgo(comment.created_at) }}
-                            </span>
-
-                            <!-- Delete Button (Only for comment author or admin) -->
-                            <button
-                                v-if="
-                                    currentUser &&
-                                    (currentUser.id === comment.user_id ||
-                                        canAccessAdmin)
-                                "
-                                @click="deleteComment(comment.id)"
-                                title="Delete comment"
-                                class="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-                            >
-                                <Trash2 class="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <p
-                        class="mt-3 text-sm leading-relaxed break-words whitespace-pre-line text-slate-700 dark:text-gray-300"
-                    >
-                        {{ comment.content }}
-                    </p>
-                </div>
-            </div>
-        </section>
+        <BlogCommentsSection
+            :blog-id="blog.id"
+            :blog-slug="blog.slug"
+            :blog-author-id="blog.user_id"
+            :comments="comments || []"
+        />
 
         <footer
             class="mt-8 border-t border-slate-200 pt-6 dark:border-gray-700"

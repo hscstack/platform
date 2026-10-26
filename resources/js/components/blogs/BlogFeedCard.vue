@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import {
-    Check,
-    Eye,
-    Heart,
-    Loader2,
-    MessageSquare,
-    Share2,
-} from 'lucide-vue-next';
+import { Check, Heart, Loader2, MessageSquare, Share2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
@@ -461,13 +454,6 @@ const shareBlog = async () => {
                     />
                     <span>{{ blog.comments_count ?? 0 }} comments</span>
                 </Link>
-                <span
-                    v-if="blog.views"
-                    class="hidden items-center gap-1 text-slate-400 sm:inline-flex dark:text-gray-500"
-                >
-                    <Eye class="h-3.5 w-3.5" />
-                    <span>{{ blog.views }} views</span>
-                </span>
             </div>
 
             <!-- Right: Share Button -->

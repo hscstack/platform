@@ -6,7 +6,9 @@ use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
 use App\Models\Node;
 use App\Models\Resource;
+use App\Models\ResourceComment;
 use App\Models\ResourceVote;
+use App\Models\Subject;
 use App\Notifications\ResourceVoteNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -89,10 +91,28 @@ class ResourceController extends Controller
             ? ResourceVote::where('resource_id', $id)->where('user_id', auth()->id())->value('value')
             : null;
 
+        $subjects = ($isModerator || $isOwner)
+            ? Subject::where('is_disabled', false)
+                ->orderBy('sort_order')
+                ->with(['nodes' => fn ($q) => $q->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
+                ->get(['id', 'name', 'slug', 'course', 'group'])
+            : [];
+
+        $comments = ResourceComment::where('resource_id', $id)
+            ->whereNull('parent_id')
+            ->with([
+                'user:id,name,username,image_path,institution,is_verified',
+                'replies' => fn ($q) => $q->with(['user:id,name,username,image_path,institution,is_verified']),
+            ])
+            ->latest('id')
+            ->get();
+
         return Inertia::render('Resource', [
             'resource' => $resourceData,
+            'subjects' => $subjects,
             'userVote' => $userVote,
             'upvoters' => $upvoters,
+            'comments' => $comments,
             'can_moderate' => (bool) $isModerator,
             'is_owner' => (bool) $isOwner,
         ]);
