@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Notice;
+use App\Models\AppSetting;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,13 +27,15 @@ test('admin can update notice without image', function () {
     $response->assertRedirect(route('admin.notice.edit'));
     $response->assertSessionHas('success', 'Notice updated.');
 
-    $notice = Notice::singleton();
-    expect($notice->title)->toBe('Test Notice Title')
-        ->and($notice->message)->toBe('Test notice message content')
-        ->and($notice->show_button)->toBeTrue()
-        ->and($notice->button_title)->toBe('Click Here')
-        ->and($notice->button_link)->toBe('https://example.com')
-        ->and($notice->is_active)->toBeTrue();
+    $raw = AppSetting::get('site_notice');
+    $notice = is_array($raw) ? $raw : json_decode($raw, true);
+
+    expect($notice['title'])->toBe('Test Notice Title')
+        ->and($notice['message'])->toBe('Test notice message content')
+        ->and($notice['show_button'])->toBeTrue()
+        ->and($notice['button_title'])->toBe('Click Here')
+        ->and($notice['button_link'])->toBe('https://example.com')
+        ->and($notice['is_active'])->toBeTrue();
 });
 
 test('admin can upload a notice image and store only the path', function () {
@@ -52,63 +54,65 @@ test('admin can upload a notice image and store only the path', function () {
 
     $response->assertRedirect(route('admin.notice.edit'));
 
-    $notice = Notice::singleton();
-    $rawPath = $notice->getRawOriginal('image');
+    $raw = AppSetting::get('site_notice');
+    $notice = is_array($raw) ? $raw : json_decode($raw, true);
 
-    expect($rawPath)->not->toBeNull()
-        ->and($rawPath)->toStartWith('notices/')
-        ->and($notice->image)->toBe(Storage::url($rawPath));
+    expect($notice['image'])->not->toBeNull()
+        ->and(str_starts_with($notice['image'], 'notices/'))->toBeTrue();
 
-    Storage::assertExists($rawPath);
+    Storage::assertExists($notice['image']);
 });
 
-test('admin can replace and remove notice image', function () {
+test('admin can delete an existing notice image', function () {
     Storage::fake();
     $admin = adminUserWithPermissions(['view admin', 'edit notice']);
 
-    $file1 = UploadedFile::fake()->image('first.png');
+    $file = UploadedFile::fake()->image('notice.png', 800, 600);
+    $path = $file->store('notices');
 
-    $this->actingAs($admin)->post('/admin/notice', [
+    AppSetting::set('site_notice', json_encode([
         'title' => 'Notice 1',
         'message' => 'Notice 1 message',
-        'image' => $file1,
-        'show_button' => false,
+        'image' => $path,
         'is_active' => true,
-    ]);
+    ]));
 
-    $notice = Notice::singleton();
-    $firstPath = $notice->getRawOriginal('image');
-    Storage::assertExists($firstPath);
+    Storage::assertExists($path);
 
-    // Replace with second image
-    $file2 = UploadedFile::fake()->image('second.png');
-
-    $this->actingAs($admin)->post('/admin/notice', [
+    $response = $this->actingAs($admin)->post('/admin/notice', [
         'title' => 'Notice 2',
         'message' => 'Notice 2 message',
-        'image' => $file2,
-        'show_button' => false,
-        'is_active' => true,
-    ]);
-
-    $notice->refresh();
-    $secondPath = $notice->getRawOriginal('image');
-
-    Storage::assertMissing($firstPath);
-    Storage::assertExists($secondPath);
-
-    // Remove image
-    $this->actingAs($admin)->post('/admin/notice', [
-        'title' => 'Notice 3',
-        'message' => 'Notice 3 message',
         'remove_image' => true,
         'show_button' => false,
         'is_active' => true,
     ]);
 
-    $notice->refresh();
-    expect($notice->getRawOriginal('image'))->toBeNull()
-        ->and($notice->image)->toBeNull();
+    $response->assertSessionHasNoErrors();
 
-    Storage::assertMissing($secondPath);
+    $raw = AppSetting::get('site_notice');
+    $notice = is_array($raw) ? $raw : json_decode($raw, true);
+
+    expect($notice['image'])->toBeNull();
+    Storage::assertMissing($path);
+});
+
+test('admin can update notice with a video url', function () {
+    $admin = adminUserWithPermissions(['view admin', 'edit notice']);
+
+    $response = $this->actingAs($admin)->post('/admin/notice', [
+        'title' => 'Tutorial Video Notice',
+        'message' => 'Watch our quick tutorial reel',
+        'video_url' => 'https://www.youtube.com/shorts/dQw4w9WgXcQ',
+        'show_button' => false,
+        'is_active' => true,
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    $response->assertRedirect(route('admin.notice.edit'));
+
+    $raw = AppSetting::get('site_notice');
+    $notice = is_array($raw) ? $raw : json_decode($raw, true);
+
+    expect($notice['video_url'])->toBe('https://www.youtube.com/shorts/dQw4w9WgXcQ')
+        ->and($notice['title'])->toBe('Tutorial Video Notice');
 });

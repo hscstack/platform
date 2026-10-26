@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\Blog;
 use App\Models\ForumPost;
 use App\Models\ForumVote;
-use App\Models\Notice;
 use App\Models\Resource;
 use App\Models\ResourceVote;
 use App\Models\Subject;
@@ -13,6 +13,7 @@ use App\Models\UserAppreciation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -44,13 +45,31 @@ class HomeController extends Controller
                 ->toArray();
         });
 
+        $notice = Cache::rememberForever('active_notice_for_display', function () {
+            $raw = AppSetting::get('site_notice');
+            if (! $raw) {
+                return null;
+            }
+            $data = is_array($raw) ? $raw : json_decode($raw, true);
+            if (empty($data['is_active'])) {
+                return null;
+            }
+            if (! empty($data['image'])) {
+                $data['image'] = str($data['image'])->startsWith(['http://', 'https://'])
+                    ? $data['image']
+                    : Storage::url($data['image']);
+            }
+
+            return $data;
+        });
+
         return Inertia::render('Feed', [
             'feed' => $feed,
             'subjects' => $subjects,
             'course' => $course,
             'group' => $group,
             'sort' => $sort,
-            'notice' => Notice::activeForDisplay(),
+            'notice' => $notice,
         ]);
     }
 

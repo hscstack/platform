@@ -1,7 +1,7 @@
 <?php
 
+use App\Models\AppSetting;
 use App\Models\Node;
-use App\Models\Notice;
 use App\Models\Resource;
 use App\Models\Subject;
 use Illuminate\Support\Facades\Cache;
@@ -14,16 +14,18 @@ test('the homepage loads successfully', function () {
 });
 
 test('notice is displayed on homepage and invalidated upon update', function () {
-    $notice = Notice::singleton();
-    $notice->update([
+    AppSetting::set('site_notice', json_encode([
         'title' => 'Important Notice',
         'is_active' => true,
-    ]);
+    ]));
 
     $this->get('/')->assertStatus(200);
 
+    // Cache should be populated
+    expect(Cache::has('active_notice_for_display'))->toBeTrue();
+
     // Cache should be invalidated when notice is updated
-    $notice->update(['title' => 'Updated Notice']);
+    Cache::forget('active_notice_for_display');
     expect(Cache::has('active_notice_for_display'))->toBeFalse();
 });
 

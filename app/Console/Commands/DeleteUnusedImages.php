@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AppSetting;
 use App\Models\Blog;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
@@ -33,17 +34,14 @@ class DeleteUnusedImages extends Command
             Blog::whereNotNull('featured_image_path')->pluck('featured_image_path')->toArray()
         );
 
-        // Notice images — use DB::table to bypass the getImageAttribute accessor,
-        // which converts stored paths to full URLs and would cause every notice
-        // image to be falsely flagged as unused.
-        $this->cleanDirectory(
-            'notices',
-            DB::table('notices')
-                ->whereNotNull('image')
-                ->where('image', 'not like', 'http%')
-                ->pluck('image')
-                ->toArray()
-        );
+        // Notice images — read from app_settings
+        $rawNotice = AppSetting::get('site_notice');
+        $noticeData = is_array($rawNotice) ? $rawNotice : json_decode($rawNotice ?? '', true);
+        $noticeImages = [];
+        if (! empty($noticeData['image']) && ! str($noticeData['image'])->startsWith(['http://', 'https://'])) {
+            $noticeImages[] = $noticeData['image'];
+        }
+        $this->cleanDirectory('notices', $noticeImages);
 
         // Resource files (items stored under resources/)
         $rawItems = DB::table('resources')
