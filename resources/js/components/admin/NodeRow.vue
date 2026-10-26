@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { Folder, Lock, Pencil, Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { usePermissions } from '@/lib/usePermissions';
@@ -30,11 +30,8 @@ const handleDelete = () => {
     <div
         class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <!-- Left: Icon + Full Title as Link -->
-        <Link
-            :href="`${$page.url}/${node?.slug}`"
-            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
-        >
+        <!-- Left: Icon + Full Title -->
+        <div class="flex min-w-0 flex-1 items-center gap-3">
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200/40 bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
             >
@@ -43,10 +40,16 @@ const handleDelete = () => {
 
             <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                 <h3
-                    class="text-sm font-semibold break-words text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
+                    class="text-sm font-semibold break-words text-slate-900 transition-colors dark:text-gray-100"
                 >
                     {{ node?.name }}
                 </h3>
+                <span
+                    v-if="node?.slug"
+                    class="font-mono text-xs text-slate-400 dark:text-gray-500"
+                >
+                    /{{ node?.slug }}
+                </span>
                 <span
                     v-if="node?.is_trackable"
                     class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
@@ -76,7 +79,7 @@ const handleDelete = () => {
                     Frozen
                 </span>
             </div>
-        </Link>
+        </div>
 
         <!-- Right: Actions -->
         <div
