@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use NotificationChannels\WebPush\PushSubscription;
 
 class EmailController extends Controller
 {
@@ -28,6 +29,8 @@ class EmailController extends Controller
             'recipientCount' => User::where('receive_emails', true)->count(),
             'studentsCount' => User::where('is_verified', false)->count(),
             'staffCount' => User::where('is_verified', true)->count(),
+            'pushSubscribersCount' => PushSubscription::count(),
+            'pushUsersCount' => PushSubscription::distinct('subscribable_id')->count(),
         ]);
     }
 

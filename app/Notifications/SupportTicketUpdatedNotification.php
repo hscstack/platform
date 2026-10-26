@@ -7,6 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class SupportTicketUpdatedNotification extends Notification implements ShouldQueue
 {
@@ -17,13 +19,29 @@ class SupportTicketUpdatedNotification extends Notification implements ShouldQue
     ) {}
 
     /**
-     * Get the notification's delivery channels (In-app database only).
+     * Get the notification's delivery channels.
      *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', WebPushChannel::class];
+    }
+
+    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
+    {
+        $statusLabel = ucfirst(str_replace('_', ' ', $this->ticket->status));
+        $snippet = $this->ticket->admin_reply ? Str::limit(strip_tags($this->ticket->admin_reply), 80) : null;
+        $body = $snippet
+            ? "Staff replied: \"{$snippet}\""
+            : "Status updated to {$statusLabel}";
+
+        return (new WebPushMessage)
+            ->title("Support Ticket #{$this->ticket->ticket_number} Updated")
+            ->icon('/favicon.png')
+            ->body($body)
+            ->action('View Ticket', 'view_ticket')
+            ->data(['url' => route('support.my-tickets')]);
     }
 
     /**

@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
                 registerType: 'autoUpdate',
                 workbox: {
                     mode: isLocal ? 'development' : 'production',
+                    importScripts: ['/push-sw.js'],
                     runtimeCaching: [
                         {
                             // Material Symbols stylesheet (short-lived, revalidate in background)

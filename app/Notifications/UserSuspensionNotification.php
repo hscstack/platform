@@ -6,6 +6,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class UserSuspensionNotification extends Notification implements ShouldQueue
 {
@@ -23,13 +25,31 @@ class UserSuspensionNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
+        $channels = ['database', WebPushChannel::class];
 
         if (! empty($notifiable->email) && ($notifiable->receive_emails ?? true)) {
             $channels[] = 'mail';
         }
 
         return $channels;
+    }
+
+    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
+    {
+        $title = $this->isBanned
+            ? 'Account Suspension Notice ⚠️'
+            : 'Account Suspension Lifted 🎉';
+
+        $body = $this->isBanned
+            ? "Your account has been temporarily suspended until: {$this->bannedUntilFormatted}."
+            : 'Your account suspension has been lifted. You can participate in the community again.';
+
+        return (new WebPushMessage)
+            ->title($title)
+            ->icon('/favicon.png')
+            ->body($body)
+            ->action('View Guidelines', 'view_guidelines')
+            ->data(['url' => url('/content-policy')]);
     }
 
     /**

@@ -39,6 +39,14 @@ defineProps({
         type: Number,
         default: 0,
     },
+    pushSubscribersCount: {
+        type: Number,
+        default: 0,
+    },
+    pushUsersCount: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const page = usePage();
@@ -246,7 +254,7 @@ const submitForm = () => {
             class="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center dark:border-gray-800"
         >
             <div>
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                     <div
                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
                     >
@@ -264,7 +272,7 @@ const submitForm = () => {
                 </p>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <!-- Preview Trigger Button -->
                 <button
                     type="button"
@@ -286,12 +294,39 @@ const submitForm = () => {
                         <span
                             class="font-semibold text-slate-500 dark:text-gray-400"
                         >
-                            Total Subscribers:
+                            Email Subscribers:
                         </span>
                         <span
                             class="ml-1 font-bold text-slate-900 dark:text-gray-100"
                         >
                             {{ recipientCount }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Browser Push Subscribers Badge -->
+                <div
+                    class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-gray-800 dark:bg-gray-950"
+                    title="Active browser push notification devices"
+                >
+                    <Bell
+                        class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                    />
+                    <div class="text-xs">
+                        <span
+                            class="font-semibold text-slate-500 dark:text-gray-400"
+                        >
+                            Push Devices:
+                        </span>
+                        <span
+                            class="ml-1 font-bold text-emerald-600 dark:text-emerald-400"
+                        >
+                            {{ pushSubscribersCount }}
+                        </span>
+                        <span
+                            class="ml-1 text-[10px] text-slate-400 dark:text-gray-500"
+                        >
+                            ({{ pushUsersCount }} users)
                         </span>
                     </div>
                 </div>
@@ -794,7 +829,7 @@ const submitForm = () => {
                     Duplicates and invalid addresses are automatically handled.
                 </p>
 
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                     <button
                         type="button"
                         @click="showPreviewModal = true"

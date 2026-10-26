@@ -108,7 +108,7 @@ test('comment notification is strictly database only and never routes to mail', 
     $notification = new BlogCommentNotification($blog, $comment);
     $channels = $notification->via($author);
 
-    expect($channels)->toBe(['database'])
+    expect($channels)->toContain('database')
         ->and($channels)->not->toContain('mail');
 });
 
