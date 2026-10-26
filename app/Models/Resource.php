@@ -131,4 +131,9 @@ class Resource extends Model
     {
         return $this->hasMany(ResourceVote::class)->where('value', -1);
     }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ResourceComment::class);
+    }
 }
