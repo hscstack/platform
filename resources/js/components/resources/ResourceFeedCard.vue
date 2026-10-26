@@ -6,6 +6,7 @@ import {
     FileText,
     FlaskConical,
     Loader2,
+    MessageSquare,
     Play,
     Share2,
     Video,
@@ -61,6 +62,7 @@ interface Resource {
     vote_score: number;
     upvotes_count?: number;
     downvotes_count?: number;
+    comments_count?: number;
     created_at: string;
     user?: User;
     node?: NodeItem | null;
@@ -443,7 +445,7 @@ const shareResource = async () => {
                 <template v-if="resource.node?.subject">
                     <span class="text-slate-300 dark:text-gray-600">•</span>
                     <Link
-                        :href="`/${resource.node.subject.slug}`"
+                        :href="`/notes?subject=${resource.node.subject.id}`"
                         @click.stop
                         class="shrink-0 transition hover:text-indigo-600 dark:hover:text-indigo-400"
                     >
@@ -545,6 +547,17 @@ const shareResource = async () => {
                     direction="horizontal"
                     size="sm"
                 />
+
+                <!-- Comment Count Button (Exactly matching Forum & Blog) -->
+                <Link
+                    :href="`/resources/${resource.id}#comments`"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                    <MessageSquare
+                        class="h-3.5 w-3.5 text-purple-600 dark:text-purple-400"
+                    />
+                    <span>{{ resource.comments_count ?? 0 }} comments</span>
+                </Link>
             </div>
 
             <!-- Right: Clean Share Button (Exactly matching Forum & Blog) -->

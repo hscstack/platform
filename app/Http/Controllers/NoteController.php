@@ -74,7 +74,7 @@ class NoteController extends Controller
             $query->where('chapter_id', (int) $chapterId);
         }
 
-        if (in_array($type, ['note', 'video', 'practical', 'other'], true)) {
+        if (in_array($type, ['note', 'lecture_sheet', 'marked_book', 'video', 'practical', 'other'], true)) {
             $query->where('resource_type', $type);
         }
 

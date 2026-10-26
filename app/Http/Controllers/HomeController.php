@@ -38,11 +38,11 @@ class HomeController extends Controller
             }
 
             return $subjectsQuery->orderBy('sort_order', 'asc')
-                ->with(['nodes' => function ($q) {
-                    $q->select('id', 'subject_id', 'name', 'slug')
+                ->with(['chapters' => function ($q) {
+                    $q->select('id', 'subject_id', 'name')
                         ->orderBy('sort_order');
                 }])
-                ->get(['id', 'name', 'slug', 'course', 'group'])
+                ->get(['id', 'name', 'course', 'group'])
                 ->toArray();
         });
 
@@ -102,19 +102,27 @@ class HomeController extends Controller
                 });
             })
             ->when($currentUserId, fn ($q) => $q->where('user_id', '!=', $currentUserId))
-            ->with(['user:id,name,username,image_path,institution,is_verified', 'subject:id,name,slug,group', 'node:id,name,slug'])
+            ->with(['user:id,name,username,image_path,institution,is_verified', 'subject:id,name,group', 'chapter:id,name'])
             ->withCount('answers');
 
         // 2. Resources (4 items)
         $resourcesQuery = Resource::approved()
-            ->whereHas('node.subject', function ($s) use ($course, $group) {
-                $s->where('course', $course);
-                if ($group) {
-                    $s->whereIn('group', [$group, 'common']);
-                }
+            ->where(function ($query) use ($course, $group) {
+                $query->whereHas('subject', function ($s) use ($course, $group) {
+                    $s->where('course', $course);
+                    if ($group) {
+                        $s->whereIn('group', [$group, 'common']);
+                    }
+                })->orWhereHas('chapter.subject', function ($s) use ($course, $group) {
+                    $s->where('course', $course);
+                    if ($group) {
+                        $s->whereIn('group', [$group, 'common']);
+                    }
+                });
             })
             ->when($currentUserId, fn ($q) => $q->where('user_id', '!=', $currentUserId))
-            ->with(['user:id,name,username,image_path,institution,is_verified', 'node:id,name,slug,subject_id', 'node.subject:id,name,course,slug,group']);
+            ->with(['user:id,name,username,image_path,institution,is_verified', 'chapter:id,name,subject_id', 'chapter.subject:id,name,course,group', 'subject:id,name,course,group'])
+            ->withCount('comments');
 
         // 3. Blogs (2 items)
         $blogsQuery = Blog::where('is_published', true)

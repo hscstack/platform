@@ -47,8 +47,8 @@ class ForumController extends Controller
             ->when(! ($myPosts && auth()->check()), fn ($q) => $q->approved())
             ->with([
                 'user:id,name,username,image_path,institution,is_verified',
-                'subject:id,name,course,slug',
-                'node:id,name,slug',
+                'subject:id,name,course',
+                'chapter:id,name',
             ])
             ->filter($filters);
 
