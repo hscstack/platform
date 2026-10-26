@@ -18,8 +18,6 @@ class ChatSettingsController extends Controller
 {
     public function edit()
     {
-        $bannedWords = AppSetting::get('global_chat_banned_words', '');
-        $bannedWordsText = is_array($bannedWords) ? implode(', ', $bannedWords) : (string) $bannedWords;
         $allowedEmojis = AppSetting::get('global_chat_allowed_emojis', ['👍', '❤️', '🔥', '😂', '🎉', '😮', '😢', '👏']);
 
         $durationMinutes = (int) AppSetting::get('global_chat_auto_ban_duration_minutes', 0);
@@ -36,7 +34,6 @@ class ChatSettingsController extends Controller
                 'max_messages' => (int) AppSetting::get('global_chat_max_messages', 200),
                 'max_length' => (int) AppSetting::get('global_chat_max_length', 280),
                 'profanity_filter_enabled' => (bool) AppSetting::get('global_chat_profanity_filter_enabled', true),
-                'banned_words' => $bannedWordsText,
                 'allowed_emojis' => (array) $allowedEmojis,
                 'bot_username' => (string) AppSetting::get('global_chat_bot_username', 'hscstack'),
                 'auto_ban_enabled' => (bool) AppSetting::get('global_chat_auto_ban_enabled', true),
@@ -99,7 +96,6 @@ class ChatSettingsController extends Controller
             'max_messages' => ['required', 'integer', 'min:20', 'max:1000'],
             'max_length' => ['required', 'integer', 'min:50', 'max:1000'],
             'profanity_filter_enabled' => ['required', 'boolean'],
-            'banned_words' => ['nullable', 'string'],
             'allowed_emojis' => ['nullable', 'array'],
             'allowed_emojis.*' => ['required', 'string', 'max:32'],
             'bot_username' => ['nullable', 'string', 'max:50', 'exists:users,username'],
@@ -116,7 +112,6 @@ class ChatSettingsController extends Controller
         AppSetting::set('global_chat_max_messages', $validated['max_messages'], 'integer');
         AppSetting::set('global_chat_max_length', $validated['max_length'], 'integer');
         AppSetting::set('global_chat_profanity_filter_enabled', $validated['profanity_filter_enabled'], 'boolean');
-        AppSetting::set('global_chat_banned_words', $validated['banned_words'] ?? '', 'string');
         AppSetting::set('global_chat_auto_ban_enabled', $validated['auto_ban_enabled'], 'boolean');
         AppSetting::set('global_chat_auto_ban_reports_threshold', $validated['auto_ban_threshold'], 'integer');
         AppSetting::set('global_chat_auto_ban_duration_minutes', $validated['auto_ban_duration_minutes'], 'integer');

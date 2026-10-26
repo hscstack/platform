@@ -18,6 +18,7 @@ import {
     Mail,
     Sliders,
     Trash2,
+    Flag,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -118,6 +119,13 @@ const adminTools = [
         icon: Radio,
         color: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-400',
         permission: 'manage settings',
+    },
+    {
+        name: 'Reports & Safety',
+        href: '/admin/reports',
+        icon: Flag,
+        color: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-400',
+        permission: 'manage reports',
     },
     {
         name: 'Send Emails',

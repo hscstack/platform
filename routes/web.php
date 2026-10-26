@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\StudyTrackerController;
@@ -73,6 +74,10 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/resources/{resource}/vote', [ResourceController::class, 'vote'])->name('resources.vote');
     Route::post('/resources/{resource}/comments', [ResourceController::class, 'storeComment'])->name('resources.comments.store');
     Route::delete('/resources/comments/{comment}', [ResourceController::class, 'destroyComment'])->name('resources.comments.destroy');
+    Route::post('/resources/comments/{comment}/report', [ReportController::class, 'store'])->defaults('reportable_type', 'resource_comment')->name('resources.comments.report');
+
+    // Centralized Public Reporting Route
+    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 
     // My Submissions
     Route::get('/my-submissions', [ResourceController::class, 'mySubmissions'])->name('submissions.index');

@@ -8,8 +8,10 @@ import {
     Loader2,
     LogIn,
     X,
+    Flag,
 } from 'lucide-vue-next';
 import { computed, nextTick, ref } from 'vue';
+import ReportModal from '@/components/ReportModal.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
@@ -156,6 +158,25 @@ const renderCommentContent = (content: string) => {
         '<a href="/u/$1" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">@$1</a>',
     );
 };
+
+// Reporting state
+const reportingComment = ref<{
+    id: number;
+    content: string;
+    authorName?: string;
+} | null>(null);
+
+const openReportModal = (
+    commentId: number,
+    content: string,
+    authorName?: string,
+) => {
+    reportingComment.value = {
+        id: commentId,
+        content,
+        authorName,
+    };
+};
 </script>
 
 <template>
@@ -284,6 +305,26 @@ const renderCommentContent = (content: string) => {
                             <CornerDownRight class="h-4 w-4" />
                         </button>
 
+                        <!-- Report Comment Button -->
+                        <button
+                            v-if="
+                                currentUser &&
+                                currentUser.id !== comment.user_id
+                            "
+                            type="button"
+                            @click="
+                                openReportModal(
+                                    comment.id,
+                                    comment.content,
+                                    comment.user?.name,
+                                )
+                            "
+                            title="Report comment"
+                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                        >
+                            <Flag class="h-3.5 w-3.5" />
+                        </button>
+
                         <button
                             v-if="
                                 currentUser &&
@@ -400,6 +441,26 @@ const renderCommentContent = (content: string) => {
                                     <CornerDownRight class="h-3.5 w-3.5" />
                                 </button>
 
+                                <!-- Report Reply Button -->
+                                <button
+                                    v-if="
+                                        currentUser &&
+                                        currentUser.id !== reply.user_id
+                                    "
+                                    type="button"
+                                    @click="
+                                        openReportModal(
+                                            reply.id,
+                                            reply.content,
+                                            reply.user?.name,
+                                        )
+                                    "
+                                    title="Report reply"
+                                    class="cursor-pointer rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-gray-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                                >
+                                    <Flag class="h-3 w-3" />
+                                </button>
+
                                 <button
                                     v-if="
                                         currentUser &&
@@ -504,5 +565,15 @@ const renderCommentContent = (content: string) => {
                 </div>
             </form>
         </div>
+
+        <!-- Report Modal for Resource Comments -->
+        <ReportModal
+            :is-open="Boolean(reportingComment)"
+            reportable-type="resource_comment"
+            :reportable-id="reportingComment?.id || null"
+            :author-name="reportingComment?.authorName"
+            :content-preview="reportingComment?.content"
+            @close="reportingComment = null"
+        />
     </section>
 </template>

@@ -31,7 +31,7 @@ class ForumReportNotification extends Notification implements ShouldQueue
             'type' => 'forum_report',
             'title' => 'Forum content reported',
             'message' => "@{$this->reporter->username} reported: \"{$snippet}\"",
-            'url' => route('admin.forums.reports.index'),
+            'url' => route('admin.reports.index', ['type' => 'forum_post']),
             'report_id' => $this->report->id,
         ];
     }

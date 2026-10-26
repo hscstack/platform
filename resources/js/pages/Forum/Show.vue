@@ -19,13 +19,10 @@ import {
     Clock,
     AlertTriangle,
     ShieldAlert,
-    Ban,
 } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
 import AdUnit from '@/components/AdUnit.vue';
 import AuthModal from '@/components/AuthModal.vue';
-import ChatBanModal from '@/components/ChatBanModal.vue';
-import type { ChatBanUser } from '@/components/ChatBanModal.vue';
 import ForumVoteButtons from '@/components/forum/ForumVoteButtons.vue';
 import ImageViewerModal from '@/components/ImageViewerModal.vue';
 import Pagination from '@/components/Pagination.vue';
@@ -126,25 +123,6 @@ const props = defineProps<{
 
 const { user, can, requireAuth, showAuthModal, authModalMessage } = useAuth();
 const isUserBanned = computed(() => Boolean(user.value?.is_banned));
-
-// Moderator Suspension Modal State
-const isBanModalOpen = ref(false);
-const selectedBanUser = ref<ChatBanUser | null>(null);
-
-const openBanModalForUser = (targetUser?: User | null) => {
-    if (!targetUser) {
-        return;
-    }
-
-    selectedBanUser.value = {
-        id: targetUser.id,
-        name: targetUser.name,
-        username: targetUser.username,
-        banned_until: (targetUser as any).banned_until || null,
-        is_banned: (targetUser as any).is_banned ?? false,
-    };
-    isBanModalOpen.value = true;
-};
 
 // Upvoters Modal State
 const showUpvotersModal = ref(false);
@@ -906,22 +884,9 @@ function parseMentions(
                 <!-- Right: Moderator and Owner Actions -->
                 <div class="flex flex-wrap items-center gap-2">
                     <!-- Inline Moderator Tools -->
-                    <template v-if="can('manage forums') || can('manage chat')">
-                        <!-- Suspend Author Button -->
-                        <button
-                            v-if="post.user"
-                            type="button"
-                            @click="openBanModalForUser(post.user)"
-                            class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200/80 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-2xs transition hover:bg-rose-50 dark:border-rose-900/60 dark:bg-gray-900 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                            :title="`Moderate / Suspend @${post.user.username}`"
-                        >
-                            <Ban class="h-3.5 w-3.5" />
-                            <span>Suspend</span>
-                        </button>
-
+                    <template v-if="can('manage forums')">
                         <!-- Toggle Lock Button -->
                         <button
-                            v-if="can('manage forums')"
                             type="button"
                             @click="toggleLock"
                             class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-2xs transition"
@@ -1155,21 +1120,6 @@ function parseMentions(
                     />
 
                     <div class="flex flex-wrap items-center gap-1">
-                        <!-- Moderator Suspend Author Button -->
-                        <button
-                            v-if="
-                                answer.user &&
-                                (can('manage chat') || can('manage forums'))
-                            "
-                            type="button"
-                            @click="openBanModalForUser(answer.user)"
-                            class="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
-                            :title="`Moderate / Suspend @${answer.user.username}`"
-                        >
-                            <Ban class="h-3.5 w-3.5" />
-                            <span>Suspend</span>
-                        </button>
-
                         <button
                             v-if="!user || user.id !== answer.user_id"
                             type="button"
@@ -1348,22 +1298,6 @@ function parseMentions(
                             />
 
                             <div class="flex flex-wrap items-center gap-1">
-                                <!-- Moderator Suspend Author Button -->
-                                <button
-                                    v-if="
-                                        reply.user &&
-                                        (can('manage chat') ||
-                                            can('manage forums'))
-                                    "
-                                    type="button"
-                                    @click="openBanModalForUser(reply.user)"
-                                    class="inline-flex cursor-pointer items-center gap-1 px-1.5 py-0.5 text-[11px] font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
-                                    :title="`Moderate / Suspend @${reply.user.username}`"
-                                >
-                                    <Ban class="h-3 w-3" />
-                                    <span>Suspend</span>
-                                </button>
-
                                 <button
                                     v-if="!user || user.id !== reply.user_id"
                                     type="button"
@@ -1886,13 +1820,6 @@ function parseMentions(
             v-model="showAuthModal"
             title="Sign in required"
             :message="authModalMessage"
-        />
-
-        <!-- Suspension Modal -->
-        <ChatBanModal
-            :is-open="isBanModalOpen"
-            :user="selectedBanUser"
-            @close="isBanModalOpen = false"
         />
     </main>
 </template>

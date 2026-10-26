@@ -31,7 +31,7 @@ class ChatReportNotification extends Notification implements ShouldQueue
             'type' => 'chat_report',
             'title' => 'Chat message reported',
             'message' => "@{$this->reporter->username} reported: \"{$snippet}\"",
-            'url' => route('admin.chat.reports.index'),
+            'url' => route('admin.reports.index', ['type' => 'chat']),
             'report_id' => $this->report->id,
         ];
     }

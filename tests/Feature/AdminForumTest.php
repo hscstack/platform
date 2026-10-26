@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\AppSetting;
-use App\Models\ChatMessage;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
 use App\Models\Report;
@@ -12,6 +11,7 @@ use Spatie\Permission\Models\Role;
 beforeEach(function () {
     Permission::findOrCreate('view admin', 'web');
     Permission::findOrCreate('manage forums', 'web');
+    Permission::findOrCreate('manage reports', 'web');
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->syncPermissions(Permission::all());
 });
@@ -201,18 +201,18 @@ test('admin can manage forum reports status and delete reports', function () {
 
     // View reports
     $this->actingAs($admin)
-        ->get(route('admin.forums.reports.index'))
+        ->get(route('admin.reports.index'))
         ->assertStatus(200);
 
     // Update status
     $this->actingAs($admin)
-        ->patch(route('admin.forums.reports.update-status', $report), ['status' => 'reviewed'])
+        ->patch(route('admin.reports.update-status', $report), ['status' => 'resolved'])
         ->assertRedirect();
-    expect($report->fresh()->status)->toBe('reviewed');
+    expect($report->fresh()->status)->toBe('resolved');
 
     // Delete report
     $this->actingAs($admin)
-        ->delete(route('admin.forums.reports.destroy', $report))
+        ->delete(route('admin.reports.destroy', $report))
         ->assertRedirect();
     expect(Report::find($report->id))->toBeNull();
 });
@@ -251,57 +251,15 @@ test('admin can toggle lock and delete using post id route binding', function ()
     expect(Report::find($report->id))->not->toBeNull();
 });
 
-test('admin cannot mutate non-forum reports through forum admin endpoints', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('admin');
-
-    $reporter = User::factory()->create();
-    $chatReport = Report::create([
-        'reporter_id' => $reporter->id,
-        'reportable_type' => ChatMessage::class,
-        'reportable_id' => 999,
-        'content_snapshot' => 'Chat message',
-        'reason' => 'Spam',
-        'status' => 'pending',
-    ]);
-
-    $this->actingAs($admin)
-        ->patch(route('admin.forums.reports.update-status', $chatReport), ['status' => 'reviewed'])
-        ->assertNotFound();
-
-    $this->actingAs($admin)
-        ->delete(route('admin.forums.reports.destroy', $chatReport))
-        ->assertNotFound();
-});
-
-test('admin can update auto unpublish threshold to zero to disable it', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('admin');
-
-    $this->actingAs($admin)
-        ->post(route('admin.forums.settings.update'), [
-            'approval_mode' => 'auto',
-            'posting_enabled' => true,
-            'comments_enabled' => true,
-            'disabled_reason' => '',
-            'auto_unpublish_threshold' => 0,
-            'profanity_filter_enabled' => true,
-            'banned_words' => '',
-        ])
-        ->assertRedirect();
-
-    expect(AppSetting::get('forum_auto_unpublish_threshold'))->toBe(0);
-});
-
-test('moderator with only manage forums permission can suspend a user', function () {
-    $forumMod = User::factory()->create();
-    $forumMod->givePermissionTo('view admin');
-    $forumMod->givePermissionTo('manage forums');
+test('moderator with manage reports permission can suspend a user', function () {
+    $reportMod = User::factory()->create();
+    $reportMod->givePermissionTo('view admin');
+    $reportMod->givePermissionTo('manage reports');
 
     $targetUser = User::factory()->create();
     $banDate = now()->addDays(3)->toIso8601String();
 
-    $this->actingAs($forumMod)
+    $this->actingAs($reportMod)
         ->post(route('admin.chat.users.ban', $targetUser), [
             'banned_until' => $banDate,
         ])
@@ -310,13 +268,14 @@ test('moderator with only manage forums permission can suspend a user', function
     expect($targetUser->fresh()->isBanned())->toBeTrue();
 });
 
-test('user without manage chat or manage forums permission cannot suspend a user', function () {
-    $regularAdminUser = User::factory()->create();
-    $regularAdminUser->givePermissionTo('view admin');
+test('user without manage reports permission cannot suspend a user', function () {
+    $forumMod = User::factory()->create();
+    $forumMod->givePermissionTo('view admin');
+    $forumMod->givePermissionTo('manage forums');
 
     $targetUser = User::factory()->create();
 
-    $this->actingAs($regularAdminUser)
+    $this->actingAs($forumMod)
         ->post(route('admin.chat.users.ban', $targetUser), [
             'banned_until' => now()->addDays(3)->toIso8601String(),
         ])

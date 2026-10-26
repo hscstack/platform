@@ -10,7 +10,6 @@ const props = defineProps<{
         disabled_reason: string;
         auto_unpublish_threshold: number;
         profanity_filter_enabled: boolean;
-        banned_words: string;
     };
     pendingReportsCount: number;
 }>();
@@ -22,7 +21,6 @@ const form = useForm({
     disabled_reason: props.settings.disabled_reason,
     auto_unpublish_threshold: props.settings.auto_unpublish_threshold,
     profanity_filter_enabled: props.settings.profanity_filter_enabled,
-    banned_words: props.settings.banned_words,
 });
 
 const submitSettings = () => {
@@ -64,17 +62,11 @@ const submitSettings = () => {
                 </Link>
 
                 <Link
-                    href="/admin/forums/reports"
+                    href="/admin/reports?type=forum_post"
                     class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                 >
                     <Flag class="h-3.5 w-3.5 text-rose-500" />
-                    <span>Reports</span>
-                    <span
-                        v-if="pendingReportsCount > 0"
-                        class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white"
-                    >
-                        {{ pendingReportsCount }}
-                    </span>
+                    <span>Central Reports</span>
                 </Link>
 
                 <Link
@@ -281,8 +273,9 @@ const submitSettings = () => {
                                 >Profanity Filter</span
                             >
                             <p class="text-[11px] text-slate-400">
-                                Screen question and answer text against banned
-                                keywords.
+                                Screen question and answer text against
+                                centralized banned keywords defined in Reports &
+                                Safety.
                             </p>
                         </div>
                         <input
@@ -290,20 +283,6 @@ const submitSettings = () => {
                             type="checkbox"
                             class="h-4.5 w-4.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                    </div>
-
-                    <div class="pt-1">
-                        <label
-                            class="mb-1 block text-xs font-semibold text-slate-700 dark:text-gray-300"
-                        >
-                            Banned Keywords (Comma-separated)
-                        </label>
-                        <textarea
-                            v-model="form.banned_words"
-                            rows="2"
-                            placeholder="e.g. abusive_word, spam_link"
-                            class="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                        ></textarea>
                     </div>
                 </div>
             </div>
