@@ -10,11 +10,11 @@ use App\Models\ForumVote;
 use App\Models\Subject;
 use App\Models\User;
 use App\Notifications\ForumAnswerNotification;
-use App\Notifications\ForumMentionNotification;
 use App\Notifications\ForumQuestionPendingNotification;
 use App\Notifications\ForumReportNotification;
 use App\Notifications\ForumStatusNotification;
 use App\Notifications\ForumVoteNotification;
+use App\Notifications\UserMentionNotification;
 use App\Rules\CleanText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -52,7 +52,7 @@ class ForumController extends Controller
             ])
             ->filter($filters);
 
-        $posts = $postsQuery->paginate(15)->withQueryString();
+        $posts = $postsQuery->simplePaginate(15)->withQueryString();
 
         if ($userId = auth()->id()) {
             $postIds = $posts->getCollection()->pluck('id');
@@ -466,7 +466,17 @@ class ForumController extends Controller
                     ->get();
 
                 if ($mentionedUsers->isNotEmpty()) {
-                    Notification::send($mentionedUsers, new ForumMentionNotification($post, $answer, $user));
+                    Notification::send(
+                        $mentionedUsers,
+                        new UserMentionNotification(
+                            sender: $user,
+                            contextTitle: "discussion \"{$post->snippet(40)}\"",
+                            content: $answer->body,
+                            url: route('forum.show', $post->slug),
+                            itemType: 'forum_post',
+                            itemId: $post->id,
+                        )
+                    );
                     $mentionedUserIds = $mentionedUsers->pluck('id')->all();
                 }
             }
@@ -475,11 +485,13 @@ class ForumController extends Controller
         if (isset($parent)) {
             $parentAuthor = $parent->user;
             if ($parentAuthor && $parentAuthor->id !== $user->id && empty($mentionedUserIds)) {
-                $parentAuthor->notify(new ForumAnswerNotification($post, $answer, true));
+                ForumAnswerNotification::sendTo($parentAuthor, $post, $answer, true);
                 $mentionedUserIds[] = $parentAuthor->id;
             }
         } elseif ($post->user_id && $post->user_id !== $user->id && ! in_array($post->user_id, $mentionedUserIds, true)) {
-            $post->user?->notify(new ForumAnswerNotification($post, $answer, false));
+            if ($post->user) {
+                ForumAnswerNotification::sendTo($post->user, $post, $answer, false);
+            }
         }
 
         return back()->with('success', 'Answer posted!');

@@ -9,8 +9,8 @@ use App\Models\AppSetting;
 use App\Models\ChatMessage;
 use App\Models\Report;
 use App\Models\User;
-use App\Notifications\ChatMentionNotification;
 use App\Notifications\ChatReportNotification;
+use App\Notifications\UserMentionNotification;
 use App\Services\ChatProfanityFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -239,7 +239,17 @@ class ChatController extends Controller
                     ->get();
 
                 if ($mentionedUsers->isNotEmpty()) {
-                    Notification::send($mentionedUsers, new ChatMentionNotification($message, $user));
+                    Notification::send(
+                        $mentionedUsers,
+                        new UserMentionNotification(
+                            sender: $user,
+                            contextTitle: 'Global Chat',
+                            content: $message->content,
+                            url: route('chat.index'),
+                            itemType: 'chat_message',
+                            itemId: $message->id,
+                        )
+                    );
                 }
             }
         }

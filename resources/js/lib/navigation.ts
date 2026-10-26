@@ -86,13 +86,22 @@ export const primaryNavItems: NavItem[] = [
 
 export const overflowNavItems: NavItem[] = [
     {
+        label: 'Platform Guide',
+        labelBn: 'প্ল্যাটফর্ম নির্দেশিকা',
+        href: '/guide',
+        icon: 'menu_book',
+        match: (url) => url.startsWith('/guide'),
+    },
+    {
         label: 'Support Center',
+        labelBn: 'সাপোর্ট সেন্টার',
         href: '/support',
         icon: 'help',
         match: (url) => url.startsWith('/support'),
     },
     {
         label: 'Donate',
+        labelBn: 'ডোনেট করুন',
         href: '/donate',
         icon: 'volunteer_activism',
         match: (url) => url.startsWith('/donate'),

@@ -4,8 +4,8 @@ use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
-use App\Notifications\ResourceCommentMentionNotification;
 use App\Notifications\ResourceCommentNotification;
+use App\Notifications\UserMentionNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Permission;
@@ -83,7 +83,7 @@ test('replying to a comment creates 1-level deep reply', function () {
     expect($parentComment->replies->first()->parent_id)->toBe($parentComment->id);
 });
 
-test('mentioning a user sends ResourceCommentMentionNotification', function () {
+test('mentioning a user sends UserMentionNotification', function () {
     Notification::fake();
 
     $mentioned = User::factory()->create(['username' => 'target_student']);
@@ -97,8 +97,8 @@ test('mentioning a user sends ResourceCommentMentionNotification', function () {
 
     Notification::assertSentTo(
         $mentioned,
-        ResourceCommentMentionNotification::class,
-        fn ($n) => $n->resource->id === $this->resource->id && $n->sender->id === $commenter->id
+        UserMentionNotification::class,
+        fn ($n) => $n->itemId === $this->resource->id && $n->sender->id === $commenter->id
     );
 });
 

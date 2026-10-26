@@ -2,7 +2,7 @@
 
 use App\Models\AppSetting;
 use App\Models\User;
-use App\Notifications\ChatMentionNotification;
+use App\Notifications\UserMentionNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Notification;
 
@@ -23,9 +23,9 @@ test('sending a chat message with @mention notifies the mentioned user', functio
         'content' => 'Hello @alice how are you doing today?',
     ])->assertCreated();
 
-    Notification::assertSentTo($mentioned, ChatMentionNotification::class, function ($notification) use ($sender) {
+    Notification::assertSentTo($mentioned, UserMentionNotification::class, function ($notification) use ($sender) {
         return $notification->sender->id === $sender->id
-            && str_contains($notification->chatMessage->content, '@alice');
+            && str_contains($notification->content, '@alice');
     });
 });
 
@@ -40,8 +40,8 @@ test('sending a chat message with multiple @mentions notifies all valid mentione
         'content' => 'Hey @alice and @bob check this out!',
     ])->assertCreated();
 
-    Notification::assertSentTo($alice, ChatMentionNotification::class);
-    Notification::assertSentTo($bob, ChatMentionNotification::class);
+    Notification::assertSentTo($alice, UserMentionNotification::class);
+    Notification::assertSentTo($bob, UserMentionNotification::class);
 });
 
 test('mentioning oneself in a chat message does not send self notification', function () {

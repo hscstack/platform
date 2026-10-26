@@ -2,20 +2,23 @@
 
 namespace App\Notifications;
 
-use App\Models\ChatMessage;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
-class ChatMentionNotification extends Notification implements ShouldQueue
+class UserMentionNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(
-        public ChatMessage $chatMessage,
         public User $sender,
+        public string $contextTitle,
+        public string $content,
+        public string $url,
+        public ?string $itemType = null,
+        public ?int $itemId = null,
     ) {}
 
     /**
@@ -35,15 +38,16 @@ class ChatMentionNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
-        $snippet = Str::limit(strip_tags($this->chatMessage->content), 80);
+        $snippet = Str::limit(strip_tags($this->content), 80);
 
         return [
             'type' => 'user_mention',
-            'title' => "@{$this->sender->username} mentioned you in Global Chat",
+            'title' => "@{$this->sender->username} mentioned you in {$this->contextTitle}",
             'message' => "\"{$snippet}\"",
-            'url' => route('chat.index'),
-            'message_id' => $this->chatMessage->id,
+            'url' => $this->url,
             'sender_id' => $this->sender->id,
+            'item_type' => $this->itemType,
+            'item_id' => $this->itemId,
         ];
     }
 }

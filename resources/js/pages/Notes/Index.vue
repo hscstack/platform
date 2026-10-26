@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage, useRemember } from '@inertiajs/vue3';
 import {
     AlertCircle,
     Book,
@@ -98,9 +98,15 @@ const currentSort = ref<'trending' | 'top' | 'latest'>(
 );
 const searchInput = ref<string>(props.filters.search || '');
 
-// Local Resource List & Load More
-const resourceList = ref<ResourceItem[]>(props.resources?.data || []);
-const nextPageUrl = ref<string | null>(props.resources?.next_page_url || null);
+// Local Resource List & Load More (persisted automatically in history state on native Back)
+const resourceList = useRemember(
+    ref<ResourceItem[]>(props.resources?.data || []),
+    'notes_resource_list',
+);
+const nextPageUrl = useRemember(
+    ref<string | null>(props.resources?.next_page_url || null),
+    'notes_next_page_url',
+);
 const isLoadingMore = ref(false);
 
 watch(
@@ -385,10 +391,10 @@ const groupTabs = [
 const resourceTypes = [
     { key: 'all', label: 'সব', icon: null },
     { key: 'note', label: 'হ্যান্ডনোট', icon: FileText },
-    { key: 'lecture_sheet', label: 'লেকচার শিট', icon: FileText },
-    { key: 'marked_book', label: 'দাগানো বই', icon: Book },
     { key: 'video', label: 'ক্লাস', icon: Video },
+    { key: 'marked_book', label: 'দাগানো বই', icon: Book },
     { key: 'practical', label: 'ব্যবহারিক', icon: FlaskConical },
+    { key: 'lecture_sheet', label: 'লেকচার শিট', icon: FileText },
 ];
 </script>
 

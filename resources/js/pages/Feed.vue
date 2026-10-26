@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useRemember } from '@inertiajs/vue3';
 import {
     AlertCircle,
     ArrowRight,
@@ -228,10 +228,19 @@ const handleSidebarPeerSearch = () => {
     goToPeersSearch(sidebarPeerSearch.value);
 };
 
-// Feed state & progressive loading
-const items = ref<any[]>([...(props.feed?.data || [])]);
-const hasMore = ref(Boolean(props.feed?.has_more));
-const currentPage = ref(props.feed?.page || 1);
+// Feed state & progressive loading (persisted automatically in history state on native Back)
+const items = useRemember(
+    ref<any[]>([...(props.feed?.data || [])]),
+    'feed_items',
+);
+const hasMore = useRemember(
+    ref(Boolean(props.feed?.has_more)),
+    'feed_has_more',
+);
+const currentPage = useRemember(
+    ref(props.feed?.page || 1),
+    'feed_current_page',
+);
 const isLoadingMore = ref(false);
 
 watch(
@@ -576,13 +585,13 @@ const loadMore = async () => {
                 />
             </div>
 
-            <!-- Right Column: Sidebar (on PC stays on the right, width 360px) -->
+            <!-- Right Column: Sidebar (Desktop only) -->
             <aside
-                class="w-full space-y-4 lg:sticky lg:top-4 lg:w-[360px] lg:shrink-0"
+                class="hidden w-full space-y-4 lg:sticky lg:top-4 lg:block lg:w-[360px] lg:shrink-0"
             >
-                <!-- Option 1: Sidebar Peer Search Widget (Hidden on mobile, visible on desktop) -->
+                <!-- Option 1: Sidebar Peer Search Widget -->
                 <div
-                    class="hidden rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-2xs lg:block dark:border-gray-800 dark:bg-gray-900"
+                    class="rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div class="flex items-center gap-2">
                         <div
@@ -690,6 +699,43 @@ const loadMore = async () => {
                             <ArrowRight class="h-3.5 w-3.5" />
                         </Link>
                     </div>
+                </div>
+
+                <!-- Desktop Sidebar Mini Footer -->
+                <div
+                    class="px-2 pt-1 text-[11px] leading-relaxed text-slate-400 dark:text-gray-500"
+                >
+                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <Link href="/about" class="hover:underline"
+                            >পরিচিতি</Link
+                        >
+                        <span>·</span>
+                        <Link href="/guide" class="hover:underline"
+                            >নির্দেশিকা</Link
+                        >
+                        <span>·</span>
+                        <Link href="/support" class="hover:underline"
+                            >সহায়তা</Link
+                        >
+                        <span>·</span>
+                        <Link href="/donate" class="hover:underline"
+                            >ডোনেট</Link
+                        >
+                        <span>·</span>
+                        <Link href="/privacy" class="hover:underline"
+                            >গোপনীয়তা</Link
+                        >
+                        <span>·</span>
+                        <Link href="/terms" class="hover:underline"
+                            >শর্তাবলী</Link
+                        >
+                    </div>
+                    <p
+                        class="mt-2 text-[10px] text-slate-400/80 dark:text-gray-500/80"
+                    >
+                        © {{ new Date().getFullYear() }} HSC Stack. সর্বস্বত্ব
+                        সংরক্ষিত।
+                    </p>
                 </div>
             </aside>
         </div>
