@@ -47,14 +47,12 @@ test('unauthenticated users can view forum index and show', function () {
         );
 });
 
-test('authenticated user can view the ask question page and guest is redirected', function () {
-    $guestResponse = $this->get('/forum/ask');
+test('guest is redirected when creating a question', function () {
+    $guestResponse = $this->post('/forum', [
+        'body' => 'How to solve this problem?',
+        'curriculum' => 'hsc',
+    ]);
     $guestResponse->assertRedirect('/login');
-
-    $user = User::factory()->create();
-    $authResponse = $this->actingAs($user)->get('/forum/ask');
-    $authResponse->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Forum/Create'));
 });
 
 test('authenticated user can create a question', function () {
@@ -363,7 +361,7 @@ test('deleting a post cleans up all child answer images from storage', function 
         'curriculum' => 'hsc',
         'slug' => 'test-slug-'.Str::random(6),
         'body' => 'Post with Image Answers Testing image cleanup.',
-        'image_path' => 'forum/posts/test_post.png',
+        'images' => ['forum/posts/test_post.png'],
     ]);
     Storage::put('forum/posts/test_post.png', 'fake post image');
 
@@ -499,17 +497,6 @@ test('author and admin can view pending or flagged questions but other users get
     $this->get(route('forum.show', $pendingPost))->assertInertia(fn ($page) => $page->component('errors/404'));
 });
 
-test('suspended user cannot access ask question page', function () {
-    $suspendedUser = User::factory()->create([
-        'banned_until' => now()->addDays(2),
-    ]);
-
-    $this->actingAs($suspendedUser)
-        ->get('/forum/ask')
-        ->assertRedirect(route('forum.index'))
-        ->assertSessionHas('error');
-});
-
 test('suspended user cannot create forum questions', function () {
     $suspendedUser = User::factory()->create([
         'banned_until' => now()->addDays(2),
@@ -578,4 +565,28 @@ test('suspended user cannot vote on forum questions or answers', function () {
         ->assertSessionHas('error');
 
     expect($answer->fresh()->vote_score)->toBe(0);
+});
+
+test('authenticated user can generate presigned upload urls for forum post images', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->postJson('/forum/upload-url', [
+            'files' => [
+                [
+                    'content_type' => 'image/png',
+                    'size' => 1024 * 50,
+                ],
+            ],
+        ]);
+
+    $response->assertOk()
+        ->assertJsonStructure([
+            'urls' => [
+                ['key', 'upload_url'],
+            ],
+        ]);
+
+    $key = $response->json('urls.0.key');
+    expect($key)->toStartWith('forum/posts/');
 });

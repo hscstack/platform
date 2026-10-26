@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
+    AlertCircle,
     ArrowRight,
     BookOpen,
     Check,
@@ -22,6 +23,7 @@ import AdUnit from '@/components/AdUnit.vue';
 import BaseModal from '@/components/BaseModal.vue';
 import BlogFeedCard from '@/components/blogs/BlogFeedCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import AskQuestionModal from '@/components/forum/AskQuestionModal.vue';
 import ForumFeedCard from '@/components/forum/ForumFeedCard.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -44,24 +46,31 @@ interface Subject {
     nodes?: SubjectNode[];
 }
 
-const props = defineProps<{
-    feed: {
-        data: any[];
-        has_more?: boolean;
-        page?: number;
-    };
-    subjects: Subject[];
-    course: 'hsc' | 'ssc';
-    group?: 'science' | 'commerce' | 'humanities';
-    sort: 'trending' | 'recent';
-    notice?: any;
-}>();
+const props = withDefaults(
+    defineProps<{
+        feed: {
+            data: any[];
+            has_more?: boolean;
+            page?: number;
+        };
+        subjects: Subject[];
+        course: 'hsc' | 'ssc';
+        group?: 'science' | 'commerce' | 'humanities';
+        sort: 'trending' | 'recent';
+        notice?: any;
+        allow_resource_uploads?: boolean;
+    }>(),
+    {
+        allow_resource_uploads: true,
+    },
+);
 
 const { user, requireAuth } = useAuth();
 
 // Intermediate Action Modal State (Ask Question vs Upload Resource)
 const isActionChoiceModalOpen = ref(false);
 const isResourceUploadModalOpen = ref(false);
+const isAskQuestionModalOpen = ref(false);
 
 const handleComposeClick = () => {
     requireAuth('পোস্ট করতে অনুগ্রহ করে লগইন করুন।', () => {
@@ -71,11 +80,20 @@ const handleComposeClick = () => {
 
 const chooseAskQuestion = () => {
     isActionChoiceModalOpen.value = false;
-    router.visit('/forum/ask');
+    isAskQuestionModalOpen.value = true;
 };
+
+const isUploadDisabledModalOpen = ref(false);
 
 const chooseUploadResource = () => {
     isActionChoiceModalOpen.value = false;
+
+    if (props.allow_resource_uploads === false) {
+        isUploadDisabledModalOpen.value = true;
+
+        return;
+    }
+
     isResourceUploadModalOpen.value = true;
 };
 
@@ -137,12 +155,47 @@ const handleWindowClick = (e: MouseEvent) => {
     }
 };
 
+// Feed Infinite Scroll Observer
+const feedSentinelRef = ref<HTMLElement | null>(null);
+let feedObserver: IntersectionObserver | null = null;
+
 onMounted(() => {
     window.addEventListener('click', handleWindowClick);
+
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+        feedObserver = new IntersectionObserver(
+            (entries) => {
+                if (
+                    entries[0]?.isIntersecting &&
+                    hasMore.value &&
+                    !isLoadingMore.value
+                ) {
+                    loadMore();
+                }
+            },
+            { rootMargin: '350px' },
+        );
+
+        if (feedSentinelRef.value) {
+            feedObserver.observe(feedSentinelRef.value);
+        }
+    }
+});
+
+watch(feedSentinelRef, (el) => {
+    if (feedObserver && el) {
+        feedObserver.disconnect();
+        feedObserver.observe(el);
+    }
 });
 
 onUnmounted(() => {
     window.removeEventListener('click', handleWindowClick);
+
+    if (feedObserver) {
+        feedObserver.disconnect();
+        feedObserver = null;
+    }
 });
 
 // Peer Search State & Handlers
@@ -494,23 +547,18 @@ const loadMore = async () => {
                         />
                     </template>
 
-                    <!-- Load More Button -->
+                    <!-- Infinite Scroll Sentinel & Loader -->
                     <div class="pt-4 text-center">
-                        <button
+                        <div
                             v-if="hasMore"
-                            type="button"
-                            @click="loadMore"
-                            :disabled="isLoadingMore"
-                            class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                            ref="feedSentinelRef"
+                            class="flex justify-center py-4"
                         >
                             <Loader2
                                 v-if="isLoadingMore"
-                                class="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400"
+                                class="h-5 w-5 animate-spin text-indigo-600 dark:text-indigo-400"
                             />
-                            <span>{{
-                                isLoadingMore ? 'Loading more...' : 'Load More'
-                            }}</span>
-                        </button>
+                        </div>
                         <p
                             v-else
                             class="text-xs font-medium text-slate-400 dark:text-gray-500"
@@ -712,10 +760,53 @@ const loadMore = async () => {
         </div>
     </BaseModal>
 
+    <!-- Upload Disabled Notice Modal -->
+    <BaseModal
+        :is-open="isUploadDisabledModalOpen"
+        title="নোট আপলোড স্থগিত"
+        max-width="md"
+        @close="isUploadDisabledModalOpen = false"
+    >
+        <div class="space-y-4 p-5 text-center">
+            <div
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+            >
+                <AlertCircle class="h-6 w-6 stroke-[2]" />
+            </div>
+            <p class="text-sm font-semibold text-slate-800 dark:text-gray-100">
+                প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন রিসোর্স
+                আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।
+            </p>
+            <p
+                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+            >
+                খুব দ্রুতই পুনরায় নোট আপলোড চালু করা হবে। এই সময়ে আপনি যেকোনো
+                বিদ্যমান নোট ও আর্কাইভ ব্রাউজ ও পড়তে পারেন।
+            </p>
+            <div class="pt-2">
+                <button
+                    type="button"
+                    @click="isUploadDisabledModalOpen = false"
+                    class="w-full cursor-pointer rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100"
+                >
+                    বুঝেছি
+                </button>
+            </div>
+        </div>
+    </BaseModal>
+
     <!-- Upload Resource Modal (Dedicated Note/Resource Archive modal with subjects & chapters) -->
     <ResourceFormModal
         :is-open="isResourceUploadModalOpen"
         :subjects="subjects"
         @close="isResourceUploadModalOpen = false"
+    />
+
+    <!-- Ask Question Modal (Modal replacement for /forum/ask) -->
+    <AskQuestionModal
+        v-model:is-open="isAskQuestionModalOpen"
+        :subjects="subjects"
+        :initial-curriculum="currentCourse"
+        @close="isAskQuestionModalOpen = false"
     />
 </template>

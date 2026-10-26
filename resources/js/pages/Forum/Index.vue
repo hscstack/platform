@@ -14,6 +14,7 @@ import AdUnit from '@/components/AdUnit.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import AskQuestionModal from '@/components/forum/AskQuestionModal.vue';
 import ForumPostCard from '@/components/forum/ForumPostCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -345,13 +346,15 @@ const isUserBanned = computed(() => {
     return Boolean(user.value?.is_banned);
 });
 
+const isAskModalOpen = ref(false);
+
 const handleAskQuestion = () => {
     if (props.postingEnabled === false || isUserBanned.value) {
         return;
     }
 
     if (requireAuth('Please sign in to ask a question in the forum.')) {
-        router.visit('/forum/ask');
+        isAskModalOpen.value = true;
     }
 };
 </script>
@@ -901,6 +904,14 @@ const handleAskQuestion = () => {
 
         <!-- Auth Modal -->
         <AuthModal v-model="showAuthModal" :message="authModalMessage" />
+
+        <!-- Ask Question Modal -->
+        <AskQuestionModal
+            v-model:is-open="isAskModalOpen"
+            :subjects="subjects"
+            :initial-curriculum="selectedCurriculum || 'hsc'"
+            @close="isAskModalOpen = false"
+        />
 
         <!-- PWA Install Prompt Modal -->
         <PwaInstallPrompt variant="modal" />

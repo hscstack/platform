@@ -21,7 +21,7 @@ import {
     ShieldAlert,
     Ban,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import AdUnit from '@/components/AdUnit.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';
@@ -342,8 +342,13 @@ const submitReport = async () => {
     }
 };
 
-// Main Answer Form
+// Main Answer & Reply Form State
+const answerTextareaRef = ref<HTMLTextAreaElement | null>(null);
+const replyingTo = ref<{ id: number; username: string } | null>(null);
+
 const answerForm = useForm({
+    parent_id: null as number | null,
+    reply_to_user_id: null as number | null,
     body: '',
     image: null as File | null,
 });
@@ -417,6 +422,47 @@ const removeAnswerImage = () => {
     }
 };
 
+const cancelReply = () => {
+    replyingTo.value = null;
+    answerForm.reset();
+    removeAnswerImage();
+};
+
+const openReplyForm = (
+    rootAnswerId: number,
+    targetUsername?: string,
+    targetUserId?: number,
+) => {
+    if (props.post.is_locked || props.commentsEnabled === false) {
+        return;
+    }
+
+    if (!requireAuth('Please sign in to reply.')) {
+        return;
+    }
+
+    replyingTo.value = {
+        id: rootAnswerId,
+        username: targetUsername || 'Anonymous',
+    };
+    answerForm.parent_id = rootAnswerId;
+    answerForm.reply_to_user_id = targetUserId || null;
+
+    const mention = targetUsername ? `@${targetUsername} ` : '';
+
+    if (mention && !answerForm.body.includes(mention)) {
+        answerForm.body = `${mention}${answerForm.body.trimStart()}`;
+    }
+
+    nextTick(() => {
+        answerTextareaRef.value?.focus();
+        answerTextareaRef.value?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+        });
+    });
+};
+
 const submitAnswer = () => {
     if (isCompressingAnswerImage.value) {
         return;
@@ -432,146 +478,6 @@ const submitAnswer = () => {
         onSuccess: () => {
             answerForm.reset();
             removeAnswerImage();
-        },
-    });
-};
-
-// Reply Form State
-const activeReplyParentId = ref<number | null>(null);
-const replyForm = useForm({
-    parent_id: null as number | null,
-    reply_to_user_id: null as number | null,
-    body: '',
-    image: null as File | null,
-});
-const replyImagePreview = ref<string | null>(null);
-const replyFileInputRef = ref<HTMLInputElement | null>(null);
-
-const openReplyForm = (
-    rootAnswerId: number,
-    targetUsername?: string,
-    targetUserId?: number,
-) => {
-    if (props.post.is_locked || props.commentsEnabled === false) {
-        return;
-    }
-
-    if (!requireAuth('Please sign in to reply.')) {
-        return;
-    }
-
-    activeReplyParentId.value = rootAnswerId;
-    replyForm.parent_id = rootAnswerId;
-    replyForm.reply_to_user_id = targetUserId || null;
-    replyForm.body = targetUsername ? `@${targetUsername} ` : '';
-    replyForm.image = null;
-
-    if (replyImagePreview.value) {
-        URL.revokeObjectURL(replyImagePreview.value);
-        replyImagePreview.value = null;
-    }
-};
-
-const cancelReply = () => {
-    activeReplyParentId.value = null;
-    replyForm.reset();
-
-    if (replyImagePreview.value) {
-        URL.revokeObjectURL(replyImagePreview.value);
-        replyImagePreview.value = null;
-    }
-};
-
-const isCompressingReplyImage = ref(false);
-
-const handleReplyFileChange = async (e: Event) => {
-    const target = e.target as HTMLInputElement;
-
-    if (target.files && target.files[0]) {
-        const rawFile = target.files[0];
-        replyForm.errors.image = '';
-
-        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-
-        if (!allowed.includes(rawFile.type)) {
-            replyForm.errors.image = 'অনুমোদিত ফরম্যাট: JPG, PNG, WEBP।';
-            target.value = '';
-
-            return;
-        }
-
-        try {
-            isCompressingReplyImage.value = true;
-            let resultFile: File;
-
-            try {
-                resultFile = await compressImage(rawFile, {
-                    maxWidth: 2048,
-                    maxHeight: 2048,
-                    quality: 0.85,
-                });
-            } catch {
-                resultFile = rawFile;
-            }
-
-            if (resultFile.size > 5 * 1024 * 1024) {
-                replyForm.errors.image =
-                    'ছবিটি অপটিমাইজ করার পরও ৫MB এর বেশি। অনুগ্রহ করে ছোট ছবি নির্বাচন করুন।';
-                target.value = '';
-
-                return;
-            }
-
-            replyForm.image = resultFile;
-
-            if (replyImagePreview.value) {
-                URL.revokeObjectURL(replyImagePreview.value);
-            }
-
-            replyImagePreview.value = URL.createObjectURL(resultFile);
-        } finally {
-            isCompressingReplyImage.value = false;
-        }
-    }
-};
-
-const removeReplyImage = () => {
-    replyForm.image = null;
-    replyForm.errors.image = '';
-
-    if (replyImagePreview.value) {
-        URL.revokeObjectURL(replyImagePreview.value);
-        replyImagePreview.value = null;
-    }
-
-    if (replyFileInputRef.value) {
-        if (Array.isArray(replyFileInputRef.value)) {
-            (replyFileInputRef.value as (HTMLInputElement | null)[]).forEach(
-                (el) => {
-                    if (el) {
-                        el.value = '';
-                    }
-                },
-            );
-        } else {
-            (replyFileInputRef.value as HTMLInputElement).value = '';
-        }
-    }
-};
-
-const submitReply = () => {
-    if (isCompressingReplyImage.value) {
-        return;
-    }
-
-    if (!requireAuth('Please sign in to reply.')) {
-        return;
-    }
-
-    replyForm.post(`/forum/posts/${props.post.id}/answers`, {
-        forceFormData: true,
-        preserveScroll: true,
-        onSuccess: () => {
             cancelReply();
         },
     });
@@ -863,8 +769,61 @@ function parseMentions(
                 {{ post.body }}
             </div>
 
-            <!-- Attached Image Preview -->
-            <div v-if="post.image_url" class="mt-5">
+            <!-- Attached Images Preview (Multi-Image Support) -->
+            <div
+                v-if="post.image_urls && post.image_urls.length > 0"
+                class="mt-5"
+            >
+                <div
+                    v-if="post.image_urls.length === 1"
+                    class="inline-block overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <img
+                        :src="post.image_urls[0]"
+                        :alt="post.body?.slice(0, 50)"
+                        @click="
+                            openImageModal(
+                                post.image_urls[0],
+                                post.body?.slice(0, 50),
+                            )
+                        "
+                        class="max-h-96 cursor-zoom-in rounded-xl object-contain transition hover:opacity-95"
+                    />
+                </div>
+                <div
+                    v-else
+                    class="grid max-w-2xl gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-2 dark:border-gray-800 dark:bg-gray-900/50"
+                    :class="
+                        post.image_urls.length === 2
+                            ? 'grid-cols-2'
+                            : post.image_urls.length === 3
+                              ? 'grid-cols-3'
+                              : 'grid-cols-2 sm:grid-cols-4'
+                    "
+                >
+                    <div
+                        v-for="(imgUrl, i) in post.image_urls"
+                        :key="i"
+                        class="aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-gray-800 dark:bg-gray-800"
+                    >
+                        <img
+                            :src="imgUrl"
+                            :alt="`${post.body?.slice(0, 30)} - ${i + 1}`"
+                            @click="
+                                openImageModal(
+                                    imgUrl,
+                                    `${post.body?.slice(0, 30)} (${i + 1}/${post.image_urls.length})`,
+                                )
+                            "
+                            class="h-full w-full cursor-zoom-in object-cover transition hover:scale-105"
+                        />
+                    </div>
+                </div>
+                <p class="mt-1 text-[11px] text-slate-400 dark:text-gray-500">
+                    Click image to expand
+                </p>
+            </div>
+            <div v-else-if="post.image_url" class="mt-5">
                 <div
                     class="inline-block overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-gray-800 dark:bg-gray-900"
                 >
@@ -1096,13 +1055,32 @@ function parseMentions(
                                 answer.user.name
                             }}</span>
                             <VerifiedBadge v-if="answer.user.is_verified" />
+                            <span
+                                v-if="
+                                    post.user_id &&
+                                    answer.user_id === post.user_id
+                                "
+                                class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
+                            >
+                                Author
+                            </span>
                         </Link>
-                        <span
-                            v-else
-                            class="text-xs font-semibold text-slate-900 sm:text-sm dark:text-gray-100"
-                        >
-                            {{ answer.user?.name || 'Anonymous' }}
-                        </span>
+                        <div v-else class="inline-flex items-center gap-1.5">
+                            <span
+                                class="text-xs font-semibold text-slate-900 sm:text-sm dark:text-gray-100"
+                            >
+                                {{ answer.user?.name || 'Anonymous' }}
+                            </span>
+                            <span
+                                v-if="
+                                    post.user_id &&
+                                    answer.user_id === post.user_id
+                                "
+                                class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
+                            >
+                                Author
+                            </span>
+                        </div>
 
                         <span class="text-xs text-slate-400 dark:text-gray-500"
                             >•</span
@@ -1264,13 +1242,35 @@ function parseMentions(
                                     <VerifiedBadge
                                         v-if="reply.user.is_verified"
                                     />
+                                    <span
+                                        v-if="
+                                            post.user_id &&
+                                            reply.user_id === post.user_id
+                                        "
+                                        class="rounded-md bg-indigo-50 px-1 py-0.5 text-[9px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
+                                    >
+                                        Author
+                                    </span>
                                 </Link>
-                                <span
+                                <div
                                     v-else
-                                    class="font-semibold text-slate-800 dark:text-gray-200"
+                                    class="inline-flex items-center gap-1"
                                 >
-                                    {{ reply.user?.name || 'Anonymous' }}
-                                </span>
+                                    <span
+                                        class="font-semibold text-slate-800 dark:text-gray-200"
+                                    >
+                                        {{ reply.user?.name || 'Anonymous' }}
+                                    </span>
+                                    <span
+                                        v-if="
+                                            post.user_id &&
+                                            reply.user_id === post.user_id
+                                        "
+                                        class="rounded-md bg-indigo-50 px-1 py-0.5 text-[9px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
+                                    >
+                                        Author
+                                    </span>
+                                </div>
 
                                 <span class="text-slate-400 dark:text-gray-500"
                                     >•</span
@@ -1405,100 +1405,6 @@ function parseMentions(
                         </div>
                     </div>
                 </div>
-
-                <!-- Inline Reply Box (Shown under this root answer) -->
-                <div
-                    v-if="activeReplyParentId === answer.id"
-                    class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20"
-                >
-                    <form @submit.prevent="submitReply">
-                        <textarea
-                            v-model="replyForm.body"
-                            rows="3"
-                            required
-                            placeholder="Write your reply..."
-                            class="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 shadow-2xs placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        ></textarea>
-
-                        <p
-                            v-if="replyForm.errors.body"
-                            class="mt-1 text-xs text-rose-500"
-                        >
-                            {{ replyForm.errors.body }}
-                        </p>
-
-                        <!-- Attached Reply Image Preview -->
-                        <div
-                            v-if="replyImagePreview"
-                            class="relative mt-2 inline-block"
-                        >
-                            <img
-                                :src="replyImagePreview"
-                                alt="Reply preview"
-                                class="max-h-28 rounded-lg border border-slate-200 object-contain dark:border-gray-700"
-                            />
-                            <button
-                                type="button"
-                                @click="removeReplyImage"
-                                class="absolute top-1 right-1 rounded-md bg-slate-900/80 p-1 text-white hover:bg-rose-600"
-                            >
-                                <X class="h-3 w-3" />
-                            </button>
-                        </div>
-
-                        <!-- Reply Form Actions -->
-                        <div class="mt-2 flex items-center justify-between">
-                            <div>
-                                <input
-                                    ref="replyFileInputRef"
-                                    type="file"
-                                    :id="'reply-image-' + answer.id"
-                                    accept="image/jpeg,image/png,image/jpg,image/webp"
-                                    @click="
-                                        (e) =>
-                                            ((
-                                                e.target as HTMLInputElement
-                                            ).value = '')
-                                    "
-                                    @change="handleReplyFileChange"
-                                    class="hidden"
-                                />
-                                <label
-                                    :for="'reply-image-' + answer.id"
-                                    class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                                >
-                                    <ImageIcon class="h-3 w-3" />
-                                    <span>Image</span>
-                                </label>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    @click="cancelReply"
-                                    class="rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200/60 dark:text-gray-400 dark:hover:bg-gray-800"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    :disabled="
-                                        replyForm.processing ||
-                                        isCompressingReplyImage
-                                    "
-                                    class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50"
-                                >
-                                    <Send class="h-3 w-3" />
-                                    <span>{{
-                                        replyForm.processing
-                                            ? 'Replying...'
-                                            : 'Reply'
-                                    }}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
 
@@ -1516,13 +1422,36 @@ function parseMentions(
 
         <!-- Main Answer Submission Box -->
         <div
+            id="answer-form-box"
             class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-7 dark:border-gray-800 dark:bg-gray-900"
         >
-            <h3
-                class="mb-4 text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
-            >
-                Your Answer
-            </h3>
+            <div class="mb-4 flex items-center justify-between">
+                <h3
+                    class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
+                >
+                    {{ replyingTo ? 'Your Reply' : 'Your Answer' }}
+                </h3>
+
+                <!-- Replying Indicator Pill (Matching Resource/Blog Discussion) -->
+                <div
+                    v-if="replyingTo"
+                    class="flex items-center gap-1.5 rounded-xl bg-indigo-50/80 px-3 py-1 text-xs text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                >
+                    <CornerDownRight class="h-3.5 w-3.5" />
+                    <span
+                        >Replying to
+                        <strong>@{{ replyingTo.username }}</strong></span
+                    >
+                    <button
+                        type="button"
+                        @click="cancelReply"
+                        class="ml-1 cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-gray-200"
+                        title="Cancel reply"
+                    >
+                        <X class="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            </div>
 
             <!-- Locked Discussion Notice -->
             <div
@@ -1573,18 +1502,30 @@ function parseMentions(
             >
                 <div>
                     <textarea
+                        ref="answerTextareaRef"
                         v-model="answerForm.body"
                         rows="5"
                         required
-                        placeholder="Write a clear, detailed answer to help this student..."
+                        maxlength="1000"
+                        :placeholder="
+                            replyingTo
+                                ? `Replying to @${replyingTo.username}...`
+                                : 'Write a clear, detailed answer to help this student, or mention someone with @username...'
+                        "
                         class="w-full rounded-xl border border-slate-200 bg-white p-3.5 text-sm text-slate-900 shadow-2xs transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500"
                     ></textarea>
-                    <p
-                        v-if="answerForm.errors.body"
-                        class="mt-1.5 text-xs text-rose-500"
-                    >
-                        {{ answerForm.errors.body }}
-                    </p>
+                    <div class="mt-1 flex items-center justify-between">
+                        <span class="text-xs text-slate-400 dark:text-gray-500">
+                            {{ 1000 - answerForm.body.length }} characters
+                            remaining
+                        </span>
+                        <p
+                            v-if="answerForm.errors.body"
+                            class="text-xs text-rose-500"
+                        >
+                            {{ answerForm.errors.body }}
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Answer Image Upload & Preview -->
@@ -1634,7 +1575,17 @@ function parseMentions(
                 </div>
 
                 <!-- Submit Button -->
-                <div class="flex justify-end pt-2">
+                <div class="flex items-center justify-between pt-2">
+                    <button
+                        v-if="replyingTo"
+                        type="button"
+                        @click="cancelReply"
+                        class="text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        Cancel Reply
+                    </button>
+                    <div v-else></div>
+
                     <button
                         type="submit"
                         :disabled="
@@ -1646,7 +1597,9 @@ function parseMentions(
                         <span>{{
                             answerForm.processing
                                 ? 'Posting...'
-                                : 'Post Your Answer'
+                                : replyingTo
+                                  ? 'Post Your Reply'
+                                  : 'Post Your Answer'
                         }}</span>
                     </button>
                 </div>
