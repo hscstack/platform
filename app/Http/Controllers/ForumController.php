@@ -221,7 +221,7 @@ class ForumController extends Controller
             'node_id' => ['nullable', 'exists:nodes,id'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'images' => ['nullable', 'array', 'max:4'],
-            'images.*' => ['string'],
+            'images.*' => ['string', 'max:255', 'regex:#^forum/posts/[A-Za-z0-9._/-]+$#', 'not_regex:#\\.\\.#'],
         ]);
 
         // Multi-image upload: accept an array of uploaded image paths (up to 4)

@@ -21,7 +21,7 @@ import {
     ShieldAlert,
     Ban,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import AdUnit from '@/components/AdUnit.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import ChatBanModal from '@/components/ChatBanModal.vue';

@@ -21,6 +21,13 @@ class ResourceCommentController extends Controller
             return back()->with('error', 'You are temporarily suspended from community participation.');
         }
 
+        // Restrict commenting if resource is not approved, unless user is owner or moderator
+        $isModerator = $user?->can('moderate resources');
+        $isOwner = $user && $user->id === $resource->user_id;
+        if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
+            abort(404);
+        }
+
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:1000'],
             'parent_id' => ['nullable', 'integer', 'exists:resource_comments,id'],

@@ -65,9 +65,16 @@ class DeleteUnusedImages extends Command
         );
 
         // Forum post images
+        $forumPostImages = ForumPost::whereNotNull('images')
+            ->pluck('images')
+            ->flatten()
+            ->filter(fn ($path) => is_string($path) && $path !== '' && ! str_starts_with($path, 'http'))
+            ->values()
+            ->all();
+
         $this->cleanDirectory(
             'forum/posts',
-            ForumPost::whereNotNull('image_path')->pluck('image_path')->toArray()
+            $forumPostImages
         );
 
         // Forum answer images
