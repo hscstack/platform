@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage, useRemember } from '@inertiajs/vue3';
 import {
     Search,
     X,
@@ -8,15 +8,15 @@ import {
     RotateCcw,
     Check,
     Lock,
+    Loader2,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import AdUnit from '@/components/AdUnit.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import BaseModal from '@/components/BaseModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import AskQuestionModal from '@/components/forum/AskQuestionModal.vue';
 import ForumPostCard from '@/components/forum/ForumPostCard.vue';
-import Pagination from '@/components/Pagination.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
 import { useAuth } from '@/lib/useAuth';
 
@@ -66,22 +66,16 @@ interface ForumPost {
     user_vote?: number | null;
 }
 
-interface PaginationLinks {
-    url: string | null;
-    label: string;
-    active: boolean;
-}
-
-interface PaginatedPosts {
+interface SimplePaginatedPosts {
     data: ForumPost[];
-    links: PaginationLinks[];
     current_page: number;
-    last_page: number;
-    total: number;
+    per_page: number;
+    next_page_url: string | null;
+    prev_page_url: string | null;
 }
 
 const props = defineProps<{
-    posts: PaginatedPosts;
+    posts: SimplePaginatedPosts;
     subjects: Subject[];
     filters: {
         curriculum?: string | null;
@@ -97,7 +91,99 @@ const props = defineProps<{
     disabledReason?: string;
 }>();
 
+const page = usePage();
 const { user, requireAuth, showAuthModal, authModalMessage } = useAuth();
+
+// Local Post List & Infinite Scroll (persisted in history state across native back navigation)
+const postList = useRemember(
+    ref<ForumPost[]>(props.posts?.data || []),
+    'forum_post_list',
+);
+const nextPageUrl = useRemember(
+    ref<string | null>(props.posts?.next_page_url || null),
+    'forum_next_page_url',
+);
+const isLoadingMore = ref(false);
+
+watch(
+    () => props.posts,
+    (newVal) => {
+        postList.value = newVal?.data || [];
+        nextPageUrl.value = newVal?.next_page_url || null;
+    },
+    { deep: true },
+);
+
+const loadMore = async () => {
+    if (!nextPageUrl.value || isLoadingMore.value) {
+        return;
+    }
+
+    isLoadingMore.value = true;
+
+    try {
+        const headers: Record<string, string> = {
+            'X-Inertia': 'true',
+            'X-Inertia-Partial-Component': 'Forum/Index',
+            'X-Inertia-Partial-Data': 'posts',
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+
+        if (page.version) {
+            headers['X-Inertia-Version'] = String(page.version);
+        }
+
+        const res = await fetch(nextPageUrl.value, { headers });
+
+        if (res.ok) {
+            const data = await res.json();
+            const newPosts =
+                (data?.props?.posts as SimplePaginatedPosts)?.data || [];
+            const existingIds = new Set(postList.value.map((p) => p.id));
+            const uniqueNew = newPosts.filter((p) => !existingIds.has(p.id));
+            postList.value = [...postList.value, ...uniqueNew];
+            nextPageUrl.value =
+                (data?.props?.posts as SimplePaginatedPosts)?.next_page_url ||
+                null;
+        }
+    } catch (e) {
+        console.error('Failed to load more questions:', e);
+    } finally {
+        isLoadingMore.value = false;
+    }
+};
+
+// Infinite Scroll Observer Sentinel
+const sentinelRef = ref<HTMLElement | null>(null);
+let observer: IntersectionObserver | null = null;
+
+onMounted(() => {
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+        observer = new IntersectionObserver(
+            (entries) => {
+                if (
+                    entries[0]?.isIntersecting &&
+                    nextPageUrl.value &&
+                    !isLoadingMore.value
+                ) {
+                    loadMore();
+                }
+            },
+            { rootMargin: '300px' },
+        );
+
+        if (sentinelRef.value) {
+            observer.observe(sentinelRef.value);
+        }
+    }
+});
+
+watch(sentinelRef, (el) => {
+    if (observer && el) {
+        observer.disconnect();
+        observer.observe(el);
+    }
+});
 
 const showFilterModal = ref(false);
 const searchQuery = ref(props.filters.search || '');
@@ -628,8 +714,8 @@ const handleAskQuestion = () => {
         </div>
 
         <!-- Post List Feed -->
-        <div v-if="posts.data.length > 0" class="space-y-3">
-            <template v-for="(post, index) in posts.data" :key="post.id">
+        <div v-if="postList.length > 0" class="space-y-3">
+            <template v-for="(post, index) in postList" :key="post.id">
                 <ForumPostCard :post="post" />
 
                 <!-- Demo Advertisement Placement: In-Feed Native Ad (After 2nd question) -->
@@ -641,6 +727,28 @@ const handleAskQuestion = () => {
                     cta-text="Promote with Us"
                 />
             </template>
+
+            <!-- Infinite Scroll Sentinel & Loading Indicator -->
+            <div
+                ref="sentinelRef"
+                class="flex items-center justify-center py-6 text-sm text-slate-500 dark:text-gray-400"
+            >
+                <div
+                    v-if="isLoadingMore"
+                    class="flex items-center gap-2 font-medium"
+                >
+                    <Loader2
+                        class="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400"
+                    />
+                    <span>লোড হচ্ছে...</span>
+                </div>
+                <span
+                    v-else-if="!nextPageUrl && postList.length > 0"
+                    class="text-xs text-slate-400 dark:text-gray-500"
+                >
+                    সব প্রশ্ন দেখা শেষ হয়েছে।
+                </span>
+            </div>
         </div>
 
         <!-- Empty State -->
@@ -686,14 +794,6 @@ const handleAskQuestion = () => {
                 </button>
             </div>
         </EmptyState>
-
-        <!-- Pagination -->
-        <Pagination
-            :links="posts.links"
-            :current-page="posts.current_page"
-            :last-page="posts.last_page"
-            class="mt-8"
-        />
 
         <!-- Filter & Sort Modal -->
         <BaseModal

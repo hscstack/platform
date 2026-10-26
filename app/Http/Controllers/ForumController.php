@@ -52,7 +52,7 @@ class ForumController extends Controller
             ])
             ->filter($filters);
 
-        $posts = $postsQuery->paginate(15)->withQueryString();
+        $posts = $postsQuery->simplePaginate(15)->withQueryString();
 
         if ($userId = auth()->id()) {
             $postIds = $posts->getCollection()->pluck('id');

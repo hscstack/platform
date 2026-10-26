@@ -34,10 +34,7 @@ const showBottomNav = computed(() =>
 
 // Whitelisted pages that show the marketing footer on desktop
 const DESKTOP_FOOTER_COMPONENTS = new Set([
-    'Feed',
-    'Notes/Index',
     'Blog/Index',
-    'Forum/Index',
     'Donate',
     'Projects',
     'Tracker/Index',
@@ -52,12 +49,12 @@ const DESKTOP_FOOTER_COMPONENTS = new Set([
 ]);
 
 const showFooter = computed(() => {
-    // Mobile / Portrait: only show on Feed landing page
+    // Never show full-width footer on mobile / bottom nav viewports
     if (showBottomNav.value) {
-        return page.component === 'Feed';
+        return false;
     }
 
-    // Desktop / Landscape: only show on whitelisted discovery & marketing pages
+    // Desktop: only show on finite content pages, not infinite scroll feeds
     return DESKTOP_FOOTER_COMPONENTS.has(page.component);
 });
 
