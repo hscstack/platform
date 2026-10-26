@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { BellRing, X, Check, Loader2 } from 'lucide-vue-next';
+import { BellRing, Check, Loader2 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import {
@@ -73,7 +73,7 @@ const checkShouldShow = async () => {
         if (!isPushSubscribed.value && !hasOpenModal) {
             isOpen.value = true;
         }
-    }, 3500);
+    }, 1200);
 };
 
 const handleDismiss = () => {
@@ -97,18 +97,14 @@ onMounted(() => {
 </script>
 
 <template>
-    <BaseModal :is-open="isOpen" max-width="sm" @close="handleDismiss">
+    <BaseModal
+        :is-open="isOpen"
+        :close-on-backdrop="false"
+        :close-on-esc="false"
+        max-width="sm"
+        @close="handleDismiss"
+    >
         <div class="relative overflow-hidden p-6 text-center sm:p-7">
-            <!-- Close Button -->
-            <button
-                type="button"
-                @click="handleDismiss"
-                class="absolute top-4 right-4 rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-                aria-label="Close"
-            >
-                <X class="h-4 w-4" />
-            </button>
-
             <!-- Bell Icon Header -->
             <div
                 class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-inner dark:bg-indigo-950/50 dark:text-indigo-400"
