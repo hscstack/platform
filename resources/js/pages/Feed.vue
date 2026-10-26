@@ -717,10 +717,6 @@ const loadMore = async () => {
                         <Link href="/content-policy" class="hover:underline"
                             >কনটেন্ট পলিসি</Link
                         >
-                        <span>·</span>
-                        <Link href="/support" class="hover:underline"
-                            >সহায়তা</Link
-                        >
                     </div>
                     <p
                         class="mt-2 text-[10px] text-slate-400/80 dark:text-gray-500/80"

@@ -601,31 +601,6 @@ export const SiteRail = defineComponent({
                                             )}
                                         </Link>
                                         <Link
-                                            href="/join"
-                                            class={[
-                                                'group flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight transition-colors duration-150',
-                                                isActive('/join')
-                                                    ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/60 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/20'
-                                                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100',
-                                            ]}
-                                        >
-                                            <MaterialIcon
-                                                name="person_add"
-                                                size={22}
-                                                class={`shrink-0 transition-colors duration-150 ${
-                                                    isActive('/join')
-                                                        ? 'text-indigo-600 dark:text-indigo-300'
-                                                        : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-300'
-                                                }`}
-                                            />
-                                            <span class="truncate">
-                                                Join Our Team
-                                            </span>
-                                            {isActive('/join') && (
-                                                <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-                                            )}
-                                        </Link>
-                                        <Link
                                             href="/products"
                                             class={[
                                                 'group flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight transition-colors duration-150',
@@ -649,6 +624,28 @@ export const SiteRail = defineComponent({
                                             {isActive('/products') && (
                                                 <span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                                             )}
+                                        </Link>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 px-3 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                                        <Link
+                                            href="/guide"
+                                            class="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                                        >
+                                            নির্দেশিকা
+                                        </Link>
+                                        <span>·</span>
+                                        <Link
+                                            href="/support"
+                                            class="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                                        >
+                                            সহায়তা
+                                        </Link>
+                                        <span>·</span>
+                                        <Link
+                                            href="/donate"
+                                            class="transition-colors hover:text-rose-600 dark:hover:text-rose-400"
+                                        >
+                                            ডোনেট
                                         </Link>
                                     </div>
                                 </div>
@@ -1088,9 +1085,22 @@ export const SiteDrawer = defineComponent({
                     ?.has_unread_blogs,
             ),
         );
-        const drawerNavItems = computed(() =>
-            allNavItems.filter((item) => !item.showInBottom),
-        );
+        const drawerNavItems = computed(() => {
+            const items = allNavItems.filter((item) => !item.showInBottom);
+
+            // Ensure Platform Guide is first in the phone drawer
+            return items.sort((a, b) => {
+                if (a.href === '/guide') {
+return -1;
+}
+
+                if (b.href === '/guide') {
+return 1;
+}
+
+                return 0;
+            });
+        });
 
         const showLogoutModal = ref(false);
         const isProfileMenuOpen = ref(false);
