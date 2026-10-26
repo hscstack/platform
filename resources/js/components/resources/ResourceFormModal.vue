@@ -42,6 +42,7 @@ interface SubjectItem {
     name: string;
     course?: string;
     nodes?: SubjectNode[];
+    chapters?: SubjectNode[];
 }
 
 interface ResourceData {
@@ -98,7 +99,7 @@ const modalAvailableChapters = computed(() => {
 
     const subj = props.subjects.find((s) => s.id === selectedSubjectId.value);
 
-    return subj?.nodes || [];
+    return subj?.chapters || subj?.nodes || [];
 });
 
 const isSubmitting = ref(false);
