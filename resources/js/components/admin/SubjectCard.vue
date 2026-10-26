@@ -2,14 +2,13 @@
 import { Link, router } from '@inertiajs/vue3';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 
-import SubjectIcon from '@/components/SubjectIcon.vue';
 import { usePermissions } from '@/lib/usePermissions';
 
 const { can } = usePermissions();
 
-const { subject } = defineProps({
-    subject: Object,
-});
+const { subject } = defineProps<{
+    subject: any;
+}>();
 
 const emit = defineEmits<{
     (e: 'edit', subject: any): void;
@@ -26,22 +25,15 @@ const handleDelete = () => {
     <div
         class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <!-- Left: Icon + Subject Details as Link -->
+        <!-- Left: Subject Details as Link -->
         <Link
-            :href="`/admin/subjects/${subject.slug}/nodes`"
+            :href="`/admin/subjects/${subject.id}/chapters`"
             class="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
         >
             <div
-                :class="[
-                    subject.tailwind_format ||
-                        'bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-400',
-                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 sm:h-10 sm:w-10 dark:border-white/10',
-                ]"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/5 bg-indigo-50 text-xs font-bold text-indigo-600 sm:h-10 sm:w-10 dark:border-white/10 dark:bg-indigo-950/60 dark:text-indigo-400"
             >
-                <SubjectIcon
-                    :name="subject.icon"
-                    class-name="h-4.5 w-4.5 stroke-[2]"
-                />
+                {{ subject.name?.charAt(0) || 'S' }}
             </div>
 
             <div class="flex min-w-0 flex-wrap items-center gap-2">
@@ -56,13 +48,6 @@ const handleDelete = () => {
                     class="inline-flex items-center rounded-md bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700 ring-1 ring-orange-600/20 ring-inset dark:bg-orange-950/50 dark:text-orange-300 dark:ring-orange-500/30"
                 >
                     Optional
-                </span>
-
-                <span
-                    v-if="subject.is_trackable"
-                    class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20 ring-inset dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30"
-                >
-                    Trackable
                 </span>
 
                 <span

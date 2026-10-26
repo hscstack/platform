@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
@@ -18,19 +18,15 @@ beforeEach(function () {
     $this->subject = Subject::create([
         'name' => 'Physics',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-blue-500',
-        'slug' => 'physics-hsc',
-        'icon' => 'atom',
     ]);
-    $this->node = Node::create([
+    $this->node = Chapter::create([
         'subject_id' => $this->subject->id,
         'name' => 'Vectors',
-        'slug' => 'vectors',
     ]);
     $this->resource = Resource::create([
         'user_id' => $this->author->id,
         'subject_id' => $this->subject->id,
-        'node_id' => $this->node->id,
+        'chapter_id' => $this->node->id,
         'resource_type' => 'note',
         'title' => 'Vector Formulas Handnote',
         'format' => 'image',

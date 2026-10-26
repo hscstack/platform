@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             SubjectSeeder::class,
             CommerceHumanitiesSubjectSeeder::class,
-            NodeSeeder::class,
+            ChapterSeeder::class,
             AdminSeeder::class,
             ResourceSeeder::class,
             ForumSeeder::class,

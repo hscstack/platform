@@ -2,10 +2,10 @@
 
 use App\Models\AppSetting;
 use App\Models\Blog;
+use App\Models\Chapter;
+use App\Models\ChapterCompletion;
 use App\Models\ForumAnswer;
 use App\Models\ForumPost;
-use App\Models\Node;
-use App\Models\NodeCompletion;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -74,10 +74,9 @@ test('public profile accurately displays forum questions, answers, and activitie
         'tailwind_format' => 'bg-indigo-500',
         'icon' => 'atom',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Vector',
-        'slug' => 'vector',
     ]);
 
     $post = ForumPost::create([
@@ -116,10 +115,9 @@ test('public profile excludes unapproved forum questions and answers', function 
         'tailwind_format' => 'bg-green-500',
         'icon' => 'beaker',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Organic Chemistry',
-        'slug' => 'organic-chemistry',
     ]);
 
     $pendingPost = ForumPost::create([
@@ -243,30 +241,24 @@ test('public profile accurately displays syllabus progress and subject breakdown
         'is_trackable' => true,
     ]);
 
-    $node1 = Node::create([
+    $node1 = Chapter::create([
         'subject_id' => $subject1->id,
         'name' => 'Vector',
-        'slug' => 'vector',
-        'is_trackable' => true,
     ]);
 
-    $node2 = Node::create([
+    $node2 = Chapter::create([
         'subject_id' => $subject1->id,
         'name' => 'Dynamics',
-        'slug' => 'dynamics',
-        'is_trackable' => true,
     ]);
 
-    $node3 = Node::create([
+    $node3 = Chapter::create([
         'subject_id' => $subject2->id,
         'name' => 'Qualitative Chemistry',
-        'slug' => 'qualitative-chem',
-        'is_trackable' => true,
     ]);
 
     // Complete 1 out of 2 for Physics (50%), 1 out of 1 for Chemistry (100%) => (50% + 100%) / 2 = 75%
-    NodeCompletion::create(['user_id' => $user->id, 'node_id' => $node1->id]);
-    NodeCompletion::create(['user_id' => $user->id, 'node_id' => $node3->id]);
+    ChapterCompletion::create(['user_id' => $user->id, 'chapter_id' => $node1->id]);
+    ChapterCompletion::create(['user_id' => $user->id, 'chapter_id' => $node3->id]);
 
     $response = $this->get('/u/syllabus_master');
     $response->assertOk();

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
@@ -29,18 +29,14 @@ test('unauthorized users cannot view moderation queue or approve/reject resource
 
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics-test',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Chapter 1',
-        'slug' => 'chapter-1',
     ]);
     $resource = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $user->id,
         'resource_type' => 'note',
         'title' => 'Test Note',
@@ -64,19 +60,15 @@ test('moderator can view resource moderation queue with counts', function () {
 
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics-queue',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Kinematics',
-        'slug' => 'kinematics',
     ]);
 
     Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $moderator->id,
         'resource_type' => 'note',
         'title' => 'Pending Note',
@@ -84,7 +76,7 @@ test('moderator can view resource moderation queue with counts', function () {
     ]);
 
     Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $moderator->id,
         'resource_type' => 'note',
         'title' => 'Approved Note',
@@ -111,27 +103,23 @@ test('moderator can batch approve pending resources to bring them live', functio
     $author = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Higher Math',
-        'slug' => 'higher-math-batch',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'calculator',
     ]);
 
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Matrix',
-        'slug' => 'matrix',
     ]);
 
     $res1 = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Matrix Basics 1',
         'status' => 'pending',
     ]);
     $res2 = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Matrix Basics 2',
@@ -162,18 +150,14 @@ test('approving already approved resource skips update without error', function 
     $author = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Math II',
-        'slug' => 'math-ii-skip',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'book',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Algebra',
-        'slug' => 'algebra',
     ]);
     $resource = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Algebra 101',
@@ -199,20 +183,16 @@ test('moderator can reject a pending resource with feedback note', function () {
 
     $subject = Subject::create([
         'name' => 'Chemistry',
-        'slug' => 'chemistry-reject',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'flask',
     ]);
 
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Acids',
-        'slug' => 'acids',
     ]);
 
     $resource = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Blurry Note',
@@ -241,21 +221,17 @@ test('regular user cannot delete resources without permission', function () {
 
     $subject = Subject::create([
         'name' => 'Math',
-        'slug' => 'math-no-del',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'calculator',
     ]);
 
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Geometry',
-        'slug' => 'geometry',
     ]);
 
     $resource = Resource::create([
         'user_id' => $author->id,
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'resource_type' => 'note',
         'title' => 'My Note',
     ]);
@@ -274,21 +250,17 @@ test('user with manage resources permission can delete a resource', function () 
 
     $subject = Subject::create([
         'name' => 'Biology',
-        'slug' => 'biology-del',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'dna',
     ]);
 
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Genetics',
-        'slug' => 'genetics',
     ]);
 
     $resource = Resource::create([
         'user_id' => $user->id,
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'resource_type' => 'note',
         'title' => 'Bad Note',
     ]);
@@ -305,20 +277,16 @@ test('rejected resources are pruned after 15 days via model:prune', function () 
     $author = User::factory()->create();
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics-prune',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Mechanics',
-        'slug' => 'mechanics',
     ]);
 
     // Resource 1: Rejected 16 days ago (should be pruned)
     $oldRejected = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Old Rejected',
@@ -328,7 +296,7 @@ test('rejected resources are pruned after 15 days via model:prune', function () 
 
     // Resource 2: Rejected 5 days ago (should be kept)
     $recentRejected = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Recent Rejected',
@@ -338,7 +306,7 @@ test('rejected resources are pruned after 15 days via model:prune', function () 
 
     // Resource 3: Approved 20 days ago (should NOT be pruned)
     $approvedResource = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Approved Note',
@@ -361,18 +329,14 @@ test('batch node creation respects should_track_top_folders parameter', function
 
     $subject = Subject::create([
         'name' => 'Biology',
-        'slug' => 'biology-trackable',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-emerald-500',
-        'icon' => 'dna',
     ]);
 
     $this->actingAs($admin)
-        ->post("/admin/subjects/{$subject->id}/nodes/batch", [
+        ->post("/admin/subjects/{$subject->id}/chapters/batch", [
             'nodes' => [
                 [
                     'name' => 'Chapter 1 Cell',
-                    'slug' => 'ch-1-cell',
                 ],
             ],
             'should_track_top_folders' => true,
@@ -380,24 +344,19 @@ test('batch node creation respects should_track_top_folders parameter', function
         ->assertRedirect()
         ->assertSessionHas('success');
 
-    $topNode = Node::where('slug', 'ch-1-cell')->first();
+    $topNode = Chapter::where('name', 'Chapter 1 Cell')->first();
 
-    expect($topNode)->not->toBeNull()
-        ->and($topNode->is_trackable)->toBeTrue();
+    expect($topNode)->not->toBeNull();
 });
 
 test('user with manage resources permission can update any resource and author can update own resource', function () {
     $subject = Subject::create([
         'name' => 'Physics',
-        'slug' => 'physics-update-test',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'atom',
     ]);
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Chapter 1',
-        'slug' => 'chapter-1',
     ]);
 
     $author = User::factory()->create();
@@ -406,7 +365,7 @@ test('user with manage resources permission can update any resource and author c
     $otherUser = User::factory()->create();
 
     $resource = Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'user_id' => $author->id,
         'resource_type' => 'note',
         'title' => 'Initial Title',

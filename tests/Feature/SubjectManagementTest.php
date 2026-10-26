@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Subject;
 
 test('admin can create a subject', function () {
@@ -10,8 +10,6 @@ test('admin can create a subject', function () {
         'name' => 'Platform Testing',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
@@ -22,8 +20,6 @@ test('admin can create a subject', function () {
         'name' => 'Platform Testing',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 });
@@ -33,11 +29,8 @@ test('admin can update a subject', function () {
 
     $subject = Subject::create([
         'name' => 'Platform Testing',
-        'slug' => 'platform-testing',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
@@ -45,8 +38,6 @@ test('admin can update a subject', function () {
         'name' => 'Platform Testing Updated',
         'course' => 'ssc',
         'group' => 'commerce',
-        'tailwind_format' => 'bg-slate-600',
-        'icon' => 'book-open',
         'sort_order' => 2,
     ]);
 
@@ -67,11 +58,8 @@ test('admin can delete a subject', function () {
 
     $subject = Subject::create([
         'name' => 'Platform Testing',
-        'slug' => 'platform-testing',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
@@ -90,11 +78,8 @@ test('admin can create a subject with custom slug', function () {
 
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => 'Custom Slug Subject',
-        'slug' => 'my-special-custom-slug',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
@@ -103,7 +88,6 @@ test('admin can create a subject with custom slug', function () {
 
     $this->assertDatabaseHas('subjects', [
         'name' => 'Custom Slug Subject',
-        'slug' => 'my-special-custom-slug',
         'group' => 'science',
     ]);
 });
@@ -113,16 +97,12 @@ test('admin can update a subject with custom slug', function () {
 
     $subject = Subject::create([
         'name' => 'Existing Subject',
-        'slug' => 'existing-subject-slug',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
     $response = $this->actingAs($admin)->patch("/admin/subjects/edit/{$subject->id}", [
-        'slug' => 'updated-custom-slug',
     ]);
 
     $response->assertRedirect();
@@ -130,7 +110,6 @@ test('admin can update a subject with custom slug', function () {
 
     $this->assertDatabaseHas('subjects', [
         'id' => $subject->id,
-        'slug' => 'updated-custom-slug',
     ]);
 });
 
@@ -140,8 +119,6 @@ test('invalid subject creation is rejected by validation', function () {
     $response = $this->actingAs($admin)->post('/admin/subjects', [
         'name' => '',
         'course' => '',
-        'tailwind_format' => '',
-        'icon' => '',
         'sort_order' => '',
     ]);
 
@@ -149,11 +126,7 @@ test('invalid subject creation is rejected by validation', function () {
 
     $response->assertSessionHasErrors([
         'name',
-        'slug',
         'course',
-        'tailwind_format',
-        'icon',
-        'sort_order',
     ]);
 });
 
@@ -162,11 +135,8 @@ test('admin can create subjects with same name in different courses', function (
 
     Subject::create([
         'name' => 'Physics',
-        'slug' => 'hsc-physics',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
@@ -174,8 +144,6 @@ test('admin can create subjects with same name in different courses', function (
         'name' => 'Physics',
         'course' => 'ssc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
     ]);
 
@@ -185,7 +153,6 @@ test('admin can create subjects with same name in different courses', function (
     $this->assertDatabaseHas('subjects', [
         'name' => 'Physics',
         'course' => 'ssc',
-        'slug' => 'ssc-physics',
         'group' => 'science',
     ]);
 });
@@ -197,8 +164,6 @@ test('admin can toggle disable on a subject', function () {
         'name' => 'Disabled Subject',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
         'is_disabled' => true,
     ]);
@@ -227,22 +192,16 @@ test('disabled subjects are hidden from home page', function () {
 
     $enabledSubject = Subject::create([
         'name' => 'Enabled Subject',
-        'slug' => 'enabled-subject',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
         'is_disabled' => false,
     ]);
 
     $disabledSubject = Subject::create([
         'name' => 'Disabled Subject',
-        'slug' => 'disabled-subject',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 2,
         'is_disabled' => true,
     ]);
@@ -263,19 +222,15 @@ test('disabled subjects return 404 for everyone including admins', function () {
 
     $disabledSubject = Subject::create([
         'name' => 'Hidden Subject',
-        'slug' => 'hidden-subject',
         'course' => 'hsc',
         'group' => 'science',
-        'tailwind_format' => 'bg-slate-500',
-        'icon' => 'book-open',
         'sort_order' => 1,
         'is_disabled' => true,
     ]);
 
-    $chapter = Node::create([
+    $chapter = Chapter::create([
         'subject_id' => $disabledSubject->id,
         'name' => 'Chapter 1',
-        'slug' => 'chapter-1',
     ]);
 
     // Guest / Regular user
@@ -304,8 +259,6 @@ test('admin can define and edit subject type group and optional status', functio
         'name' => 'Bangla 1st Paper',
         'course' => 'hsc',
         'group' => 'common',
-        'tailwind_format' => 'bg-emerald-50 text-emerald-600',
-        'icon' => 'BookOpen',
         'sort_order' => 1,
         'is_optional' => false,
     ]);

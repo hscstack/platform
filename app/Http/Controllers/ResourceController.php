@@ -5,17 +5,21 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Resource\StoreResourceRequest;
 use App\Http\Requests\Resource\UpdateResourceRequest;
 use App\Models\AppSetting;
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\ResourceComment;
 use App\Models\ResourceVote;
 use App\Models\Subject;
+use App\Models\User;
+use App\Notifications\ResourceCommentMentionNotification;
+use App\Notifications\ResourceCommentNotification;
 use App\Notifications\ResourceVoteNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -29,9 +33,9 @@ class ResourceController extends Controller
         $cachedData = Cache::remember("resource_public_{$id}", now()->addHours(6), function () use ($id) {
             $resource = Resource::with([
                 'user:id,name,username,image_path',
-                'node:id,name,slug,subject_id',
-                'node.subject:id,name,slug,course',
-                'subject:id,name,slug,course',
+                'chapter:id,name,subject_id',
+                'chapter.subject:id,name,course',
+                'subject:id,name,course',
             ])->find($id);
 
             if (! $resource || $resource->status !== 'approved') {
@@ -39,7 +43,7 @@ class ResourceController extends Controller
             }
 
             if (! $resource->relationLoaded('subject') || ! $resource->subject) {
-                $resource->setRelation('subject', $resource->node?->subject);
+                $resource->setRelation('subject', $resource->chapter?->subject);
             }
 
             $upvoters = ResourceVote::where('resource_id', $id)
@@ -328,14 +332,16 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
         $status = $isModerator ? 'approved' : 'pending';
 
-        $nodeId = ! empty($validated['node_id']) ? (int) $validated['node_id'] : null;
-        $subjectId = $nodeId
-            ? (int) (Node::where('id', $nodeId)->value('subject_id') ?? $validated['subject_id'])
+        $chapterId = ! empty($validated['chapter_id'])
+            ? (int) $validated['chapter_id']
+            : (! empty($validated['node_id']) ? (int) $validated['node_id'] : null);
+        $subjectId = $chapterId
+            ? (int) (Chapter::where('id', $chapterId)->value('subject_id') ?? $validated['subject_id'])
             : (int) $validated['subject_id'];
 
         Resource::create([
             'subject_id' => $subjectId,
-            'node_id' => $nodeId,
+            'chapter_id' => $chapterId,
             'user_id' => Auth::id(),
             'resource_type' => $validated['resource_type'],
             'title' => $validated['title'],
@@ -375,14 +381,15 @@ class ResourceController extends Controller
             'items' => $validated['items'],
         ];
 
-        if (array_key_exists('node_id', $validated)) {
-            $nodeId = ! empty($validated['node_id']) ? (int) $validated['node_id'] : null;
-            $updateData['node_id'] = $nodeId;
+        $inputChapterId = $validated['chapter_id'] ?? $validated['node_id'] ?? null;
+        if (array_key_exists('chapter_id', $validated) || array_key_exists('node_id', $validated)) {
+            $chapterId = ! empty($inputChapterId) ? (int) $inputChapterId : null;
+            $updateData['chapter_id'] = $chapterId;
 
-            if ($nodeId) {
-                $nodeSubjectId = Node::where('id', $nodeId)->value('subject_id');
-                if ($nodeSubjectId) {
-                    $updateData['subject_id'] = (int) $nodeSubjectId;
+            if ($chapterId) {
+                $chapterSubjectId = Chapter::where('id', $chapterId)->value('subject_id');
+                if ($chapterSubjectId) {
+                    $updateData['subject_id'] = (int) $chapterSubjectId;
                 }
             }
         }
@@ -474,5 +481,112 @@ class ResourceController extends Controller
         }
 
         return null;
+    }
+
+    public function mySubmissions(Request $request)
+    {
+        $user = Auth::user();
+
+        $maxLimit = $user->is_verified ? 50 : 20;
+        $counts = Resource::where('user_id', $user->id)
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $pendingCount = (int) $counts->get('pending', 0);
+        $approvedCount = (int) $counts->get('approved', 0);
+        $rejectedCount = (int) $counts->get('rejected', 0);
+        $totalCount = (int) $counts->sum();
+
+        $status = $request->query('status');
+        $query = Resource::where('user_id', $user->id)
+            ->with(['chapter.subject', 'subject'])
+            ->latest();
+
+        if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {
+            $query->where('status', $status);
+        }
+
+        $submissions = $query->paginate(15)->withQueryString();
+
+        return Inertia::render('Submissions/Index', [
+            'submissions' => $submissions,
+            'quota' => [
+                'used' => $pendingCount,
+                'max' => $maxLimit,
+                'is_verified' => (bool) $user->is_verified,
+            ],
+            'counts' => [
+                'all' => $totalCount,
+                'pending' => $pendingCount,
+                'approved' => $approvedCount,
+                'rejected' => $rejectedCount,
+            ],
+            'currentStatus' => $status ?? 'all',
+        ]);
+    }
+
+    public function storeComment(Request $request, Resource $resource)
+    {
+        $user = auth()->user();
+
+        if ($user && $user->isBanned()) {
+            return back()->with('error', 'You are temporarily suspended from community participation.');
+        }
+
+        // Restrict commenting if resource is not approved, unless user is owner or moderator
+        $isModerator = $user?->can('moderate resources');
+        $isOwner = $user && $user->id === $resource->user_id;
+        if ($resource->status !== 'approved' && ! $isModerator && ! $isOwner) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'content' => ['required', 'string', 'max:1000'],
+            'parent_id' => ['nullable', 'integer', 'exists:resource_comments,id'],
+        ]);
+
+        $parentId = $validated['parent_id'] ?? null;
+        if ($parentId) {
+            $parent = ResourceComment::where('resource_id', $resource->id)->find($parentId);
+            $parentId = $parent?->parent_id ?: $parent?->id;
+        }
+
+        $comment = $resource->comments()->create([
+            'user_id' => $user->id,
+            'parent_id' => $parentId,
+            'content' => trim($validated['content']),
+        ]);
+
+        $mentionedUserIds = [];
+
+        if (preg_match_all('/@([a-zA-Z0-9_]+)/', $comment->content, $matches)) {
+            $mentionedUsernames = array_unique(array_filter($matches[1], fn ($u) => strcasecmp($u, $user->username) !== 0));
+            if (! empty($mentionedUsernames)) {
+                $mentionedUsers = User::whereIn('username', array_slice($mentionedUsernames, 0, 5))
+                    ->select(['id', 'name', 'username', 'email'])
+                    ->get();
+
+                if ($mentionedUsers->isNotEmpty()) {
+                    Notification::send($mentionedUsers, new ResourceCommentMentionNotification($resource, $comment, $user));
+                    $mentionedUserIds = $mentionedUsers->pluck('id')->all();
+                }
+            }
+        }
+
+        if ($resource->user_id !== $user->id && ! in_array($resource->user_id, $mentionedUserIds, true)) {
+            $resource->user?->notify(new ResourceCommentNotification($resource, $comment));
+        }
+
+        return back()->with('success', 'Comment posted successfully.');
+    }
+
+    public function destroyComment(ResourceComment $comment)
+    {
+        abort_unless(auth()->id() === $comment->user_id || auth()->user()?->can('moderate resources'), 403);
+
+        $comment->delete();
+
+        return back()->with('success', 'Comment deleted successfully.');
     }
 }

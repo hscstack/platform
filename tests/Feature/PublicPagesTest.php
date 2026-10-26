@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\AppSetting;
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
@@ -81,20 +81,16 @@ test('non-existent public resources render the 404 error page', function () {
 test('public resource page loads with subject, node, and enriched SEO metadata', function () {
     $subject = Subject::create([
         'name' => 'Higher Mathematics',
-        'slug' => 'higher-math',
         'course' => 'hsc',
-        'tailwind_format' => 'bg-indigo-500',
-        'icon' => 'calculator',
     ]);
 
-    $node = Node::create([
+    $node = Chapter::create([
         'subject_id' => $subject->id,
         'name' => 'Matrix and Determinants',
-        'slug' => 'matrix-and-determinants',
     ]);
 
     $resource = App\Models\Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'resource_type' => 'video',
         'title' => 'Matrix o nirnayok 01',
         'status' => 'approved',
@@ -126,7 +122,7 @@ test('public resource page loads with subject, node, and enriched SEO metadata',
 
     // Verify resource with custom thumbnail
     $thumbResource = App\Models\Resource::create([
-        'node_id' => $node->id,
+        'chapter_id' => $node->id,
         'resource_type' => 'note',
         'title' => 'Calculus Formula Sheet',
         'status' => 'approved',

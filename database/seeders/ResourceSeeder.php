@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Resource;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -50,8 +50,8 @@ class ResourceSeeder extends Seeder
             'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
         ];
 
-        // Pick nodes across various subjects
-        $leafNodes = Node::with('subject')
+        // Pick chapters across various subjects
+        $leafNodes = Chapter::with('subject')
             ->take(50)
             ->get();
 
@@ -118,7 +118,7 @@ class ResourceSeeder extends Seeder
             }
 
             Resource::create(array_merge([
-                'node_id' => $node->id,
+                'chapter_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'note',
                 'title' => "{$node->name} সম্পূর্ণ অধ্যায়ভিত্তিক হ্যান্ডনোট",
@@ -149,7 +149,7 @@ class ResourceSeeder extends Seeder
             }
 
             Resource::create(array_merge([
-                'node_id' => $node->id,
+                'chapter_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'video',
                 'title' => "{$node->name} পূর্ণাঙ্গ মাস্টারক্লাস ও কনসেপ্ট ক্লিয়ারিং",
@@ -160,7 +160,7 @@ class ResourceSeeder extends Seeder
             // 3. Highlighted Textbook / Note in PDF Format (format = 'pdf')
             $pdfUrl = $pdfUrls[array_rand($pdfUrls)];
             Resource::create(array_merge([
-                'node_id' => $node->id,
+                'chapter_id' => $node->id,
                 'user_id' => $user->id,
                 'resource_type' => 'note',
                 'title' => "{$node->name} দাগানো মূল বই ও গুরুত্বপূর্ণ পয়েন্ট (PDF)",
@@ -177,7 +177,7 @@ class ResourceSeeder extends Seeder
             // 4. Practical / Lab Notebook (format = 'pdf')
             if ($node->id % 2 === 0) {
                 Resource::create(array_merge([
-                    'node_id' => $node->id,
+                    'chapter_id' => $node->id,
                     'user_id' => $user->id,
                     'resource_type' => 'practical',
                     'title' => "{$node->name} ব্যবহারিক নোটবুক ও এক্সপেরিমেন্ট চিত্র",
@@ -195,7 +195,7 @@ class ResourceSeeder extends Seeder
             // 5. Other Resources (format = 'pdf')
             if ($node->id % 3 === 0) {
                 Resource::create(array_merge([
-                    'node_id' => $node->id,
+                    'chapter_id' => $node->id,
                     'user_id' => $user->id,
                     'resource_type' => 'other',
                     'title' => "{$node->name} বিগত ৫ বছরের বোর্ড প্রশ্ন ব্যাংক ও সাজেশন",

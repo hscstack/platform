@@ -802,9 +802,9 @@ onUnmounted(() => {
 
                                 <!-- Link to Subject Resources -->
                                 <Link
-                                    :href="`/${subject.slug}`"
+                                    :href="`/notes?subject=${subject.id}`"
                                     target="_blank"
-                                    title="Open subject folder"
+                                    title="Open notes"
                                     class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 opacity-80 transition group-hover:opacity-100 hover:bg-slate-100 hover:text-indigo-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
                                 >
                                     <ExternalLink class="h-3.5 w-3.5" />

@@ -4,7 +4,6 @@ namespace App\Http\Requests\Subject;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 
 class StoreSubjectRequest extends FormRequest
 {
@@ -18,13 +17,9 @@ class StoreSubjectRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $slug = $this->filled('slug')
-            ? Str::slug($this->slug)
-            : Str::slug($this->course.'-'.$this->name);
-
         $this->merge([
-            'slug' => $slug,
             'group' => $this->filled('group') ? $this->group : 'science',
+            'sort_order' => $this->filled('sort_order') ? (int) $this->sort_order : 0,
         ]);
     }
 
@@ -37,13 +32,9 @@ class StoreSubjectRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100', 'min:3'],
-            'slug' => ['required', 'string', 'max:100', 'unique:subjects,slug'],
-            'tailwind_format' => ['required', 'string', 'max:100'],
-            'icon' => ['required', 'string', 'max:50'],
-            'sort_order' => ['required', 'integer'],
+            'sort_order' => ['sometimes', 'integer'],
             'course' => ['required', 'string', 'in:ssc,hsc'],
             'group' => ['sometimes', 'string', 'in:science,humanities,commerce,common'],
-            'is_trackable' => ['sometimes', 'boolean'],
             'is_optional' => ['sometimes', 'boolean'],
             'is_disabled' => ['sometimes', 'boolean'],
         ];

@@ -3,13 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Blog;
-use App\Models\Node;
+use App\Models\Chapter;
 use App\Models\Product;
 use App\Models\Resource;
 use App\Models\Subject;
 use App\Models\User;
 use App\Observers\BlogObserver;
-use App\Observers\NodeObserver;
+use App\Observers\ChapterObserver;
 use App\Observers\ProductObserver;
 use App\Observers\ResourceObserver;
 use App\Observers\SubjectObserver;
@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
 
         Blog::observe(BlogObserver::class);
-        Node::observe(NodeObserver::class);
+        Chapter::observe(ChapterObserver::class);
         Product::observe(ProductObserver::class);
         Resource::observe(ResourceObserver::class);
         Subject::observe(SubjectObserver::class);

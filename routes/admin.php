@@ -1,15 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\ChatSettingsController;
+use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailController as AdminEmailController;
 use App\Http\Controllers\Admin\ForumController as AdminForumController;
-use App\Http\Controllers\Admin\NodeController as AdminNodeController;
-use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
-use App\Http\Controllers\Admin\PeerSettingsController;
-use App\Http\Controllers\Admin\PlatformSettingsController as AdminPlatformSettingsController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
-use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Cache;
@@ -19,18 +16,18 @@ Route::get('/', [DashboardController::class, 'index'])->name('index');
 Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
 
 // Subjects & Chapters
-Route::get('/subjects', [AdminSubjectController::class, 'index'])->name('subjects.index');
-Route::get('/subjects/{subject:slug}/nodes', [AdminNodeController::class, 'show'])->name('nodes.index');
+Route::get('/subjects', [CurriculumController::class, 'subjectIndex'])->name('subjects.index');
+Route::get('/subjects/{subject}/chapters', [CurriculumController::class, 'chapterIndex'])->name('chapters.index');
 
 Route::middleware('permission:manage curriculum')->group(function () {
-    Route::post('/subjects', [AdminSubjectController::class, 'store'])->name('subjects.store');
-    Route::patch('/subjects/edit/{subject}', [AdminSubjectController::class, 'update'])->name('subjects.update');
-    Route::delete('/subjects/{subject}', [AdminSubjectController::class, 'destroy'])->name('subjects.destroy');
+    Route::post('/subjects', [CurriculumController::class, 'storeSubject'])->name('subjects.store');
+    Route::patch('/subjects/edit/{subject}', [CurriculumController::class, 'updateSubject'])->name('subjects.update');
+    Route::delete('/subjects/{subject}', [CurriculumController::class, 'destroySubject'])->name('subjects.destroy');
 
-    Route::post('/subjects/{subject}/nodes/batch', [AdminNodeController::class, 'batchStore'])->name('nodes.batch');
-    Route::post('/subjects/{subject}/nodes', [AdminNodeController::class, 'store'])->name('nodes.store');
-    Route::patch('/subjects/{subject}/nodes/{node}', [AdminNodeController::class, 'update'])->name('nodes.patch');
-    Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->name('nodes.destroy');
+    Route::post('/subjects/{subject}/chapters/batch', [CurriculumController::class, 'batchStoreChapters'])->name('chapters.batch');
+    Route::post('/subjects/{subject}/chapters', [CurriculumController::class, 'storeChapter'])->name('chapters.store');
+    Route::patch('/subjects/{subject}/chapters/{chapter}', [CurriculumController::class, 'updateChapter'])->name('chapters.patch');
+    Route::delete('/chapters/{chapter}', [CurriculumController::class, 'destroyChapter'])->name('chapters.destroy');
 });
 
 // Resources
@@ -44,14 +41,14 @@ Route::delete('/resources/{resource}', [AdminResourceController::class, 'destroy
 
 // Platform Settings & Maintenance
 Route::middleware('permission:manage settings')->group(function () {
-    Route::get('/settings/platform', [AdminPlatformSettingsController::class, 'index'])->name('platform.settings');
-    Route::post('/settings/platform', [AdminPlatformSettingsController::class, 'update'])->name('platform.settings.update');
+    Route::get('/settings/platform', [SettingsController::class, 'platform'])->name('platform.settings');
+    Route::post('/settings/platform', [SettingsController::class, 'updatePlatform'])->name('platform.settings.update');
 
-    Route::get('/notice', [AdminNoticeController::class, 'edit'])->name('notice.edit');
-    Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->name('notice.update');
+    Route::get('/notice', [SettingsController::class, 'notice'])->name('notice.edit');
+    Route::match(['patch', 'post'], '/notice', [SettingsController::class, 'updateNotice'])->name('notice.update');
 
-    Route::get('/peers/settings', [PeerSettingsController::class, 'edit'])->name('peers.settings.edit');
-    Route::post('/peers/settings', [PeerSettingsController::class, 'update'])->name('peers.settings.update');
+    Route::get('/peers/settings', [SettingsController::class, 'peers'])->name('peers.settings.edit');
+    Route::post('/peers/settings', [SettingsController::class, 'updatePeers'])->name('peers.settings.update');
 
     Route::post('/clear-cache', function () {
         Cache::flush();

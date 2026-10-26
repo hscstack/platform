@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class NodeCompletion extends Model
+class ChapterCompletion extends Model
 {
     protected $fillable = [
-        'node_id',
+        'chapter_id',
         'user_id',
     ];
 
-    public function node(): BelongsTo
+    public function chapter(): BelongsTo
     {
-        return $this->belongsTo(Node::class);
+        return $this->belongsTo(Chapter::class);
     }
 
     public function user(): BelongsTo

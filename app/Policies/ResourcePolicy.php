@@ -12,10 +12,6 @@ class ResourcePolicy
      */
     public function update(User $user, Resource $resource): bool
     {
-        if ($resource->node?->is_frozen) {
-            return false;
-        }
-
         if ($user->isBanned()) {
             return false;
         }
@@ -28,10 +24,6 @@ class ResourcePolicy
      */
     public function delete(User $user, Resource $resource): bool
     {
-        if ($resource->node?->is_frozen) {
-            return false;
-        }
-
         return $user->can('manage resources');
     }
 }

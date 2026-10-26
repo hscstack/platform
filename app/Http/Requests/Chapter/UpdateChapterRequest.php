@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Node;
+namespace App\Http\Requests\Chapter;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreNodeRequest extends FormRequest
+class UpdateChapterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +23,8 @@ class StoreNodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:200', 'min:2'],
-            'slug' => ['nullable', 'string', 'max:200'],
-            'sort_order' => ['sometimes', 'integer'],
-            'is_trackable' => ['sometimes', 'boolean'],
+            'name' => ['sometimes', 'required', 'string', 'max:200', 'min:2'],
+            'sort_order' => ['sometimes', 'nullable', 'integer'],
             'weight' => ['sometimes', 'integer', 'in:1,2,3'],
         ];
     }
