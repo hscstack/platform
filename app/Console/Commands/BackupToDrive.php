@@ -30,7 +30,8 @@ class BackupToDrive extends Command
 
         $timestamp = now()->format('Y-m-d_His');
         // Retrieve platform release version from config (app.version) or fallback to v1.0.0 for archive naming
-        $version = config('app.version') ?: 'v1.0.0';
+        $rawVersion = config('app.version') ?: 'v1.0.0';
+        $version = trim(preg_replace('/[^A-Za-z0-9._-]+/', '_', $rawVersion), '_') ?: 'v1.0.0';
 
         $this->backupDir = storage_path('app/backups');
         $this->databaseDumpPath = $this->backupDir.'/database.sql.gz';

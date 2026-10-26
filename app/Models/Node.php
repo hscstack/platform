@@ -55,4 +55,14 @@ class Node extends Model
     {
         return $this->hasMany(NodeCompletion::class);
     }
+
+    public function isEffectivelyFrozen(): bool
+    {
+        return (bool) $this->is_frozen;
+    }
+
+    public function getIsEffectivelyFrozenAttribute(): bool
+    {
+        return $this->isEffectivelyFrozen();
+    }
 }
