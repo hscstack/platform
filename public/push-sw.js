@@ -27,11 +27,14 @@ self.addEventListener('push', (event) => {
         body: payload.body || '',
         icon: payload.icon || '/favicon.png',
         badge: payload.badge || '/favicon.png',
-        tag: payload.tag || 'hscstack-push',
         data: {
             url: payload.action_url || payload.data?.url || payload.url || '/',
         },
     };
+
+    if (payload.tag) {
+        options.tag = payload.tag;
+    }
 
     event.waitUntil(self.registration.showNotification(title, options));
 });

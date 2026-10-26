@@ -910,54 +910,6 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
                     </div>
-
-                    <!-- Push Notifications Sub-Footer Bar (Option A) -->
-                    <div
-                        v-if="isPushSupported"
-                        class="flex items-center justify-between border-t border-slate-100 bg-slate-50/70 px-4 py-2.5 text-xs dark:border-gray-800 dark:bg-gray-950/60"
-                    >
-                        <div
-                            class="flex items-center gap-2 text-slate-500 dark:text-gray-400"
-                        >
-                            <component
-                                :is="isPushSubscribed ? BellRing : Bell"
-                                class="h-3.5 w-3.5"
-                                :class="
-                                    isPushSubscribed
-                                        ? 'text-emerald-500 dark:text-emerald-400'
-                                        : 'text-slate-400'
-                                "
-                            />
-                            <span class="text-[11px] font-medium"
-                                >Browser Alerts</span
-                            >
-                        </div>
-
-                        <button
-                            type="button"
-                            @click="
-                                isPushSubscribed
-                                    ? unsubscribeFromPush()
-                                    : subscribeToPush()
-                            "
-                            :disabled="isPushLoading"
-                            class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 disabled:opacity-50"
-                            :class="
-                                isPushSubscribed
-                                    ? 'bg-emerald-50 text-emerald-700 hover:bg-rose-50 hover:text-rose-600 dark:bg-emerald-950/50 dark:text-emerald-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
-                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600'
-                            "
-                        >
-                            <Loader2
-                                v-if="isPushLoading"
-                                class="h-3 w-3 animate-spin"
-                            />
-                            <template v-else>
-                                <span v-if="isPushSubscribed">Active ✓</span>
-                                <span v-else>Turn On</span>
-                            </template>
-                        </button>
-                    </div>
                 </div>
             </Transition>
         </Teleport>
