@@ -34,7 +34,7 @@ import {
         <p
             class="mx-auto max-w-md text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-gray-500"
         >
-            সর্বশেষ আপডেট: অক্টোবর ২০২৬ (v3.1)
+            সর্বশেষ আপডেট: অক্টোবর ২০২৬ 
         </p>
     </header>
 
