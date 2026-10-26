@@ -1,128 +1,40 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
-    UserPlus,
-    CheckCircle2,
-    ShieldAlert,
+    BookOpen,
+    Clock,
+    Compass,
+    Flame,
+    Heart,
     HelpCircle,
     MessageCircle,
-    Layers,
-    ChevronDown,
+    MessageSquare,
+    Newspaper,
+    Play,
+    Search,
+    Share2,
+    SlidersHorizontal,
+    Sparkles,
+    Trophy,
+    UserCheck,
+    Zap,
 } from 'lucide-vue-next';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-
-const page = usePage();
-const user = computed(() => page.props.auth?.user);
+import { onMounted, onUnmounted, ref } from 'vue';
 
 const quickLinks = [
-    { num: '00', id: 'faq', label: 'FAQ' },
-    { num: '01', id: 'getting-started', label: 'Start Here' },
-    { num: '02', id: 'dashboard', label: 'Dashboard' },
-    { num: '03', id: 'manage-contents', label: 'Manage Contents' },
-    { num: '04', id: 'manage-blogs', label: 'Blogs' },
-    { num: '05', id: 'site-notice', label: 'Site Notice' },
-    { num: '06', id: 'users', label: 'Users' },
-    { num: '07', id: 'my-profile', label: 'My Profile' },
-    { num: '08', id: 'troubleshooting', label: 'Toast Messages' },
+    { num: '01', id: 'overview', label: 'প্ল্যাটফর্ম পরিচিতি' },
+    { num: '02', id: 'finding-notes', label: 'নোট ও রিসোর্স ব্রাউজিং' },
+    { num: '03', id: 'study-tracker', label: 'স্টাডি ট্র্যাকার' },
+    { num: '04', id: 'forum-discussions', label: 'প্রশ্ন ও ফোরাম' },
+    { num: '05', id: 'global-chat', label: 'লাইভ গ্লোবাল চ্যাট' },
+    { num: '06', id: 'blogs', label: 'ব্লগ ও গাইডলাইন' },
+    { num: '07', id: 'leaderboard', label: 'লিডারবোর্ড ও মিউচুয়াল' },
+    { num: '08', id: 'profile-network', label: 'প্রোফাইল ও অ্যাপ্রিসিয়েশন' },
+    { num: '09', id: 'sharing-notes', label: 'নোট ও রিসোর্স শেয়ার' },
+    { num: '10', id: 'pwa-app', label: 'মোবাইল অ্যাপ (PWA)' },
 ];
 
-const activeId = ref('faq');
-const openFaqIndex = ref<number | null>(0);
-const INITIAL_FAQ_COUNT = 4;
-const isFaqExpanded = ref(false);
-
-const visibleFaqs = computed(() => {
-    return isFaqExpanded.value ? faqs : faqs.slice(0, INITIAL_FAQ_COUNT);
-});
-
-const toggleFaqExpand = () => {
-    isFaqExpanded.value = !isFaqExpanded.value;
-
-    if (
-        !isFaqExpanded.value &&
-        openFaqIndex.value !== null &&
-        openFaqIndex.value >= INITIAL_FAQ_COUNT
-    ) {
-        openFaqIndex.value = null;
-    }
-};
-
-const toggleFaq = (index: number) => {
-    openFaqIndex.value = openFaqIndex.value === index ? null : index;
-};
-
-const faqs = [
-    {
-        question: 'HSCStack কী এবং এটি কাদের জন্য?',
-        answer: 'HSCStack হলো বাংলাদেশের HSC ও SSC শিক্ষার্থীদের জন্য তৈরি একটি ওপেন রিসোর্স প্ল্যাটফর্ম। এখানে চ্যাপ্টার ও সাবজেক্ট অনুযায়ী প্রয়োজনীয় ক্লাস নোট, পিডিএফ, ছবি, ভিডিও এবং পরীক্ষার প্রশ্নপত্র একসাথে ফ্রি-তে খুঁজে পাওয়া যায়।',
-        type: 'text',
-    },
-    {
-        question: 'ওয়েবসাইট সম্পর্কিত নতুন আপডেট বা ঘোষণা কোথায় পাওয়া যাবে?',
-        answer: 'প্ল্যাটফর্মের সাম্প্রতিক ফিচার, কনটেন্ট আপডেট এবং গুরুত্বপূর্ণ সকল ঘোষণা পেতে ফলো করুন আমাদের অফিশিয়াল ',
-        linkText: 'Facebook পেজ',
-        linkUrl: 'https://facebook.com/hscstackbd',
-        answerAfter: '।',
-        type: 'externalLink',
-    },
-    {
-        question: 'ওয়েবসাইটটি কীভাবে অর্থায়ন করা হয়?',
-        answer: 'এটি শিক্ষার্থীদের সহায়তায় পরিচালিত একটি কমিউনিটি উদ্যোগ। কনট্রিবিউটর ও শুভাকাঙ্ক্ষীদের অনুদান এবং সহযোগিতায় প্ল্যাটফর্মটির সার্ভার ও ক্লাউড অবকাঠামো পরিচালিত হয়। আমাদের পাশে থাকতে ভিজিট করুন ',
-        linkText: 'আমাদের সাপোর্ট পেজ',
-        linkUrl: '/donate',
-        answerAfter: '।',
-        type: 'link',
-    },
-    {
-        question: 'এটি কে বা কারা পরিচালনা করে?',
-        answer: 'দেশজুড়ে ছড়িয়ে থাকা একদল উদ্যমী শিক্ষার্থী ও ডেডিকেটেড টিম প্ল্যাটফর্মটি পরিচালনা ও নিয়মিত কনটেন্ট কিউরেট করে থাকে। আমাদের টিম সম্পর্কে আরও জানতে পড়ুন ',
-        linkText: 'আমাদের কথা',
-        linkUrl: '/about-us',
-        answerAfter: '।',
-        type: 'link',
-    },
-    {
-        question: 'HSCStack কি ওপেন সোর্স?',
-        answer: 'হ্যাঁ! HSCStack সম্পূর্ণ ওপেন সোর্স একটি প্ল্যাটফর্ম। কোডবেসে কাজ করা, বাক ফিক্স করা কিংবা নতুন ফিচার যোগ করার জন্য আমাদের ',
-        linkText: 'GitHub রিপোজিটরি',
-        linkUrl: 'https://github.com/hscstack/platform',
-        answerAfter: ' ভিজিট করতে পারো।',
-        type: 'externalLink',
-    },
-    {
-        question: 'রিসোর্স দেখার জন্য কি কোনো অ্যাকাউন্ট তৈরি করতে হবে?',
-        answer: 'না, রিসোর্স খোঁজা, পড়া বা ডাউনলোড করার জন্য কোনো অ্যাকাউন্ট খোলার প্রয়োজন নেই। যেকোনো শিক্ষার্থী ফ্রিতে সরাসরি রিসোর্সগুলো ব্রাউজ ও ব্যবহার করতে পারবে।',
-        type: 'text',
-    },
-    {
-        question: 'আমি কি আমার তৈরি নোট বা রিসোর্স আপলোড করতে পারব?',
-        answer: 'কনটেন্টের মান এবং নির্ভুলতা নিশ্চিত করতে রিসোর্স আপলোডের সুবিধাটি শুধুমাত্র ভেরিফাইড মেম্বারদের জন্য নির্ধারিত। মেম্বারশিপের আবেদন করতে ',
-        linkText: 'এখানে ক্লিক করুন',
-        linkUrl: '/join',
-        answerAfter: '।',
-        type: 'link',
-    },
-    {
-        question: 'এখানে কী কী ধরনের স্টাডি মেটেরিয়াল পাওয়া যাবে?',
-        answer: 'এখানে অধ্যায়ভিত্তিক হ্যান্ডরিটেন নোটস, লেকচার শিট, সাজেস্টভ প্রশ্ন ব্যাঙ্ক, ডায়াগ্রাম এবং বিভিন্ন প্রয়োজনীয় টিউটোরিয়াল ও প্র্যাক্টিক্যাল গাইড পাওয়া যাবে।',
-        type: 'text',
-    },
-    {
-        question: 'ওয়েবসাইটটি ফোনে অ্যাপ হিসেবে ব্যবহার করা যাবে?',
-        answer: 'হ্যাঁ, প্ল্যাটফর্মটি PWA (Progressive Web App) সাপোর্টেড। ব্রাউজারের "Add to Home Screen" বা ইনস্টল পপআপ থেকে এক ক্লিকেই অ্যাপের মতো ফোনে ইনস্টল করে নেওয়া যায়।',
-        type: 'text',
-    },
-    {
-        question:
-            'ডেভেলপমেন্টে সাহায্য করতে বা কোড কন্ট্রিবিউট করতে চাইলে করণীয় কী?',
-        answer: 'HSCStack-এর ওপেন ডেভেলপমেন্ট টিমে যোগ দিতে আমাদের ',
-        linkText: 'আবেদন ফর্মে',
-        linkUrl: '/join',
-        answerAfter:
-            ' অ্যাপ্লাই করতে পারো। আবেদন গৃহীত হলে কোর ডেভেলপার হিসেবে কোডবেসে কাজ করার সুযোগ মিলবে।',
-        type: 'link',
-    },
-];
+const activeId = ref('overview');
 let observer: IntersectionObserver | null = null;
 let isManualClick = false;
 let clickTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -174,7 +86,6 @@ onMounted(() => {
             });
         },
         {
-            // Adjusted target box to match sticky header offset
             rootMargin: '-20% 0px -60% 0px',
             threshold: 0,
         },
@@ -202,741 +113,883 @@ onUnmounted(() => {
 
 <template>
     <Head>
-        <title>Contributor Handbook & Guidelines</title>
+        <title>ব্যবহার নির্দেশিকা ও টিউটোরিয়াল - HSCStack</title>
         <meta
             name="description"
-            content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."
+            content="HSCStack প্ল্যাটফর্মের সকল ফিচার কীভাবে সহজে ব্যবহার করবেন — নোটস খোঁজা, স্টাডি ট্র্যাকার, ফোরাম ও লিডারবোর্ডের পূর্ণাঙ্গ নির্দেশিকা।"
         />
         <meta
             property="og:title"
-            content="Contributor Handbook & Guidelines - HSCStack"
+            content="ব্যবহার নির্দেশিকা ও টিউটোরিয়াল - HSCStack"
         />
         <meta
             property="og:description"
-            content="Official contributor documentation and step-by-step handbook for HSCStack maintainers and curators."
+            content="HSCStack প্ল্যাটফর্মের সকল ফিচার কীভাবে সহজে ব্যবহার করবেন তার ধাপে ধাপে নির্দেশিকা।"
         />
     </Head>
 
-    <header class="mx-auto max-w-4xl px-4 pt-6 pb-4 text-center sm:pt-10">
-        <h1
-            class="mb-3 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-gray-100"
-        >
-            Contributor <span class="text-indigo-600">Guide</span>
-        </h1>
-        <p
-            class="mx-auto max-w-lg text-xs font-bold tracking-widest text-slate-500 uppercase sm:text-sm dark:text-gray-400"
-        >
-            Content Management-এর ধাপে ধাপে সম্পূর্ণ নির্দেশিকা
-        </p>
-    </header>
+    <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
+        <!-- Hero Header -->
+        <header class="mx-auto max-w-3xl text-center">
+            <h1
+                class="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-white"
+            >
+                HSCStack ব্যবহার
+                <span class="text-indigo-600 dark:text-indigo-400"
+                    >নির্দেশিকা</span
+                >
+            </h1>
+            <p
+                class="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+            >
+                হ্যান্ডরিটেন নোট সংগ্রহ, পড়াশোনার সময় ট্র্যাকিং, সহপাঠীদের
+                প্রশ্ন সমাধান এবং লিডারবোর্ডে যুক্ত হওয়ার সম্পূর্ণ গাইডলাইন।
+            </p>
+        </header>
 
-    <!-- Sticky Navigation Access Bar -->
-    <nav class="sticky top-4 z-30 mx-auto mb-10 max-w-4xl px-4">
-        <div
-            class="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-lg shadow-slate-200/50 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/95 dark:shadow-gray-900/50"
-        >
+        <!-- Sticky Quick Navigation Bar -->
+        <nav class="sticky top-4 z-30 mx-auto mt-8 mb-10 max-w-4xl">
             <div
-                class="mb-2.5 flex items-center justify-between gap-2 border-b border-slate-100 px-1 pb-2 dark:border-gray-800"
+                class="rounded-2xl border border-slate-200/90 bg-white/95 p-2.5 shadow-lg shadow-slate-200/40 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-black/40"
             >
                 <div
-                    class="flex items-center gap-2 text-xs font-extrabold tracking-wider text-slate-900 uppercase dark:text-gray-100"
+                    class="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-1 py-1"
                 >
-                    <div
-                        class="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-600 text-white"
-                    >
-                        <Layers class="h-3.5 w-3.5" />
-                    </div>
-                    <span>Quick Navigation Index</span>
-                </div>
-                <span
-                    class="text-[11px] font-bold text-slate-400 dark:text-gray-500"
-                    >9 Sections</span
-                >
-            </div>
-
-            <div
-                class="no-scrollbar flex items-center gap-2 overflow-x-auto scroll-smooth pb-1"
-            >
-                <button
-                    v-for="link in quickLinks"
-                    :key="link.id"
-                    :id="`nav-pill-${link.id}`"
-                    @click="scrollToSection(link.id)"
-                    :class="[
-                        'group flex shrink-0 items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95',
-                        activeId === link.id
-                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-xs dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300'
-                            : 'border-slate-200 bg-slate-50/80 text-slate-800 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300',
-                    ]"
-                >
-                    <span
+                    <button
+                        v-for="link in quickLinks"
+                        :key="link.id"
+                        :id="`nav-pill-${link.id}`"
+                        type="button"
+                        @click="scrollToSection(link.id)"
+                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition"
                         :class="[
-                            'flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-black transition-colors',
                             activeId === link.id
-                                ? 'bg-indigo-600 text-white'
-                                : 'border border-slate-200 bg-white text-indigo-600 group-hover:border-indigo-600 group-hover:bg-indigo-600 group-hover:text-white dark:border-gray-700 dark:bg-gray-900',
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs dark:bg-indigo-500'
+                                : 'text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
                         ]"
                     >
-                        {{ link.num }}
-                    </span>
-                    <span class="whitespace-nowrap">{{ link.label }}</span>
-                </button>
+                        <span class="text-[10px] opacity-70">{{
+                            link.num
+                        }}</span>
+                        <span>{{ link.label }}</span>
+                    </button>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <main class="mx-auto max-w-4xl px-4 pb-24 sm:px-6">
-        <div
-            class="space-y-12 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-10 dark:border-gray-700 dark:bg-gray-900"
-        >
-            <!-- Section 00: FAQ (Frequently Asked Questions) -->
-            <section
-                id="faq"
-                class="scroll-mt-44 space-y-5 border-b border-slate-100 pb-12 dark:border-gray-800"
-            >
-                <div class="flex items-center gap-2">
+        <!-- Guide Sections Content -->
+        <div class="mx-auto max-w-4xl space-y-12 sm:space-y-16">
+            <!-- 01. Overview -->
+            <section id="overview" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
                     <span
-                        class="inline-flex items-center justify-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-black text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
-                        >00</span
-                    >
-                    <h2
-                        class="text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
-                    >
-                        Frequently Asked Questions (FAQ)
-                    </h2>
-                </div>
-                <p
-                    class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
-                >
-                    HSCStack প্ল্যাটফর্ম সম্পর্কিত সাধারণ প্রশ্ন ও উত্তর:
-                </p>
-
-                <div class="space-y-3 pt-2">
-                    <div
-                        v-for="(faq, index) in visibleFaqs"
-                        :key="index"
-                        class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/50 transition-colors dark:border-gray-800 dark:bg-gray-800/40"
-                    >
-                        <button
-                            type="button"
-                            @click="toggleFaq(index)"
-                            class="flex w-full items-center justify-between gap-4 p-4 text-left font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
-                        >
-                            <span class="text-sm sm:text-base">{{
-                                faq.question
-                            }}</span>
-                            <ChevronDown
-                                class="h-4 w-4 shrink-0 transition-transform duration-200"
-                                :class="{
-                                    'rotate-180 text-indigo-600 dark:text-indigo-400':
-                                        openFaqIndex === index,
-                                }"
-                            />
-                        </button>
-
-                        <div
-                            v-show="openFaqIndex === index"
-                            class="border-t border-slate-100 px-4 pt-3 pb-4 text-sm leading-relaxed text-slate-600 dark:border-gray-800 dark:text-gray-300"
-                        >
-                            <template v-if="faq.type === 'text'">
-                                {{ faq.answer }}
-                            </template>
-                            <template v-else-if="faq.type === 'link'">
-                                {{ faq.answer }}
-                                <Link
-                                    :href="faq.linkUrl"
-                                    class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
-                                >
-                                    {{ faq.linkText }}
-                                </Link>
-                                {{ faq.answerAfter }}
-                            </template>
-                            <template v-else-if="faq.type === 'externalLink'">
-                                {{ faq.answer }}
-                                <a
-                                    :href="faq.linkUrl"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="font-bold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
-                                >
-                                    {{ faq.linkText }}
-                                </a>
-                                {{ faq.answerAfter }}
-                            </template>
-                        </div>
-                    </div>
-
-                    <!-- Expand / Collapse Toggle -->
-                    <div
-                        v-if="faqs.length > INITIAL_FAQ_COUNT"
-                        class="pt-2 text-center"
-                    >
-                        <button
-                            type="button"
-                            @click="toggleFaqExpand"
-                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300"
-                        >
-                            <span v-if="!isFaqExpanded"
-                                >Show all {{ faqs.length }} questions</span
-                            >
-                            <span v-else>Show less</span>
-                            <ChevronDown
-                                class="h-3.5 w-3.5 transition-transform duration-200"
-                                :class="{ 'rotate-180': isFaqExpanded }"
-                            />
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 01: Welcome & Getting Started -->
-            <section id="getting-started" class="scroll-mt-44 space-y-5">
-                <div class="flex items-center gap-2">
-                    <span
-                        class="inline-flex items-center justify-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-black text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                         >01</span
                     >
                     <h2
-                        class="text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-gray-100"
+                        class="text-2xl font-black text-slate-900 dark:text-white"
                     >
-                        Welcome to the Team!
+                        প্ল্যাটফর্ম পরিচিতি ও শুরু করবেন যেভাবে
                     </h2>
                 </div>
                 <p
-                    class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
                 >
-                    <strong class="font-bold text-slate-900 dark:text-gray-100"
-                        >HSCStack</strong
-                    >
-                    -কে আরও গোছানো এবং শিক্ষার্থীদের জন্য আরও উপকারী করে তুলতে
-                    আপনার অবদানের জন্য ধন্যবাদ। এই গাইডে আমাদের admin panel
-                    কীভাবে কাজ করে তা সহজ ভাষায় ব্যাখ্যা করা হয়েছে। এটি বুঝতে
-                    কোনো technical জ্ঞানের প্রয়োজন নেই।
+                    HSCStack বাংলাদেশের HSC ও SSC শিক্ষার্থীদের জন্য উন্মুক্ত
+                    একাডেমিক রিসোর্স প্ল্যাটফর্ম। এখানে কোনো পে-ওয়াল
+                    নেই—প্রতিটি অধ্যায়ের গোছানো ক্লাস লেকচার, হ্যান্ডরিটেন নোট,
+                    বোর্ড প্রশ্ন ও সাজেশন্স সবার জন্য সম্পূর্ণ ফ্রি।
                 </p>
 
-                <!-- Become Contributor CTA (Only for guests) -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div
+                            class="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                        >
+                            <Compass class="h-5 w-5" />
+                        </div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-white"
+                        >
+                            ১. কারিকুলাম ও গ্রুপ সিলেক্ট
+                        </h3>
+                        <p
+                            class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            হোমপেজে গিয়ে আপনার কোর্স (HSC বা SSC) এবং গ্রুপ
+                            (বিজ্ঞান, মানবিক, ব্যবসায় শিক্ষা) নির্বাচন করুন।
+                        </p>
+                    </div>
+
+                    <div
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div
+                            class="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+                        >
+                            <UserCheck class="h-5 w-5" />
+                        </div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-white"
+                        >
+                            ২. ফ্রি অ্যাকাউন্ট লগইন
+                        </h3>
+                        <p
+                            class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            নোট পড়ার জন্য অ্যাকাউন্টের বাধ্যবাধকতা নেই। তবে পড়ার
+                            সময় ট্র্যাক করা, প্রশ্ন করা বা নোট শেয়ার করতে গুগল
+                            দিয়ে লগইন করুন।
+                        </p>
+                    </div>
+
+                    <div
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div
+                            class="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+                        >
+                            <Zap class="h-5 w-5" />
+                        </div>
+                        <h3
+                            class="text-sm font-bold text-slate-900 dark:text-white"
+                        >
+                            ৩. দ্রুত শর্টকাট নেভিগেশন
+                        </h3>
+                        <p
+                            class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            মোবাইলে নিচের ন্যাভিগেশন বার এবং ডেস্কটপে সাইডবার
+                            থেকে সরাসরি ফোরাম, ট্র্যাকার, লিডারবোর্ড ও নোটস
+                            পেইজে যেতে পারবেন।
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 02. Finding Notes -->
+            <section id="finding-notes" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >02</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        নোট ও রিসোর্স ব্রাউজিং
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    আপনার সিলেবাসের প্রতিটি অধ্যায়ের নোট এবং ক্লাস সিরিজ সহজে
+                    খুঁজে পাওয়ার কৌশল:
+                </p>
+
                 <div
-                    v-if="!user"
-                    class="flex flex-col items-start justify-between gap-4 rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 sm:flex-row sm:items-center sm:p-6 dark:border-indigo-500/30 dark:bg-indigo-500/10"
+                    class="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                 >
                     <div class="flex items-start gap-3.5">
                         <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm sm:h-11 sm:w-11"
+                            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
                         >
-                            <UserPlus class="h-5 w-5 stroke-[2.2]" />
+                            <BookOpen class="h-4 w-4" />
                         </div>
                         <div>
                             <h3
-                                class="text-xs font-bold tracking-wide text-indigo-950 uppercase sm:text-sm dark:text-indigo-300"
+                                class="text-sm font-bold text-slate-900 dark:text-white"
                             >
-                                Become an Official Contributor
+                                চ্যাপ্টার অনুযায়ী নেভিগেশন (Subjects & Folders)
                             </h3>
                             <p
-                                class="mt-1 text-xs leading-relaxed font-medium text-indigo-800/90 sm:text-sm dark:text-indigo-300/90"
+                                class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
                             >
-                                Admin panel ব্যবহার করার জন্য আপনার একটি
-                                approved contributor account থাকা আবশ্যক।
+                                হোমপেজ থেকে সাবজেক্ট কার্ডে ক্লিক করলেই প্রতিটি
+                                পেপার এবং পেপারের ভেতরের অধ্যায়গুলো (Folders)
+                                দেখতে পাবেন। যেকোনো অধ্যায়ে ক্লিক করলে তার
+                                সবগুলো হ্যান্ডরিটেন পৃষ্ঠা, ভিডিও ক্লাস বা
+                                পিডিএফ লোড হবে।
                             </p>
                         </div>
                     </div>
-                    <Link
-                        href="/join"
-                        class="w-full shrink-0 rounded-xl bg-indigo-600 px-5 py-2.5 text-center text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-500 sm:w-auto sm:text-sm"
-                    >
-                        Apply Here
-                    </Link>
-                </div>
 
+                    <div
+                        class="flex items-start gap-3.5 border-t border-slate-100 pt-4 dark:border-gray-800"
+                    >
+                        <div
+                            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
+                        >
+                            <Play class="h-4 w-4" />
+                        </div>
+                        <div>
+                            <h3
+                                class="text-sm font-bold text-slate-900 dark:text-white"
+                            >
+                                ফুল-স্ক্রিন নোট রিডার ও ভিডিও প্লেয়ার
+                            </h3>
+                            <p
+                                class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                হ্যান্ডরিটেন নোটে ক্লিক করলে ইন্টার‍্যাক্টিভ নোট
+                                রিডারে ওপেন হবে। জুম ইন, ফুলস্ক্রিন, ডাউনলোড এবং
+                                পরের পৃষ্ঠায় যাওয়ার মসৃণ অভিজ্ঞতা পাবেন। ভিডিও
+                                প্লেয়ারে রয়েছে ডিস্ট্র্যাকশন-ফ্রি টিউটোরিয়াল
+                                দেখার সুবিধা।
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="flex items-start gap-3.5 border-t border-slate-100 pt-4 dark:border-gray-800"
+                    >
+                        <div
+                            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
+                        >
+                            <Search class="h-4 w-4" />
+                        </div>
+                        <div>
+                            <h3
+                                class="text-sm font-bold text-slate-900 dark:text-white"
+                            >
+                                সার্বিক সার্চ সুবিধা
+                            </h3>
+                            <p
+                                class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                সার্চ বারে যেকোনো অধ্যায় বা টপিকের নাম লিখলেই
+                                তাৎক্ষণিকভাবে সংশ্লিষ্ট নোটস ও রিসোর্স আপনার
+                                সামনে চলে আসবে।
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 03. Study Tracker -->
+            <section id="study-tracker" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >03</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        স্টাডি ট্র্যাকার ও ডেইলি স্ট্রাইক
+                    </h2>
+                </div>
                 <p
-                    class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
                 >
-                    আপনার account approve হওয়ার পর, আপনি কী ধরনের কাজ করবেন তার
-                    ভিত্তিতে আপনাকে একটি নির্দিষ্ট role প্রদান করা হবে, এবং আপনি
-                    আপনার Google account দিয়ে সরাসরি login করতে পারবেন।
+                    নিজে পড়ার অভ্যাস ধরে রাখতে এবং নিয়মিত অগ্রগতি ট্র্যাক করতে
+                    রয়েছে স্মার্ট স্টাডি ট্র্যাকার (<Link
+                        href="/tracker"
+                        class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >/tracker</Link
+                    >):
                 </p>
-            </section>
 
-            <hr class="border-slate-100 dark:border-gray-800" />
-
-            <!-- Section 02: Dashboard -->
-            <section
-                id="dashboard"
-                class="flex scroll-mt-44 items-start gap-4 sm:gap-5"
-            >
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 sm:h-11 sm:w-11 dark:bg-indigo-500/10"
-                >
-                    02
-                </div>
-                <div class="space-y-2">
-                    <h3
-                        class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                     >
-                        Dashboard (Overview)
-                    </h3>
-                    <p
-                        class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
-                    >
-                        Login করার পর এটিই হবে আপনার প্রথম screen। এখানে visitor
-                        traffic এবং ওয়েবসাইটের বিভিন্ন basic statistics দেখতে
-                        পাবেন।
-                    </p>
-                    <p
-                        class="block rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs font-semibold text-slate-500 italic sm:text-sm dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400"
-                    >
-                        💡 Note: এখানে আপনার কোনো action নেওয়ার প্রয়োজন নেই।
-                        এটি শুধু statistics দেখার জন্য।
-                    </p>
-                </div>
-            </section>
-
-            <hr class="border-slate-100 dark:border-gray-800" />
-
-            <!-- Section 03: Manage Contents -->
-            <section
-                id="manage-contents"
-                class="flex scroll-mt-44 items-start gap-4 sm:gap-5"
-            >
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 sm:h-11 sm:w-11 dark:bg-indigo-500/10"
-                >
-                    03
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <h3
-                            class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
+                        <div
+                            class="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white"
                         >
-                            Manage Contents
-                        </h3>
+                            <Clock
+                                class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                            />
+                            <span>টাইমার বা স্টপওয়াচ চালু করুন</span>
+                        </div>
                         <p
-                            class="mt-1 text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
+                            class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
                         >
-                            আপনি সবচেয়ে বেশি সময় এই section-এ কাজ করবেন। এখানে
-                            <strong>Subjects</strong>, <strong>Folders</strong>,
-                            এবং individual <strong>Resources</strong> manage করা
-                            হয়।
+                            কোন বিষয়ের কোন অধ্যায় পড়ছেন তা সিলেক্ট করে টাইমার অন
+                            করে পড়তে বসুন। আপনার পড়ার সময় সেকেন্ডে সেকেন্ডে
+                            নিখুঁতভাবে রেকর্ড হবে।
                         </p>
                     </div>
 
                     <div
-                        class="space-y-4 border-l-2 border-indigo-100 pl-3 sm:pl-6 dark:border-indigo-500/30"
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                     >
                         <div
-                            class="space-y-2 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 sm:p-5 dark:border-gray-700 dark:bg-gray-800/50"
+                            class="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white"
                         >
-                            <h4
-                                class="text-xs font-black tracking-wider text-indigo-600 uppercase dark:text-indigo-400"
-                            >
-                                Top Level: Subject
-                            </h4>
-                            <p
-                                class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base dark:text-gray-300"
-                            >
-                                Subject বলতে মূল academic course বোঝায়, যেমন:
-                                <strong
-                                    class="text-slate-900 dark:text-gray-100"
-                                    >Bangla 1st Paper</strong
-                                >
-                                অথবা
-                                <strong
-                                    class="text-slate-900 dark:text-gray-100"
-                                    >English 1st Paper</strong
-                                >।
-                            </p>
-                            <div
-                                class="rounded-lg border border-amber-200/60 bg-amber-50 p-3 text-xs leading-relaxed font-medium text-amber-900 sm:text-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100"
-                            >
-                                <strong>Important Rule:</strong> প্রতিটি
-                                paper-এর জন্য আলাদা Subject তৈরি করুন। (যেমন:
-                                Bangla 1st Paper-এর জন্য একটি Subject এবং Bangla
-                                2nd Paper-এর জন্য সম্পূর্ণ আলাদা একটি Subject
-                                থাকবে।) দুটি একসাথে রাখলে শিক্ষার্থীদের বুঝতে
-                                অসুবিধা হতে পারে ।
-                            </div>
+                            <Flame class="h-4 w-4 text-amber-500" />
+                            <span>স্টাডি হিটম্যাপ ও স্ট্রিক (Streak)</span>
                         </div>
-
-                        <div
-                            class="space-y-2 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 sm:p-5 dark:border-gray-700 dark:bg-gray-800/50"
+                        <p
+                            class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
                         >
-                            <h4
-                                class="text-xs font-black tracking-wider text-indigo-600 uppercase dark:text-indigo-400"
-                            >
-                                Second Level: Folders
-                            </h4>
-                            <p
-                                class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base dark:text-gray-300"
-                            >
-                                একটি Subject-এর ভেতরে Folder তৈরি করা যায়।
-                                এক্ষেত্রে Folder-কে
-                                <strong>Chapter</strong> হিসেবে ভাবতে পারেন
-                                (উদাহরণ:
-                                <em
-                                    >Bangla 1st Paper → বই পড়া প্রবন্ধ
-                                    Folder</em
-                                >)।
-                            </p>
-                            <p
-                                class="text-xs leading-relaxed font-normal text-slate-600 sm:text-sm dark:text-gray-400"
-                            >
-                                নতুন Folder তৈরি করতে
-                                <strong
-                                    class="text-slate-900 dark:text-gray-100"
-                                    >"Add Folder"</strong
-                                >
-                                বাটন ব্যবহার করুন।
-                            </p>
-                        </div>
-
-                        <div
-                            class="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 sm:p-5 dark:border-gray-700 dark:bg-gray-800/50"
-                        >
-                            <h4
-                                class="text-xs font-black tracking-wider text-indigo-600 uppercase dark:text-indigo-400"
-                            >
-                                Folder-এর ভেতরে: Resources
-                            </h4>
-                            <p
-                                class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base dark:text-gray-300"
-                            >
-                                Resource হলো আসল study material, যা শিক্ষার্থীরা
-                                ব্যবহার করবে। যেমন: একটি handwritten note-এর ১টি
-                                page = ১টি Resource। সব নোট বা ক্লাস একসাথে
-                                আপলোড না করে, ফোল্ডার অনুযায়ী ভাগ করে আপলোড
-                                করুন।
-                            </p>
-
-                            <p
-                                class="text-xs font-bold text-slate-800 sm:text-sm dark:text-gray-200"
-                            >
-                                Supported Resource Types:
-                            </p>
-                            <ul
-                                class="space-y-2 text-xs font-normal text-slate-600 sm:text-sm dark:text-gray-400"
-                            >
-                                <li class="flex items-start gap-2">
-                                    <span
-                                        class="mt-0.5 shrink-0 rounded bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
-                                        >Image</span
-                                    >
-                                    <span
-                                        >Handwritten note বা photo page-এর জন্য
-                                        single image upload।</span
-                                    >
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span
-                                        class="mt-0.5 shrink-0 rounded bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700 dark:bg-red-500/20 dark:text-red-300"
-                                        >Video</span
-                                    >
-                                    <span
-                                        >শুধু YouTube video link সাপোর্ট করা
-                                        হয়।</span
-                                    >
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span
-                                        class="mt-0.5 shrink-0 rounded bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                                        >PDF</span
-                                    >
-                                    <span
-                                        >এমন direct link যা
-                                        <code
-                                            class="rounded bg-slate-200 px-1 font-mono text-slate-800 dark:bg-gray-700 dark:text-gray-200"
-                                            >.pdf</code
-                                        >
-                                        দিয়ে শেষ হয়।</span
-                                    >
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span
-                                        class="mt-0.5 shrink-0 rounded bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300"
-                                        >Text Note</span
-                                    >
-                                    <span
-                                        >লিখিত announcement বা গুরুত্বপূর্ণ text
-                                        note-এর জন্য।</span
-                                    >
-                                </li>
-                            </ul>
-                            <p
-                                class="text-sm leading-relaxed font-normal text-slate-700 sm:text-base dark:text-gray-300"
-                            >
-                                দ্রুত content management-এর জন্য Bulk Upload
-                                Tools ব্যবহার করতে পারেন:
-                            </p>
-
-                            <ul
-                                class="space-y-2 text-xs font-normal text-slate-600 sm:text-sm dark:text-gray-400"
-                            >
-                                <li class="flex items-start gap-2">
-                                    <span
-                                        class="mt-0.5 shrink-0 rounded bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
-                                        >Bulk Images</span
-                                    >
-                                    <span
-                                        >একসাথে অনেকগুলো image page আপলোড করতে
-                                        পারবেন, ফলে প্রতিটি image আলাদাভাবে add
-                                        করার প্রয়োজন হবে না। শিক্ষার্থীদের
-                                        confusion এড়াতে "auto serial number"
-                                        অপশনটি ব্যবহার করুন, যাতে image-গুলো
-                                        সঠিক ক্রমে নামকরণ হয়।</span
-                                    >
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span
-                                        class="mt-0.5 shrink-0 rounded bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700 dark:bg-red-500/20 dark:text-red-300"
-                                        >Bulk Videos</span
-                                    >
-                                    <span
-                                        >YouTube playlist থেকে সব video
-                                        স্বয়ংক্রিয়ভাবে import করতে পারবেন, ফলে
-                                        প্রতিটি video link ম্যানুয়ালি add করতে
-                                        হবে না।</span
-                                    >
-                                </li>
-                            </ul>
-                        </div>
+                            গিটহাব স্টাইলের হিটম্যাপে সারা বছরের পড়াশোনার
+                            তীব্রতা ফুটে উঠবে। প্রতিদিন পড়ার ধারাবাহিকতা বজায়
+                            রাখলে স্ট্রিক বাড়তে থাকবে।
+                        </p>
                     </div>
                 </div>
             </section>
 
             <hr class="border-slate-100 dark:border-gray-800" />
 
-            <!-- Section 04: Manage Blogs -->
-            <section
-                id="manage-blogs"
-                class="flex scroll-mt-44 items-start gap-4 sm:gap-5"
-            >
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 sm:h-11 sm:w-11 dark:bg-indigo-500/10"
-                >
-                    04
-                </div>
-                <div class="space-y-2">
-                    <h3
-                        class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
-                    >
-                        Manage Blogs
-                    </h3>
-                    <p
-                        class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
-                    >
-                        যেসব contributor-কে blog লেখার দায়িত্ব দেওয়া হয়েছে,
-                        তারা
-                        <strong class="text-slate-900 dark:text-gray-100"
-                            >"Create Blog"</strong
-                        >
-                        ব্যবহার করে article publish করতে পারবেন।
-                    </p>
-                    <p
-                        class="text-xs leading-relaxed font-normal text-slate-600 sm:text-sm dark:text-gray-400"
-                    >
-                        Editor-এর উপরের toolbar ব্যবহার করে লেখা ফরম্যাট করুন:
-                    </p>
-                    <div
-                        class="flex flex-wrap gap-2 text-xs font-semibold text-slate-700 dark:text-gray-300"
-                    >
-                        <span
-                            class="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-gray-700 dark:bg-gray-800"
-                            ><strong>B</strong> = Bold</span
-                        >
-                        <span
-                            class="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-gray-700 dark:bg-gray-800"
-                            ><em>I</em> = Italic</span
-                        >
-                        <span
-                            class="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-gray-700 dark:bg-gray-800"
-                            ><strong>H1</strong> = Big Title</span
-                        >
-                        <span
-                            class="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-gray-700 dark:bg-gray-800"
-                            ><strong>H2 / H3</strong> = Subheadings</span
-                        >
-                    </div>
-                </div>
-            </section>
-
-            <hr class="border-slate-100 dark:border-gray-800" />
-
-            <!-- Section 05: Site Notice -->
-            <section
-                id="site-notice"
-                class="flex scroll-mt-44 items-start gap-4 sm:gap-5"
-            >
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-sm font-black text-amber-700 sm:h-11 sm:w-11 dark:bg-amber-500/10 dark:text-amber-300"
-                >
-                    05
-                </div>
-                <div class="space-y-2">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h3
-                            class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
-                        >
-                            Site Notice
-                        </h3>
-                        <span
-                            class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-800 uppercase sm:text-xs dark:bg-amber-500/20 dark:text-amber-300"
-                            >শুধুমাত্র Admin-এর জন্য</span
-                        >
-                    </div>
-                    <p
-                        class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
-                    >
-                        Public landing page-এর broadcast banner manage করার জন্য
-                        এটি ব্যবহার করা হয়। এই section শুধুমাত্র senior
-                        administrator-দের জন্য সংরক্ষিত।
-                    </p>
-                </div>
-            </section>
-
-            <hr class="border-slate-100 dark:border-gray-800" />
-
-            <!-- Section 06: Users -->
-            <section
-                id="users"
-                class="flex scroll-mt-44 items-start gap-4 sm:gap-5"
-            >
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-sm font-black text-amber-700 sm:h-11 sm:w-11 dark:bg-amber-500/10 dark:text-amber-300"
-                >
-                    06
-                </div>
-                <div class="space-y-2">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h3
-                            class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
-                        >
-                            User Management
-                        </h3>
-                        <span
-                            class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-800 uppercase sm:text-xs dark:bg-amber-500/20 dark:text-amber-300"
-                            >শুধুমাত্র Admin-এর জন্য</span
-                        >
-                    </div>
-                    <p
-                        class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
-                    >
-                        Senior administrator-রা এখান থেকে user account manage
-                        করতে এবং permission role assign করতে পারবেন।
-                    </p>
-                </div>
-            </section>
-
-            <hr class="border-slate-100 dark:border-gray-800" />
-
-            <!-- Section 07: My Profile -->
-            <section
-                id="my-profile"
-                class="flex scroll-mt-44 items-start gap-4 sm:gap-5"
-            >
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 sm:h-11 sm:w-11 dark:bg-indigo-500/10"
-                >
-                    07
-                </div>
-                <div class="space-y-2">
-                    <h3
-                        class="text-base font-bold text-slate-900 sm:text-lg dark:text-gray-100"
-                    >
-                        My Profile & Account Settings
-                    </h3>
-                    <p
-                        class="text-sm leading-relaxed font-normal text-slate-600 sm:text-base dark:text-gray-400"
-                    >
-                        যেকোনো সময় আপনি আপনার account details update করতে
-                        পারবেন। Profile photo সরাসরি আপলোড করুন — PNG, JPG বা
-                        WEBP ফরম্যাটে, সর্বোচ্চ 2MB সাইজের মধ্যে। এছাড়া bio,
-                        institution, এবং social links (Facebook, Instagram,
-                        GitHub) যোগ করতে পারবেন।
-                    </p>
-                </div>
-            </section>
-
-            <hr class="border-slate-100 dark:border-gray-800" />
-
-            <!-- Section 08: Troubleshooting -->
-            <section id="troubleshooting" class="scroll-mt-44 space-y-4">
-                <div class="flex items-center gap-2">
+            <!-- 04. Forum Discussions -->
+            <section id="forum-discussions" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
                     <span
-                        class="inline-flex items-center justify-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-black text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >04</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        প্রশ্ন ও কমিউনিটি ফোরাম
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    পড়াশোনার কোনো টপিক বুঝতে সমস্যা হলে বা কোনো ম্যাথ সলভে আটকে
+                    গেলে সরাসরি ফোরামে (<Link
+                        href="/forum"
+                        class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >/forum</Link
+                    >) শেয়ার করুন:
+                </p>
+
+                <div
+                    class="space-y-3 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <ul
+                        class="space-y-3 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-gray-300"
+                    >
+                        <li class="flex items-start gap-2.5">
+                            <span
+                                class="mt-1 h-2 w-2 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            ></span>
+                            <span
+                                ><strong>ছবি ও গণিতসহ প্রশ্ন করুন:</strong>
+                                খাতার জটিল সমীকরণ বা অংকের ছবি তুলে এক ক্লিকেই
+                                ফোরামে প্রশ্ন পোস্ট করতে পারবেন।</span
+                            >
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span
+                                class="mt-1 h-2 w-2 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            ></span>
+                            <span
+                                ><strong>সহপাঠীদের সাহায্য করুন:</strong> অন্য
+                                কারও প্রশ্নের সঠিক সমাধান জানা থাকলে উত্তর দিন।
+                                ভালো উত্তরে আপভোট পাওয়ার মাধ্যমে আপনার প্রোফাইল
+                                রেপুটেশন বৃদ্ধি পাবে।</span
+                            >
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span
+                                class="mt-1 h-2 w-2 shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            ></span>
+                            <span
+                                ><strong>আলোচনা সেকশন:</strong> প্রতিটি নোটের
+                                নিচে ডেডিকেটেড কমেন্ট সেকশন রয়েছে যেখানে নোট
+                                সংক্রান্ত যেকোনো প্রশ্ন বা মতামত শেয়ার করা
+                                যায়।</span
+                            >
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 05. Global Chat -->
+            <section id="global-chat" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >05</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        লাইভ গ্লোবাল চ্যাট ও স্টাডি কমিউনিকেশন
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    দেশের যেকোনো প্রান্তের এইচএসসি ও এসএসসি সহপাঠীদের সাথে
+                    তাৎক্ষণিক বার্তা আদান-প্রদান করতে পারেন প্ল্যাটফর্মের
+                    গ্লোবাল চ্যাটে (<Link
+                        href="/chat"
+                        class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >/chat</Link
+                    >):
+                </p>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div
+                            class="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white"
+                        >
+                            <MessageCircle
+                                class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                            />
+                            <span>রিয়েল-টাইম আলোচনা</span>
+                        </div>
+                        <p
+                            class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            পরীক্ষার প্রস্তুতি, জটিল কনসেপ্ট বা পড়াশোনার ডেইলি
+                            টিপস নিয়ে সক্রিয় শিক্ষার্থীদের সাথে সরাসরি গ্রুপ
+                            চ্যাট করুন।
+                        </p>
+                    </div>
+
+                    <div
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <div
+                            class="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white"
+                        >
+                            <Zap class="h-4 w-4 text-amber-500" />
+                            <span>কমিউনিটি নিয়মাবলী ও পরিবেশ</span>
+                        </div>
+                        <p
+                            class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                        >
+                            পড়াশোনাবান্ধব পরিবেশ বজায় রাখতে চ্যাটে শালীন ভাষা
+                            ব্যবহার করুন এবং স্প্যামিং বা অনাকাঙ্ক্ষিত লিংক
+                            শেয়ার করা থেকে বিরত থাকুন।
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 06. Educational Blogs -->
+            <section id="blogs" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >06</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        এডুকেশনাল ব্লগ ও স্টাডি গাইডলাইন
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    বোর্ড পরীক্ষা ও এডমিশন প্রস্তুতির জরুরি টিপস, স্ট্র্যাটেজি
+                    এবং সেরা আর্টিকেল পড়ুন আমাদের ব্লগ সেকশনে (<Link
+                        href="/blogs"
+                        class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >/blogs</Link
+                    >):
+                </p>
+
+                <div
+                    class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <div class="space-y-2">
+                            <h3
+                                class="flex items-center gap-2 text-xs font-bold tracking-wide text-slate-900 uppercase sm:text-sm dark:text-white"
+                            >
+                                <Newspaper
+                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                />
+                                <span>বিষয়ভিত্তিক গাইড ও বিশ্লেষণ</span>
+                            </h3>
+                            <p
+                                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                ফিজিক্স, কেমিস্ট্রি, বায়োলজি ও গণিতের মতো বিষয়ে
+                                কীভাবে পূর্ণাঙ্গ প্রস্তুতি নেওয়া যায় এবং সাধারণ
+                                ভুলগুলো এড়িয়ে চলা যায় তার বিশদ বিশ্লেষণ।
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <h3
+                                class="flex items-center gap-2 text-xs font-bold tracking-wide text-slate-900 uppercase sm:text-sm dark:text-white"
+                            >
+                                <Sparkles class="h-4 w-4 text-emerald-500" />
+                                <span>এডমিশন ও পরীক্ষার কৌশল</span>
+                            </h3>
+                            <p
+                                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                অভিজ্ঞ মেন্টর ও সিনিয়রদের পরামর্শ, টাইম
+                                ম্যানেজমেন্ট টেকনিক এবং মানসিকভাবে সুস্থ থেকে
+                                পরীক্ষার সেরা প্রস্তুতি নেওয়ার উপায়।
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 07. Leaderboard & Mutual -->
+            <section id="leaderboard" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >07</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        লিডারবোর্ড ও মিউচুয়াল ফিল্টার
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    লিডারবোর্ড (<Link
+                        href="/leaderboard"
+                        class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                        >/leaderboard</Link
+                    >) দেশের শিক্ষার্থীদের সাথে আপনার পড়াশোনার সুস্থ প্রতিযোগিতা
+                    ও কন্ট্রিবিউশন তুলে ধরে।
+                </p>
+
+                <div
+                    class="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div
+                            class="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-gray-800 dark:bg-gray-800/50"
+                        >
+                            <h3
+                                class="flex items-center gap-2 text-xs font-bold text-slate-900 sm:text-sm dark:text-white"
+                            >
+                                <Trophy class="h-4 w-4 text-amber-500" />
+                                <span
+                                    >শীর্ষ শিক্ষার্থী ও শীর্ষ কন্ট্রিবিউটর</span
+                                >
+                            </h3>
+                            <p
+                                class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                পড়ার সময়সীমা অনুযায়ী "শীর্ষ শিক্ষার্থী" এবং নোট
+                                শেয়ার করার ভিত্তিতে "শীর্ষ কন্ট্রিবিউটর"
+                                র‍্যাঙ্কিং দেখতে পারবেন।
+                            </p>
+                        </div>
+
+                        <div
+                            class="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-gray-800 dark:bg-gray-800/50"
+                        >
+                            <h3
+                                class="flex items-center gap-2 text-xs font-bold text-slate-900 sm:text-sm dark:text-white"
+                            >
+                                <SlidersHorizontal
+                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                />
+                                <span>কাস্টমাইজ ফিল্টার ও চয়েস মেমোরি</span>
+                            </h3>
+                            <p
+                                class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                            >
+                                কারিকুলাম, বিভাগ বা ব্যাচ দিয়ে ফিল্টার করতে
+                                পারেন। "আমার এই পছন্দটি মনে রাখুন" টিক দিয়ে
+                                রাখলে প্রতিবার আপনার ব্যাচের র‍্যাঙ্কিং
+                                স্বয়ংক্রিয়ভাবে দেখাবে।
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 dark:border-indigo-500/20 dark:bg-indigo-950/30"
+                    >
+                        <h4
+                            class="text-xs font-bold text-indigo-950 uppercase dark:text-indigo-300"
+                        >
+                            💡 মিউচুয়াল (Mutual) সোশ্যাল স্কোপ কী?
+                        </h4>
+                        <p
+                            class="mt-1 text-xs leading-relaxed text-indigo-900/90 dark:text-indigo-200/90"
+                        >
+                            লিডারবোর্ডের "মিউচুয়াল" সিলেক্ট করলে আপনার
+                            এপ্রিশিয়েটর অথবা আপনি যাদের এপ্রিশিয়েট করছেন
+                            (অনুসরণ করছেন) উভয় তালিকার বন্ধুরা একসাথে যুক্ত হয়ে
+                            একটি ব্যক্তিগত ফ্রেন্ড সার্কেল লিডারবোর্ড তৈরি হবে।
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 08. Profile & Appreciations -->
+            <section id="profile-network" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                         >08</span
                     >
                     <h2
-                        class="flex items-center gap-2 text-lg font-black tracking-tight text-slate-950 sm:text-xl dark:text-gray-100"
+                        class="text-2xl font-black text-slate-900 dark:text-white"
                     >
-                        Toast Notifications & Errors
+                        প্রোফাইল, অ্যাপ্রিসিয়েশন ও সোশ্যাল লিংকস
                     </h2>
                 </div>
-                <div class="grid gap-3 sm:grid-cols-2">
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    আপনার ব্যক্তিগত স্টুডেন্ট পোর্টফোলিও সাজিয়ে নিন:
+                </p>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div
-                        class="space-y-1 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-500/30 dark:bg-emerald-500/10"
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <div
-                            class="flex items-center gap-2 text-xs font-bold text-emerald-900 sm:text-sm dark:text-emerald-100"
+                        <Heart class="h-5 w-5 text-rose-500" />
+                        <h3
+                            class="mt-3 text-sm font-bold text-slate-900 dark:text-white"
                         >
-                            <CheckCircle2
-                                class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"
-                            />
-                            <span>"Success"</span>
-                        </div>
+                            অ্যাপ্রিসিয়েশন নেটওয়ার্ক
+                        </h3>
                         <p
-                            class="text-xs leading-relaxed font-medium text-emerald-800/90 dark:text-emerald-300/90"
+                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            আপনার changes সফলভাবে save হয়েছে এবং এখন live আছে।
+                            সহপাঠীদের নোট বা পড়াশোনা ভালো লাগলে তাদের প্রোফাইলে
+                            "Appreciate" দিন। উভয়পক্ষ যুক্ত হলে মিউচুয়াল স্টাডি
+                            সার্কেল গড়ে উঠবে।
                         </p>
                     </div>
 
                     <div
-                        class="space-y-1 rounded-xl border border-rose-200 bg-rose-50/50 p-4 dark:border-rose-500/30 dark:bg-rose-500/10"
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <div
-                            class="flex items-center gap-2 text-xs font-bold text-rose-900 sm:text-sm dark:text-rose-100"
+                        <Share2 class="h-5 w-5 text-indigo-500" />
+                        <h3
+                            class="mt-3 text-sm font-bold text-slate-900 dark:text-white"
                         >
-                            <ShieldAlert
-                                class="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"
-                            />
-                            <span>"Not enough permission..."</span>
-                        </div>
+                            সোশ্যাল ও ওয়েবসাইট লিংক
+                        </h3>
                         <p
-                            class="text-xs leading-relaxed font-medium text-rose-800/90 dark:text-rose-300/90"
+                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
                         >
-                            এই কাজের জন্য প্রয়োজনীয় permission আপনার account-এ
-                            নেই। Access পাওয়ার জন্য Admin-এর সাথে যোগাযোগ করুন।
+                            প্রোফাইল এডিট পেইজে আপনার ফেসবুক, ইনস্টাগ্রাম,
+                            গিটহাব ও ব্যক্তিগত ওয়েবসাইটের লিংক যোগ করে সহপাঠীদের
+                            সাথে কানেক্টেড থাকুন।
+                        </p>
+                    </div>
+
+                    <div
+                        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                    >
+                        <UserCheck class="h-5 w-5 text-emerald-500" />
+                        <h3
+                            class="mt-3 text-sm font-bold text-slate-900 dark:text-white"
+                        >
+                            ভেরিফাইড ব্যাজ
+                        </h3>
+                        <p
+                            class="mt-1 text-xs text-slate-500 dark:text-gray-400"
+                        >
+                            বিশ্বস্ত কন্ট্রিবিউটর এবং শীর্ষ সহায়তাকারীদের
+                            প্রোফাইলে ভেরিফাইড মেম্বার ব্যাজ প্রদর্শিত হয়।
                         </p>
                     </div>
                 </div>
             </section>
 
-            <!-- Support Footer -->
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 09. Sharing Notes -->
+            <section id="sharing-notes" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >09</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        নোট ও রিসোর্স শেয়ার করবেন যেভাবে
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    আপনার নিজের তৈরি করা সুন্দর ক্লাস লেকচার বা হ্যান্ডরিটেন নোট
+                    আপলোড করে দেশের হাজারো শিক্ষার্থীর উপকারে আসতে পারেন:
+                </p>
+
+                <div
+                    class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white"
+                                >১</span
+                            >
+                            <p
+                                class="text-xs text-slate-700 sm:text-sm dark:text-gray-300"
+                            >
+                                <strong>নোট পেইজে যান:</strong>
+                                <Link
+                                    href="/notes"
+                                    class="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                                    >/notes</Link
+                                >
+                                পেইজে বা লিডারবোর্ডের "নোট শেয়ার করুন" বাটনে
+                                ক্লিক করুন।
+                            </p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white"
+                                >২</span
+                            >
+                            <p
+                                class="text-xs text-slate-700 sm:text-sm dark:text-gray-300"
+                            >
+                                <strong>অধ্যায় ও টাইটেল নির্ধারণ:</strong> কোন
+                                বিষয়ের কোন অধ্যায়ের নোট তা সিলেক্ট করে স্পষ্ট
+                                শিরোনাম দিন (যেমন:
+                                <em
+                                    >"ভৌত আলোকবিজ্ঞান - ব্যাতিচার ও অপবর্তন
+                                    হ্যান্ডনোট"</em
+                                >)।
+                            </p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white"
+                                >৩</span
+                            >
+                            <p
+                                class="text-xs text-slate-700 sm:text-sm dark:text-gray-300"
+                            >
+                                <strong>ছবি বা ডকুমেন্ট আপলোড:</strong> খাতার
+                                পৃষ্ঠার স্পষ্ট ছবি তুলে আপলোড করুন। সাবমিশনের পর
+                                তা প্ল্যাটফর্মে যুক্ত হবে এবং কন্ট্রিবিউটর
+                                লিডারবোর্ডে আপনার পয়েন্ট যোগ হবে।
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-slate-100 dark:border-gray-800" />
+
+            <!-- 10. PWA App -->
+            <section id="pwa-app" class="scroll-mt-32 space-y-5">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        >10</span
+                    >
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        মোবাইল অ্যাপ হিসেবে ব্যবহার (PWA)
+                    </h2>
+                </div>
+                <p
+                    class="text-sm leading-relaxed text-slate-600 sm:text-base dark:text-gray-300"
+                >
+                    কোনো ভারী অ্যাপ ডাউনলোড না করেই ক্রোম বা সাফারি ব্রাউজার
+                    থেকে সরাসরি অ্যাপ হিসেবে ইনস্টল করে নেওয়া যায়:
+                </p>
+
+                <div
+                    class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <div class="space-y-2">
+                            <h3
+                                class="text-xs font-bold tracking-wide text-slate-900 uppercase sm:text-sm dark:text-white"
+                            >
+                                📱 অ্যান্ড্রয়েড (Chrome):
+                            </h3>
+                            <p
+                                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                ব্রাউজারের উপরে ভেসে ওঠা
+                                <strong>"অ্যাপ ইনস্টল করুন"</strong> বাটনে ক্লিক
+                                করুন, অথবা থ্রি-ডট মেনু থেকে
+                                <strong
+                                    >"Add to Home Screen / Install app"</strong
+                                >
+                                চাপুন।
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <h3
+                                class="text-xs font-bold tracking-wide text-slate-900 uppercase sm:text-sm dark:text-white"
+                            >
+                                🍏 আইফোন (Safari):
+                            </h3>
+                            <p
+                                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+                            >
+                                সাফারির নিচের শেয়ার আইকন (<Share2
+                                    class="inline h-3.5 w-3.5"
+                                />) ট্যাপ করে একটু নিচে স্ক্রল করে
+                                <strong>"Add to Home Screen"</strong> অপশনে চাপ
+                                দিন।
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Need Help Card -->
             <div
-                class="space-y-3 rounded-xl bg-slate-900 p-6 text-center text-white sm:p-8"
+                class="rounded-3xl border border-slate-200/90 bg-gradient-to-br from-slate-900 to-indigo-950 p-6 text-center text-white shadow-lg sm:p-10 dark:border-gray-800"
             >
                 <div
-                    class="mb-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-emerald-400"
+                    class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-indigo-300 backdrop-blur-md"
                 >
-                    <HelpCircle class="h-5 w-5" />
+                    <HelpCircle class="h-6 w-6" />
                 </div>
-                <h3 class="text-base font-bold sm:text-lg">
-                    Help বা বিশেষ Access প্রয়োজন?
+                <h3 class="text-lg font-bold sm:text-2xl">
+                    কোনো সাহায্য বা প্রশ্ন আছে?
                 </h3>
                 <p
-                    class="mx-auto max-w-md text-xs leading-relaxed font-normal text-slate-300 sm:text-sm"
+                    class="mx-auto mt-2 max-w-lg text-xs leading-relaxed text-slate-300 sm:text-sm"
                 >
-                    কোনো সমস্যায় পড়লে বা কোনো specific section manage করার
-                    permission প্রয়োজন হলে, সরাসরি আমাদের সাথে যোগাযোগ করুন।
+                    প্ল্যাটফর্ম ব্যবহারে কোনো টেকনিক্যাল সমস্যা হলে বা যেকোনো
+                    ফিডব্যাক জানাতে সরাসরি আমাদের ফেসবুক পেজে মেসেজ করতে পারেন।
                 </p>
-                <div class="pt-2">
+                <div
+                    class="mt-6 flex flex-wrap items-center justify-center gap-3"
+                >
                     <a
                         href="https://facebook.com/hscstackbd"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-500 sm:w-auto sm:text-sm"
+                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-500 active:scale-95"
                     >
                         <MessageCircle class="h-4 w-4" />
-                        Message us
+                        <span>ফেসবুকে যোগাযোগ করুন</span>
                     </a>
+                    <Link
+                        href="/forum"
+                        class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-bold text-white backdrop-blur-md transition hover:bg-white/20 active:scale-95"
+                    >
+                        <MessageSquare class="h-4 w-4" />
+                        <span>ফোরামে প্রশ্ন করুন</span>
+                    </Link>
                 </div>
             </div>
         </div>

@@ -29,11 +29,13 @@ class BackupToDrive extends Command
         parent::__construct();
 
         $timestamp = now()->format('Y-m-d_His');
+        $rawVersion = config('app.version') ?: 'v1.0.0';
+        $version = trim(preg_replace('/[^A-Za-z0-9._-]+/', '_', $rawVersion), '_') ?: 'v1.0.0';
 
         $this->backupDir = storage_path('app/backups');
         $this->databaseDumpPath = $this->backupDir.'/database.sql.gz';
         $this->s3TarPath = $this->backupDir.'/s3.tar';
-        $this->finalArchivePath = $this->backupDir."/hsc-stack-backup-{$timestamp}.tar.gz";
+        $this->finalArchivePath = $this->backupDir."/backup_{$version}_{$timestamp}.tar.gz";
     }
 
     public function handle(): int
