@@ -5,8 +5,6 @@ export const isPushSupported = ref(false);
 export const isPushSubscribed = ref(false);
 export const isPushLoading = ref(false);
 
-const SW_PATH = '/push-sw.js';
-
 /**
  * Checks if current browser is a Chromium-based browser (Chrome, Chromium, Brave, Edge, Android Chrome)
  * and supports Service Worker & PushManager.
@@ -66,17 +64,10 @@ export async function initWebPush(): Promise<void> {
     isPushSupported.value = true;
 
     try {
-        const registration =
-            await navigator.serviceWorker.getRegistration(SW_PATH);
-
-        if (registration) {
-            const subscription =
-                await registration.pushManager.getSubscription();
-            isPushSubscribed.value =
-                subscription !== null && Notification.permission === 'granted';
-        } else {
-            isPushSubscribed.value = false;
-        }
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        isPushSubscribed.value =
+            subscription !== null && Notification.permission === 'granted';
     } catch {
         isPushSubscribed.value = false;
     }
@@ -102,11 +93,8 @@ export async function subscribeToPush(): Promise<boolean> {
             return false;
         }
 
-        // Register dedicated push service worker located at /push-sw.js
-        const registration = await navigator.serviceWorker.register(SW_PATH, {
-            scope: '/',
-        });
-        await navigator.serviceWorker.ready;
+        // Use the unified PWA service worker which imports /push-sw.js
+        const registration = await navigator.serviceWorker.ready;
 
         // Fetch public VAPID key
         const keyResponse = await fetch('/api/webpush/key', {
@@ -180,27 +168,22 @@ export async function unsubscribeFromPush(): Promise<boolean> {
     isPushLoading.value = true;
 
     try {
-        const registration =
-            await navigator.serviceWorker.getRegistration(SW_PATH);
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
 
-        if (registration) {
-            const subscription =
-                await registration.pushManager.getSubscription();
+        if (subscription) {
+            const endpoint = subscription.endpoint;
+            await subscription.unsubscribe();
 
-            if (subscription) {
-                const endpoint = subscription.endpoint;
-                await subscription.unsubscribe();
-
-                await fetch('/api/webpush/unsubscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-CSRF-TOKEN': getCsrfToken(),
-                    },
-                    body: JSON.stringify({ endpoint }),
-                });
-            }
+            await fetch('/api/webpush/unsubscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                },
+                body: JSON.stringify({ endpoint }),
+            });
         }
 
         isPushSubscribed.value = false;
