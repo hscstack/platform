@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/useAuth';
 interface Props {
     course: 'hsc' | 'ssc';
     group: 'science' | 'humanities' | 'commerce';
+    batch?: string | null;
     subjects: SubjectItem[];
     optionalSubjectIds?: number[];
     optionalSubjects?: Array<{
@@ -105,6 +106,7 @@ function handleAuthRequired(
                 <SubjectChecklist
                     :course="course"
                     :group="group"
+                    :batch="user?.batch"
                     :subjects="subjects"
                     :optional-subject-ids="optionalSubjectIds"
                     :optional-subjects="optionalSubjects"

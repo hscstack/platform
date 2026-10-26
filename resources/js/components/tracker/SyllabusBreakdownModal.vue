@@ -17,12 +17,6 @@ export interface SyllabusChapter {
     name: string;
     weight: number;
     is_completed: boolean;
-    parent_id?: number | null;
-    parent?: {
-        id: number;
-        name: string;
-        sort_order?: number;
-    } | null;
 }
 
 export interface SyllabusSubject {
@@ -82,42 +76,8 @@ function getSubjectChapterGroups(
     subj: SyllabusSubject,
 ): SyllabusChapterGroup[] {
     const chapters = subj.chapters || [];
-    const hasAnyParent = chapters.some((c) => c.parent_id && c.parent?.name);
 
-    if (!hasAnyParent) {
-        return [{ name: null, chapters }];
-    }
-
-    const groupsMap = new Map<
-        string,
-        { sort: number; chapters: SyllabusChapter[] }
-    >();
-    const noParentChapters: SyllabusChapter[] = [];
-
-    for (const chap of chapters) {
-        if (chap.parent?.name) {
-            const parentName = chap.parent.name;
-            const parentSort = chap.parent.sort_order ?? 999;
-
-            if (!groupsMap.has(parentName)) {
-                groupsMap.set(parentName, { sort: parentSort, chapters: [] });
-            }
-
-            groupsMap.get(parentName)!.chapters.push(chap);
-        } else {
-            noParentChapters.push(chap);
-        }
-    }
-
-    const result: SyllabusChapterGroup[] = Array.from(groupsMap.entries())
-        .sort((a, b) => a[1].sort - b[1].sort)
-        .map(([name, data]) => ({ name, chapters: data.chapters }));
-
-    if (noParentChapters.length > 0) {
-        result.push({ name: 'অন্যান্য অধ্যায়', chapters: noParentChapters });
-    }
-
-    return result;
+    return [{ name: null, chapters }];
 }
 
 // Collapsed state for sub-groups with names (default: 1st group expanded (index 0), others collapsed)

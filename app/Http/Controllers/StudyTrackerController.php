@@ -41,9 +41,8 @@ class StudyTrackerController extends Controller
         $subjects = $subjectsQuery
             ->with(['nodes' => function ($query) {
                 $query->where('is_trackable', true)
-                    ->with('parent:id,name,sort_order')
                     ->orderBy('sort_order', 'asc')
-                    ->select('id', 'subject_id', 'parent_id', 'name', 'slug', 'sort_order', 'weight');
+                    ->select('id', 'subject_id', 'name', 'slug', 'sort_order', 'weight');
             }])
             ->get(['id', 'name', 'slug', 'course', 'group', 'sort_order', 'is_optional'])
             ->toArray();
@@ -175,6 +174,7 @@ class StudyTrackerController extends Controller
         $validated = $request->validate([
             'curriculum' => 'required|string|in:hsc,ssc',
             'group' => 'required|string|in:science,humanities,commerce',
+            'batch' => 'nullable|string|max:32',
             'optional_subject_ids' => 'nullable|array',
             'optional_subject_ids.*' => 'integer|exists:subjects,id',
         ]);
@@ -182,10 +182,12 @@ class StudyTrackerController extends Controller
         $request->user()->update([
             'curriculum' => $validated['curriculum'],
             'group' => $validated['group'],
+            'batch' => $validated['batch'] ?? $request->user()->batch,
             'optional_subject_ids' => $validated['optional_subject_ids'] ?? [],
         ]);
 
-        return redirect()->route('tracker.index')
+        // Return back or redirect to tracker index if no referrer
+        return redirect()->intended(route('tracker.index'))
             ->with('success', 'Curriculum updated to '.strtoupper($validated['curriculum']).' ('.ucfirst($validated['group']).').');
     }
 }

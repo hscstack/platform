@@ -8,11 +8,14 @@ import {
     Flame,
     Info,
     Medal,
+    Plus,
+    RotateCcw,
     ShieldCheck,
+    SlidersHorizontal,
     Trophy,
     UploadCloud,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
@@ -40,6 +43,10 @@ export interface CurrentUserRank {
 interface Props {
     tab: 'students' | 'contributors';
     timeframe: 'this_week' | 'this_month' | 'all_time';
+    curriculum?: 'hsc' | 'ssc' | null;
+    group?: string | null;
+    batch?: string | null;
+    scope?: string | null;
     leaderboard: LeaderboardUser[];
     currentUserRank: CurrentUserRank | null;
 }
@@ -48,16 +55,215 @@ const props = defineProps<Props>();
 
 const { user } = useAuth();
 
+const showFilterModal = ref(false);
+const rememberChoice = ref(false);
+
+// Local draft state for modal
+const modalCurriculum = ref<'hsc' | 'ssc' | null>(props.curriculum || null);
+const modalGroup = ref<string | null>(props.group || null);
+const modalBatch = ref<string | null>(props.batch || null);
+const modalScope = ref<string | null>(props.scope || null);
+
+const openFilterModal = () => {
+    modalCurriculum.value = props.curriculum || null;
+    modalGroup.value = props.group || null;
+    modalBatch.value = props.batch || null;
+    modalScope.value = props.scope || null;
+    showFilterModal.value = true;
+};
+
+// Check localStorage for saved leaderboard preferences on initial visit without explicit query params
+onMounted(() => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const saved = localStorage.getItem('leaderboard_custom_filter');
+
+        if (saved) {
+            rememberChoice.value = true;
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Only auto-apply if no URL query params are set
+            if (
+                !urlParams.has('curriculum') &&
+                !urlParams.has('group') &&
+                !urlParams.has('batch') &&
+                !urlParams.has('scope')
+            ) {
+                const parsed = JSON.parse(saved);
+
+                if (
+                    parsed &&
+                    (parsed.curriculum ||
+                        parsed.group ||
+                        parsed.batch ||
+                        parsed.scope)
+                ) {
+                    applyLeaderboardFilters(parsed);
+                }
+            }
+        }
+    } catch {
+        // Ignore localStorage error
+    }
+});
+
+const applyModalFilters = () => {
+    if (rememberChoice.value && typeof window !== 'undefined') {
+        localStorage.setItem(
+            'leaderboard_custom_filter',
+            JSON.stringify({
+                curriculum: modalCurriculum.value,
+                group: modalGroup.value,
+                batch: modalBatch.value,
+                scope: modalScope.value,
+            }),
+        );
+    } else if (typeof window !== 'undefined') {
+        localStorage.removeItem('leaderboard_custom_filter');
+    }
+
+    showFilterModal.value = false;
+    applyLeaderboardFilters({
+        curriculum: modalCurriculum.value,
+        group: modalGroup.value,
+        batch: modalBatch.value,
+        scope: modalScope.value,
+    });
+};
+
+const resetFilters = () => {
+    modalCurriculum.value = null;
+    modalGroup.value = null;
+    modalBatch.value = null;
+    modalScope.value = null;
+
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('leaderboard_custom_filter');
+        rememberChoice.value = false;
+    }
+
+    showFilterModal.value = false;
+    applyLeaderboardFilters({
+        curriculum: null,
+        group: null,
+        batch: null,
+        scope: null,
+    });
+};
+
+const activeFiltersCount = computed(() => {
+    let count = 0;
+
+    if (props.curriculum) {
+        count++;
+    }
+
+    if (props.group) {
+        count++;
+    }
+
+    if (props.batch) {
+        count++;
+    }
+
+    if (props.scope) {
+        count++;
+    }
+
+    return count;
+});
+
+const activeFilterLabels = computed(() => {
+    const list: string[] = [];
+
+    if (props.curriculum) {
+        list.push(props.curriculum.toUpperCase());
+    }
+
+    if (props.group) {
+        const groupLabels: Record<string, string> = {
+            science: 'বিজ্ঞান',
+            humanities: 'মানবিক',
+            commerce: 'ব্যবসায় শিক্ষা',
+        };
+        list.push(groupLabels[props.group] || props.group);
+    }
+
+    if (props.batch) {
+        list.push(props.batch.replace('_', ' ').toUpperCase());
+    }
+
+    if (props.scope) {
+        const scopeLabels: Record<string, string> = {
+            appreciating: 'যাদের এপ্রিশিয়েট করি',
+            appreciators: 'আমার এপ্রিশিয়েটর',
+            mutual: 'মিউচুয়াল',
+        };
+        list.push(scopeLabels[props.scope] || props.scope);
+    }
+
+    return list;
+});
+
+function applyLeaderboardFilters(
+    updates: Partial<
+        Record<
+            'tab' | 'timeframe' | 'curriculum' | 'group' | 'batch' | 'scope',
+            any
+        >
+    >,
+) {
+    const current = {
+        tab: props.tab,
+        timeframe: props.timeframe,
+        curriculum: props.curriculum || undefined,
+        group: props.group || undefined,
+        batch: props.batch || undefined,
+        scope: props.scope || undefined,
+    };
+
+    const merged = { ...current, ...updates };
+
+    // If curriculum changed to ssc and current batch was hsc, reset batch
+    if (
+        merged.curriculum === 'ssc' &&
+        merged.batch &&
+        merged.batch.startsWith('hsc_')
+    ) {
+        merged.batch = undefined;
+    }
+
+    // If curriculum changed to hsc and current batch was ssc, reset batch
+    if (
+        merged.curriculum === 'hsc' &&
+        merged.batch &&
+        merged.batch.startsWith('ssc_')
+    ) {
+        merged.batch = undefined;
+    }
+
+    // Clean up undefined / null
+    Object.keys(merged).forEach((k) => {
+        if (!merged[k as keyof typeof merged]) {
+            delete merged[k as keyof typeof merged];
+        }
+    });
+
+    router.get('/leaderboard', merged, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+}
+
 function switchTab(newTab: 'students' | 'contributors') {
     if (props.tab === newTab) {
         return;
     }
 
-    router.get(
-        '/leaderboard',
-        { tab: newTab, timeframe: props.timeframe },
-        { preserveState: true, preserveScroll: true },
-    );
+    applyLeaderboardFilters({ tab: newTab });
 }
 
 function switchTimeframe(
@@ -67,11 +273,7 @@ function switchTimeframe(
         return;
     }
 
-    router.get(
-        '/leaderboard',
-        { tab: props.tab, timeframe: newTimeframe },
-        { preserveState: true, preserveScroll: true },
-    );
+    applyLeaderboardFilters({ timeframe: newTimeframe });
 }
 
 function formatStudyTime(seconds: number): string {
@@ -263,6 +465,60 @@ onBeforeUnmount(() => {
             </button>
         </div>
 
+        <!-- Customizable Filters Bar (Clean UX Summary Bar + Modal) -->
+        <div
+            v-if="tab === 'students'"
+            class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs sm:px-4.5 dark:border-gray-800 dark:bg-gray-900"
+        >
+            <div class="flex flex-wrap items-center gap-2">
+                <span
+                    class="text-xs font-bold tracking-wide text-slate-500 uppercase dark:text-gray-400"
+                    >ফিল্টার:</span
+                >
+                <span
+                    v-if="activeFilterLabels.length === 0"
+                    class="rounded-xl bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-gray-800 dark:text-gray-300"
+                >
+                    সকল কারিকুলাম ও ব্যাচ
+                </span>
+                <span
+                    v-for="lbl in activeFilterLabels"
+                    :key="lbl"
+                    class="rounded-xl bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                >
+                    {{ lbl }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button
+                    v-if="activeFiltersCount > 0"
+                    type="button"
+                    @click="resetFilters"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    title="সকল ফিল্টার মুছুন"
+                >
+                    <RotateCcw class="h-3.5 w-3.5" />
+                    <span>রিসেট</span>
+                </button>
+
+                <button
+                    type="button"
+                    @click="openFilterModal"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                >
+                    <SlidersHorizontal class="h-3.5 w-3.5 stroke-[2.5]" />
+                    <span>কাস্টমাইজ ফিল্টার</span>
+                    <span
+                        v-if="activeFiltersCount > 0"
+                        class="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white/20 text-[10px] font-black"
+                    >
+                        {{ activeFiltersCount }}
+                    </span>
+                </button>
+            </div>
+        </div>
+
         <!-- Tab 1-line Description -->
         <p
             class="mb-7 px-1 text-center text-xs text-slate-500 dark:text-gray-400"
@@ -357,6 +613,15 @@ onBeforeUnmount(() => {
                 class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-slate-800 active:scale-95 sm:px-3.5 sm:py-2 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
             >
                 <span>ট্র্যাকারে যান</span>
+            </Link>
+            <Link
+                v-else
+                :href="`/notes?curriculum=${curriculum || user?.curriculum || 'hsc'}&group=${group || user?.group || 'science'}`"
+                @click.stop
+                class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-slate-800 active:scale-95 sm:px-3.5 sm:py-2 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+            >
+                <Plus class="h-3.5 w-3.5 stroke-[2.5]" />
+                <span>নোট শেয়ার করুন</span>
             </Link>
         </div>
 
@@ -844,5 +1109,305 @@ onBeforeUnmount(() => {
                 </button>
             </div>
         </template>
+    </BaseModal>
+
+    <!-- Leaderboard Customization Filter Modal -->
+    <BaseModal
+        :is-open="showFilterModal"
+        title="লিডারবোর্ড ফিল্টার কাস্টমাইজ করুন"
+        description="আপনার ক্লাস, বিভাগ, ব্যাচ এবং নেটওয়ার্ক অনুযায়ী শীর্ষ শিক্ষার্থীদের দেখুন।"
+        max-width="lg"
+        @close="showFilterModal = false"
+    >
+        <div class="space-y-5 p-5">
+            <!-- 1. Curriculum -->
+            <div class="space-y-2">
+                <label
+                    class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
+                >
+                    কারিকুলাম
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button
+                        type="button"
+                        @click="
+                            modalCurriculum = null;
+                            modalBatch = null;
+                        "
+                        :class="[
+                            !modalCurriculum
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
+                    >
+                        সকল
+                    </button>
+                    <button
+                        type="button"
+                        @click="
+                            modalCurriculum = 'hsc';
+                            if (modalBatch && modalBatch.startsWith('ssc_'))
+                                modalBatch = null;
+                        "
+                        :class="[
+                            modalCurriculum === 'hsc'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
+                    >
+                        HSC
+                    </button>
+                    <button
+                        type="button"
+                        @click="
+                            modalCurriculum = 'ssc';
+                            if (modalBatch && modalBatch.startsWith('hsc_'))
+                                modalBatch = null;
+                        "
+                        :class="[
+                            modalCurriculum === 'ssc'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
+                    >
+                        SSC
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Group / Department -->
+            <div class="space-y-2">
+                <label
+                    class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
+                >
+                    বিভাগ
+                </label>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <button
+                        type="button"
+                        @click="modalGroup = null"
+                        :class="[
+                            !modalGroup
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
+                    >
+                        সকল
+                    </button>
+                    <button
+                        type="button"
+                        @click="modalGroup = 'science'"
+                        :class="[
+                            modalGroup === 'science'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
+                    >
+                        বিজ্ঞান
+                    </button>
+                    <button
+                        type="button"
+                        @click="modalGroup = 'humanities'"
+                        :class="[
+                            modalGroup === 'humanities'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
+                    >
+                        মানবিক
+                    </button>
+                    <button
+                        type="button"
+                        @click="modalGroup = 'commerce'"
+                        :class="[
+                            modalGroup === 'commerce'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl py-2 text-center text-xs font-semibold transition"
+                    >
+                        ব্যবসায় শিক্ষা
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Batch Selector -->
+            <div class="space-y-2">
+                <label
+                    class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
+                >
+                    ব্যাচ
+                </label>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        @click="modalBatch = null"
+                        :class="[
+                            !modalBatch
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-semibold transition"
+                    >
+                        সকল ব্যাচ
+                    </button>
+                    <button
+                        v-for="b in modalCurriculum === 'ssc'
+                            ? [
+                                  { key: 'ssc_25', label: 'SSC 25' },
+                                  { key: 'ssc_26', label: 'SSC 26' },
+                                  { key: 'ssc_27', label: 'SSC 27' },
+                              ]
+                            : modalCurriculum === 'hsc'
+                              ? [
+                                    { key: 'hsc_25', label: 'HSC 25' },
+                                    { key: 'hsc_26', label: 'HSC 26' },
+                                    { key: 'hsc_27', label: 'HSC 27' },
+                                    { key: 'hsc_28', label: 'HSC 28' },
+                                ]
+                              : [
+                                    { key: 'hsc_25', label: 'HSC 25' },
+                                    { key: 'hsc_26', label: 'HSC 26' },
+                                    { key: 'hsc_27', label: 'HSC 27' },
+                                    { key: 'hsc_28', label: 'HSC 28' },
+                                    { key: 'ssc_25', label: 'SSC 25' },
+                                    { key: 'ssc_26', label: 'SSC 26' },
+                                    { key: 'ssc_27', label: 'SSC 27' },
+                                ]"
+                        :key="b.key"
+                        type="button"
+                        @click="modalBatch = b.key"
+                        :class="[
+                            modalBatch === b.key
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-semibold transition"
+                    >
+                        {{ b.label }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Social / Network (When logged in) -->
+            <div v-if="user" class="space-y-2">
+                <label
+                    class="text-xs font-bold tracking-wide text-slate-700 uppercase dark:text-gray-300"
+                >
+                    সোশ্যাল নেটওয়ার্ক
+                </label>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <button
+                        type="button"
+                        @click="modalScope = null"
+                        :class="[
+                            !modalScope
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
+                    >
+                        ১. গ্লোবাল (সকল শিক্ষার্থী)
+                    </button>
+                    <button
+                        type="button"
+                        @click="modalScope = 'appreciating'"
+                        :class="[
+                            modalScope === 'appreciating'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
+                    >
+                        ২. যাদের আমি এপ্রিশিয়েট করি
+                    </button>
+                    <button
+                        type="button"
+                        @click="modalScope = 'appreciators'"
+                        :class="[
+                            modalScope === 'appreciators'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
+                    >
+                        ৩. যারা আমাকে এপ্রিশিয়েট করে
+                    </button>
+                    <button
+                        type="button"
+                        @click="modalScope = 'mutual'"
+                        :class="[
+                            modalScope === 'mutual'
+                                ? 'bg-indigo-600 font-bold text-white shadow-xs'
+                                : 'border border-slate-200/90 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/70 dark:hover:text-white',
+                        ]"
+                        class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-semibold transition"
+                    >
+                        ৪. মিউচুয়াল
+                    </button>
+                </div>
+                <p
+                    class="text-[11px] leading-relaxed text-slate-500 dark:text-gray-400"
+                >
+                    💡 মিউচুয়াল সিলেক্ট করলে আপনার এপ্রিশিয়েটর অথবা আপনি যাদের
+                    এপ্রিশিয়েট করছেন (২ ও ৩ নম্বর তালিকা) উভয়েই একসাথে যুক্ত
+                    থাকবে।
+                </p>
+            </div>
+
+            <!-- 5. Remember this choice (localStorage) -->
+            <div
+                class="flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-800/40"
+            >
+                <input
+                    id="remember_leaderboard_choice"
+                    v-model="rememberChoice"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                />
+                <label
+                    for="remember_leaderboard_choice"
+                    class="cursor-pointer text-xs font-medium text-slate-700 select-none dark:text-gray-300"
+                >
+                    আমার এই পছন্দটি মনে রাখুন (পরবর্তীতে লিডারবোর্ডে
+                    স্বয়ংক্রিয়ভাবে দেখাবে)
+                </label>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div
+                class="flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-gray-800"
+            >
+                <button
+                    type="button"
+                    @click="resetFilters"
+                    class="cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                    রিসেট করুন
+                </button>
+                <div class="flex items-center gap-2">
+                    <button
+                        type="button"
+                        @click="showFilterModal = false"
+                        class="cursor-pointer rounded-xl border border-slate-200/90 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                        বাতিল
+                    </button>
+                    <button
+                        type="button"
+                        @click="applyModalFilters"
+                        class="cursor-pointer rounded-xl bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                    >
+                        প্রয়োগ করুন
+                    </button>
+                </div>
+            </div>
+        </div>
     </BaseModal>
 </template>
