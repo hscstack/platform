@@ -137,7 +137,7 @@ const getFilterUrl = (course: string, group: string) => {
         <div class="flex flex-1 flex-col">
             <div
                 v-if="subjects && subjects.length > 0"
-                class="flex flex-col gap-2.5 sm:gap-3"
+                class="grid grid-cols-2 gap-2.5 sm:gap-3"
             >
                 <SubjectCard
                     v-for="subject in subjects"

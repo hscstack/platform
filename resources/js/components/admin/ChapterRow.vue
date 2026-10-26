@@ -22,35 +22,39 @@ const handleDelete = () => {
 
 <template>
     <div
-        class="group relative flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
+        class="group relative flex flex-col justify-between gap-2.5 rounded-xl border border-slate-100 bg-white p-3 transition-colors duration-150 hover:border-indigo-200 hover:bg-slate-50/50 sm:flex-row sm:items-center sm:gap-3 sm:p-3.5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-500/30 dark:hover:bg-gray-800/40"
     >
-        <!-- Left: Icon + Chapter Details -->
-        <div class="flex min-w-0 flex-1 items-center gap-3">
+        <!-- Top / Left: Icon + Chapter Details -->
+        <div
+            class="flex min-w-0 flex-1 items-start gap-2.5 sm:items-center sm:gap-3"
+        >
             <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200/40 bg-indigo-50 text-indigo-600 sm:h-10 sm:w-10 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
             >
                 <BookOpen class="h-4.5 w-4.5 stroke-[2]" />
             </div>
 
-            <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+            <div
+                class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2"
+            >
                 <h3
-                    class="text-sm font-semibold break-words text-slate-900 transition-colors dark:text-gray-100"
+                    class="text-sm font-semibold text-slate-900 transition-colors dark:text-gray-100"
                 >
                     {{ chapter?.name }}
                 </h3>
 
                 <span
-                    class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 ring-1 ring-slate-600/10 ring-inset dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700"
+                    class="inline-flex w-fit items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 ring-1 ring-slate-600/10 ring-inset dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700"
                 >
                     Weight: {{ chapter?.weight ?? 2 }}
                 </span>
             </div>
         </div>
 
-        <!-- Right: Actions -->
+        <!-- Bottom / Right: Actions -->
         <div
             v-if="can('manage curriculum')"
-            class="flex shrink-0 items-center gap-1"
+            class="flex shrink-0 items-center justify-end gap-1 border-t border-slate-100 pt-1 sm:border-0 sm:pt-0 dark:border-gray-800/80"
         >
             <button
                 type="button"
