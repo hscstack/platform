@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage, useRemember } from '@inertiajs/vue3';
 import {
     AlertCircle,
     Book,
@@ -98,9 +98,15 @@ const currentSort = ref<'trending' | 'top' | 'latest'>(
 );
 const searchInput = ref<string>(props.filters.search || '');
 
-// Local Resource List & Load More
-const resourceList = ref<ResourceItem[]>(props.resources?.data || []);
-const nextPageUrl = ref<string | null>(props.resources?.next_page_url || null);
+// Local Resource List & Load More (persisted automatically in history state on native Back)
+const resourceList = useRemember(
+    ref<ResourceItem[]>(props.resources?.data || []),
+    'notes_resource_list',
+);
+const nextPageUrl = useRemember(
+    ref<string | null>(props.resources?.next_page_url || null),
+    'notes_next_page_url',
+);
 const isLoadingMore = ref(false);
 
 watch(
