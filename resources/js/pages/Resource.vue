@@ -2,6 +2,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     ArrowLeft,
+    ArrowUp,
     ArrowBigUp,
     User as UserIcon,
     X,
@@ -12,7 +13,7 @@ import {
     Pencil,
     MessageSquare,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 
 import NoteReader from '@/components/resources/NoteReader.vue';
 import PdfViewer from '@/components/resources/PdfViewer.vue';
@@ -246,6 +247,42 @@ const totalCommentsCount = computed(() => {
     }
 
     return count;
+});
+
+// Scroll to Top state & handlers
+const showScrollTop = ref(false);
+
+const handleScroll = () => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const scrollPos =
+        window.scrollY ||
+        document.documentElement?.scrollTop ||
+        document.body?.scrollTop ||
+        0;
+    showScrollTop.value = scrollPos > 300;
+};
+
+const scrollToTop = () => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+    });
+};
+
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
 });
 </script>
 
@@ -569,12 +606,8 @@ const totalCommentsCount = computed(() => {
                 </p>
             </div>
 
-            <!-- Quick Jump to Comments Bar (Ideal for long multi-image notes) -->
+            <!-- Quick Jump to Comments Bar (Available for all resource types) -->
             <div
-                v-if="
-                    primaryFormat === 'image' &&
-                    (resource.items || []).length > 2
-                "
                 class="mt-4 flex items-center justify-between rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 shadow-2xs dark:border-gray-800 dark:bg-gray-900"
             >
                 <div
@@ -738,4 +771,25 @@ const totalCommentsCount = computed(() => {
         :subjects="subjects || []"
         @save="() => {}"
     />
+
+    <!-- Floating Scroll to Top Button -->
+    <Transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100 translate-y-0 scale-100"
+        leave-to-class="opacity-0 translate-y-2 scale-95"
+    >
+        <button
+            v-if="showScrollTop"
+            type="button"
+            @click="scrollToTop"
+            title="উপরে যান"
+            aria-label="Scroll to top"
+            class="fixed right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom)+0.5rem)] z-50 flex h-9.5 w-9.5 cursor-pointer items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg ring-1 ring-black/10 backdrop-blur-xs transition duration-150 hover:scale-105 hover:bg-indigo-600 active:scale-95 sm:right-6 sm:bottom-6 sm:h-10 sm:w-10 dark:bg-gray-800/90 dark:text-gray-100 dark:ring-white/10 dark:hover:bg-indigo-600 dark:hover:text-white"
+        >
+            <ArrowUp class="h-4 w-4 stroke-[2.3]" />
+        </button>
+    </Transition>
 </template>
