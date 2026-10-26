@@ -19,16 +19,10 @@ import SyllabusShareModal from '@/components/tracker/SyllabusShareModal.vue';
 export interface TopLevelNode {
     id: number;
     subject_id: number;
-    parent_id?: number | null;
     name: string;
     slug: string;
     sort_order?: number;
     weight?: number;
-    parent?: {
-        id: number;
-        name: string;
-        sort_order?: number;
-    } | null;
 }
 
 export interface SubjectItem {

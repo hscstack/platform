@@ -13,6 +13,7 @@ use App\Models\UserAppreciation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -62,6 +63,8 @@ class HomeController extends Controller
             return $data;
         });
 
+        $allowUploads = (bool) AppSetting::get('allow_resource_uploads', true);
+
         return Inertia::render('Feed', [
             'feed' => $feed,
             'subjects' => $subjects,
@@ -69,6 +72,7 @@ class HomeController extends Controller
             'group' => $group,
             'sort' => $sort,
             'notice' => $notice,
+            'allow_resource_uploads' => $allowUploads,
         ]);
     }
 
@@ -128,10 +132,17 @@ class HomeController extends Controller
             $resourcesQuery->latest('id');
             $blogsQuery->latest('id');
         } else {
-            // Trending: sort by vote_score / reactions/views DESC
-            $postsQuery->orderByDesc('vote_score')->latest('id');
-            $resourcesQuery->orderByDesc('vote_score')->latest('id');
-            $blogsQuery->orderByDesc('views')->latest('id');
+            // Trending with time decay formula: (score / (hours_old + 2))
+            $isSqlite = DB::getDriverName() === 'sqlite';
+            if ($isSqlite) {
+                $postsQuery->orderByRaw('(vote_score / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+                $resourcesQuery->orderByRaw('(vote_score / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+                $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+            } else {
+                $postsQuery->orderByRaw('(vote_score / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+                $resourcesQuery->orderByRaw('(vote_score / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+                $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+            }
         }
 
         $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
