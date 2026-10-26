@@ -717,6 +717,22 @@ const loadMore = async () => {
                         <Link href="/content-policy" class="hover:underline"
                             >কনটেন্ট পলিসি</Link
                         >
+                        <span>·</span>
+                        <a
+                            href="https://github.com/hscstack"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="hover:underline"
+                            >GitHub</a
+                        >
+                        <span>·</span>
+                        <a
+                            href="https://facebook.com/hscstackbd"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="hover:underline"
+                            >Facebook</a
+                        >
                     </div>
                     <p
                         class="mt-2 text-[10px] text-slate-400/80 dark:text-gray-500/80"
