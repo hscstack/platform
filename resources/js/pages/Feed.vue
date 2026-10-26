@@ -706,34 +706,22 @@ const loadMore = async () => {
                     class="px-2 pt-1 text-[11px] leading-relaxed text-slate-400 dark:text-gray-500"
                 >
                     <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <Link href="/about" class="hover:underline"
-                            >পরিচিতি</Link
-                        >
-                        <span>·</span>
-                        <Link href="/guide" class="hover:underline"
-                            >নির্দেশিকা</Link
-                        >
-                        <span>·</span>
-                        <Link href="/support" class="hover:underline"
-                            >সহায়তা</Link
-                        >
-                        <span>·</span>
-                        <Link href="/donate" class="hover:underline"
-                            >ডোনেট</Link
-                        >
-                        <span>·</span>
-                        <Link href="/privacy" class="hover:underline"
+                        <Link href="/privacy-policy" class="hover:underline"
                             >গোপনীয়তা</Link
                         >
                         <span>·</span>
-                        <Link href="/terms" class="hover:underline"
-                            >শর্তাবলী</Link
+                        <Link href="/terms-service" class="hover:underline"
+                            >নীতিমালা</Link
+                        >
+                        <span>·</span>
+                        <Link href="/content-policy" class="hover:underline"
+                            >কনটেন্ট পলিসি</Link
                         >
                     </div>
                     <p
                         class="mt-2 text-[10px] text-slate-400/80 dark:text-gray-500/80"
                     >
-                        © {{ new Date().getFullYear() }} HSC Stack. সর্বস্বত্ব
+                        © {{ new Date().getFullYear() }} HSCStack. সর্বস্বত্ব
                         সংরক্ষিত।
                     </p>
                 </div>

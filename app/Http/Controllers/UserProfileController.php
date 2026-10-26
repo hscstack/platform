@@ -50,26 +50,28 @@ class UserProfileController extends Controller
             ? $user->appreciationsReceived()->where('appreciator_id', auth()->id())->exists()
             : false;
 
-        // Suggested members: 1 contributors + 3 general users
-        $contributorUsers = User::where('id', '!=', $user->id)
-            ->whereNotNull('username')
-            ->where('is_verified', true)
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
-            ->inRandomOrder()
-            ->take(1)
-            ->get();
+        // Suggested members: 1 contributor + 3 general users (cached for 10 minutes to avoid expensive inRandomOrder queries)
+        $suggestedUsers = Cache::remember("suggested_users_profile_{$user->id}", now()->addMinutes(10), function () use ($user) {
+            $contributorUsers = User::where('id', '!=', $user->id)
+                ->whereNotNull('username')
+                ->where('is_verified', true)
+                ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
+                ->inRandomOrder()
+                ->take(1)
+                ->get();
 
-        $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
-        $remainingNeeded = 4 - $contributorUsers->count();
+            $excludedIds = $contributorUsers->pluck('id')->push($user->id)->all();
+            $remainingNeeded = 4 - $contributorUsers->count();
 
-        $randomUsers = User::whereNotIn('id', $excludedIds)
-            ->whereNotNull('username')
-            ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
-            ->inRandomOrder()
-            ->take($remainingNeeded)
-            ->get();
+            $randomUsers = User::whereNotIn('id', $excludedIds)
+                ->whereNotNull('username')
+                ->select(['id', 'name', 'username', 'institution', 'image_path', 'about', 'is_verified'])
+                ->inRandomOrder()
+                ->take($remainingNeeded)
+                ->get();
 
-        $suggestedUsers = $contributorUsers->concat($randomUsers)->shuffle()->values();
+            return $contributorUsers->concat($randomUsers)->shuffle()->values();
+        });
 
         $isOwner = auth()->id() === $user->id;
         $activityPrivacy = $user->activity_privacy ?? 'public';
@@ -174,7 +176,14 @@ class UserProfileController extends Controller
             ->take(5)
             ->get();
 
-        $syllabusProgress = $this->getSyllabusProgress($user);
+        // Cache the heavy analytical stats (heatmap & syllabus progress) for 5 minutes per user
+        $studyHeatmap = Cache::remember("user_heatmap_{$user->id}", now()->addMinutes(5), function () use ($user) {
+            return DailyStudyLog::getHeatmapAndStatsForUser($user);
+        });
+
+        $syllabusProgress = Cache::remember("user_syllabus_{$user->id}", now()->addMinutes(5), function () use ($user) {
+            return $this->getSyllabusProgress($user);
+        });
 
         return Inertia::render('User/Show', [
             'profileUser' => $profileUser,
@@ -192,7 +201,7 @@ class UserProfileController extends Controller
             'notes' => $notes,
             'suggestedUsers' => $suggestedUsers,
             'pokeData' => $pokeData,
-            'studyHeatmap' => DailyStudyLog::getHeatmapAndStatsForUser($user),
+            'studyHeatmap' => $studyHeatmap,
             'syllabusProgress' => $syllabusProgress,
         ]);
     }

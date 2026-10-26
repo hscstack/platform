@@ -32,8 +32,8 @@ const showBottomNav = computed(() =>
     isHydrated.value ? isMobile.value || !isLandscape.value : false,
 );
 
-// Whitelisted pages that show the marketing footer on desktop
-const DESKTOP_FOOTER_COMPONENTS = new Set([
+// Whitelisted pages that show the marketing footer (static and discovery pages)
+const STATIC_FOOTER_COMPONENTS = new Set([
     'Blog/Index',
     'Donate',
     'Projects',
@@ -49,13 +49,8 @@ const DESKTOP_FOOTER_COMPONENTS = new Set([
 ]);
 
 const showFooter = computed(() => {
-    // Never show full-width footer on mobile / bottom nav viewports
-    if (showBottomNav.value) {
-        return false;
-    }
-
-    // Desktop: only show on finite content pages, not infinite scroll feeds
-    return DESKTOP_FOOTER_COMPONENTS.has(page.component);
+    // Only show footer on finite/static pages (never on infinite-scroll feeds: Feed, Notes, Forum)
+    return STATIC_FOOTER_COMPONENTS.has(page.component);
 });
 
 const railCollapsed = ref(false);

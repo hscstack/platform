@@ -81,7 +81,7 @@ import AppLogo from './AppLogo.vue';
                                     <BookOpen
                                         class="h-4 w-4 text-indigo-500 dark:text-indigo-400"
                                     />
-                                    <span>Documentation</span>
+                                    <span>User Guide</span>
                                 </Link>
                             </li>
                             <li>

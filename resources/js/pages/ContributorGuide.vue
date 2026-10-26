@@ -918,7 +918,7 @@ onUnmounted(() => {
                             <h3
                                 class="text-xs font-bold tracking-wide text-slate-900 uppercase sm:text-sm dark:text-white"
                             >
-                                📱 অ্যান্ড্রয়েড (Chrome):
+                                অ্যান্ড্রয়েড (Chrome):
                             </h3>
                             <p
                                 class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
@@ -937,7 +937,7 @@ onUnmounted(() => {
                             <h3
                                 class="text-xs font-bold tracking-wide text-slate-900 uppercase sm:text-sm dark:text-white"
                             >
-                                🍏 আইফোন (Safari):
+                                আইফোন (Safari):
                             </h3>
                             <p
                                 class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
