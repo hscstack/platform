@@ -15,7 +15,8 @@ export const primaryNavItems: NavItem[] = [
         labelBn: 'হোম',
         href: '/',
         icon: 'home',
-        match: (url) => url === '/' || url.startsWith('/feed'),
+        match: (url) =>
+            url === '/' || url.startsWith('/?') || url.startsWith('/feed'),
         showInBottom: true,
     },
     {
@@ -44,13 +45,6 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
-        label: 'Blogs',
-        href: '/blogs',
-        icon: 'menu_book',
-        match: (url) => url.startsWith('/blogs'),
-        showInBottom: false,
-    },
-    {
         label: 'Forum',
         href: '/forum',
         icon: 'forum',
@@ -66,6 +60,13 @@ export const primaryNavItems: NavItem[] = [
         showInBottom: true,
     },
     {
+        label: 'Blogs',
+        href: '/blogs',
+        icon: 'menu_book',
+        match: (url) => url.startsWith('/blogs'),
+        showInBottom: false,
+    },
+    {
         label: 'Peers',
         labelBn: 'সহপাঠী (Peers)',
         href: '/peers',
@@ -75,11 +76,19 @@ export const primaryNavItems: NavItem[] = [
         showInNavRail: false,
     },
     {
-        label: 'AI',
+        label: 'HSCStack AI',
         labelBn: 'HSCStack AI',
         href: '/ai',
         icon: 'smart_toy',
         match: (url) => url.startsWith('/ai'),
+        showInBottom: false,
+    },
+    {
+        label: 'Donate',
+        labelBn: 'ডোনেট করুন',
+        href: '/donate',
+        icon: 'volunteer_activism',
+        match: (url) => url.startsWith('/donate'),
         showInBottom: false,
     },
 ];
@@ -91,6 +100,7 @@ export const overflowNavItems: NavItem[] = [
         href: '/guide',
         icon: 'menu_book',
         match: (url) => url.startsWith('/guide'),
+        showInNavRail: false,
     },
     {
         label: 'Support Center',
@@ -98,13 +108,7 @@ export const overflowNavItems: NavItem[] = [
         href: '/support',
         icon: 'help',
         match: (url) => url.startsWith('/support'),
-    },
-    {
-        label: 'Donate',
-        labelBn: 'ডোনেট করুন',
-        href: '/donate',
-        icon: 'volunteer_activism',
-        match: (url) => url.startsWith('/donate'),
+        showInNavRail: false,
     },
 ];
 
