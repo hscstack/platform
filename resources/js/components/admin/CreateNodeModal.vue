@@ -90,7 +90,6 @@ const submitForm = () => {
     const payload = {
         name: name.value,
         slug: slug.value || null,
-        parent_id: props.parent?.id || null,
         sort_order: sortOrder.value,
         is_trackable: isTrackable.value,
         weight: isTrackable.value ? weight.value : 2,

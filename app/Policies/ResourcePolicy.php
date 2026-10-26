@@ -12,7 +12,7 @@ class ResourcePolicy
      */
     public function update(User $user, Resource $resource): bool
     {
-        if ($resource->node?->isEffectivelyFrozen()) {
+        if ($resource->node?->is_frozen) {
             return false;
         }
 
@@ -28,7 +28,7 @@ class ResourcePolicy
      */
     public function delete(User $user, Resource $resource): bool
     {
-        if ($resource->node?->isEffectivelyFrozen()) {
+        if ($resource->node?->is_frozen) {
             return false;
         }
 

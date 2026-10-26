@@ -147,7 +147,6 @@ const saveBatchNodes = () => {
     router.post(
         `/admin/subjects/${props.subject.id}/nodes/batch`,
         {
-            parent_id: props.parent?.id || null,
             nodes: parsedNodes.value,
             should_track_top_folders: shouldTrackTopFolders.value,
         },
