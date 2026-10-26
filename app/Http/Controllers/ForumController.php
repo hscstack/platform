@@ -168,6 +168,56 @@ class ForumController extends Controller
         ]);
     }
 
+    public function generateUploadUrl(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        if ($user && $user->isBanned()) {
+            return response()->json([
+                'message' => 'You are suspended from uploading.',
+            ], 403);
+        }
+
+        $isPostingEnabled = (bool) AppSetting::get('forum_posting_enabled', true);
+        if (! $isPostingEnabled) {
+            return response()->json([
+                'message' => AppSetting::get('forum_disabled_reason', 'Creating new questions is temporarily paused.'),
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'files' => ['required', 'array', 'min:1', 'max:4'],
+            'files.*.content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
+            'files.*.size' => ['required', 'integer', 'min:1', 'max:5242880'],
+        ]);
+
+        $results = [];
+
+        foreach ($validated['files'] as $fileData) {
+            $extension = match ($fileData['content_type']) {
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+            };
+
+            $key = 'forum/posts/'.(string) Str::uuid().'.'.$extension;
+            $signed = Storage::disk('s3')->temporaryUploadUrl(
+                $key,
+                now()->addMinutes(15),
+                [
+                    'ContentType' => $fileData['content_type'],
+                    'ContentLengthRange' => [1, $fileData['size']],
+                ]
+            );
+
+            $results[] = [
+                'key' => $key,
+                'upload_url' => is_array($signed) ? $signed['url'] : $signed,
+            ];
+        }
+
+        return response()->json(['urls' => $results]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $user = auth()->user();

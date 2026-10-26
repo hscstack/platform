@@ -246,7 +246,7 @@ const submitQuestion = async () => {
                 })),
             };
 
-            const presignRes = await fetch('/resources/generate-upload-url', {
+            const presignRes = await fetch('/forum/upload-url', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -269,10 +269,10 @@ const submitQuestion = async () => {
                 );
             }
 
-            const { uploads } = await presignRes.json();
+            const { urls } = await presignRes.json();
 
             for (let i = 0; i < filesToUpload.length; i++) {
-                const { upload_url, key } = uploads[i];
+                const { upload_url, key } = urls[i];
                 const file = filesToUpload[i].file!;
 
                 const uploadRes = await fetch(upload_url, {

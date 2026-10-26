@@ -566,3 +566,27 @@ test('suspended user cannot vote on forum questions or answers', function () {
 
     expect($answer->fresh()->vote_score)->toBe(0);
 });
+
+test('authenticated user can generate presigned upload urls for forum post images', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->postJson('/forum/upload-url', [
+            'files' => [
+                [
+                    'content_type' => 'image/png',
+                    'size' => 1024 * 50,
+                ],
+            ],
+        ]);
+
+    $response->assertOk()
+        ->assertJsonStructure([
+            'urls' => [
+                ['key', 'upload_url'],
+            ],
+        ]);
+
+    $key = $response->json('urls.0.key');
+    expect($key)->toStartWith('forum/posts/');
+});

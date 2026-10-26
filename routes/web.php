@@ -93,6 +93,7 @@ Route::middleware(['throttle:60,1', 'auth'])->group(function () {
     Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('support.tickets.store');
 
     // Forum Authenticated Actions
+    Route::middleware('throttle:10,1')->post('/forum/upload-url', [ForumController::class, 'generateUploadUrl'])->name('forum.upload-url');
     Route::post('/forum', [ForumController::class, 'store'])->name('forum.store');
     Route::post('/forum/questions', [ForumController::class, 'store'])->name('forum.questions.store');
     Route::delete('/forum/posts/{post:id}', [ForumController::class, 'destroy'])->name('forum.destroy');
