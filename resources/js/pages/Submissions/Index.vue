@@ -1,19 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import {
-    Clock,
-    CheckCircle2,
-    XCircle,
-    FileText,
-    Image as ImageIcon,
-    Video,
-    File,
-    FlaskConical,
-    BookOpen,
-    ExternalLink,
-} from 'lucide-vue-next';
 import EmptyState from '@/components/EmptyState.vue';
 import Pagination from '@/components/Pagination.vue';
+import TrendingNoteCard from '@/components/resources/TrendingNoteCard.vue';
 
 interface Submission {
     id: number;
@@ -72,67 +61,6 @@ const tabs = [
     { key: 'approved', label: 'অনুমোদিত' },
     { key: 'rejected', label: 'বাতিলকৃত' },
 ] as const;
-
-const formatDate = (dateString: string) => {
-    try {
-        const date = new Date(dateString);
-
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-        });
-    } catch {
-        return dateString;
-    }
-};
-
-const getResourceIcon = (type?: string) => {
-    switch (type) {
-        case 'practical':
-            return FlaskConical;
-        case 'marked_book':
-            return BookOpen;
-        case 'video':
-            return Video;
-        case 'pdf':
-            return File;
-        case 'image':
-            return ImageIcon;
-        default:
-            return FileText;
-    }
-};
-
-const getNodePath = (node?: Submission['node']): string[] => {
-    if (!node) {
-        return [];
-    }
-
-    const segments: string[] = [];
-
-    if (node.subject?.name) {
-        segments.push(node.subject.name);
-    }
-
-    if (node.breadcrumb && node.breadcrumb.length > 0) {
-        for (const crumb of node.breadcrumb) {
-            segments.push(crumb.name);
-        }
-    } else if (node.name) {
-        segments.push(node.name);
-    }
-
-    if (segments.length > 2) {
-        return [
-            '...',
-            segments[segments.length - 2],
-            segments[segments.length - 1],
-        ];
-    }
-
-    return segments;
-};
 </script>
 
 <template>
@@ -249,133 +177,21 @@ const getNodePath = (node?: Submission['node']): string[] => {
         </div>
 
         <!-- Submissions List -->
-        <div v-if="submissions.data.length > 0" class="space-y-3">
-            <Link
-                v-for="item in submissions.data"
-                :key="item.id"
-                :href="`/resources/${item.id}`"
-                class="group block rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs transition hover:border-indigo-300 hover:shadow-xs dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-700/60"
+        <div v-if="submissions.data.length > 0" class="space-y-6">
+            <div
+                class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
             >
-                <div
-                    class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
-                >
-                    <div class="flex items-start gap-3">
-                        <!-- Icon -->
-                        <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-600 transition group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:bg-gray-800 dark:text-gray-300 dark:group-hover:bg-indigo-950/60 dark:group-hover:text-indigo-400"
-                        >
-                            <component
-                                :is="getResourceIcon(item.resource_type)"
-                                class="h-5 w-5"
-                            />
-                        </div>
-
-                        <!-- Info -->
-                        <div class="min-w-0 flex-1">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <h3
-                                    class="text-sm font-bold text-slate-900 transition group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-400"
-                                >
-                                    {{ item.title }}
-                                </h3>
-
-                                <span
-                                    class="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700 uppercase dark:bg-gray-800 dark:text-gray-300"
-                                >
-                                    {{ item.resource_type }}
-                                </span>
-                            </div>
-
-                            <div
-                                class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-gray-400"
-                            >
-                                <span
-                                    v-if="getNodePath(item.node).length > 0"
-                                    class="inline-flex flex-wrap items-center gap-1 font-medium text-slate-600 dark:text-gray-300"
-                                >
-                                    <span class="text-slate-400">in</span>
-                                    <span
-                                        class="inline-flex flex-wrap items-center gap-1"
-                                    >
-                                        <template
-                                            v-for="(seg, sIdx) in getNodePath(
-                                                item.node,
-                                            )"
-                                            :key="sIdx"
-                                        >
-                                            <span
-                                                v-if="sIdx > 0"
-                                                class="text-slate-400 dark:text-gray-600"
-                                                >/</span
-                                            >
-                                            <span>{{ seg }}</span>
-                                        </template>
-                                    </span>
-                                </span>
-
-                                <span v-if="getNodePath(item.node).length > 0"
-                                    >·</span
-                                >
-                                <span>{{ formatDate(item.created_at) }}</span>
-                            </div>
-
-                            <!-- Rejection Reason if any -->
-                            <div
-                                v-if="
-                                    item.status === 'rejected' &&
-                                    item.admin_note
-                                "
-                                class="mt-2 rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
-                            >
-                                <span class="font-bold">বাতিলের কারণ:</span>
-                                {{ item.admin_note }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status Pill & Action Hint -->
-                    <div
-                        class="flex items-center gap-2 self-start sm:self-auto"
-                    >
-                        <!-- Pending -->
-                        <template v-if="item.status === 'pending'">
-                            <span
-                                class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-400"
-                            >
-                                <Clock class="h-3.5 w-3.5" />
-                                পর্যালোচনাধীন
-                            </span>
-                        </template>
-
-                        <!-- Approved -->
-                        <template v-else-if="item.status === 'approved'">
-                            <span
-                                class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
-                            >
-                                <CheckCircle2 class="h-3.5 w-3.5" />
-                                অনুমোদিত
-                            </span>
-                        </template>
-
-                        <!-- Rejected -->
-                        <template v-else-if="item.status === 'rejected'">
-                            <span
-                                class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-400"
-                            >
-                                <XCircle class="h-3.5 w-3.5" />
-                                বাতিলকৃত
-                            </span>
-                        </template>
-
-                        <ExternalLink
-                            class="h-4 w-4 text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-gray-500"
-                        />
-                    </div>
-                </div>
-            </Link>
+                <TrendingNoteCard
+                    v-for="item in submissions.data"
+                    :key="item.id"
+                    :note="item"
+                    show-status
+                    hide-author
+                />
+            </div>
 
             <!-- Pagination -->
-            <div class="pt-4">
+            <div class="pt-2">
                 <Pagination
                     :links="submissions.links"
                     :from="submissions.from"

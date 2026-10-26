@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
 import {
+    AlertCircle,
     Book,
     Check,
     ChevronDown,
@@ -15,6 +16,8 @@ import {
 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
+import BaseModal from '@/components/BaseModal.vue';
+
 import EmptyState from '@/components/EmptyState.vue';
 import ResourceFormModal from '@/components/resources/ResourceFormModal.vue';
 import TrendingNoteCard from '@/components/resources/TrendingNoteCard.vue';
@@ -23,7 +26,6 @@ import { useAuth } from '@/lib/useAuth';
 interface NodeItem {
     id: number;
     subject_id?: number;
-    parent_id?: number | null;
     name: string;
     slug: string;
 }
@@ -59,20 +61,26 @@ interface SimplePaginatedResources {
     path: string;
 }
 
-const props = defineProps<{
-    resources: SimplePaginatedResources;
-    subjects: SubjectItem[];
-    filters: {
-        curriculum?: 'hsc' | 'ssc';
-        course?: 'hsc' | 'ssc';
-        group?: string;
-        subject_id: number | null;
-        node_id: string | number | null;
-        type: string;
-        sort: 'top' | 'latest';
-        search: string;
-    };
-}>();
+const props = withDefaults(
+    defineProps<{
+        resources: SimplePaginatedResources;
+        subjects: SubjectItem[];
+        allow_resource_uploads?: boolean;
+        filters: {
+            curriculum?: 'hsc' | 'ssc';
+            course?: 'hsc' | 'ssc';
+            group?: string;
+            subject_id: number | null;
+            node_id: string | number | null;
+            type: string;
+            sort: 'trending' | 'top' | 'latest';
+            search: string;
+        };
+    }>(),
+    {
+        allow_resource_uploads: true,
+    },
+);
 
 const page = usePage();
 const { requireAuth } = useAuth();
@@ -85,7 +93,9 @@ const currentGroup = ref<string>(props.filters.group || 'science');
 const selectedSubjectId = ref<number | null>(props.filters.subject_id);
 const selectedNodeId = ref<string | number | null>(props.filters.node_id);
 const selectedType = ref<string>(props.filters.type || 'all');
-const currentSort = ref<'top' | 'latest'>(props.filters.sort || 'top');
+const currentSort = ref<'trending' | 'top' | 'latest'>(
+    props.filters.sort || 'trending',
+);
 const searchInput = ref<string>(props.filters.search || '');
 
 // Local Resource List & Load More
@@ -100,6 +110,28 @@ watch(
         nextPageUrl.value = newVal?.next_page_url || null;
     },
     { deep: true },
+);
+
+watch(
+    () => [
+        props.filters.subject_id,
+        props.filters.node_id,
+        props.filters.type,
+        props.filters.sort,
+        props.filters.search,
+        props.filters.curriculum,
+        props.filters.group,
+    ],
+    () => {
+        currentCourse.value =
+            props.filters.curriculum || props.filters.course || 'hsc';
+        currentGroup.value = props.filters.group || 'science';
+        selectedSubjectId.value = props.filters.subject_id;
+        selectedNodeId.value = props.filters.node_id;
+        selectedType.value = props.filters.type || 'all';
+        currentSort.value = props.filters.sort || 'trending';
+        searchInput.value = props.filters.search || '';
+    },
 );
 
 const loadMore = async () => {
@@ -146,8 +178,15 @@ const loadMore = async () => {
 
 // Upload modal state
 const isUploadModalOpen = ref(false);
+const isUploadDisabledModalOpen = ref(false);
 
 const openUploadModal = () => {
+    if (props.allow_resource_uploads === false) {
+        isUploadDisabledModalOpen.value = true;
+
+        return;
+    }
+
     requireAuth('রিসোর্স শেয়ার করতে অনুগ্রহ করে লগইন করুন।', () => {
         isUploadModalOpen.value = true;
     });
@@ -195,7 +234,10 @@ const applyFilters = () => {
             subject_id: selectedSubjectId.value || undefined,
             node_id: selectedNodeId.value || undefined,
             type: selectedType.value !== 'all' ? selectedType.value : undefined,
-            sort: currentSort.value !== 'top' ? currentSort.value : undefined,
+            sort:
+                currentSort.value !== 'trending'
+                    ? currentSort.value
+                    : undefined,
             search: searchInput.value.trim() || undefined,
         },
         {
@@ -238,12 +280,47 @@ const handleWindowClick = (e: MouseEvent) => {
     }
 };
 
+// Infinite Scroll Observer Sentinel
+const sentinelRef = ref<HTMLElement | null>(null);
+let observer: IntersectionObserver | null = null;
+
 onMounted(() => {
     window.addEventListener('click', handleWindowClick);
+
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+        observer = new IntersectionObserver(
+            (entries) => {
+                if (
+                    entries[0]?.isIntersecting &&
+                    nextPageUrl.value &&
+                    !isLoadingMore.value
+                ) {
+                    loadMore();
+                }
+            },
+            { rootMargin: '300px' },
+        );
+
+        if (sentinelRef.value) {
+            observer.observe(sentinelRef.value);
+        }
+    }
+});
+
+watch(sentinelRef, (el) => {
+    if (observer && el) {
+        observer.disconnect();
+        observer.observe(el);
+    }
 });
 
 onUnmounted(() => {
     window.removeEventListener('click', handleWindowClick);
+
+    if (observer) {
+        observer.disconnect();
+        observer = null;
+    }
 });
 
 const handleSubjectChange = () => {
@@ -277,7 +354,7 @@ const handleTypeClick = (type: string, event: MouseEvent) => {
     }
 };
 
-const handleSortChange = (sort: 'top' | 'latest') => {
+const handleSortChange = (sort: 'trending' | 'top' | 'latest') => {
     currentSort.value = sort;
     applyFilters();
 };
@@ -308,6 +385,7 @@ const groupTabs = [
 const resourceTypes = [
     { key: 'all', label: 'সব', icon: null },
     { key: 'note', label: 'হ্যান্ডনোট', icon: FileText },
+    { key: 'lecture_sheet', label: 'লেকচার শিট', icon: FileText },
     { key: 'marked_book', label: 'দাগানো বই', icon: Book },
     { key: 'video', label: 'ক্লাস', icon: Video },
     { key: 'practical', label: 'ব্যবহারিক', icon: FlaskConical },
@@ -587,7 +665,8 @@ const resourceTypes = [
                             aria-label="সর্টিং"
                             class="h-8 cursor-pointer appearance-none rounded-xl border border-slate-200/90 bg-slate-50/80 pr-7 pl-2.5 text-xs font-semibold text-slate-700 transition focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-gray-800 dark:bg-gray-800/70 dark:text-gray-200 dark:focus:bg-gray-800"
                         >
-                            <option value="top">🔥 Trending</option>
+                            <option value="trending">🔥 Trending</option>
+                            <option value="top">⭐ Best</option>
                             <option value="latest">🕒 Newest</option>
                         </select>
                         <ChevronDown
@@ -607,7 +686,8 @@ const resourceTypes = [
                     aria-label="সর্টিং"
                     class="h-8 cursor-pointer appearance-none rounded-xl border border-slate-200/90 bg-white pr-7 pl-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200"
                 >
-                    <option value="top">🔥 Trending</option>
+                    <option value="trending">🔥 Trending</option>
+                    <option value="top">⭐ Best</option>
                     <option value="latest">🕒 Newest</option>
                 </select>
                 <ChevronDown
@@ -628,22 +708,16 @@ const resourceTypes = [
                 />
             </div>
 
-            <!-- Load More Button -->
-            <div v-if="nextPageUrl" class="mt-8 flex justify-center">
-                <button
-                    type="button"
-                    @click="loadMore"
-                    :disabled="isLoadingMore"
-                    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 disabled:pointer-events-none disabled:opacity-60 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-                >
-                    <Loader2
-                        v-if="isLoadingMore"
-                        class="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400"
-                    />
-                    <span>{{
-                        isLoadingMore ? 'Loading more...' : 'Load More'
-                    }}</span>
-                </button>
+            <!-- Automated Infinite Scroll Sentinel & Loader -->
+            <div
+                v-if="nextPageUrl"
+                ref="sentinelRef"
+                class="mt-8 flex justify-center py-4"
+            >
+                <Loader2
+                    v-if="isLoadingMore"
+                    class="h-5 w-5 animate-spin text-indigo-600 dark:text-indigo-400"
+                />
             </div>
         </div>
 
@@ -676,6 +750,41 @@ const resourceTypes = [
             </EmptyState>
         </div>
     </div>
+
+    <!-- Upload Disabled Notice Modal -->
+    <BaseModal
+        :is-open="isUploadDisabledModalOpen"
+        title="নোট আপলোড স্থগিত"
+        max-width="md"
+        @close="isUploadDisabledModalOpen = false"
+    >
+        <div class="space-y-4 p-5 text-center">
+            <div
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400"
+            >
+                <AlertCircle class="h-6 w-6 stroke-[2]" />
+            </div>
+            <p class="text-sm font-semibold text-slate-800 dark:text-gray-100">
+                প্ল্যাটফর্ম রক্ষণাবেক্ষণ ও আপগ্রেডের সুবিধার্থে নতুন রিসোর্স
+                আপলোড সাময়িকভাবে স্থগিত রাখা হয়েছে।
+            </p>
+            <p
+                class="text-xs leading-relaxed text-slate-500 dark:text-gray-400"
+            >
+                খুব দ্রুতই পুনরায় নোট আপলোড চালু করা হবে। এই সময়ে আপনি যেকোনো
+                বিদ্যমান নোট ও আর্কাইভ ব্রাউজ ও পড়তে পারেন।
+            </p>
+            <div class="pt-2">
+                <button
+                    type="button"
+                    @click="isUploadDisabledModalOpen = false"
+                    class="w-full cursor-pointer rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100"
+                >
+                    বুঝেছি
+                </button>
+            </div>
+        </div>
+    </BaseModal>
 
     <!-- Upload Resource Modal (Uses unified ResourceFormModal with subjects support) -->
     <ResourceFormModal

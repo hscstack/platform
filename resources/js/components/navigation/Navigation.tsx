@@ -64,20 +64,34 @@ function staffAccess(auth: unknown): boolean {
 /* shared helpers                                                      */
 /* ------------------------------------------------------------------ */
 
-function preferredHomeHref(currentUrl: string): string {
-    if (typeof window !== 'undefined') {
-        try {
-            const pref = localStorage.getItem('preferred_course');
+function preferredHomeHref(currentUrl: string, authUser?: any): string {
+    if (authUser) {
+        const course = authUser.curriculum || 'hsc';
+        const group = authUser.group || 'science';
 
-            if (pref === 'ssc') {
-                return '/ssc';
-            }
-        } catch {
-            // ignore
-        }
+        return `/?course=${course}&group=${group}`;
     }
 
-    return currentUrl.startsWith('/ssc') ? '/ssc' : '/';
+    return '/';
+}
+
+function resolveNavItemHref(
+    href: string,
+    authUser?: any,
+    homeHref?: string,
+): string {
+    if (href === '/') {
+        return homeHref || preferredHomeHref('', authUser);
+    }
+
+    if (href === '/notes' && authUser) {
+        const course = authUser.curriculum || 'hsc';
+        const group = authUser.group || 'science';
+
+        return `/notes?curriculum=${course}&group=${group}`;
+    }
+
+    return href;
 }
 
 function isActiveAdminRoute(to: string, currentUrl: string): boolean {
@@ -236,7 +250,9 @@ export const SiteRail = defineComponent({
             await promptInstall();
         };
 
-        const homeHref = computed(() => preferredHomeHref(currentUrl.value));
+        const homeHref = computed(() =>
+            preferredHomeHref(currentUrl.value, (page.props.auth as any)?.user),
+        );
         const hasUnreadChat = computed(() =>
             Boolean(
                 (page.props.auth as { has_unread_chat?: boolean })
@@ -254,6 +270,9 @@ export const SiteRail = defineComponent({
                 (page.props.auth as { has_unread_blogs?: boolean })
                     ?.has_unread_blogs,
             ),
+        );
+        const navRailItems = computed(() =>
+            allNavItems.filter((item) => item.showInNavRail !== false),
         );
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
@@ -310,7 +329,7 @@ export const SiteRail = defineComponent({
                         {props.collapsed ? (
                             /* Collapsed: Compact YouTube Mini-Guide (strictly w-[72px] fixed) */
                             <nav class="flex w-[72px] flex-col items-center space-y-1 px-1">
-                                {allNavItems.map((item) => {
+                                {navRailItems.value.map((item) => {
                                     const active = isActive(
                                         item.href,
                                         item.match,
@@ -336,11 +355,11 @@ export const SiteRail = defineComponent({
                                     return (
                                         <Link
                                             key={item.href}
-                                            href={
-                                                item.href === '/'
-                                                    ? homeHref.value
-                                                    : item.href
-                                            }
+                                            href={resolveNavItemHref(
+                                                item.href,
+                                                (page.props.auth as any)?.user,
+                                                homeHref.value,
+                                            )}
                                             class={[
                                                 'group flex h-[60px] w-full flex-col items-center justify-center rounded-xl px-1 text-center transition-colors duration-150',
                                                 active
@@ -429,7 +448,7 @@ export const SiteRail = defineComponent({
                         ) : (
                             /* Expanded: Standard 280px Guide */
                             <nav class="w-[280px] space-y-1 px-2.5">
-                                {allNavItems.map((item) => {
+                                {navRailItems.value.map((item) => {
                                     const active = isActive(
                                         item.href,
                                         item.match,
@@ -455,11 +474,11 @@ export const SiteRail = defineComponent({
                                     return (
                                         <Link
                                             key={item.href}
-                                            href={
-                                                item.href === '/'
-                                                    ? homeHref.value
-                                                    : item.href
-                                            }
+                                            href={resolveNavItemHref(
+                                                item.href,
+                                                (page.props.auth as any)?.user,
+                                                homeHref.value,
+                                            )}
                                             class={[
                                                 'group flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13px] font-medium tracking-tight transition-colors duration-150',
                                                 active
@@ -937,7 +956,9 @@ export const SiteBottomNav = defineComponent({
             ),
         );
 
-        const homeHref = computed(() => preferredHomeHref(currentUrl.value));
+        const homeHref = computed(() =>
+            preferredHomeHref(currentUrl.value, (page.props.auth as any)?.user),
+        );
 
         const isActive = (href: string, match?: (url: string) => boolean) => {
             if (match) {
@@ -948,7 +969,11 @@ export const SiteBottomNav = defineComponent({
         };
 
         const resolvedHref = (item: { href: string }) =>
-            item.href === '/' ? homeHref.value : item.href;
+            resolveNavItemHref(
+                item.href,
+                (page.props.auth as any)?.user,
+                homeHref.value,
+            );
 
         return () => (
             <nav
@@ -1042,7 +1067,9 @@ export const SiteDrawer = defineComponent({
             () => !isInstalled.value && Boolean(deferredPrompt.value),
         );
 
-        const homeHref = computed(() => preferredHomeHref(currentUrl.value));
+        const homeHref = computed(() =>
+            preferredHomeHref(currentUrl.value, (page.props.auth as any)?.user),
+        );
         const hasUnreadChat = computed(() =>
             Boolean(
                 (page.props.auth as { has_unread_chat?: boolean })

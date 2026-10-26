@@ -8,6 +8,9 @@ import {
     BookOpen,
     Play,
     Video,
+    Clock,
+    AlertCircle,
+    CheckCircle2,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -42,8 +45,10 @@ interface ResourceNote {
     resource_type: string;
     thumbnail?: string | null;
     items_count?: number;
-    vote_score: number;
+    vote_score?: number;
     created_at?: string;
+    status?: string;
+    admin_note?: string | null;
     user?: User | null;
     node?: NodeItem | null;
     subject?: {
@@ -54,9 +59,17 @@ interface ResourceNote {
     } | null;
 }
 
-const props = defineProps<{
-    note: ResourceNote;
-}>();
+const props = withDefaults(
+    defineProps<{
+        note: ResourceNote;
+        showStatus?: boolean;
+        hideAuthor?: boolean;
+    }>(),
+    {
+        showStatus: false,
+        hideAuthor: false,
+    },
+);
 
 const previewImageUrl = computed(() => props.note.thumbnail || null);
 
@@ -82,10 +95,14 @@ const typeLabel = computed(() => {
                 text: 'দাগানো বই',
                 color: 'text-emerald-600 dark:text-emerald-400',
             };
+        case 'lecture_sheet':
         case 'other':
             return {
                 icon: FileText,
-                text: 'Study material',
+                text:
+                    props.note.resource_type === 'lecture_sheet'
+                        ? 'Lecture sheet'
+                        : 'Study material',
                 color: 'text-slate-600 dark:text-slate-400',
             };
         default:
@@ -218,8 +235,39 @@ const subtitle = computed(() => {
                 </div>
             </div>
 
+            <!-- Top Left: Status Pill (for user submissions) -->
+            <div
+                v-if="showStatus && note.status"
+                class="absolute top-2 left-2 z-10 inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-bold shadow-xs backdrop-blur-xs"
+                :class="
+                    note.status === 'pending'
+                        ? 'border border-amber-300/60 bg-amber-500/90 text-white dark:border-amber-500/40 dark:bg-amber-600/90'
+                        : note.status === 'approved'
+                          ? 'border border-emerald-300/60 bg-emerald-600/90 text-white dark:border-emerald-500/40 dark:bg-emerald-700/90'
+                          : 'border border-rose-300/60 bg-rose-600/90 text-white dark:border-rose-500/40 dark:bg-rose-700/90'
+                "
+            >
+                <Clock
+                    v-if="note.status === 'pending'"
+                    class="h-3 w-3 animate-pulse"
+                />
+                <CheckCircle2
+                    v-else-if="note.status === 'approved'"
+                    class="h-3 w-3"
+                />
+                <AlertCircle v-else class="h-3 w-3" />
+                <span>{{
+                    note.status === 'pending'
+                        ? 'পর্যালোচনাধীন'
+                        : note.status === 'approved'
+                          ? 'অনুমোদিত'
+                          : 'বাতিলকৃত'
+                }}</span>
+            </div>
+
             <!-- Top Right: Vote Score Pill (Read-only) -->
             <div
+                v-if="!hideAuthor"
                 class="absolute top-2 right-2 inline-flex items-center gap-1 rounded-lg bg-black/65 px-2 py-0.5 text-xs font-bold text-white shadow-xs backdrop-blur-xs"
                 title="Vote score"
             >
@@ -274,10 +322,24 @@ const subtitle = computed(() => {
                 >
                     {{ subtitle }}
                 </p>
+
+                <!-- Rejection note if rejected and present -->
+                <div
+                    v-if="
+                        showStatus &&
+                        note.status === 'rejected' &&
+                        note.admin_note
+                    "
+                    class="mt-2 rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                >
+                    <span class="font-bold">বাতিলের কারণ:</span>
+                    <span class="ml-1">{{ note.admin_note }}</span>
+                </div>
             </div>
 
-            <!-- Author & Avatar Footer -->
+            <!-- Author & Avatar Footer (Hidden on submissions / user-centric view) -->
             <div
+                v-if="!hideAuthor"
                 class="relative z-20 mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-gray-800 dark:text-gray-400"
             >
                 <div class="flex min-w-0 items-center gap-1.5">
