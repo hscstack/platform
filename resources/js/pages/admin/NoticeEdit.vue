@@ -12,6 +12,7 @@ const form = useForm({
     message: props.notice?.message || '',
     image: null as File | null,
     remove_image: false,
+    video_url: props.notice?.video_url || '',
     show_button: props.notice?.show_button ?? false,
     button_title: props.notice?.button_title || '',
     button_link: props.notice?.button_link || '',
@@ -21,8 +22,61 @@ const form = useForm({
 const imagePreview = ref<string | null>(props.notice?.image || null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
+const youtubeVideoId = computed(() => {
+    const url = form.video_url?.trim();
+
+    if (!url) {
+        return null;
+    }
+
+    try {
+        const parsed = new URL(url);
+
+        if (parsed.hostname.includes('youtube.com')) {
+            if (parsed.pathname === '/watch') {
+                return parsed.searchParams.get('v');
+            }
+
+            if (parsed.pathname.startsWith('/embed/')) {
+                return parsed.pathname.split('/embed/')[1]?.split('?')[0];
+            }
+
+            if (parsed.pathname.startsWith('/shorts/')) {
+                return parsed.pathname.split('/shorts/')[1]?.split('?')[0];
+            }
+        }
+
+        if (parsed.hostname === 'youtu.be') {
+            return parsed.pathname.slice(1)?.split('?')[0];
+        }
+
+        return null;
+    } catch {
+        const match = url.match(
+            /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/,
+        );
+
+        return match ? match[1] : null;
+    }
+});
+
+const isShortsOrReel = computed(() => {
+    const url = form.video_url?.trim();
+
+    if (!url) {
+        return false;
+    }
+
+    return url.includes('/shorts/') || url.includes('reel');
+});
+
 const hasContent = computed(
-    () => form.title.trim() !== '' || form.message.trim() !== '',
+    () =>
+        form.title.trim() !== '' ||
+        form.message.trim() !== '' ||
+        Boolean(form.video_url?.trim()) ||
+        Boolean(form.image) ||
+        Boolean(imagePreview.value),
 );
 
 const handleFileSelect = (event: Event) => {
@@ -129,6 +183,58 @@ const submitForm = () => {
                     >
                         {{ form.errors.message }}
                     </p>
+                </div>
+
+                <!-- Video / Reel / Shorts URL Input -->
+                <div>
+                    <label
+                        for="video_url"
+                        class="mb-1.5 block text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-gray-400"
+                    >
+                        YouTube Reel / Shorts / Tutorial Video URL (Optional)
+                    </label>
+                    <input
+                        v-model="form.video_url"
+                        type="url"
+                        id="video_url"
+                        placeholder="https://www.youtube.com/shorts/... or https://youtu.be/..."
+                        :disabled="form.processing"
+                        class="w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-500"
+                        :class="
+                            form.errors.video_url
+                                ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10'
+                                : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900/5 dark:border-gray-700'
+                        "
+                    />
+                    <p
+                        v-if="form.errors.video_url"
+                        class="mt-1.5 text-xs font-medium text-rose-600"
+                    >
+                        {{ form.errors.video_url }}
+                    </p>
+                    <p class="mt-1 text-xs text-slate-400 dark:text-gray-500">
+                        Paste a direct YouTube Shorts, Reel or regular video
+                        link to display an interactive native video player
+                        directly inside the dialog.
+                    </p>
+
+                    <!-- Video Preview -->
+                    <div
+                        v-if="youtubeVideoId"
+                        class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-black dark:border-gray-800"
+                        :class="
+                            isShortsOrReel
+                                ? 'mx-auto aspect-[9/14] max-w-xs'
+                                : 'aspect-video'
+                        "
+                    >
+                        <iframe
+                            :src="`https://www.youtube-nocookie.com/embed/${youtubeVideoId}?rel=0&modestbranding=1&playsinline=1`"
+                            title="Video Preview"
+                            class="h-full w-full border-0"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
                 </div>
 
                 <div
@@ -255,8 +361,8 @@ const submitForm = () => {
                     v-if="form.is_active && !hasContent"
                     class="rounded-2xl bg-amber-50 p-4 text-xs font-medium text-amber-800 ring-1 ring-amber-900/5 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20"
                 >
-                    Please add a title or message body before switching this
-                    notice alive.
+                    Please add a title, message, cover image, or video URL
+                    before switching this notice alive.
                 </div>
 
                 <div

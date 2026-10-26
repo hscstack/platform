@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ForumController as AdminForumController;
 use App\Http\Controllers\Admin\NodeController as AdminNodeController;
 use App\Http\Controllers\Admin\NoticeController as AdminNoticeController;
 use App\Http\Controllers\Admin\PeerSettingsController;
+use App\Http\Controllers\Admin\PlatformSettingsController as AdminPlatformSettingsController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -44,7 +45,7 @@ Route::post('/nodes/{node}/toggle-freeze', [AdminNodeController::class, 'toggleF
 
 Route::delete('/nodes/{node}', [AdminNodeController::class, 'destroy'])->middleware('permission:delete nodes')->name('nodes.destroy');
 
-Route::get('/subjects/{subject:slug}/nodes/{path?}', [AdminNodeController::class, 'show'])->name('nodes.index')->where('path', '.*');
+Route::get('/subjects/{subject:slug}/nodes', [AdminNodeController::class, 'show'])->name('nodes.index');
 
 Route::middleware('permission:moderate resources')->group(function () {
     Route::get('/moderation/resources', [AdminResourceController::class, 'moderationIndex'])->name('resources.moderation.index');
@@ -60,12 +61,16 @@ Route::middleware('permission:edit notice')->group(function () {
     Route::match(['patch', 'post'], '/notice', [AdminNoticeController::class, 'update'])->name('notice.update');
 });
 
-// Cache
+Route::middleware('permission:manage platform settings')->group(function () {
+    Route::get('/settings/platform', [AdminPlatformSettingsController::class, 'index'])->name('platform.settings');
+    Route::post('/settings/platform', [AdminPlatformSettingsController::class, 'update'])->name('platform.settings.update');
+});
+
 Route::post('/clear-cache', function () {
     Cache::flush();
 
     return back()->with('success', 'Cache cleared.');
-})->middleware('permission:clear cache');
+})->middleware('permission:clear cache')->name('cache.clear');
 
 // Users
 Route::get('/users', [AdminUserController::class, 'index'])->middleware('permission:view users')->name('users.index');
