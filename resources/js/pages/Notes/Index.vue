@@ -385,10 +385,10 @@ const groupTabs = [
 const resourceTypes = [
     { key: 'all', label: 'সব', icon: null },
     { key: 'note', label: 'হ্যান্ডনোট', icon: FileText },
-    { key: 'lecture_sheet', label: 'লেকচার শিট', icon: FileText },
-    { key: 'marked_book', label: 'দাগানো বই', icon: Book },
     { key: 'video', label: 'ক্লাস', icon: Video },
+    { key: 'marked_book', label: 'দাগানো বই', icon: Book },
     { key: 'practical', label: 'ব্যবহারিক', icon: FlaskConical },
+    { key: 'lecture_sheet', label: 'লেকচার শিট', icon: FileText },
 ];
 </script>
 

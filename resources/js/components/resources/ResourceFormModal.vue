@@ -969,10 +969,10 @@ const handleSubmit = async () => {
                         class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 pr-10 text-xs font-semibold text-slate-800 transition focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                     >
                         <option value="note">হ্যান্ডনোট</option>
-                        <option value="lecture_sheet">লেকচার শিট</option>
-                        <option value="marked_book">দাগানো বই</option>
                         <option value="video">ভিডিও লেকচার</option>
+                        <option value="marked_book">দাগানো বই</option>
                         <option value="practical">ব্যবহারিক</option>
+                        <option value="lecture_sheet">লেকচার শিট</option>
                     </select>
                     <ChevronDown
                         class="pointer-events-none absolute top-3 right-3 h-4 w-4 text-slate-400 dark:text-gray-500"
