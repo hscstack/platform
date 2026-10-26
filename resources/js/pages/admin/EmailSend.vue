@@ -16,6 +16,7 @@ import {
     Download,
     ChevronDown,
     Bell,
+    BellRing,
     Megaphone,
 } from 'lucide-vue-next';
 
@@ -580,6 +581,28 @@ const submitForm = () => {
                                         class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-gray-800 dark:text-gray-400"
                                     >
                                         {{ staffCount }}
+                                    </span>
+                                </button>
+
+                                <!-- Option 5: Web Push Subscribers -->
+                                <button
+                                    type="button"
+                                    :disabled="pushUsersCount === 0"
+                                    @click="
+                                        importSubscribers('push_subscribers')
+                                    "
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <BellRing
+                                            class="h-4 w-4 text-emerald-500"
+                                        />
+                                        <span>Push Subscribers</span>
+                                    </div>
+                                    <span
+                                        class="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                    >
+                                        {{ pushUsersCount }}
                                     </span>
                                 </button>
                             </div>
