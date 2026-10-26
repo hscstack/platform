@@ -47,7 +47,6 @@ export default defineConfig(({ mode }) => {
                 workbox: {
                     mode: isLocal ? 'development' : 'production',
                     navigateFallback: null,
-                    importScripts: ['/push-sw.js'],
                     runtimeCaching: [
                         {
                             // Material Symbols stylesheet (short-lived, revalidate in background)
