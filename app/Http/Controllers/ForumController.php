@@ -168,6 +168,56 @@ class ForumController extends Controller
         ]);
     }
 
+    public function generateUploadUrl(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        if ($user && $user->isBanned()) {
+            return response()->json([
+                'message' => 'You are suspended from uploading.',
+            ], 403);
+        }
+
+        $isPostingEnabled = (bool) AppSetting::get('forum_posting_enabled', true);
+        if (! $isPostingEnabled) {
+            return response()->json([
+                'message' => AppSetting::get('forum_disabled_reason', 'Creating new questions is temporarily paused.'),
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'files' => ['required', 'array', 'min:1', 'max:4'],
+            'files.*.content_type' => ['required', 'string', 'in:image/jpeg,image/png,image/webp'],
+            'files.*.size' => ['required', 'integer', 'min:1', 'max:5242880'],
+        ]);
+
+        $results = [];
+
+        foreach ($validated['files'] as $fileData) {
+            $extension = match ($fileData['content_type']) {
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+            };
+
+            $key = 'forum/posts/'.(string) Str::uuid().'.'.$extension;
+            $signed = Storage::disk('s3')->temporaryUploadUrl(
+                $key,
+                now()->addMinutes(15),
+                [
+                    'ContentType' => $fileData['content_type'],
+                    'ContentLengthRange' => [1, $fileData['size']],
+                ]
+            );
+
+            $results[] = [
+                'key' => $key,
+                'upload_url' => is_array($signed) ? $signed['url'] : $signed,
+            ];
+        }
+
+        return response()->json(['urls' => $results]);
+    }
+
     public function create(): Response|RedirectResponse
     {
         $user = auth()->user();
@@ -220,11 +270,15 @@ class ForumController extends Controller
             'subject_id' => ['nullable', 'exists:subjects,id'],
             'node_id' => ['nullable', 'exists:nodes,id'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:4'],
+            'images.*' => ['string', 'max:255', 'regex:#^forum/posts/[A-Za-z0-9._/-]+$#', 'not_regex:#\\.\\.#'],
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('forum/posts');
+        $images = [];
+        if (! empty($validated['images'])) {
+            $images = array_slice($validated['images'], 0, 4);
+        } elseif ($request->hasFile('image')) {
+            $images = [$request->file('image')->store('forum/posts')];
         }
 
         $subjectId = $validated['subject_id'] ?? null;
@@ -258,7 +312,7 @@ class ForumController extends Controller
             'curriculum' => $validated['curriculum'],
             'slug' => $slug,
             'body' => $validated['body'],
-            'image_path' => $imagePath,
+            'images' => ! empty($images) ? $images : null,
             'is_locked' => false,
             'moderation_status' => $moderationStatus,
         ]);
@@ -284,7 +338,14 @@ class ForumController extends Controller
     {
         abort_unless(auth()->id() === $post->user_id || auth()->user()?->can('manage forums'), 403);
 
-        if ($post->image_path) {
+        $postImages = $post->images ?? [];
+        if (is_array($postImages)) {
+            foreach ($postImages as $img) {
+                if ($img && ! str($img)->startsWith(['http://', 'https://'])) {
+                    Storage::delete($img);
+                }
+            }
+        } elseif (! empty($post->image_path)) {
             Storage::delete($post->image_path);
         }
 
