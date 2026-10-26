@@ -22,6 +22,7 @@ import AdUnit from '@/components/AdUnit.vue';
 import BaseModal from '@/components/BaseModal.vue';
 import BlogFeedCard from '@/components/blogs/BlogFeedCard.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import AskQuestionModal from '@/components/forum/AskQuestionModal.vue';
 import ForumFeedCard from '@/components/forum/ForumFeedCard.vue';
 import NoticeDialog from '@/components/NoticeDialog.vue';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt.vue';
@@ -62,6 +63,7 @@ const { user, requireAuth } = useAuth();
 // Intermediate Action Modal State (Ask Question vs Upload Resource)
 const isActionChoiceModalOpen = ref(false);
 const isResourceUploadModalOpen = ref(false);
+const isAskQuestionModalOpen = ref(false);
 
 const handleComposeClick = () => {
     requireAuth('পোস্ট করতে অনুগ্রহ করে লগইন করুন।', () => {
@@ -71,7 +73,7 @@ const handleComposeClick = () => {
 
 const chooseAskQuestion = () => {
     isActionChoiceModalOpen.value = false;
-    router.visit('/forum/ask');
+    isAskQuestionModalOpen.value = true;
 };
 
 const chooseUploadResource = () => {
@@ -717,5 +719,13 @@ const loadMore = async () => {
         :is-open="isResourceUploadModalOpen"
         :subjects="subjects"
         @close="isResourceUploadModalOpen = false"
+    />
+
+    <!-- Ask Question Modal (Modal replacement for /forum/ask) -->
+    <AskQuestionModal
+        v-model:is-open="isAskQuestionModalOpen"
+        :subjects="subjects"
+        :initial-curriculum="currentCourse"
+        @close="isAskQuestionModalOpen = false"
     />
 </template>

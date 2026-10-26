@@ -218,36 +218,6 @@ class ForumController extends Controller
         return response()->json(['urls' => $results]);
     }
 
-    public function create(): Response|RedirectResponse
-    {
-        $user = auth()->user();
-        if ($user && $user->isBanned()) {
-            $bannedUntilFormatted = $user->banned_until->diffForHumans();
-
-            return redirect()->route('forum.index')->with('error', "You are temporarily suspended from community participation until {$user->banned_until->toDateTimeString()} ({$bannedUntilFormatted}).");
-        }
-
-        $isPostingEnabled = (bool) AppSetting::get('forum_posting_enabled', true);
-        if (! $isPostingEnabled) {
-            $reason = AppSetting::get('forum_disabled_reason', 'Creating new questions is temporarily paused.');
-
-            return redirect()->route('forum.index')->with('error', $reason ?: 'Creating new questions is temporarily paused.');
-        }
-
-        $subjects = Cache::remember('forum_filter_subjects', now()->addDay(), function () {
-            return Subject::where('is_trackable', true)
-                ->select('id', 'name', 'course', 'slug')
-                ->with(['nodes' => fn ($q) => $q->where('is_trackable', true)->select('id', 'subject_id', 'name', 'slug')->orderBy('sort_order')])
-                ->orderBy('sort_order')
-                ->get()
-                ->toArray();
-        });
-
-        return Inertia::render('Forum/Create', [
-            'subjects' => $subjects,
-        ]);
-    }
-
     public function store(Request $request): RedirectResponse
     {
         $user = auth()->user();

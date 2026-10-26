@@ -47,14 +47,12 @@ test('unauthenticated users can view forum index and show', function () {
         );
 });
 
-test('authenticated user can view the ask question page and guest is redirected', function () {
-    $guestResponse = $this->get('/forum/ask');
+test('guest is redirected when creating a question', function () {
+    $guestResponse = $this->post('/forum', [
+        'body' => 'How to solve this problem?',
+        'curriculum' => 'hsc',
+    ]);
     $guestResponse->assertRedirect('/login');
-
-    $user = User::factory()->create();
-    $authResponse = $this->actingAs($user)->get('/forum/ask');
-    $authResponse->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Forum/Create'));
 });
 
 test('authenticated user can create a question', function () {
@@ -497,17 +495,6 @@ test('author and admin can view pending or flagged questions but other users get
 
     // Guest gets 404
     $this->get(route('forum.show', $pendingPost))->assertInertia(fn ($page) => $page->component('errors/404'));
-});
-
-test('suspended user cannot access ask question page', function () {
-    $suspendedUser = User::factory()->create([
-        'banned_until' => now()->addDays(2),
-    ]);
-
-    $this->actingAs($suspendedUser)
-        ->get('/forum/ask')
-        ->assertRedirect(route('forum.index'))
-        ->assertSessionHas('error');
 });
 
 test('suspended user cannot create forum questions', function () {

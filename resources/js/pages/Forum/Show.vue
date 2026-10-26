@@ -42,6 +42,8 @@ interface User {
     username: string;
     image_path?: string | null;
     image_url?: string | null;
+    images?: string[] | null;
+    image_urls?: string[] | null;
     institution?: string | null;
     is_verified?: boolean;
 }
@@ -89,6 +91,8 @@ interface ForumPost {
     body: string;
     image_path?: string | null;
     image_url?: string | null;
+    images?: string[] | null;
+    image_urls?: string[] | null;
     is_locked?: boolean;
     moderation_status?: 'approved' | 'pending' | 'flagged' | 'rejected';
     vote_score: number;
@@ -863,8 +867,61 @@ function parseMentions(
                 {{ post.body }}
             </div>
 
-            <!-- Attached Image Preview -->
-            <div v-if="post.image_url" class="mt-5">
+            <!-- Attached Images Preview (Multi-Image Support) -->
+            <div
+                v-if="post.image_urls && post.image_urls.length > 0"
+                class="mt-5"
+            >
+                <div
+                    v-if="post.image_urls.length === 1"
+                    class="inline-block overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <img
+                        :src="post.image_urls[0]"
+                        :alt="post.body?.slice(0, 50)"
+                        @click="
+                            openImageModal(
+                                post.image_urls[0],
+                                post.body?.slice(0, 50),
+                            )
+                        "
+                        class="max-h-96 cursor-zoom-in rounded-xl object-contain transition hover:opacity-95"
+                    />
+                </div>
+                <div
+                    v-else
+                    class="grid max-w-2xl gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-2 dark:border-gray-800 dark:bg-gray-900/50"
+                    :class="
+                        post.image_urls.length === 2
+                            ? 'grid-cols-2'
+                            : post.image_urls.length === 3
+                              ? 'grid-cols-3'
+                              : 'grid-cols-2 sm:grid-cols-4'
+                    "
+                >
+                    <div
+                        v-for="(imgUrl, i) in post.image_urls"
+                        :key="i"
+                        class="aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-gray-800 dark:bg-gray-800"
+                    >
+                        <img
+                            :src="imgUrl"
+                            :alt="`${post.body?.slice(0, 30)} - ${i + 1}`"
+                            @click="
+                                openImageModal(
+                                    imgUrl,
+                                    `${post.body?.slice(0, 30)} (${i + 1}/${post.image_urls.length})`,
+                                )
+                            "
+                            class="h-full w-full cursor-zoom-in object-cover transition hover:scale-105"
+                        />
+                    </div>
+                </div>
+                <p class="mt-1 text-[11px] text-slate-400 dark:text-gray-500">
+                    Click image to expand
+                </p>
+            </div>
+            <div v-else-if="post.image_url" class="mt-5">
                 <div
                     class="inline-block overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-gray-800 dark:bg-gray-900"
                 >
