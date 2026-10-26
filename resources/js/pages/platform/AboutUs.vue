@@ -6,7 +6,7 @@ import UserCard from '@/components/UserCard.vue';
 interface Member {
     id: number;
     name: string;
-    username?: string | null;
+    username?: string;
     title?: string | null;
     about?: string | null;
     institution?: string | null;
@@ -64,11 +64,12 @@ const communityContributors = computed(() => {
         />
     </Head>
 
-    <header class="py-16 text-center sm:py-24">
+    <header class="mx-auto max-w-4xl px-4 pt-8 pb-10 text-center sm:pt-12">
         <h1
-            class="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-white"
+            class="text-4xl font-black tracking-tight text-slate-950 sm:text-6xl dark:text-gray-100"
         >
-            The Team
+            The Team Behind <br class="hidden sm:inline" />
+            <span class="text-indigo-600">The Archive.</span>
         </h1>
     </header>
 

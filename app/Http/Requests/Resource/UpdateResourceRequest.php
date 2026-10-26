@@ -14,9 +14,11 @@ class UpdateResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'subject_id' => ['sometimes', 'nullable', 'integer', 'exists:subjects,id'],
+            'node_id' => ['sometimes', 'nullable', 'integer', 'exists:nodes,id'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'resource_type' => ['required', 'string', 'in:note,practical,marked_book,other,video'],
+            'resource_type' => ['required', 'string', 'in:note,lecture_sheet,practical,marked_book,other,video'],
             'items' => ['required', 'array', 'min:1'],
             'items.*' => ['required', 'array'],
             'items.*.format' => ['required', 'in:image,pdf,video'],
