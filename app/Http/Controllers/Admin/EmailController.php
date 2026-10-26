@@ -49,6 +49,9 @@ class EmailController extends Controller
             $query->where('is_verified', false);
         } elseif ($type === 'staff') {
             $query->where('is_verified', true);
+        } elseif ($type === 'push_subscribers') {
+            $pushUserIds = PushSubscription::distinct('subscribable_id')->pluck('subscribable_id');
+            $query->whereIn('id', $pushUserIds);
         }
 
         $emails = $query->pluck('email');
