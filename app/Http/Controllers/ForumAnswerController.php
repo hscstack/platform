@@ -96,13 +96,12 @@ class ForumAnswerController extends Controller
         // Notify parent answer author or post author if not already notified via @mention
         if (isset($parent)) {
             $parentAuthor = $parent->user;
-            if ($parentAuthor && $parentAuthor->id !== $user->id && ! in_array($parentAuthor->id, $mentionedUserIds, true)) {
+            // Only notify root author if no @mention was present in the reply
+            if ($parentAuthor && $parentAuthor->id !== $user->id && empty($mentionedUserIds)) {
                 $parentAuthor->notify(new ForumAnswerNotification($post, $answer, true));
                 $mentionedUserIds[] = $parentAuthor->id;
             }
-        }
-
-        if ($post->user_id && $post->user_id !== $user->id && ! in_array($post->user_id, $mentionedUserIds, true)) {
+        } elseif ($post->user_id && $post->user_id !== $user->id && ! in_array($post->user_id, $mentionedUserIds, true)) {
             $post->user?->notify(new ForumAnswerNotification($post, $answer, false));
         }
 

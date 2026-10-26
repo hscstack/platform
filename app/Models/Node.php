@@ -55,4 +55,19 @@ class Node extends Model
     {
         return $this->hasMany(NodeCompletion::class);
     }
+
+    public function breadcrumb(): array
+    {
+        return [
+            [
+                'name' => $this->name,
+                'slug' => $this->slug,
+            ],
+        ];
+    }
+
+    public function getBreadcrumbAttribute(): array
+    {
+        return $this->breadcrumb();
+    }
 }
