@@ -177,9 +177,9 @@ class HomeController extends Controller
         });
 
         // Clone collections from cache so modifications are request-isolated
-        $posts = collect($feedData['posts'])->map(fn ($p) => clone $p);
-        $resources = collect($feedData['resources'])->map(fn ($r) => clone $r);
-        $blogs = collect($feedData['blogs'])->map(fn ($b) => clone $b);
+        $posts = collect($feedData['posts'])->map(fn ($p) => is_object($p) ? clone $p : (object) $p);
+        $resources = collect($feedData['resources'])->map(fn ($r) => is_object($r) ? clone $r : (object) $r);
+        $blogs = collect($feedData['blogs'])->map(fn ($b) => is_object($b) ? clone $b : (object) $b);
 
         // Compute is_appreciated and user_vote if logged in
         $userId = Auth::id();
