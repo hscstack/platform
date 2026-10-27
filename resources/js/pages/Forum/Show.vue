@@ -74,6 +74,7 @@ interface ForumAnswer {
     } | null;
     replies?: ForumAnswer[];
     user_vote?: number | null;
+    is_author?: boolean;
 }
 
 interface ForumPost {
@@ -1022,8 +1023,9 @@ function parseMentions(
                             <VerifiedBadge v-if="answer.user.is_verified" />
                             <span
                                 v-if="
-                                    post.user_id &&
-                                    answer.user_id === post.user_id
+                                    answer.is_author ??
+                                    (post.user_id &&
+                                        answer.user_id === post.user_id)
                                 "
                                 class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
                             >
@@ -1038,8 +1040,9 @@ function parseMentions(
                             </span>
                             <span
                                 v-if="
-                                    post.user_id &&
-                                    answer.user_id === post.user_id
+                                    answer.is_author ??
+                                    (post.user_id &&
+                                        answer.user_id === post.user_id)
                                 "
                                 class="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
                             >
@@ -1194,8 +1197,9 @@ function parseMentions(
                                     />
                                     <span
                                         v-if="
-                                            post.user_id &&
-                                            reply.user_id === post.user_id
+                                            reply.is_author ??
+                                            (post.user_id &&
+                                                reply.user_id === post.user_id)
                                         "
                                         class="rounded-md bg-indigo-50 px-1 py-0.5 text-[9px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
                                     >
@@ -1213,8 +1217,9 @@ function parseMentions(
                                     </span>
                                     <span
                                         v-if="
-                                            post.user_id &&
-                                            reply.user_id === post.user_id
+                                            reply.is_author ??
+                                            (post.user_id &&
+                                                reply.user_id === post.user_id)
                                         "
                                         class="rounded-md bg-indigo-50 px-1 py-0.5 text-[9px] font-bold tracking-wide text-indigo-600 uppercase dark:bg-indigo-950/80 dark:text-indigo-400"
                                     >

@@ -39,6 +39,7 @@ interface ForumPost {
     curriculum: 'hsc' | 'ssc';
     slug: string;
     body: string;
+    is_anonymous?: boolean;
     image_path?: string | null;
     image_url?: string | null;
     images?: string[] | null;

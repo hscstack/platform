@@ -27,6 +27,7 @@ class ForumPost extends Model
         'body',
         'images',
         'is_locked',
+        'is_anonymous',
         'moderation_status',
         'vote_score',
         'upvotes_count',
@@ -44,6 +45,7 @@ class ForumPost extends Model
         return [
             'images' => 'array',
             'is_locked' => 'boolean',
+            'is_anonymous' => 'boolean',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',

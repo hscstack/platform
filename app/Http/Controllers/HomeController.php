@@ -240,6 +240,22 @@ class HomeController extends Controller
         }
 
         // Naturally interleave 6 posts, 4 resources, 2 blogs
+        foreach ($posts as $p) {
+            if ($p->is_anonymous) {
+                $p->user_id = null;
+                $p->setRelation('user', (object) [
+                    'id' => null,
+                    'name' => 'Anonymous Student',
+                    'username' => null,
+                    'image_path' => null,
+                    'image_url' => null,
+                    'institution' => null,
+                    'is_verified' => false,
+                    'is_appreciated' => false,
+                ]);
+            }
+        }
+
         $pArr = $posts->values()->all();
         $rArr = $resources->values()->all();
         $bArr = $blogs->values()->all();

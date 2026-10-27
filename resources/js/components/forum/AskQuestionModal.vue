@@ -43,6 +43,7 @@ const form = useForm({
     node_id: '' as string | number,
     body: '',
     images: [] as string[],
+    is_anonymous: false,
 });
 
 interface LocalImageItem {
@@ -433,6 +434,44 @@ const submitQuestion = async () => {
                 >
                     {{ form.errors.body }}
                 </p>
+            </div>
+
+            <!-- Anonymous Option Card -->
+            <div
+                class="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 transition dark:border-gray-800 dark:bg-gray-900/60"
+            >
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                    >
+                        🕶️
+                    </div>
+                    <div>
+                        <div
+                            class="text-xs font-bold text-slate-800 dark:text-gray-200"
+                        >
+                            Post anonymously
+                        </div>
+                        <div
+                            class="text-[11px] text-slate-500 dark:text-gray-400"
+                        >
+                            Your name and photo will be hidden from other
+                            students (requires moderation review)
+                        </div>
+                    </div>
+                </div>
+
+                <label class="relative inline-flex cursor-pointer items-center">
+                    <input
+                        type="checkbox"
+                        v-model="form.is_anonymous"
+                        :disabled="form.processing || isUploading"
+                        class="peer sr-only"
+                    />
+                    <div
+                        class="peer h-5 w-9 rounded-full bg-slate-200 peer-checked:bg-indigo-600 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white dark:bg-gray-700"
+                    ></div>
+                </label>
             </div>
 
             <!-- Attached Images (Up to 4) -->
