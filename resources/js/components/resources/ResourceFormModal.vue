@@ -351,7 +351,11 @@ const initForm = () => {
             props.subject?.id ||
             props.node?.subject_id ||
             null;
-        selectedNodeId.value = props.resource.chapter_id || props.resource.node_id || props.node?.id || null;
+        selectedNodeId.value =
+            props.resource.chapter_id ||
+            props.resource.node_id ||
+            props.node?.id ||
+            null;
     } else {
         form.value = {
             title: '',
