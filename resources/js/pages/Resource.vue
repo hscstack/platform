@@ -46,7 +46,7 @@ interface ResourceData {
     upvotes_count?: number;
     downvotes_count?: number;
     items?: ResourceItem[];
-    node?: {
+    chapter?: {
         id: number;
         name: string;
         slug: string;
@@ -205,8 +205,8 @@ const primaryFormat = computed<'image' | 'video' | 'pdf'>(() => {
 const subtitle = computed(() => {
     const parts: string[] = [];
 
-    if (props.resource.node?.name) {
-        parts.push(props.resource.node.name);
+    if (props.resource.chapter?.name) {
+        parts.push(props.resource.chapter.name);
     }
 
     if (props.resource.subject?.name) {

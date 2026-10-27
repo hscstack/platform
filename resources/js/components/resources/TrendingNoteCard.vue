@@ -50,7 +50,7 @@ interface ResourceNote {
     status?: string;
     admin_note?: string | null;
     user?: User | null;
-    node?: NodeItem | null;
+    chapter?: NodeItem | null;
     subject?: {
         id: number;
         name: string;
@@ -127,9 +127,9 @@ const pagesLabel = computed(() => {
 const subtitle = computed(() => {
     const parts: string[] = [];
 
-    const chapterName = props.note.node?.name;
+    const chapterName = props.note.chapter?.name;
     const subjectName =
-        props.note.node?.subject?.name || props.note.subject?.name;
+        props.note.chapter?.subject?.name || props.note.subject?.name;
 
     if (chapterName) {
         parts.push(chapterName);
@@ -206,10 +206,10 @@ const subtitle = computed(() => {
                     </div>
 
                     <span
-                        v-if="note.node?.subject?.name"
+                        v-if="note.chapter?.subject?.name"
                         class="mt-2 line-clamp-1 text-[11px] font-bold text-slate-700 dark:text-gray-300"
                     >
-                        {{ note.node.subject.name }}
+                        {{ note.chapter.subject.name }}
                     </span>
                     <span
                         class="mt-0.5 text-[9px] font-bold tracking-wider text-slate-400 uppercase dark:text-gray-500"

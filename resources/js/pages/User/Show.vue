@@ -1310,14 +1310,14 @@ const formatGroupName = (group?: string) => {
                                             class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-400 dark:text-gray-500"
                                         >
                                             <span
-                                                v-if="note.node?.subject"
+                                                v-if="note.chapter?.subject"
                                                 class="font-medium text-slate-600 dark:text-gray-300"
                                             >
-                                                {{ note.node.subject.name }}
+                                                {{ note.chapter.subject.name }}
                                             </span>
-                                            <span v-if="note.node"
+                                            <span v-if="note.chapter"
                                                 >&middot;
-                                                {{ note.node.name }}</span
+                                                {{ note.chapter.name }}</span
                                             >
                                             <span v-if="note.items_count"
                                                 >&middot; {{ note.items_count }}
