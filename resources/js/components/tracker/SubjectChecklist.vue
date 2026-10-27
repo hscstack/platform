@@ -87,9 +87,11 @@ function toggleExpand(subjectId: number) {
 }
 
 const showSwitchConfirmModal = ref(false);
+const showBatchOnlyModal = ref(false);
 const pendingCurriculum = ref<'hsc' | 'ssc'>(props.course);
 const pendingGroup = ref<'science' | 'humanities' | 'commerce'>(props.group);
 const pendingBatch = ref<string>(props.batch || '');
+const selectedBatchOnly = ref<string>(props.batch || 'hsc_26');
 const pendingOptionalSubjectIds = ref<Set<number>>(
     new Set(props.optionalSubjectIds),
 );
@@ -107,6 +109,8 @@ watch(
         pendingCurriculum.value = newCourse;
         pendingGroup.value = newGroup;
         pendingBatch.value = newBatch || '';
+        selectedBatchOnly.value =
+            newBatch || (newCourse === 'ssc' ? 'ssc_26' : 'hsc_26');
         pendingOptionalSubjectIds.value = new Set(newOptionals);
     },
 );
@@ -165,6 +169,34 @@ function openSwitchModal() {
     pendingBatch.value = props.batch || '';
     pendingOptionalSubjectIds.value = new Set(props.optionalSubjectIds);
     showSwitchConfirmModal.value = true;
+}
+
+function confirmSaveBatchOnly() {
+    if (!props.isAuthenticated) {
+        emit('require-auth', 'Log in to save your batch.');
+
+        return;
+    }
+
+    isSwitching.value = true;
+    router.post(
+        '/tracker/curriculum',
+        {
+            curriculum: props.course,
+            group: props.group,
+            batch: selectedBatchOnly.value || null,
+            optional_subject_ids: props.optionalSubjectIds || [],
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showBatchOnlyModal.value = false;
+            },
+            onFinish: () => {
+                isSwitching.value = false;
+            },
+        },
+    );
 }
 
 function formatGroup(groupKey: string) {
@@ -416,7 +448,7 @@ onMounted(() => {
 
     // Auto-prompt modal if authenticated user has not set their exam batch yet
     if (props.isAuthenticated && !props.batch) {
-        openSwitchModal();
+        showBatchOnlyModal.value = true;
     }
 });
 
@@ -1065,6 +1097,85 @@ onUnmounted(() => {
                     />
                     <span>{{
                         isSwitching ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন'
+                    }}</span>
+                </button>
+            </div>
+        </BaseModal>
+
+        <!-- Dedicated Batch-Only Setup Modal -->
+        <BaseModal
+            :is-open="showBatchOnlyModal"
+            title="পরীক্ষার ব্যাচ নির্বাচন করুন"
+            description="আপনার সঠিক সিলেবাস ও অধ্যায় ট্র্যাক করতে পরীক্ষার ব্যাচ নির্বাচন করুন"
+            max-width="md"
+            @close="showBatchOnlyModal = false"
+        >
+            <div class="space-y-4 p-5 text-slate-800 dark:text-gray-200">
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button
+                        v-for="b in course === 'hsc'
+                            ? [
+                                  { key: 'hsc_25', label: 'HSC 25' },
+                                  { key: 'hsc_26', label: 'HSC 26' },
+                                  { key: 'hsc_27', label: 'HSC 27' },
+                                  { key: 'hsc_28', label: 'HSC 28' },
+                              ]
+                            : [
+                                  { key: 'ssc_25', label: 'SSC 25' },
+                                  { key: 'ssc_26', label: 'SSC 26' },
+                                  { key: 'ssc_27', label: 'SSC 27' },
+                              ]"
+                        :key="b.key"
+                        type="button"
+                        @click="selectedBatchOnly = b.key"
+                        :class="[
+                            selectedBatchOnly === b.key
+                                ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-2 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-200'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                        ]"
+                        class="flex cursor-pointer items-center justify-between rounded-2xl border p-4 text-left transition"
+                    >
+                        <div>
+                            <p class="text-sm font-bold">{{ b.label }}</p>
+                            <p
+                                class="text-[11px] text-slate-500 dark:text-gray-400"
+                            >
+                                Exam Batch
+                            </p>
+                        </div>
+                        <span
+                            v-if="selectedBatchOnly === b.key"
+                            class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white dark:bg-indigo-500"
+                        >
+                            ✓
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div
+                class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3 dark:border-gray-800 dark:bg-gray-900/60"
+            >
+                <button
+                    type="button"
+                    @click="showBatchOnlyModal = false"
+                    :disabled="isSwitching"
+                    class="cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                    পরে করব
+                </button>
+                <button
+                    type="button"
+                    @click="confirmSaveBatchOnly"
+                    :disabled="isSwitching || !selectedBatchOnly"
+                    class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
+                >
+                    <Loader2
+                        v-if="isSwitching"
+                        class="h-3.5 w-3.5 animate-spin"
+                    />
+                    <span>{{
+                        isSwitching ? 'সংরক্ষণ হচ্ছে...' : 'ব্যাচ নিশ্চিত করুন'
                     }}</span>
                 </button>
             </div>
