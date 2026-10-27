@@ -65,7 +65,7 @@ interface Resource {
     comments_count?: number;
     created_at: string;
     user?: User;
-    node?: NodeItem | null;
+    chapter?: NodeItem | null;
     user_vote?: number | null;
 }
 
@@ -435,21 +435,21 @@ const shareResource = async () => {
                     class="shrink-0 font-medium text-indigo-600 dark:text-indigo-400"
                     >{{ typeBadge.text }}</span
                 >
-                <template v-if="resource.node">
+                <template v-if="resource.chapter">
                     <span class="text-slate-300 dark:text-gray-600">•</span>
                     <span
                         class="truncate font-medium text-slate-600 dark:text-gray-300"
-                        >{{ resource.node.name }}</span
+                        >{{ resource.chapter.name }}</span
                     >
                 </template>
-                <template v-if="resource.node?.subject">
+                <template v-if="resource.chapter?.subject">
                     <span class="text-slate-300 dark:text-gray-600">•</span>
                     <Link
-                        :href="`/notes?subject=${resource.node.subject.id}`"
+                        :href="`/notes?subject=${resource.chapter.subject.id}`"
                         @click.stop
                         class="shrink-0 transition hover:text-indigo-600 dark:hover:text-indigo-400"
                     >
-                        {{ resource.node.subject.name }}
+                        {{ resource.chapter.subject.name }}
                     </Link>
                 </template>
             </div>
