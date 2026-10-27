@@ -37,6 +37,7 @@ interface SubjectItem {
     slug: string;
     group?: string;
     nodes?: NodeItem[];
+    chapters?: NodeItem[];
 }
 
 interface ResourceItem {
@@ -206,7 +207,7 @@ const availableChapters = computed(() => {
 
     const subj = props.subjects.find((s) => s.id === selectedSubjectId.value);
 
-    return subj?.nodes || [];
+    return subj?.chapters || subj?.nodes || [];
 });
 
 const activeFiltersCount = computed(() => {

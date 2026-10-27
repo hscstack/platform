@@ -47,6 +47,7 @@ interface SubjectItem {
 
 interface ResourceData {
     id: number;
+    chapter_id?: number | null;
     node_id?: number | null;
     subject_id?: number | null;
     user_id?: number | null;
@@ -350,7 +351,11 @@ const initForm = () => {
             props.subject?.id ||
             props.node?.subject_id ||
             null;
-        selectedNodeId.value = props.resource.node_id || props.node?.id || null;
+        selectedNodeId.value =
+            props.resource.chapter_id ||
+            props.resource.node_id ||
+            props.node?.id ||
+            null;
     } else {
         form.value = {
             title: '',
@@ -832,7 +837,7 @@ const handleSubmit = async () => {
             description: form.value.description.trim() || null,
             items: itemsPayload,
             subject_id: selectedSubjectId.value,
-            node_id: selectedNodeId.value || null,
+            chapter_id: selectedNodeId.value || null,
         };
 
         const errorFallback = isEditing.value

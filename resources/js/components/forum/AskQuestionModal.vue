@@ -18,6 +18,7 @@ interface Subject {
     course: 'hsc' | 'ssc';
     slug: string;
     nodes?: NodeItem[];
+    chapters?: NodeItem[];
 }
 
 const props = withDefaults(
@@ -76,7 +77,7 @@ const filteredNodes = computed(() => {
         (s) => s.id === Number(form.subject_id),
     );
 
-    return subj?.nodes || [];
+    return subj?.chapters || subj?.nodes || [];
 });
 
 watch(

@@ -332,9 +332,7 @@ class ResourceController extends Controller
         $isModerator = $request->user()->can('moderate resources');
         $status = $isModerator ? 'approved' : 'pending';
 
-        $chapterId = ! empty($validated['chapter_id'])
-            ? (int) $validated['chapter_id']
-            : (! empty($validated['node_id']) ? (int) $validated['node_id'] : null);
+        $chapterId = ! empty($validated['chapter_id']) ? (int) $validated['chapter_id'] : null;
         $subjectId = $chapterId
             ? (int) (Chapter::where('id', $chapterId)->value('subject_id') ?? $validated['subject_id'])
             : (int) $validated['subject_id'];
@@ -381,9 +379,8 @@ class ResourceController extends Controller
             'items' => $validated['items'],
         ];
 
-        $inputChapterId = $validated['chapter_id'] ?? $validated['node_id'] ?? null;
-        if (array_key_exists('chapter_id', $validated) || array_key_exists('node_id', $validated)) {
-            $chapterId = ! empty($inputChapterId) ? (int) $inputChapterId : null;
+        if (array_key_exists('chapter_id', $validated)) {
+            $chapterId = ! empty($validated['chapter_id']) ? (int) $validated['chapter_id'] : null;
             $updateData['chapter_id'] = $chapterId;
 
             if ($chapterId) {

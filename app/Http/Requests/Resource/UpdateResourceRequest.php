@@ -15,7 +15,7 @@ class UpdateResourceRequest extends FormRequest
     {
         return [
             'subject_id' => ['sometimes', 'nullable', 'integer', 'exists:subjects,id'],
-            'node_id' => ['sometimes', 'nullable', 'integer', 'exists:nodes,id'],
+            'chapter_id' => ['sometimes', 'nullable', 'integer', 'exists:chapters,id'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'resource_type' => ['required', 'string', 'in:note,lecture_sheet,practical,marked_book,other,video'],
