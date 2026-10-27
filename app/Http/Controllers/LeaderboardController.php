@@ -31,7 +31,7 @@ class LeaderboardController extends Controller
             : null;
 
         $batch = $request->input('batch');
-        if (! in_array($batch, ['hsc_25', 'hsc_26', 'hsc_27', 'hsc_28', 'ssc_25', 'ssc_26', 'ssc_27'], true)) {
+        if (! in_array($batch, ['hsc_25', 'hsc_26', 'hsc_27', 'hsc_28', 'ssc_25', 'ssc_26', 'ssc_27', 'ssc_28'], true)) {
             $batch = null;
         }
 
