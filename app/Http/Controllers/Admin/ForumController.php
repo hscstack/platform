@@ -82,7 +82,7 @@ class ForumController extends Controller
 
         $updateData = ['moderation_status' => $newStatus];
 
-        if ($newStatus === 'approved' && $oldStatus !== 'approved') {
+        if ($newStatus === 'approved' && $oldStatus === 'pending') {
             $updateData['created_at'] = now();
         }
 
