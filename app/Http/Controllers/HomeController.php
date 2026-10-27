@@ -95,9 +95,9 @@ class HomeController extends Controller
     {
         $page = max(1, $page);
 
-        // Cache the raw models collection for 2 minutes using serialize/unserialize to preserve full Eloquent relation state
-        $cacheKey = "home_feed_raw_serialized_{$course}_{$group}_{$sort}_{$page}";
-        $serializedFeed = Cache::remember($cacheKey, now()->addMinutes(2), function () use ($course, $group, $sort, $page) {
+        // Cache the raw interleaved items as pure arrays for 2 minutes
+        $cacheKey = "home_feed_raw_arrays_{$course}_{$group}_{$sort}_{$page}";
+        $cachedFeed = Cache::remember($cacheKey, now()->addMinutes(2), function () use ($course, $group, $sort, $page) {
             // 1. Forum Posts (6 items)
             $postsQuery = ForumPost::approved()
                 ->where('curriculum', $course)
@@ -169,138 +169,127 @@ class HomeController extends Controller
                 return $b;
             });
 
-            return serialize([
-                'posts' => $posts,
-                'resources' => $resources,
-                'blogs' => $blogs,
-            ]);
+            // Mask anonymous posts before caching
+            foreach ($posts as $p) {
+                if ($p->is_anonymous) {
+                    $p->user_id = null;
+                    $p->setRelation('user', (object) [
+                        'id' => null,
+                        'name' => 'Anonymous Student',
+                        'username' => null,
+                        'image_path' => null,
+                        'image_url' => null,
+                        'institution' => null,
+                        'is_verified' => false,
+                        'is_appreciated' => false,
+                    ]);
+                }
+            }
+
+            $pArr = $posts->toArray();
+            $rArr = $resources->toArray();
+            $bArr = $blogs->toArray();
+
+            $merged = [];
+            $pIndex = 0;
+            $rIndex = 0;
+            $bIndex = 0;
+
+            while ($pIndex < count($pArr) || $rIndex < count($rArr)) {
+                if ($pIndex < count($pArr)) {
+                    $merged[] = $pArr[$pIndex++];
+                }
+                if ($rIndex < count($rArr)) {
+                    $merged[] = $rArr[$rIndex++];
+                }
+                if ($bIndex < count($bArr) && count($merged) % 4 === 2) {
+                    $merged[] = $bArr[$bIndex++];
+                }
+                if ($pIndex < count($pArr)) {
+                    $merged[] = $pArr[$pIndex++];
+                }
+                if ($bIndex < count($bArr) && count($merged) % 5 === 0) {
+                    $merged[] = $bArr[$bIndex++];
+                }
+            }
+
+            while ($bIndex < count($bArr)) {
+                $merged[] = $bArr[$bIndex++];
+            }
+
+            return [
+                'items' => $merged,
+                'has_more' => (count($pArr) === 6 || count($rArr) === 4 || count($bArr) === 2),
+            ];
         });
 
-        $feedData = unserialize($serializedFeed);
-        $posts = $feedData['posts'];
-        $resources = $feedData['resources'];
-        $blogs = $feedData['blogs'];
-
-        // Compute is_appreciated and user_vote if logged in
+        $items = $cachedFeed['items'];
         $userId = Auth::id();
+
         if ($userId) {
-            $authorIds = array_unique(array_filter(array_merge(
-                $posts->pluck('user_id')->all(),
-                $resources->pluck('user_id')->all(),
-                $blogs->pluck('user_id')->all()
-            )));
+            $authorIds = [];
+            $postIds = [];
+            $resourceIds = [];
 
-            $appreciatedAuthorIds = UserAppreciation::where('appreciator_id', $userId)
-                ->whereIn('user_id', $authorIds)
-                ->pluck('user_id')
-                ->flip()
-                ->all();
-
-            $forumPostVotes = ForumVote::where('user_id', $userId)
-                ->where('voteable_type', ForumPost::class)
-                ->whereIn('voteable_id', $posts->pluck('id'))
-                ->pluck('value', 'voteable_id')
-                ->all();
-
-            $resourceVotes = ResourceVote::where('user_id', $userId)
-                ->whereIn('resource_id', $resources->pluck('id'))
-                ->pluck('value', 'resource_id')
-                ->all();
-
-            foreach ($posts as $p) {
-                if ($p->user) {
-                    $p->user->is_appreciated = isset($appreciatedAuthorIds[$p->user->id]);
+            foreach ($items as $item) {
+                if (! empty($item['user_id'])) {
+                    $authorIds[] = $item['user_id'];
                 }
-                $p->user_vote = $forumPostVotes[$p->id] ?? null;
-            }
-            foreach ($resources as $r) {
-                if ($r->user) {
-                    $r->user->is_appreciated = isset($appreciatedAuthorIds[$r->user->id]);
-                }
-                $r->user_vote = $resourceVotes[$r->id] ?? null;
-            }
-            foreach ($blogs as $b) {
-                if ($b->user) {
-                    $b->user->is_appreciated = isset($appreciatedAuthorIds[$b->user->id]);
+                if (($item['feed_type'] ?? '') === 'forum_post' && ! empty($item['id'])) {
+                    $postIds[] = $item['id'];
+                } elseif (($item['feed_type'] ?? '') === 'resource' && ! empty($item['id'])) {
+                    $resourceIds[] = $item['id'];
                 }
             }
+
+            $appreciatedAuthorIds = ! empty($authorIds)
+                ? UserAppreciation::where('appreciator_id', $userId)
+                    ->whereIn('user_id', array_unique($authorIds))
+                    ->pluck('user_id')
+                    ->flip()
+                    ->all()
+                : [];
+
+            $forumPostVotes = ! empty($postIds)
+                ? ForumVote::where('user_id', $userId)
+                    ->where('voteable_type', ForumPost::class)
+                    ->whereIn('voteable_id', $postIds)
+                    ->pluck('value', 'voteable_id')
+                    ->all()
+                : [];
+
+            $resourceVotes = ! empty($resourceIds)
+                ? ResourceVote::where('user_id', $userId)
+                    ->whereIn('resource_id', $resourceIds)
+                    ->pluck('value', 'resource_id')
+                    ->all()
+                : [];
+
+            foreach ($items as &$item) {
+                if (! empty($item['user']) && is_array($item['user']) && ! empty($item['user']['id'])) {
+                    $item['user']['is_appreciated'] = isset($appreciatedAuthorIds[$item['user']['id']]);
+                }
+
+                if (($item['feed_type'] ?? '') === 'forum_post') {
+                    $item['user_vote'] = $forumPostVotes[$item['id']] ?? null;
+                } elseif (($item['feed_type'] ?? '') === 'resource') {
+                    $item['user_vote'] = $resourceVotes[$item['id']] ?? null;
+                }
+            }
+            unset($item);
         } else {
-            foreach ($posts as $p) {
-                if ($p->user) {
-                    $p->user->is_appreciated = false;
+            foreach ($items as &$item) {
+                if (! empty($item['user']) && is_array($item['user'])) {
+                    $item['user']['is_appreciated'] = false;
                 }
-                $p->user_vote = null;
+                $item['user_vote'] = null;
             }
-            foreach ($resources as $r) {
-                if ($r->user) {
-                    $r->user->is_appreciated = false;
-                }
-                $r->user_vote = null;
-            }
-            foreach ($blogs as $b) {
-                if ($b->user) {
-                    $b->user->is_appreciated = false;
-                }
-            }
-        }
-
-        // Naturally interleave 6 posts, 4 resources, 2 blogs
-        foreach ($posts as $p) {
-            if ($p->is_anonymous) {
-                $p->user_id = null;
-                $p->setRelation('user', (object) [
-                    'id' => null,
-                    'name' => 'Anonymous Student',
-                    'username' => null,
-                    'image_path' => null,
-                    'image_url' => null,
-                    'institution' => null,
-                    'is_verified' => false,
-                    'is_appreciated' => false,
-                ]);
-            }
-        }
-
-        $pArr = $posts->values()->all();
-        $rArr = $resources->values()->all();
-        $bArr = $blogs->values()->all();
-
-        $merged = [];
-        $pIndex = 0;
-        $rIndex = 0;
-        $bIndex = 0;
-
-        while ($pIndex < count($pArr) || $rIndex < count($rArr)) {
-            // Post
-            if ($pIndex < count($pArr)) {
-                $merged[] = $pArr[$pIndex++];
-            }
-            // Resource
-            if ($rIndex < count($rArr)) {
-                $merged[] = $rArr[$rIndex++];
-            }
-            // Blog (interleaved every other cycle)
-            if ($bIndex < count($bArr) && count($merged) % 4 === 2) {
-                $merged[] = $bArr[$bIndex++];
-            }
-            // Another Post to maintain the 6:4:2 ratio
-            if ($pIndex < count($pArr)) {
-                $merged[] = $pArr[$pIndex++];
-            }
-            // Remaining blog if any
-            if ($bIndex < count($bArr) && count($merged) % 5 === 0) {
-                $merged[] = $bArr[$bIndex++];
-            }
-        }
-
-        // Catch any remaining blogs
-        while ($bIndex < count($bArr)) {
-            $merged[] = $bArr[$bIndex++];
+            unset($item);
         }
 
         return [
-            'data' => collect($merged)->toArray(),
-            'has_more' => ($posts->count() === 6 || $resources->count() === 4 || $blogs->count() === 2),
+            'data' => $items,
+            'has_more' => $cachedFeed['has_more'],
             'page' => $page,
         ];
     }
