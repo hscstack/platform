@@ -242,17 +242,17 @@ class HomeController extends Controller
             }
         }
 
-        // Fetch fresh real-time vote scores and reaction counts
-        $freshPostScores = ! empty($postIds)
+        // Fetch fresh real-time vote scores, upvotes/downvotes counts, and reaction counts
+        $freshPosts = ! empty($postIds)
             ? ForumPost::whereIn('id', $postIds)
-                ->pluck('vote_score', 'id')
-                ->all()
+                ->get(['id', 'vote_score', 'upvotes_count', 'downvotes_count'])
+                ->keyBy('id')
             : [];
 
-        $freshResourceScores = ! empty($resourceIds)
+        $freshResources = ! empty($resourceIds)
             ? Resource::whereIn('id', $resourceIds)
-                ->pluck('vote_score', 'id')
-                ->all()
+                ->get(['id', 'vote_score', 'upvotes_count', 'downvotes_count'])
+                ->keyBy('id')
             : [];
 
         $freshBlogReactions = ! empty($blogIds)
@@ -301,13 +301,17 @@ class HomeController extends Controller
                 }
 
                 if (($item['feed_type'] ?? '') === 'forum_post') {
-                    if (isset($freshPostScores[$item['id']])) {
-                        $item['vote_score'] = $freshPostScores[$item['id']];
+                    if (isset($freshPosts[$item['id']])) {
+                        $item['vote_score'] = $freshPosts[$item['id']]->vote_score;
+                        $item['upvotes_count'] = $freshPosts[$item['id']]->upvotes_count;
+                        $item['downvotes_count'] = $freshPosts[$item['id']]->downvotes_count;
                     }
                     $item['user_vote'] = $forumPostVotes[$item['id']] ?? null;
                 } elseif (($item['feed_type'] ?? '') === 'resource') {
-                    if (isset($freshResourceScores[$item['id']])) {
-                        $item['vote_score'] = $freshResourceScores[$item['id']];
+                    if (isset($freshResources[$item['id']])) {
+                        $item['vote_score'] = $freshResources[$item['id']]->vote_score;
+                        $item['upvotes_count'] = $freshResources[$item['id']]->upvotes_count;
+                        $item['downvotes_count'] = $freshResources[$item['id']]->downvotes_count;
                     }
                     $item['user_vote'] = $resourceVotes[$item['id']] ?? null;
                 } elseif (($item['feed_type'] ?? '') === 'blog') {
@@ -323,13 +327,17 @@ class HomeController extends Controller
                 }
 
                 if (($item['feed_type'] ?? '') === 'forum_post') {
-                    if (isset($freshPostScores[$item['id']])) {
-                        $item['vote_score'] = $freshPostScores[$item['id']];
+                    if (isset($freshPosts[$item['id']])) {
+                        $item['vote_score'] = $freshPosts[$item['id']]->vote_score;
+                        $item['upvotes_count'] = $freshPosts[$item['id']]->upvotes_count;
+                        $item['downvotes_count'] = $freshPosts[$item['id']]->downvotes_count;
                     }
                     $item['user_vote'] = null;
                 } elseif (($item['feed_type'] ?? '') === 'resource') {
-                    if (isset($freshResourceScores[$item['id']])) {
-                        $item['vote_score'] = $freshResourceScores[$item['id']];
+                    if (isset($freshResources[$item['id']])) {
+                        $item['vote_score'] = $freshResources[$item['id']]->vote_score;
+                        $item['upvotes_count'] = $freshResources[$item['id']]->upvotes_count;
+                        $item['downvotes_count'] = $freshResources[$item['id']]->downvotes_count;
                     }
                     $item['user_vote'] = null;
                 } elseif (($item['feed_type'] ?? '') === 'blog') {
