@@ -1413,6 +1413,7 @@ const submitForm = () => {
                                       { key: 'ssc_25', label: 'SSC 25' },
                                       { key: 'ssc_26', label: 'SSC 26' },
                                       { key: 'ssc_27', label: 'SSC 27' },
+                                      { key: 'ssc_28', label: 'SSC 28' },
                                   ]"
                             :key="b.key"
                             type="button"

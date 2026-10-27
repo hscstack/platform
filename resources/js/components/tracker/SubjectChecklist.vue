@@ -92,7 +92,9 @@ const pendingCurriculum = ref<'hsc' | 'ssc'>(props.course);
 const pendingGroup = ref<'science' | 'humanities' | 'commerce'>(props.group);
 const pendingBatch = ref<string>(props.batch || '');
 const selectedCurriculumOnly = ref<'hsc' | 'ssc'>(props.course);
-const selectedBatchOnly = ref<string>(props.batch || 'hsc_26');
+const selectedBatchOnly = ref<string>(
+    props.batch || (props.course === 'ssc' ? 'ssc_27' : 'hsc_28'),
+);
 const pendingOptionalSubjectIds = ref<Set<number>>(
     new Set(props.optionalSubjectIds),
 );
@@ -102,12 +104,12 @@ function setBatchCurriculum(curriculum: 'hsc' | 'ssc') {
     selectedCurriculumOnly.value = curriculum;
 
     if (curriculum === 'hsc' && !selectedBatchOnly.value.startsWith('hsc_')) {
-        selectedBatchOnly.value = 'hsc_26';
+        selectedBatchOnly.value = 'hsc_28';
     } else if (
         curriculum === 'ssc' &&
         !selectedBatchOnly.value.startsWith('ssc_')
     ) {
-        selectedBatchOnly.value = 'ssc_26';
+        selectedBatchOnly.value = 'ssc_27';
     }
 }
 
@@ -124,7 +126,7 @@ watch(
         pendingGroup.value = newGroup;
         pendingBatch.value = newBatch || '';
         selectedBatchOnly.value =
-            newBatch || (newCourse === 'ssc' ? 'ssc_26' : 'hsc_26');
+            newBatch || (newCourse === 'ssc' ? 'ssc_27' : 'hsc_28');
         pendingOptionalSubjectIds.value = new Set(newOptionals);
     },
 );
@@ -1019,6 +1021,7 @@ onUnmounted(() => {
                                       { key: 'ssc_25', label: 'SSC 25' },
                                       { key: 'ssc_26', label: 'SSC 26' },
                                       { key: 'ssc_27', label: 'SSC 27' },
+                                      { key: 'ssc_28', label: 'SSC 28' },
                                   ]"
                             :key="b.key"
                             type="button"
@@ -1210,6 +1213,7 @@ onUnmounted(() => {
                                       { key: 'ssc_25', label: 'SSC 25' },
                                       { key: 'ssc_26', label: 'SSC 26' },
                                       { key: 'ssc_27', label: 'SSC 27' },
+                                      { key: 'ssc_28', label: 'SSC 28' },
                                   ]"
                             :key="b.key"
                             type="button"
