@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AppSetting;
 use App\Models\Blog;
+use App\Models\BlogReaction;
 use App\Models\ForumPost;
 use App\Models\ForumVote;
 use App\Models\Resource;
@@ -27,11 +28,8 @@ class HomeController extends Controller
         $sort = in_array($request->query('sort'), ['trending', 'recent'], true) ? $request->query('sort') : 'trending';
         $page = max(1, (int) $request->query('page', 1));
 
-        $feed = ! Auth::check()
-            ? Cache::remember("guest_home_feed_{$course}_{$group}_{$sort}_{$page}", now()->addMinutes(3), function () use ($course, $group, $sort, $page) {
-                return $this->getFeed($course, $group, $sort, $page);
-            })
-            : $this->getFeed($course, $group, $sort, $page);
+        // Remove guest-level whole-feed caching to ensure real-time vote scores and reactions across all users
+        $feed = $this->getFeed($course, $group, $sort, $page);
 
         $subjects = Cache::rememberForever("curriculum_subjects_{$course}_{$group}", function () use ($course, $group) {
             $subjectsQuery = Subject::where('is_disabled', false)
@@ -226,22 +224,46 @@ class HomeController extends Controller
         $items = $cachedFeed['items'];
         $userId = Auth::id();
 
-        if ($userId) {
-            $authorIds = [];
-            $postIds = [];
-            $resourceIds = [];
+        $authorIds = [];
+        $postIds = [];
+        $resourceIds = [];
+        $blogIds = [];
 
-            foreach ($items as $item) {
-                if (! empty($item['user_id'])) {
-                    $authorIds[] = $item['user_id'];
-                }
-                if (($item['feed_type'] ?? '') === 'forum_post' && ! empty($item['id'])) {
-                    $postIds[] = $item['id'];
-                } elseif (($item['feed_type'] ?? '') === 'resource' && ! empty($item['id'])) {
-                    $resourceIds[] = $item['id'];
-                }
+        foreach ($items as $item) {
+            if (! empty($item['user_id'])) {
+                $authorIds[] = $item['user_id'];
             }
+            if (($item['feed_type'] ?? '') === 'forum_post' && ! empty($item['id'])) {
+                $postIds[] = $item['id'];
+            } elseif (($item['feed_type'] ?? '') === 'resource' && ! empty($item['id'])) {
+                $resourceIds[] = $item['id'];
+            } elseif (($item['feed_type'] ?? '') === 'blog' && ! empty($item['id'])) {
+                $blogIds[] = $item['id'];
+            }
+        }
 
+        // Fetch fresh real-time vote scores and reaction counts
+        $freshPostScores = ! empty($postIds)
+            ? ForumPost::whereIn('id', $postIds)
+                ->pluck('vote_score', 'id')
+                ->all()
+            : [];
+
+        $freshResourceScores = ! empty($resourceIds)
+            ? Resource::whereIn('id', $resourceIds)
+                ->pluck('vote_score', 'id')
+                ->all()
+            : [];
+
+        $freshBlogReactions = ! empty($blogIds)
+            ? BlogReaction::whereIn('blog_id', $blogIds)
+                ->selectRaw('blog_id, count(*) as count')
+                ->groupBy('blog_id')
+                ->pluck('count', 'blog_id')
+                ->all()
+            : [];
+
+        if ($userId) {
             $appreciatedAuthorIds = ! empty($authorIds)
                 ? UserAppreciation::where('appreciator_id', $userId)
                     ->whereIn('user_id', array_unique($authorIds))
@@ -265,15 +287,32 @@ class HomeController extends Controller
                     ->all()
                 : [];
 
+            $reactedBlogIds = ! empty($blogIds)
+                ? BlogReaction::where('user_id', $userId)
+                    ->whereIn('blog_id', $blogIds)
+                    ->pluck('blog_id')
+                    ->flip()
+                    ->all()
+                : [];
+
             foreach ($items as &$item) {
                 if (! empty($item['user']) && is_array($item['user']) && ! empty($item['user']['id'])) {
                     $item['user']['is_appreciated'] = isset($appreciatedAuthorIds[$item['user']['id']]);
                 }
 
                 if (($item['feed_type'] ?? '') === 'forum_post') {
+                    if (isset($freshPostScores[$item['id']])) {
+                        $item['vote_score'] = $freshPostScores[$item['id']];
+                    }
                     $item['user_vote'] = $forumPostVotes[$item['id']] ?? null;
                 } elseif (($item['feed_type'] ?? '') === 'resource') {
+                    if (isset($freshResourceScores[$item['id']])) {
+                        $item['vote_score'] = $freshResourceScores[$item['id']];
+                    }
                     $item['user_vote'] = $resourceVotes[$item['id']] ?? null;
+                } elseif (($item['feed_type'] ?? '') === 'blog') {
+                    $item['reactions_count'] = $freshBlogReactions[$item['id']] ?? 0;
+                    $item['is_reacted'] = isset($reactedBlogIds[$item['id']]);
                 }
             }
             unset($item);
@@ -282,7 +321,21 @@ class HomeController extends Controller
                 if (! empty($item['user']) && is_array($item['user'])) {
                     $item['user']['is_appreciated'] = false;
                 }
-                $item['user_vote'] = null;
+
+                if (($item['feed_type'] ?? '') === 'forum_post') {
+                    if (isset($freshPostScores[$item['id']])) {
+                        $item['vote_score'] = $freshPostScores[$item['id']];
+                    }
+                    $item['user_vote'] = null;
+                } elseif (($item['feed_type'] ?? '') === 'resource') {
+                    if (isset($freshResourceScores[$item['id']])) {
+                        $item['vote_score'] = $freshResourceScores[$item['id']];
+                    }
+                    $item['user_vote'] = null;
+                } elseif (($item['feed_type'] ?? '') === 'blog') {
+                    $item['reactions_count'] = $freshBlogReactions[$item['id']] ?? 0;
+                    $item['is_reacted'] = false;
+                }
             }
             unset($item);
         }
