@@ -1102,13 +1102,16 @@ onUnmounted(() => {
             </div>
         </BaseModal>
 
-        <!-- Dedicated Batch-Only Setup Modal -->
+        <!-- Dedicated Batch-Only Setup Modal (Mandatory selection) -->
         <BaseModal
             :is-open="showBatchOnlyModal"
             title="পরীক্ষার ব্যাচ নির্বাচন করুন"
-            description="আপনার সঠিক সিলেবাস ও অধ্যায় ট্র্যাক করতে পরীক্ষার ব্যাচ নির্বাচন করুন"
+            description="আপনার সঠিক সিলেবাস ও অধ্যায় ট্র্যাক করতে পরীক্ষার ব্যাচ নির্বাচন করা আবশ্যক"
             max-width="md"
-            @close="showBatchOnlyModal = false"
+            :close-on-backdrop="false"
+            :close-on-esc="false"
+            :show-close-button="false"
+            @close="() => {}"
         >
             <div class="space-y-4 p-5 text-slate-800 dark:text-gray-200">
                 <div class="grid grid-cols-2 gap-2.5">
@@ -1158,17 +1161,9 @@ onUnmounted(() => {
             >
                 <button
                     type="button"
-                    @click="showBatchOnlyModal = false"
-                    :disabled="isSwitching"
-                    class="cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                >
-                    পরে করব
-                </button>
-                <button
-                    type="button"
                     @click="confirmSaveBatchOnly"
                     :disabled="isSwitching || !selectedBatchOnly"
-                    class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
+                    class="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-indigo-700 active:scale-95 disabled:opacity-50 sm:w-auto"
                 >
                     <Loader2
                         v-if="isSwitching"
