@@ -91,8 +91,8 @@ class ForumController extends Controller
 
     public function destroy(ForumPost $post)
     {
-        if ($post->image_path) {
-            Storage::delete($post->image_path);
+        if (! empty($post->images) && is_array($post->images)) {
+            Storage::delete($post->images);
         }
 
         $answerImages = $post->answers()->whereNotNull('image_path')->pluck('image_path')->all();

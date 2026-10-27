@@ -228,9 +228,15 @@ const handleSendClick = () => {
         return;
     }
 
-    if (!form.subject.trim() || !form.body.trim()) {
-        form.validate();
+    if (!form.subject.trim()) {
+        form.setError('subject', 'Subject is required.');
+    }
 
+    if (!form.body.trim()) {
+        form.setError('body', 'Content is required.');
+    }
+
+    if (!form.subject.trim() || !form.body.trim()) {
         return;
     }
 

@@ -87,7 +87,7 @@ class ReportController extends Controller
                     ChatMessage::class,
                     $msg,
                     $msg?->user,
-                    $msg?->message ?? '',
+                    $msg?->content ?? '',
                     $msg?->created_at,
                 ];
             })(),

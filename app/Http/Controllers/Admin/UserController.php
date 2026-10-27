@@ -115,10 +115,6 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
-        if ($user->email === 'check@example.com') {
-            abort(403, 'This demo user cannot be modified.');
-        }
-
         $validated = $request->validated();
 
         if ($request->hasFile('file')) {

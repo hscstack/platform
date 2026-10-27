@@ -38,10 +38,37 @@ class StoreUserRequest extends FormRequest
             'about' => ['nullable', 'string', 'max:255', new CleanText],
             'title' => ['nullable', 'string', 'max:255', new CleanText],
             'institution' => ['nullable', 'string', 'max:255', new CleanText],
-            'facebook' => ['nullable', 'string', 'max:255'],
-            'instagram' => ['nullable', 'string', 'max:255'],
-            'github' => ['nullable', 'string', 'max:255'],
-            'website' => ['nullable', 'string', 'max:255'],
+            'facebook' => [
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://',
+                'regex:/^https:\/\/(www\.)?(facebook|fb)\.com\/[a-zA-Z0-9._\-]+\/?$/i',
+            ],
+            'instagram' => [
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://',
+                'regex:/^https:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._\-]+\/?$/i',
+            ],
+            'github' => [
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://',
+                'regex:/^https:\/\/(www\.)?github\.com\/[a-zA-Z0-9._\-]+\/?$/i',
+            ],
+            'website' => [
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://,http://',
+            ],
         ];
     }
 
