@@ -405,7 +405,6 @@ class ResourceController extends Controller
         if (! $canEditDirectly && $resource->status === 'approved') {
             $updateData['status'] = 'pending';
             $updateData['reviewed_by'] = null;
-            $updateData['reviewed_at'] = null;
         }
 
         $resource->update($updateData);

@@ -62,11 +62,18 @@ class ResourceController extends BaseResourceController
 
         DB::transaction(function () use ($resources) {
             foreach ($resources as $res) {
-                $res->update([
+                $updateData = [
                     'status' => 'approved',
                     'reviewed_by' => Auth::id(),
                     'reviewed_at' => now(),
-                ]);
+                ];
+
+                // First-time approval: reset created_at so it is fresh in Trending & Feed
+                if (is_null($res->reviewed_at)) {
+                    $updateData['created_at'] = now();
+                }
+
+                $res->update($updateData);
 
                 if ($res->user) {
                     ResourceModerationNotification::sendTo($res->user, $res, 'approved');
