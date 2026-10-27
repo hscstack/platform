@@ -91,11 +91,25 @@ const showBatchOnlyModal = ref(false);
 const pendingCurriculum = ref<'hsc' | 'ssc'>(props.course);
 const pendingGroup = ref<'science' | 'humanities' | 'commerce'>(props.group);
 const pendingBatch = ref<string>(props.batch || '');
+const selectedCurriculumOnly = ref<'hsc' | 'ssc'>(props.course);
 const selectedBatchOnly = ref<string>(props.batch || 'hsc_26');
 const pendingOptionalSubjectIds = ref<Set<number>>(
     new Set(props.optionalSubjectIds),
 );
 const isSwitching = ref(false);
+
+function setBatchCurriculum(curriculum: 'hsc' | 'ssc') {
+    selectedCurriculumOnly.value = curriculum;
+
+    if (curriculum === 'hsc' && !selectedBatchOnly.value.startsWith('hsc_')) {
+        selectedBatchOnly.value = 'hsc_26';
+    } else if (
+        curriculum === 'ssc' &&
+        !selectedBatchOnly.value.startsWith('ssc_')
+    ) {
+        selectedBatchOnly.value = 'ssc_26';
+    }
+}
 
 watch(
     () =>
@@ -182,7 +196,7 @@ function confirmSaveBatchOnly() {
     router.post(
         '/tracker/curriculum',
         {
-            curriculum: props.course,
+            curriculum: selectedCurriculumOnly.value,
             group: props.group,
             batch: selectedBatchOnly.value || null,
             optional_subject_ids: props.optionalSubjectIds || [],
@@ -1102,57 +1116,134 @@ onUnmounted(() => {
             </div>
         </BaseModal>
 
-        <!-- Dedicated Batch-Only Setup Modal (Mandatory selection) -->
+        <!-- Dedicated Batch & Curriculum Setup Modal (Mandatory selection) -->
         <BaseModal
             :is-open="showBatchOnlyModal"
-            title="পরীক্ষার ব্যাচ নির্বাচন করুন"
-            description="আপনার সঠিক সিলেবাস ও অধ্যায় ট্র্যাক করতে পরীক্ষার ব্যাচ নির্বাচন করা আবশ্যক"
+            title="কারিকুলাম ও ব্যাচ নির্বাচন করুন"
+            description="আপনার সঠিক সিলেবাস ও অধ্যায় ট্র্যাক করতে কারিকুলাম ও ব্যাচ নির্বাচন করা আবশ্যক"
             max-width="md"
             :close-on-backdrop="false"
             :close-on-esc="false"
             :show-close-button="false"
             @close="() => {}"
         >
-            <div class="space-y-4 p-5 text-slate-800 dark:text-gray-200">
-                <div class="grid grid-cols-2 gap-2.5">
-                    <button
-                        v-for="b in course === 'hsc'
-                            ? [
-                                  { key: 'hsc_25', label: 'HSC 25' },
-                                  { key: 'hsc_26', label: 'HSC 26' },
-                                  { key: 'hsc_27', label: 'HSC 27' },
-                                  { key: 'hsc_28', label: 'HSC 28' },
-                              ]
-                            : [
-                                  { key: 'ssc_25', label: 'SSC 25' },
-                                  { key: 'ssc_26', label: 'SSC 26' },
-                                  { key: 'ssc_27', label: 'SSC 27' },
-                              ]"
-                        :key="b.key"
-                        type="button"
-                        @click="selectedBatchOnly = b.key"
-                        :class="[
-                            selectedBatchOnly === b.key
-                                ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-2 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-200'
-                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
-                        ]"
-                        class="flex cursor-pointer items-center justify-between rounded-2xl border p-4 text-left transition"
+            <div class="space-y-4.5 p-5 text-slate-800 dark:text-gray-200">
+                <!-- Curriculum Level Switcher (HSC vs SSC) -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
                     >
-                        <div>
-                            <p class="text-sm font-bold">{{ b.label }}</p>
-                            <p
-                                class="text-[11px] text-slate-500 dark:text-gray-400"
-                            >
-                                Exam Batch
-                            </p>
-                        </div>
-                        <span
-                            v-if="selectedBatchOnly === b.key"
-                            class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white dark:bg-indigo-500"
+                        কারিকুলাম লেভেল
+                    </label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button
+                            type="button"
+                            @click="setBatchCurriculum('hsc')"
+                            :class="[
+                                selectedCurriculumOnly === 'hsc'
+                                    ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-2 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 text-left transition"
                         >
-                            ✓
-                        </span>
-                    </button>
+                            <div>
+                                <p class="text-sm font-bold">HSC</p>
+                                <p
+                                    class="text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    Class 11–12
+                                </p>
+                            </div>
+                            <span
+                                v-if="selectedCurriculumOnly === 'hsc'"
+                                class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white dark:bg-indigo-500"
+                            >
+                                ✓
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="setBatchCurriculum('ssc')"
+                            :class="[
+                                selectedCurriculumOnly === 'ssc'
+                                    ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 ring-2 ring-emerald-600 dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-emerald-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 text-left transition"
+                        >
+                            <div>
+                                <p class="text-sm font-bold">SSC</p>
+                                <p
+                                    class="text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    Class 9–10
+                                </p>
+                            </div>
+                            <span
+                                v-if="selectedCurriculumOnly === 'ssc'"
+                                class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white dark:bg-emerald-500"
+                            >
+                                ✓
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Exam Batch Selection -->
+                <div>
+                    <label
+                        class="mb-2 block text-xs font-bold text-slate-700 dark:text-gray-300"
+                    >
+                        পরীক্ষার ব্যাচ নির্বাচন করুন
+                    </label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button
+                            v-for="b in selectedCurriculumOnly === 'hsc'
+                                ? [
+                                      { key: 'hsc_25', label: 'HSC 25' },
+                                      { key: 'hsc_26', label: 'HSC 26' },
+                                      { key: 'hsc_27', label: 'HSC 27' },
+                                      { key: 'hsc_28', label: 'HSC 28' },
+                                  ]
+                                : [
+                                      { key: 'ssc_25', label: 'SSC 25' },
+                                      { key: 'ssc_26', label: 'SSC 26' },
+                                      { key: 'ssc_27', label: 'SSC 27' },
+                                  ]"
+                            :key="b.key"
+                            type="button"
+                            @click="selectedBatchOnly = b.key"
+                            :class="[
+                                selectedBatchOnly === b.key
+                                    ? selectedCurriculumOnly === 'ssc'
+                                        ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 ring-2 ring-emerald-600 dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-emerald-200'
+                                        : 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-2 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-200'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-800',
+                            ]"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 text-left transition"
+                        >
+                            <div>
+                                <p class="text-sm font-bold">{{ b.label }}</p>
+                                <p
+                                    class="text-[11px] text-slate-500 dark:text-gray-400"
+                                >
+                                    Exam Batch
+                                </p>
+                            </div>
+                            <span
+                                v-if="selectedBatchOnly === b.key"
+                                :class="
+                                    selectedCurriculumOnly === 'ssc'
+                                        ? 'bg-emerald-600 dark:bg-emerald-500'
+                                        : 'bg-indigo-600 dark:bg-indigo-500'
+                                "
+                                class="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                            >
+                                ✓
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1170,7 +1261,7 @@ onUnmounted(() => {
                         class="h-3.5 w-3.5 animate-spin"
                     />
                     <span>{{
-                        isSwitching ? 'সংরক্ষণ হচ্ছে...' : 'ব্যাচ নিশ্চিত করুন'
+                        isSwitching ? 'সংরক্ষণ হচ্ছে...' : 'নিশ্চিত করুন'
                     }}</span>
                 </button>
             </div>
