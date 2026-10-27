@@ -95,76 +95,91 @@ class HomeController extends Controller
     {
         $page = max(1, $page);
 
-        // 1. Forum Posts (6 items)
-        $postsQuery = ForumPost::approved()
-            ->where('curriculum', $course)
-            ->when($group, function ($q) use ($group) {
-                $q->where(function ($subQ) use ($group) {
-                    $subQ->whereNull('subject_id')
-                        ->orWhereHas('subject', fn ($s) => $s->whereIn('group', [$group, 'common']));
-                });
-            })
-            ->with(['user:id,name,username,image_path,institution,is_verified', 'subject:id,name,group', 'chapter:id,name'])
-            ->withCount('answers');
+        // Cache the raw models collection for 2 minutes using serialize/unserialize to preserve full Eloquent relation state
+        $cacheKey = "home_feed_raw_serialized_{$course}_{$group}_{$sort}_{$page}";
+        $serializedFeed = Cache::remember($cacheKey, now()->addMinutes(2), function () use ($course, $group, $sort, $page) {
+            // 1. Forum Posts (6 items)
+            $postsQuery = ForumPost::approved()
+                ->where('curriculum', $course)
+                ->when($group, function ($q) use ($group) {
+                    $q->where(function ($subQ) use ($group) {
+                        $subQ->whereNull('subject_id')
+                            ->orWhereHas('subject', fn ($s) => $s->whereIn('group', [$group, 'common']));
+                    });
+                })
+                ->with(['user:id,name,username,image_path,institution,is_verified', 'subject:id,name,group', 'chapter:id,name'])
+                ->withCount('answers');
 
-        // 2. Resources (4 items)
-        $resourcesQuery = Resource::approved()
-            ->where(function ($query) use ($course, $group) {
-                $query->whereHas('subject', function ($s) use ($course, $group) {
-                    $s->where('course', $course);
-                    if ($group) {
-                        $s->whereIn('group', [$group, 'common']);
-                    }
-                })->orWhereHas('chapter.subject', function ($s) use ($course, $group) {
-                    $s->where('course', $course);
-                    if ($group) {
-                        $s->whereIn('group', [$group, 'common']);
-                    }
-                });
-            })
-            ->with(['user:id,name,username,image_path,institution,is_verified', 'chapter:id,name,subject_id', 'chapter.subject:id,name,course,group', 'subject:id,name,course,group'])
-            ->withCount('comments');
+            // 2. Resources (4 items)
+            $resourcesQuery = Resource::approved()
+                ->where(function ($query) use ($course, $group) {
+                    $query->whereHas('subject', function ($s) use ($course, $group) {
+                        $s->where('course', $course);
+                        if ($group) {
+                            $s->whereIn('group', [$group, 'common']);
+                        }
+                    })->orWhereHas('chapter.subject', function ($s) use ($course, $group) {
+                        $s->where('course', $course);
+                        if ($group) {
+                            $s->whereIn('group', [$group, 'common']);
+                        }
+                    });
+                })
+                ->with(['user:id,name,username,image_path,institution,is_verified', 'chapter:id,name,subject_id', 'chapter.subject:id,name,course,group', 'subject:id,name,course,group'])
+                ->withCount('comments');
 
-        // 3. Blogs (2 items)
-        $blogsQuery = Blog::where('is_published', true)
-            ->with(['user:id,name,username,image_path,institution,is_verified'])
-            ->withCount(['reactions', 'comments']);
+            // 3. Blogs (2 items)
+            $blogsQuery = Blog::where('is_published', true)
+                ->with(['user:id,name,username,image_path,institution,is_verified'])
+                ->withCount(['reactions', 'comments']);
 
-        if ($sort === 'recent') {
-            $postsQuery->latest('id');
-            $resourcesQuery->latest('id');
-            $blogsQuery->latest('id');
-        } else {
-            // Trending with time decay formula: ((score + 1) / (hours_old + 2))
-            $isSqlite = DB::getDriverName() === 'sqlite';
-            if ($isSqlite) {
-                $postsQuery->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
-                $resourcesQuery->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
-                $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+            if ($sort === 'recent') {
+                $postsQuery->latest('id');
+                $resourcesQuery->latest('id');
+                $blogsQuery->latest('id');
             } else {
-                $postsQuery->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
-                $resourcesQuery->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
-                $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+                // Trending with time decay formula: ((score + 1) / (hours_old + 2))
+                $isSqlite = DB::getDriverName() === 'sqlite';
+                if ($isSqlite) {
+                    $postsQuery->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+                    $resourcesQuery->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+                    $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+                } else {
+                    $postsQuery->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+                    $resourcesQuery->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+                    $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+                }
             }
-        }
 
-        $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
-            $p->feed_type = 'forum_post';
+            $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
+                $p->feed_type = 'forum_post';
 
-            return $p;
+                return $p;
+            });
+
+            $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
+                $r->feed_type = 'resource';
+
+                return $r;
+            });
+
+            $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
+                $b->feed_type = 'blog';
+
+                return $b;
+            });
+
+            return serialize([
+                'posts' => $posts,
+                'resources' => $resources,
+                'blogs' => $blogs,
+            ]);
         });
 
-        $resources = $resourcesQuery->forPage($page, 4)->get()->map(function ($r) {
-            $r->feed_type = 'resource';
-
-            return $r;
-        });
-
-        $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
-            $b->feed_type = 'blog';
-
-            return $b;
-        });
+        $feedData = unserialize($serializedFeed);
+        $posts = $feedData['posts'];
+        $resources = $feedData['resources'];
+        $blogs = $feedData['blogs'];
 
         // Compute is_appreciated and user_vote if logged in
         $userId = Auth::id();
