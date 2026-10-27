@@ -96,7 +96,7 @@ class HomeController extends Controller
         // Cache the raw interleaved items as pure arrays for 2 minutes
         $cacheKey = "home_feed_raw_arrays_{$course}_{$group}_{$sort}_{$page}";
         $cachedFeed = Cache::remember($cacheKey, now()->addMinutes(2), function () use ($course, $group, $sort, $page) {
-            // 1. Forum Posts (6 items)
+            // 1. Forum Posts (7 items)
             $postsQuery = ForumPost::approved()
                 ->where('curriculum', $course)
                 ->when($group, function ($q) use ($group) {
@@ -126,7 +126,7 @@ class HomeController extends Controller
                 ->with(['user:id,name,username,image_path,institution,is_verified', 'chapter:id,name,subject_id', 'chapter.subject:id,name,course,group', 'subject:id,name,course,group'])
                 ->withCount('comments');
 
-            // 3. Blogs (2 items)
+            // 3. Blogs (1 item)
             $blogsQuery = Blog::where('is_published', true)
                 ->with(['user:id,name,username,image_path,institution,is_verified'])
                 ->withCount(['reactions', 'comments']);
@@ -139,17 +139,17 @@ class HomeController extends Controller
                 // Trending with time decay formula: ((score + 1) / (hours_old + 2))
                 $isSqlite = DB::getDriverName() === 'sqlite';
                 if ($isSqlite) {
-                    $postsQuery->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
+                    $postsQuery->orderByRaw('((vote_score + (answers_count * 2) + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
                     $resourcesQuery->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
                     $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest('id');
                 } else {
-                    $postsQuery->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
+                    $postsQuery->orderByRaw('((vote_score + (answers_count * 2) + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
                     $resourcesQuery->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
                     $blogsQuery->orderByRaw('((reactions_count * 2 + comments_count + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest('id');
                 }
             }
 
-            $posts = $postsQuery->forPage($page, 6)->get()->map(function ($p) {
+            $posts = $postsQuery->forPage($page, 7)->get()->map(function ($p) {
                 $p->feed_type = 'forum_post';
 
                 return $p;
@@ -161,7 +161,7 @@ class HomeController extends Controller
                 return $r;
             });
 
-            $blogs = $blogsQuery->forPage($page, 2)->get()->map(function ($b) {
+            $blogs = $blogsQuery->forPage($page, 1)->get()->map(function ($b) {
                 $b->feed_type = 'blog';
 
                 return $b;
@@ -217,7 +217,7 @@ class HomeController extends Controller
 
             return [
                 'items' => $merged,
-                'has_more' => (count($pArr) === 6 || count($rArr) === 4 || count($bArr) === 2),
+                'has_more' => (count($pArr) === 7 || count($rArr) === 4 || count($bArr) === 1),
             ];
         });
 

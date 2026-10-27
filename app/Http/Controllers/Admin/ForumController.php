@@ -80,7 +80,13 @@ class ForumController extends Controller
         $oldStatus = $post->moderation_status;
         $newStatus = $validated['moderation_status'];
 
-        $post->update(['moderation_status' => $newStatus]);
+        $updateData = ['moderation_status' => $newStatus];
+
+        if ($newStatus === 'approved' && $oldStatus === 'pending') {
+            $updateData['created_at'] = now();
+        }
+
+        $post->update($updateData);
 
         if ($oldStatus !== $newStatus && $post->user_id && $post->user_id !== auth()->id()) {
             $post->user->notify(new ForumStatusNotification($post, $newStatus));
