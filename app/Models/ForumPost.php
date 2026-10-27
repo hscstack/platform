@@ -27,6 +27,7 @@ class ForumPost extends Model
         'body',
         'images',
         'is_locked',
+        'is_anonymous',
         'moderation_status',
         'vote_score',
         'upvotes_count',
@@ -44,6 +45,7 @@ class ForumPost extends Model
         return [
             'images' => 'array',
             'is_locked' => 'boolean',
+            'is_anonymous' => 'boolean',
             'vote_score' => 'integer',
             'upvotes_count' => 'integer',
             'downvotes_count' => 'integer',
@@ -207,8 +209,8 @@ class ForumPost extends Model
 
         match ($sort) {
             'trending' => DB::getDriverName() === 'sqlite'
-                ? $query->orderByRaw('(vote_score / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest()
-                : $query->orderByRaw('(vote_score / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest(),
+                ? $query->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest()
+                : $query->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest(),
             'top' => $query->orderByDesc('vote_score')->latest(),
             default => $query->latest(),
         };

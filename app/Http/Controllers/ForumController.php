@@ -54,19 +54,35 @@ class ForumController extends Controller
 
         $posts = $postsQuery->simplePaginate(15)->withQueryString();
 
-        if ($userId = auth()->id()) {
+        $userId = auth()->id();
+        $userVotes = collect();
+
+        if ($userId) {
             $postIds = $posts->getCollection()->pluck('id');
             $userVotes = ForumVote::where('user_id', $userId)
                 ->where('voteable_type', ForumPost::class)
                 ->whereIn('voteable_id', $postIds)
                 ->pluck('value', 'voteable_id');
-
-            $posts->getCollection()->transform(function ($post) use ($userVotes) {
-                $post->user_vote = $userVotes[$post->id] ?? null;
-
-                return $post;
-            });
         }
+
+        $posts->getCollection()->transform(function ($post) use ($userVotes) {
+            $post->user_vote = $userVotes[$post->id] ?? null;
+
+            if ($post->is_anonymous) {
+                $post->user_id = null;
+                $post->setRelation('user', (object) [
+                    'id' => null,
+                    'name' => 'Anonymous Student',
+                    'username' => null,
+                    'image_path' => null,
+                    'image_url' => null,
+                    'institution' => null,
+                    'is_verified' => false,
+                ]);
+            }
+
+            return $post;
+        });
 
         $subjects = Cache::remember('forum_filter_subjects', now()->addDay(), function () {
             return Subject::select('id', 'name', 'course')
@@ -108,6 +124,21 @@ class ForumController extends Controller
             'chapter:id,name',
         ]);
 
+        $actualPostAuthorId = $post->user_id;
+
+        if ($post->is_anonymous) {
+            $post->user_id = null;
+            $post->setRelation('user', (object) [
+                'id' => null,
+                'name' => 'Anonymous Student',
+                'username' => null,
+                'image_path' => null,
+                'image_url' => null,
+                'institution' => null,
+                'is_verified' => false,
+            ]);
+        }
+
         $answers = $post->directAnswers()
             ->with([
                 'user:id,name,username,image_path,institution,is_verified',
@@ -121,6 +152,35 @@ class ForumController extends Controller
             ->orderBy('created_at', 'asc')
             ->paginate(20)
             ->withQueryString();
+
+        $maskAuthor = function ($item) use ($post, $actualPostAuthorId) {
+            $isAuthorOfPost = $item->user_id === $actualPostAuthorId;
+            $item->is_author = $isAuthorOfPost;
+
+            if ($post->is_anonymous && $isAuthorOfPost) {
+                $item->user_id = null;
+                $item->setRelation('user', (object) [
+                    'id' => null,
+                    'name' => 'Anonymous Student',
+                    'username' => null,
+                    'image_path' => null,
+                    'image_url' => null,
+                    'institution' => null,
+                    'is_verified' => false,
+                ]);
+            }
+
+            return $item;
+        };
+
+        $answers->getCollection()->transform(function ($answer) use ($maskAuthor) {
+            $maskAuthor($answer);
+            if ($answer->relationLoaded('replies')) {
+                $answer->replies->transform($maskAuthor);
+            }
+
+            return $answer;
+        });
 
         if ($userId = auth()->id()) {
             $postVote = ForumVote::where('user_id', $userId)
@@ -251,6 +311,7 @@ class ForumController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'images' => ['nullable', 'array', 'max:4'],
             'images.*' => ['string', 'max:255', 'regex:#^forum/posts/[A-Za-z0-9._/-]+$#', 'not_regex:#\\.\\.#'],
+            'is_anonymous' => ['nullable', 'boolean'],
         ]);
 
         $images = [];
@@ -279,7 +340,8 @@ class ForumController extends Controller
         }
 
         $approvalMode = AppSetting::get('forum_approval_mode', 'auto');
-        $moderationStatus = $approvalMode === 'auto' ? 'approved' : 'pending';
+        $isAnonymous = $request->boolean('is_anonymous');
+        $moderationStatus = ($isAnonymous || $approvalMode !== 'auto') ? 'pending' : 'approved';
 
         $baseSlug = Str::limit(Str::slug(Str::words(strip_tags($validated['body']), 8, '')) ?: 'post', 200, '');
         $slug = $baseSlug.'-'.Str::lower(Str::random(6));
@@ -293,6 +355,7 @@ class ForumController extends Controller
             'body' => $validated['body'],
             'images' => ! empty($images) ? $images : null,
             'is_locked' => false,
+            'is_anonymous' => $isAnonymous,
             'moderation_status' => $moderationStatus,
         ]);
 

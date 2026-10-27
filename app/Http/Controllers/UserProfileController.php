@@ -151,6 +151,7 @@ class UserProfileController extends Controller
 
         $forumPosts = ForumPost::where('user_id', $user->id)
             ->approved()
+            ->when(! $isOwner, fn ($q) => $q->where('is_anonymous', false))
             ->with(['subject:id,name,course', 'chapter:id,name'])
             ->latest()
             ->take(5)

@@ -44,6 +44,7 @@ interface ForumPost {
     curriculum: 'hsc' | 'ssc';
     slug: string;
     body: string;
+    is_anonymous?: boolean;
     image_path?: string | null;
     image_url?: string | null;
     images?: string[] | null;
@@ -67,7 +68,7 @@ const { user: currentUser, requireAuth } = useAuth();
 const { isAppreciated, setAppreciation, initAppreciation } = useAppreciation();
 
 // Initialize shared appreciation cache
-if (props.post.user) {
+if (props.post.user?.id) {
     initAppreciation(props.post.user.id, props.post.user.is_appreciated);
 }
 
@@ -76,7 +77,7 @@ const isTogglingAppreciation = ref(false);
 watch(
     () => props.post.user?.is_appreciated,
     (val) => {
-        if (props.post.user && val !== undefined) {
+        if (props.post.user?.id && val !== undefined) {
             setAppreciation(props.post.user.id, Boolean(val));
         }
     },
@@ -228,7 +229,7 @@ const sharePost = async () => {
             <div class="flex min-w-0 items-center gap-2.5" @click.stop>
                 <!-- Avatar -->
                 <Link
-                    v-if="post.user"
+                    v-if="post.user?.username"
                     :href="`/u/${post.user.username}`"
                     class="relative shrink-0"
                 >
@@ -259,7 +260,7 @@ const sharePost = async () => {
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-1.5">
                         <Link
-                            v-if="post.user"
+                            v-if="post.user?.username"
                             :href="`/u/${post.user.username}`"
                             class="truncate text-sm font-bold text-slate-900 transition hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
                         >
@@ -269,7 +270,7 @@ const sharePost = async () => {
                             v-else
                             class="text-sm font-bold text-slate-700 dark:text-gray-300"
                         >
-                            Anonymous
+                            {{ post.user?.name || 'Anonymous' }}
                         </span>
 
                         <VerifiedBadge
@@ -279,7 +280,7 @@ const sharePost = async () => {
 
                         <span
                             v-if="
-                                post.user &&
+                                post.user?.id &&
                                 (!currentUser ||
                                     currentUser.id !== post.user.id)
                             "
@@ -290,7 +291,7 @@ const sharePost = async () => {
                         <!-- Text-only Appreciate Button (no border) -->
                         <button
                             v-if="
-                                post.user &&
+                                post.user?.id &&
                                 (!currentUser ||
                                     currentUser.id !== post.user.id)
                             "
