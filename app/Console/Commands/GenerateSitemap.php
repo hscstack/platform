@@ -22,7 +22,6 @@ class GenerateSitemap extends Command
         // 1. Static Public Pages (excluding auth/login utility pages)
         $staticPages = [
             '/',
-            '/ssc',
             '/tracker',
             '/peers',
             '/blogs',

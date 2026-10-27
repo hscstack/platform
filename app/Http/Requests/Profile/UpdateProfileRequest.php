@@ -42,10 +42,41 @@ class UpdateProfileRequest extends FormRequest
             'activity_privacy' => ['sometimes', 'string', Rule::in(['public', 'appreciators_only', 'private'])],
             'batch' => ['sometimes', 'nullable', 'string', 'max:32'],
             'allow_pokes' => ['sometimes', 'boolean'],
-            'facebook' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'github' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'website' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'facebook' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://',
+                'regex:/^https:\/\/(www\.)?(facebook|fb)\.com\/[a-zA-Z0-9._\-]+\/?$/i',
+            ],
+            'instagram' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://',
+                'regex:/^https:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._\-]+\/?$/i',
+            ],
+            'github' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://',
+                'regex:/^https:\/\/(www\.)?github\.com\/[a-zA-Z0-9._\-]+\/?$/i',
+            ],
+            'website' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                'url',
+                'starts_with:https://,http://',
+            ],
             'receive_emails' => ['sometimes', 'boolean'],
         ];
     }
@@ -60,6 +91,13 @@ class UpdateProfileRequest extends FormRequest
         return [
             'username.regex' => "Username can only contain letters, numbers, and underscores. Dots aren't allowed.",
             'username.unique' => 'This username is already taken. Please choose another one.',
+            'facebook.regex' => 'Please enter a valid Facebook profile URL (e.g., https://facebook.com/username).',
+            'facebook.url' => 'Please enter a valid URL starting with https://.',
+            'instagram.regex' => 'Please enter a valid Instagram profile URL (e.g., https://instagram.com/username).',
+            'instagram.url' => 'Please enter a valid URL starting with https://.',
+            'github.regex' => 'Please enter a valid GitHub profile URL (e.g., https://github.com/username).',
+            'github.url' => 'Please enter a valid URL starting with https://.',
+            'website.url' => 'Please enter a valid website URL starting with https:// or http://.',
         ];
     }
 }

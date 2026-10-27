@@ -67,13 +67,6 @@ class StudyTrackerController extends Controller
                 'completedChapterIds' => [],
                 'completedNodeIds' => [],
                 'todaySeconds' => 0,
-                'stats' => [
-                    'currentStreak' => 0,
-                    'longestStreak' => 0,
-                    'totalSeconds' => 0,
-                    'totalDays' => 0,
-                ],
-                'heatmapData' => [],
             ]);
         }
 
@@ -87,8 +80,6 @@ class StudyTrackerController extends Controller
             ->first();
         $todaySeconds = (int) ($todayLog?->total_seconds ?? 0);
 
-        $studyData = DailyStudyLog::getHeatmapAndStatsForUser($user);
-
         return Inertia::render('Tracker/Index', [
             'course' => $course,
             'group' => $group,
@@ -98,8 +89,6 @@ class StudyTrackerController extends Controller
             'completedChapterIds' => $completedChapterIds,
             'completedNodeIds' => $completedChapterIds,
             'todaySeconds' => $todaySeconds,
-            'stats' => $studyData['stats'],
-            'heatmapData' => $studyData['heatmapData'],
         ]);
     }
 

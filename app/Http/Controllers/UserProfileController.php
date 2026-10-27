@@ -176,14 +176,18 @@ class UserProfileController extends Controller
             ->take(5)
             ->get();
 
-        // Cache the heavy analytical stats (heatmap & syllabus progress) for 5 minutes per user
-        $studyHeatmap = Cache::remember("user_heatmap_{$user->id}", now()->addMinutes(5), function () use ($user) {
-            return DailyStudyLog::getHeatmapAndStatsForUser($user);
-        });
+        // Cache the heavy analytical stats (heatmap & syllabus progress) for 5 minutes for public visitors, but bypass for the user's own profile for real-time accuracy
+        $studyHeatmap = $isOwner
+            ? DailyStudyLog::getHeatmapAndStatsForUser($user)
+            : Cache::remember("user_heatmap_{$user->id}", now()->addMinutes(5), function () use ($user) {
+                return DailyStudyLog::getHeatmapAndStatsForUser($user);
+            });
 
-        $syllabusProgress = Cache::remember("user_syllabus_{$user->id}", now()->addMinutes(5), function () use ($user) {
-            return $this->getSyllabusProgress($user);
-        });
+        $syllabusProgress = $isOwner
+            ? $this->getSyllabusProgress($user)
+            : Cache::remember("user_syllabus_{$user->id}", now()->addMinutes(5), function () use ($user) {
+                return $this->getSyllabusProgress($user);
+            });
 
         return Inertia::render('User/Show', [
             'profileUser' => $profileUser,
