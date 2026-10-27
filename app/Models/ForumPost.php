@@ -209,8 +209,8 @@ class ForumPost extends Model
 
         match ($sort) {
             'trending' => DB::getDriverName() === 'sqlite'
-                ? $query->orderByRaw('(vote_score / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest()
-                : $query->orderByRaw('(vote_score / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest(),
+                ? $query->orderByRaw('((vote_score + 1) / (((julianday("now") - julianday(created_at)) * 24) + 2)) DESC')->latest()
+                : $query->orderByRaw('((vote_score + 1) / (TIMESTAMPDIFF(HOUR, created_at, NOW()) + 2)) DESC')->latest(),
             'top' => $query->orderByDesc('vote_score')->latest(),
             default => $query->latest(),
         };
