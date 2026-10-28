@@ -80,13 +80,14 @@ class ForumController extends Controller
         $oldStatus = $post->moderation_status;
         $newStatus = $validated['moderation_status'];
 
-        $updateData = ['moderation_status' => $newStatus];
+        $post->update(['moderation_status' => $newStatus]);
 
+        // First-time approval: reset created_at so it is fresh in Trending & Feed
+        // Direct assignment used because created_at is not in $fillable
         if ($newStatus === 'approved' && $oldStatus === 'pending') {
-            $updateData['created_at'] = now();
+            $post->created_at = now();
+            $post->save();
         }
-
-        $post->update($updateData);
 
         if ($oldStatus !== $newStatus && $post->user_id && $post->user_id !== auth()->id()) {
             $post->user->notify(new ForumStatusNotification($post, $newStatus));
