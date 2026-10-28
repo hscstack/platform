@@ -69,11 +69,15 @@ class ResourceController extends BaseResourceController
                 ];
 
                 // First-time approval: reset created_at so it is fresh in Trending & Feed
-                if (is_null($res->reviewed_at)) {
-                    $updateData['created_at'] = now();
-                }
+                // Direct assignment used because created_at is not in $fillable
+                $isFirstApproval = is_null($res->reviewed_at);
 
                 $res->update($updateData);
+
+                if ($isFirstApproval) {
+                    $res->created_at = now();
+                    $res->save();
+                }
 
                 if ($res->user) {
                     ResourceModerationNotification::sendTo($res->user, $res, 'approved');
