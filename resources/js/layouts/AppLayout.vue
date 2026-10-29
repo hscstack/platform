@@ -36,6 +36,7 @@ const showBottomNav = computed(() =>
 // Whitelisted pages that show the marketing footer (static and discovery pages)
 const STATIC_FOOTER_COMPONENTS = new Set([
     'Blog/Index',
+    'Leaderboard/Index',
     'Donate',
     'Projects',
     'Tracker/Index',
