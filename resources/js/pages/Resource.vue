@@ -523,9 +523,9 @@ onUnmounted(() => {
                     </h1>
                 </div>
 
-                <!-- Admin Edit Button -->
+                <!-- Edit Button (Owner / Moderator) -->
                 <button
-                    v-if="can_moderate"
+                    v-if="can_moderate || is_owner"
                     type="button"
                     @click="showEditModal = true"
                     class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
