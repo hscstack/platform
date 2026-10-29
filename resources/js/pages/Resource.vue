@@ -224,6 +224,68 @@ const backHref = computed(() => {
     return `/notes?curriculum=${curriculum}&group=${group}`;
 });
 
+interface DescriptionSegment {
+    isUrl: boolean;
+    text: string;
+    url?: string;
+}
+
+const descriptionSegments = computed<DescriptionSegment[]>(() => {
+    const text = props.resource?.description;
+
+    if (!text) {
+        return [];
+    }
+
+    const segments: DescriptionSegment[] = [];
+    const urlRegex = /https:\/\/[^\s<>"'()]+/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = urlRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            segments.push({
+                isUrl: false,
+                text: text.slice(lastIndex, match.index),
+            });
+        }
+
+        let rawUrl = match[0];
+        let trailingPunctuation = '';
+
+        const punctMatch = rawUrl.match(/[.,!?;:]+$/);
+
+        if (punctMatch) {
+            trailingPunctuation = punctMatch[0];
+            rawUrl = rawUrl.slice(0, -trailingPunctuation.length);
+        }
+
+        segments.push({
+            isUrl: true,
+            text: rawUrl,
+            url: rawUrl,
+        });
+
+        if (trailingPunctuation) {
+            segments.push({
+                isUrl: false,
+                text: trailingPunctuation,
+            });
+        }
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+        segments.push({
+            isUrl: false,
+            text: text.slice(lastIndex),
+        });
+    }
+
+    return segments;
+});
+
 const scrollToComments = () => {
     if (typeof document === 'undefined') {
         return;
@@ -631,8 +693,21 @@ onUnmounted(() => {
                 v-if="resource.description"
                 class="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 text-sm text-slate-700 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-300"
             >
-                <p class="leading-relaxed whitespace-pre-line">
-                    {{ resource.description }}
+                <p class="leading-relaxed break-words whitespace-pre-line">
+                    <template
+                        v-for="(segment, idx) in descriptionSegments"
+                        :key="idx"
+                    >
+                        <a
+                            v-if="segment.isUrl && segment.url"
+                            :href="segment.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            >{{ segment.text }}</a
+                        >
+                        <template v-else>{{ segment.text }}</template>
+                    </template>
                 </p>
             </div>
 

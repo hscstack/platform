@@ -59,14 +59,13 @@ class LeaderboardController extends Controller
                 'appreciating' => UserAppreciation::where('appreciator_id', $user->id)->pluck('user_id')->push($user->id)->unique()->toArray(),
                 'appreciators' => UserAppreciation::where('user_id', $user->id)->pluck('appreciator_id')->push($user->id)->unique()->toArray(),
                 'mutual' => UserAppreciation::where('appreciator_id', $user->id)
-                    ->whereIn('user_id', function ($query) use ($user) {
-                        $query->select('appreciator_id')
-                            ->from('user_appreciations')
-                            ->where('user_id', $user->id);
-                    })
                     ->pluck('user_id')
+                    ->merge(
+                        UserAppreciation::where('user_id', $user->id)->pluck('appreciator_id')
+                    )
                     ->push($user->id)
                     ->unique()
+                    ->values()
                     ->toArray(),
             };
         }

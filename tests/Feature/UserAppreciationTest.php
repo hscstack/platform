@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DailyStudyLog;
 use App\Models\User;
 use App\Models\UserAppreciation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -91,5 +92,48 @@ test('user profile displays accurate appreciation counts and status', function (
             ->where('appreciationsCount', 2)
             ->where('appreciatingCount', 1)
             ->where('isAppreciated', false)
+        );
+});
+
+test('leaderboard mutual scope includes users being appreciated or appreciating current user', function () {
+    $this->withoutVite();
+    $me = User::factory()->create(['username' => 'me']);
+    $myIdol = User::factory()->create(['username' => 'myidol']);
+    $myFan = User::factory()->create(['username' => 'myfan']);
+    $stranger = User::factory()->create(['username' => 'stranger']);
+
+    // $me appreciates $myIdol
+    UserAppreciation::create(['user_id' => $myIdol->id, 'appreciator_id' => $me->id]);
+
+    // $myFan appreciates $me
+    UserAppreciation::create(['user_id' => $me->id, 'appreciator_id' => $myFan->id]);
+
+    DailyStudyLog::create([
+        'user_id' => $myIdol->id,
+        'study_date' => now()->toDateString(),
+        'total_seconds' => 3600,
+    ]);
+
+    DailyStudyLog::create([
+        'user_id' => $myFan->id,
+        'study_date' => now()->toDateString(),
+        'total_seconds' => 1800,
+    ]);
+
+    DailyStudyLog::create([
+        'user_id' => $stranger->id,
+        'study_date' => now()->toDateString(),
+        'total_seconds' => 7200,
+    ]);
+
+    $this->actingAs($me)
+        ->get('/leaderboard?tab=students&timeframe=all_time&scope=mutual')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Leaderboard/Index')
+            ->where('scope', 'mutual')
+            ->has('leaderboard', 2)
+            ->where('leaderboard.0.username', 'myidol')
+            ->where('leaderboard.1.username', 'myfan')
         );
 });
