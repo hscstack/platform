@@ -1255,6 +1255,26 @@ const submitReport = async () => {
     }
 };
 
+const getBaseDomain = (hostname: string): string => {
+    const cleanHost = hostname.split(':')[0].toLowerCase();
+
+    if (
+        !cleanHost ||
+        cleanHost === 'localhost' ||
+        /^(\d{1,3}\.){3}\d{1,3}$/.test(cleanHost)
+    ) {
+        return cleanHost;
+    }
+
+    const parts = cleanHost.split('.');
+
+    if (parts.length <= 2) {
+        return cleanHost;
+    }
+
+    return parts.slice(-2).join('.');
+};
+
 const isPlatformUrl = (urlString: string): boolean => {
     if (urlString.startsWith('/')) {
         return true;
@@ -1262,16 +1282,13 @@ const isPlatformUrl = (urlString: string): boolean => {
 
     try {
         const parsed = new URL(urlString);
-        const validHosts = new Set<string>();
+        const parsedHostname = parsed.hostname.toLowerCase();
+        const baseDomains = new Set<string>();
 
-        if (typeof window !== 'undefined') {
-            if (window.location.hostname) {
-                validHosts.add(window.location.hostname.toLowerCase());
-            }
-
-            if (window.location.host) {
-                validHosts.add(window.location.host.toLowerCase());
-            }
+        if (typeof window !== 'undefined' && window.location.hostname) {
+            const currentHost = window.location.hostname.toLowerCase();
+            baseDomains.add(currentHost);
+            baseDomains.add(getBaseDomain(currentHost));
         }
 
         const envAppUrl = import.meta.env.VITE_APP_URL;
@@ -1279,26 +1296,22 @@ const isPlatformUrl = (urlString: string): boolean => {
         if (envAppUrl) {
             try {
                 const appParsed = new URL(envAppUrl);
-                validHosts.add(appParsed.hostname.toLowerCase());
-                validHosts.add(appParsed.host.toLowerCase());
+                const envHost = appParsed.hostname.toLowerCase();
+                baseDomains.add(envHost);
+                baseDomains.add(getBaseDomain(envHost));
             } catch {
                 // ignore
             }
         }
 
-        validHosts.add('hscstack.com');
-        validHosts.add('www.hscstack.com');
-
-        const parsedHostname = parsed.hostname.toLowerCase();
-        const parsedHost = parsed.host.toLowerCase();
-
-        for (const host of validHosts) {
-            const cleanHost = host.split(':')[0];
+        for (const base of baseDomains) {
+            if (!base) {
+                continue;
+            }
 
             if (
-                parsedHostname === cleanHost ||
-                parsedHost === host ||
-                parsedHostname.endsWith(`.${cleanHost}`)
+                parsedHostname === base ||
+                parsedHostname.endsWith(`.${base}`)
             ) {
                 return true;
             }
