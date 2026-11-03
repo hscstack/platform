@@ -1289,10 +1289,22 @@ const isPlatformUrl = (urlString: string): boolean => {
         validHosts.add('hscstack.com');
         validHosts.add('www.hscstack.com');
 
-        return (
-            validHosts.has(parsed.hostname.toLowerCase()) ||
-            validHosts.has(parsed.host.toLowerCase())
-        );
+        const parsedHostname = parsed.hostname.toLowerCase();
+        const parsedHost = parsed.host.toLowerCase();
+
+        for (const host of validHosts) {
+            const cleanHost = host.split(':')[0];
+
+            if (
+                parsedHostname === cleanHost ||
+                parsedHost === host ||
+                parsedHostname.endsWith(`.${cleanHost}`)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     } catch {
         return false;
     }
