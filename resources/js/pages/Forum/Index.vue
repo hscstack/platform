@@ -466,7 +466,7 @@ const handleAskQuestion = () => {
                     HSCStack <span class="text-indigo-600">Forum</span>
                 </h1>
                 <p
-                    class="hidden text-xs text-slate-500 sm:mt-1 sm:block sm:text-sm dark:text-gray-400"
+                    class="mt-1 text-xs text-slate-500 sm:text-sm dark:text-gray-400"
                 >
                     প্রশ্ন করুন, উত্তর দিন এবং সহপাঠীদের সাথে জ্ঞান আদান-প্রদান
                     করুন।

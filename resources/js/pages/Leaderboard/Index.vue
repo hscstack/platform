@@ -14,8 +14,9 @@ import {
     SlidersHorizontal,
     Trophy,
     UploadCloud,
+    Users,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import BaseModal from '@/components/BaseModal.vue';
 import VerifiedBadge from '@/components/VerifiedBadge.vue';
 import { useAuth } from '@/lib/useAuth';
@@ -56,7 +57,6 @@ const props = defineProps<Props>();
 const { user } = useAuth();
 
 const showFilterModal = ref(false);
-const rememberChoice = ref(false);
 
 // Local draft state for modal
 const modalCurriculum = ref<'hsc' | 'ssc' | null>(props.curriculum || null);
@@ -72,59 +72,7 @@ const openFilterModal = () => {
     showFilterModal.value = true;
 };
 
-// Check localStorage for saved leaderboard preferences on initial visit without explicit query params
-onMounted(() => {
-    if (typeof window === 'undefined') {
-        return;
-    }
-
-    try {
-        const saved = localStorage.getItem('leaderboard_custom_filter');
-
-        if (saved) {
-            rememberChoice.value = true;
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // Only auto-apply if no URL query params are set
-            if (
-                !urlParams.has('curriculum') &&
-                !urlParams.has('group') &&
-                !urlParams.has('batch') &&
-                !urlParams.has('scope')
-            ) {
-                const parsed = JSON.parse(saved);
-
-                if (
-                    parsed &&
-                    (parsed.curriculum ||
-                        parsed.group ||
-                        parsed.batch ||
-                        parsed.scope)
-                ) {
-                    applyLeaderboardFilters(parsed);
-                }
-            }
-        }
-    } catch {
-        // Ignore localStorage error
-    }
-});
-
 const applyModalFilters = () => {
-    if (rememberChoice.value && typeof window !== 'undefined') {
-        localStorage.setItem(
-            'leaderboard_custom_filter',
-            JSON.stringify({
-                curriculum: modalCurriculum.value,
-                group: modalGroup.value,
-                batch: modalBatch.value,
-                scope: modalScope.value,
-            }),
-        );
-    } else if (typeof window !== 'undefined') {
-        localStorage.removeItem('leaderboard_custom_filter');
-    }
-
     showFilterModal.value = false;
     applyLeaderboardFilters({
         curriculum: modalCurriculum.value,
@@ -142,7 +90,6 @@ const resetFilters = () => {
 
     if (typeof window !== 'undefined') {
         localStorage.removeItem('leaderboard_custom_filter');
-        rememberChoice.value = false;
     }
 
     showFilterModal.value = false;
@@ -467,7 +414,6 @@ onBeforeUnmount(() => {
 
         <!-- Customizable Filters Bar (Clean UX Summary Bar + Modal) -->
         <div
-            v-if="tab === 'students'"
             class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs sm:px-4.5 dark:border-gray-800 dark:bg-gray-900"
         >
             <div class="flex flex-wrap items-center gap-2">
@@ -932,6 +878,21 @@ onBeforeUnmount(() => {
                         </div>
                     </Link>
                 </div>
+
+                <!-- View More / Find Peers Link -->
+                <div
+                    class="border-t border-slate-100 p-3 text-center sm:p-4 dark:border-gray-800/60"
+                >
+                    <Link
+                        href="/peers"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-600 active:scale-95 sm:text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-500/50 dark:hover:bg-gray-700/80 dark:hover:text-indigo-400"
+                    >
+                        <Users
+                            class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                        />
+                        <span>সহপাঠী খুঁজুন (সকল শিক্ষার্থী দেখুন) →</span>
+                    </Link>
+                </div>
             </div>
         </div>
     </div>
@@ -1361,25 +1322,6 @@ onBeforeUnmount(() => {
                     এপ্রিশিয়েট করছেন (২ ও ৩ নম্বর তালিকা) উভয়েই একসাথে যুক্ত
                     থাকবে।
                 </p>
-            </div>
-
-            <!-- 5. Remember this choice (localStorage) -->
-            <div
-                class="flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/60 p-3 dark:border-gray-800 dark:bg-gray-800/40"
-            >
-                <input
-                    id="remember_leaderboard_choice"
-                    v-model="rememberChoice"
-                    type="checkbox"
-                    class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
-                />
-                <label
-                    for="remember_leaderboard_choice"
-                    class="cursor-pointer text-xs font-medium text-slate-700 select-none dark:text-gray-300"
-                >
-                    আমার এই পছন্দটি মনে রাখুন (পরবর্তীতে লিডারবোর্ডে
-                    স্বয়ংক্রিয়ভাবে দেখাবে)
-                </label>
             </div>
 
             <!-- Modal Action Buttons -->
