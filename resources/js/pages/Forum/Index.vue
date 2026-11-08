@@ -457,9 +457,9 @@ const handleAskQuestion = () => {
     <main class="mx-auto max-w-5xl px-3.5 py-4 sm:px-6 sm:py-8 lg:px-8">
         <!-- Header Row -->
         <div
-            class="mb-3.5 flex items-center justify-between gap-3 sm:mb-6 sm:border-b sm:border-slate-100 sm:pb-5 dark:sm:border-gray-800"
+            class="mb-3.5 flex items-start justify-between gap-3 sm:mb-6 sm:items-center sm:border-b sm:border-slate-100 sm:pb-5 dark:sm:border-gray-800"
         >
-            <div>
+            <div class="min-w-0 flex-1">
                 <h1
                     class="text-xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-gray-100"
                 >
@@ -473,7 +473,7 @@ const handleAskQuestion = () => {
                 </p>
             </div>
 
-            <div>
+            <div class="shrink-0">
                 <button
                     type="button"
                     @click="handleAskQuestion"
@@ -486,7 +486,7 @@ const handleAskQuestion = () => {
                                 'Question posting is temporarily paused'
                               : 'Ask Question'
                     "
-                    class="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold shadow-xs transition sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
+                    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold whitespace-nowrap shadow-xs transition sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
                     :class="[
                         props.postingEnabled === false || isUserBanned
                             ? 'cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-gray-800 dark:text-gray-500'
@@ -495,10 +495,10 @@ const handleAskQuestion = () => {
                 >
                     <Lock
                         v-if="props.postingEnabled === false || isUserBanned"
-                        class="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                        class="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4"
                     />
-                    <Plus v-else class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    <span>{{
+                    <Plus v-else class="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                    <span class="whitespace-nowrap">{{
                         isUserBanned
                             ? 'Account Suspended'
                             : props.postingEnabled === false
