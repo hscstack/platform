@@ -110,6 +110,23 @@ const clearSearch = () => {
 
 const setSort = (sortValue: string) => {
     currentSort.value = sortValue;
+
+    if (sortValue === 'appreciated') {
+        searchQuery.value = '';
+        router.get(
+            '/peers',
+            {
+                sort: 'appreciated',
+            },
+            {
+                preserveState: false,
+                preserveScroll: true,
+            },
+        );
+
+        return;
+    }
+
     applyFilters();
 };
 

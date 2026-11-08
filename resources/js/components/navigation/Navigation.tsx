@@ -91,6 +91,13 @@ function resolveNavItemHref(
         return `/notes?curriculum=${course}&group=${group}`;
     }
 
+    if (href === '/leaderboard' && authUser) {
+        const course = authUser.curriculum || 'hsc';
+        const group = authUser.group || 'science';
+
+        return `/leaderboard?curriculum=${course}&group=${group}`;
+    }
+
     return href;
 }
 
@@ -242,13 +249,6 @@ export const SiteRail = defineComponent({
         const { theme, toggle } = useDarkMode();
         const showLogoutModal = ref(false);
         const notifRowRef = ref<HTMLElement | null>(null);
-        const { deferredPrompt, isInstalled, promptInstall } = usePwa();
-        const canInstallApp = computed(
-            () => !isInstalled.value && Boolean(deferredPrompt.value),
-        );
-        const handleInstallApp = async () => {
-            await promptInstall();
-        };
 
         const homeHref = computed(() =>
             preferredHomeHref(currentUrl.value, (page.props.auth as any)?.user),
@@ -689,22 +689,6 @@ export const SiteRail = defineComponent({
                                     </div>
                                 )}
 
-                                {/* PWA Install */}
-                                {canInstallApp.value && (
-                                    <button
-                                        type="button"
-                                        aria-label="Install App"
-                                        title="Install App"
-                                        onClick={handleInstallApp}
-                                        class="flex h-10 w-full items-center justify-center rounded-xl border border-slate-900 bg-slate-900 text-white shadow-sm transition-all hover:border-slate-700 hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:border-slate-200 dark:hover:bg-slate-200"
-                                    >
-                                        <MaterialIcon
-                                            name="download"
-                                            size={20}
-                                        />
-                                    </button>
-                                )}
-
                                 {/* Auth */}
                                 {!user.value ? (
                                     <Link
@@ -804,22 +788,6 @@ export const SiteRail = defineComponent({
                                             />
                                         </button>
                                     </div>
-                                )}
-
-                                {/* PWA Install */}
-                                {canInstallApp.value && (
-                                    <button
-                                        type="button"
-                                        aria-label="Install App"
-                                        onClick={handleInstallApp}
-                                        class="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-[13px] font-bold text-indigo-700 shadow-sm transition-all duration-150 hover:bg-indigo-100 hover:shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
-                                    >
-                                        <MaterialIcon
-                                            name="download"
-                                            size={20}
-                                        />
-                                        <span>Install App</span>
-                                    </button>
                                 )}
 
                                 {/* Auth */}
@@ -998,8 +966,9 @@ export const SiteBottomNav = defineComponent({
                             <Link
                                 key={item.href}
                                 href={resolvedHref(item)}
+                                aria-label={item.label}
                                 class={[
-                                    'relative flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150 ease-out',
+                                    'relative flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl px-2 py-2.5 transition-all duration-150 ease-out',
                                     isActive(item.href, item.match)
                                         ? 'text-slate-900 dark:text-white'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
@@ -1021,16 +990,6 @@ export const SiteBottomNav = defineComponent({
                                         <span class="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
                                     )}
                                 </div>
-                                <span
-                                    class={[
-                                        'text-[10px] leading-none tracking-wide antialiased',
-                                        isActive(item.href, item.match)
-                                            ? 'font-bold'
-                                            : 'font-medium',
-                                    ]}
-                                >
-                                    {item.label}
-                                </span>
                             </Link>
                         );
                     })}
@@ -1510,12 +1469,14 @@ export const SiteDrawer = defineComponent({
                                                     return (
                                                         <Link
                                                             key={item.href}
-                                                            href={
-                                                                item.href ===
-                                                                '/'
-                                                                    ? homeHref.value
-                                                                    : item.href
-                                                            }
+                                                            href={resolveNavItemHref(
+                                                                item.href,
+                                                                (
+                                                                    page.props
+                                                                        .auth as any
+                                                                )?.user,
+                                                                homeHref.value,
+                                                            )}
                                                             onClick={close}
                                                             class={[
                                                                 'group flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium tracking-tight transition-all duration-150 ease-out',
