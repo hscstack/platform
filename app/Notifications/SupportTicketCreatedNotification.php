@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Collection;
 
 class SupportTicketCreatedNotification extends Notification implements ShouldQueue
 {
@@ -15,7 +16,41 @@ class SupportTicketCreatedNotification extends Notification implements ShouldQue
     public function __construct(
         public SupportTicket $ticket,
         public User $user,
+        public int $count = 1,
     ) {}
+
+    /**
+     * Send or roll up a support ticket notification to staff users.
+     *
+     * @param  Collection<int, User>  $staffMembers
+     */
+    public static function sendTo(Collection $staffMembers, SupportTicket $ticket, User $user): void
+    {
+        foreach ($staffMembers as $staff) {
+            $unread = $staff->unreadNotifications()
+                ->where('type', self::class)
+                ->first();
+
+            if ($unread) {
+                $data = $unread->data;
+                $count = ($data['count'] ?? 1) + 1;
+
+                $data['count'] = $count;
+                $data['title'] = "{$count} New Support Tickets";
+                $data['message'] = "Latest from {$user->name}: {$ticket->subject}";
+                $data['ticket_id'] = $ticket->id;
+                $data['ticket_number'] = $ticket->ticket_number;
+                $data['url'] = url('/admin/tickets');
+
+                $unread->update([
+                    'data' => $data,
+                    'created_at' => now(),
+                ]);
+            } else {
+                $staff->notify(new self($ticket, $user, 1));
+            }
+        }
+    }
 
     /**
      * Get the notification's delivery channels.
@@ -40,7 +75,8 @@ class SupportTicketCreatedNotification extends Notification implements ShouldQue
             'ticket_number' => $this->ticket->ticket_number,
             'title' => "New Support Ticket #{$this->ticket->ticket_number}",
             'message' => "{$this->user->name}: {$this->ticket->subject}",
-            'url' => route('admin.tickets.index', ['search' => $this->ticket->ticket_number]),
+            'url' => url('/admin/tickets'),
+            'count' => $this->count,
         ];
     }
 }

@@ -6,7 +6,6 @@ use App\Models\SupportTicket;
 use App\Models\User;
 use App\Notifications\SupportTicketCreatedNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class SupportTicketController extends Controller
@@ -80,7 +79,7 @@ class SupportTicketController extends Controller
             ->get();
 
         if ($staff->isNotEmpty()) {
-            Notification::send($staff, new SupportTicketCreatedNotification($ticket, $user));
+            SupportTicketCreatedNotification::sendTo($staff, $ticket, $user);
         }
 
         return redirect()->route('support.my-tickets')->with('success', "Ticket {$ticket->ticket_number} created successfully! Our team will review and reply.");
