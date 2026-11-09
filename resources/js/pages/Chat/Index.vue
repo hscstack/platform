@@ -1661,6 +1661,13 @@ onUnmounted(() => {
                 @scroll="handleScroll"
                 class="relative flex-1 space-y-1 overflow-y-auto px-3 py-4 sm:px-5"
             >
+                <!-- More messages indicator -->
+                <div
+                    class="py-2 text-center text-xs text-slate-400 dark:text-zinc-500"
+                >
+                    ... and more
+                </div>
+
                 <!-- Empty State -->
                 <div
                     v-if="messages.length === 0"
