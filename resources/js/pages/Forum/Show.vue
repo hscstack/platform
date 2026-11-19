@@ -464,23 +464,27 @@ const submitAnswer = () => {
 
 const timeAgo = formatTimeAgo;
 
-function parseMentions(
-    content: string,
-): Array<{ type: 'text' | 'mention'; text: string; username?: string }> {
+function parseMentions(content: string): Array<{
+    type: 'text' | 'mention' | 'url';
+    text: string;
+    username?: string;
+    url?: string;
+}> {
     if (!content) {
         return [];
     }
 
-    const mentionRegex = /(?<=^|\s)@([a-zA-Z0-9_.-]+)/g;
+    const tokenRegex = /(https?:\/\/[^\s<>"'()]+|(?<=^|\s)@([a-zA-Z0-9_.-]+))/g;
     const segments: Array<{
-        type: 'text' | 'mention';
+        type: 'text' | 'mention' | 'url';
         text: string;
         username?: string;
+        url?: string;
     }> = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
-    while ((match = mentionRegex.exec(content)) !== null) {
+    while ((match = tokenRegex.exec(content)) !== null) {
         if (match.index > lastIndex) {
             segments.push({
                 type: 'text',
@@ -488,36 +492,33 @@ function parseMentions(
             });
         }
 
-        let username = match[1];
-        let mentionText = match[0];
+        let rawText = match[0];
         let trailingPunctuation = '';
 
-        const trailingMatch = username.match(/[.,!?;:]+$/);
+        const trailingMatch = rawText.match(/[.,!?;:]+$/);
 
         if (trailingMatch) {
             trailingPunctuation = trailingMatch[0];
-            username = username.slice(0, -trailingPunctuation.length);
-            mentionText = mentionText.slice(0, -trailingPunctuation.length);
+            rawText = rawText.slice(0, -trailingPunctuation.length);
         }
 
-        if (username) {
-            segments.push({
-                type: 'mention',
-                text: mentionText,
-                username,
-            });
+        if (rawText.startsWith('http')) {
+            segments.push({ type: 'url', text: rawText, url: rawText });
         } else {
-            segments.push({
-                type: 'text',
-                text: match[0],
-            });
+            // mention
+            const username = match[2]
+                ? match[2].replace(/[.,!?;:]+$/, '')
+                : rawText.slice(1);
+
+            if (username) {
+                segments.push({ type: 'mention', text: rawText, username });
+            } else {
+                segments.push({ type: 'text', text: rawText });
+            }
         }
 
         if (trailingPunctuation) {
-            segments.push({
-                type: 'text',
-                text: trailingPunctuation,
-            });
+            segments.push({ type: 'text', text: trailingPunctuation });
         }
 
         lastIndex = match.index + match[0].length;
@@ -1089,6 +1090,14 @@ function parseMentions(
                         >
                             {{ seg.text }}
                         </Link>
+                        <a
+                            v-else-if="seg.type === 'url' && seg.url"
+                            :href="seg.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="break-all text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400"
+                            >{{ seg.text }}</a
+                        >
                         <span v-else>{{ seg.text }}</span>
                     </template>
                 </div>
@@ -1269,6 +1278,14 @@ function parseMentions(
                                 >
                                     {{ seg.text }}
                                 </Link>
+                                <a
+                                    v-else-if="seg.type === 'url' && seg.url"
+                                    :href="seg.url"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="break-all text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400"
+                                    >{{ seg.text }}</a
+                                >
                                 <span v-else>{{ seg.text }}</span>
                             </template>
                         </div>

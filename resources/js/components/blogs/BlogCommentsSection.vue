@@ -154,10 +154,17 @@ const renderCommentContent = (content: string) => {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-    return escaped.replace(
+    const withMentions = escaped.replace(
         /@([a-zA-Z0-9_]+)/g,
         '<a href="/u/$1" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">@$1</a>',
     );
+
+    return withMentions.replace(/https:\/\/[^\s<>"'()]+/g, (url) => {
+        const clean = url.replace(/[.,!?;:]+$/, '');
+        const trailing = url.slice(clean.length);
+
+        return `<a href="${clean}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400 break-all">${clean}</a>${trailing}`;
+    });
 };
 
 // Reporting state
