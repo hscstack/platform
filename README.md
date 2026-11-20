@@ -1,5 +1,5 @@
-[website]: https://hscstack.site
-[join]: https://hscstack.site/join
+[website]: https://hscstack.com
+[join]: https://hscstack.com/join
 
 # HSCStack 📚
 
@@ -48,11 +48,11 @@ It replaces scattered social media groups and private drives with an all-in-one 
 ## 🏃 Getting Started
 
 ### For Students
-1. Visit **[hscstack.site][website]** — browse the academic library, forum questions, and blog posts freely.
+1. Visit **[hscstack.com][website]** — browse the academic library, forum questions, and blog posts freely.
 2. Sign in with Google to ask/answer forum questions, chat in real time, track your study progress, and customize your profile.
 
 ### For Contributors
-1. Apply at 👉 **[hscstack.site/join][join]** to become a verified contributor.
+1. Apply at 👉 **[hscstack.com/join][join]** to become a verified contributor.
 2. Once approved, upload verified notes, questions, and guides directly under the relevant subject and chapter.
 
 ---
@@ -103,7 +103,7 @@ platform/
 
 - 📧 Email: `com.tajim@gmail.com`
 - 🐛 Issues: [GitHub Issues](../../issues)
-- ❤️ Donate: [hscstack.site/donate](https://hscstack.site/donate)
+- ❤️ Donate: [hscstack.com/donate](https://hscstack.com/donate)
 
 ---
 

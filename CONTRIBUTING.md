@@ -146,7 +146,7 @@ platform/
 
 If you want to contribute academic resources (notes, PDFs, questions, images, videos) rather than code, you don't need to touch this repository at all. Instead:
 
-1. Become a member at [hscstack.site/join](https://hscstack.site/join)
+1. Become a member at [hscstack.com/join](https://hscstack.com/join)
 2. Log in with Google and navigate to the relevant subject and chapter.
 3. Upload your resource with a clear title and content.
 4. Your submission goes live after admin review.

@@ -1568,7 +1568,7 @@ onUnmounted(() => {
         />
         <meta
             property="og:image"
-            content="https://cdn.hscstack.site/images/og_chat.png"
+            content="https://cdn.hscstack.com/images/og_chat.png"
         />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
@@ -1581,7 +1581,7 @@ onUnmounted(() => {
         />
         <meta
             name="twitter:image"
-            content="https://cdn.hscstack.site/images/og_chat.png"
+            content="https://cdn.hscstack.com/images/og_chat.png"
         />
     </Head>
 

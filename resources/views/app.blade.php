@@ -85,7 +85,7 @@
     $pageComponent = $page['component'] ?? '';
     $props = $page['props'] ?? [];
 
-    $s3Url = rtrim(config('filesystems.disks.s3.url') ?: env('AWS_URL', 'https://cdn.hscstack.site'), '/');
+    $s3Url = rtrim(config('filesystems.disks.s3.url') ?: env('AWS_URL', 'https://cdn.hscstack.com'), '/');
     $defaultOgImage = $s3Url ? "{$s3Url}/images/og.png" : url('/images/og.png');
 
     $metaTitle = config('app.name', 'HSCStack');
