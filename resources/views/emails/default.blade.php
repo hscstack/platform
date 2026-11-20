@@ -136,7 +136,7 @@
         <div class="container">
             <!-- HSCStack Header -->
             <div class="header">
-                <a href="{{ config('app.url', 'https://hscstack.site') }}" class="logo-link" target="_blank">
+                <a href="{{ config('app.url', 'https://hscstack.com') }}" class="logo-link" target="_blank">
                     <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                         <tr>
                             <td style="vertical-align: middle; padding-right: 10px;">
@@ -178,7 +178,7 @@
                 </p>
                 
                 <div class="footer-links">
-                    <a href="{{ config('app.url', 'https://hscstack.site') }}" target="_blank">Visit Platform</a>
+                    <a href="{{ config('app.url', 'https://hscstack.com') }}" target="_blank">Visit Platform</a>
                     &bull;
                     <a href="{{ config('app.url') }}/blogs" target="_blank">Read Blogs</a>
                     &bull;

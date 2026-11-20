@@ -7,4 +7,4 @@ Disallow: /auth/
 Disallow: /onboarding
 Disallow: /me
 
-Sitemap: https://hscstack.site/sitemap.xml
+Sitemap: https://hscstack.com/sitemap.xml

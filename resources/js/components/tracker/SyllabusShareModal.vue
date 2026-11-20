@@ -46,7 +46,7 @@ const siteTrackerUrl = computed(() => {
         return `${window.location.host}/tracker`;
     }
 
-    return 'hscstack.site/tracker';
+    return 'hscstack.com/tracker';
 });
 
 const allSubjects = computed(() => {

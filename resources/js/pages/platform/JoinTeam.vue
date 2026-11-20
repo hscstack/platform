@@ -337,7 +337,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown));
                         <h3
                             class="truncate text-xs font-bold text-slate-900 dark:text-gray-100"
                         >
-                            yourname@hscstack.site
+                            yourname@hscstack.com
                         </h3>
                         <p
                             class="truncate text-[11px] text-slate-500 dark:text-gray-400"
