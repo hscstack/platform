@@ -337,7 +337,7 @@ class ResourceController extends Controller
             ? (int) (Chapter::where('id', $chapterId)->value('subject_id') ?? $validated['subject_id'])
             : (int) $validated['subject_id'];
 
-        Resource::create([
+        $resource = Resource::create([
             'subject_id' => $subjectId,
             'chapter_id' => $chapterId,
             'user_id' => Auth::id(),
@@ -356,7 +356,7 @@ class ResourceController extends Controller
             ? "{$typeName} created and published successfully."
             : "{$typeName} submitted successfully and is awaiting review.";
 
-        return back()->with('success', $message);
+        return redirect()->route('resources.show', $resource->id)->with('success', $message);
     }
 
     public function update(UpdateResourceRequest $request, Resource $resource)

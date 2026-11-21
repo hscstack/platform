@@ -549,7 +549,7 @@ const handleToggleUserAppreciation = (person: {
         {
             preserveScroll: true,
             preserveState: true,
-            except: ['suggestedUsers'],
+            except: ['suggestedUsers', 'appreciating'],
             onError: () => {
                 person.is_appreciated = currentlyAppreciated;
                 person.unappreciated = !currentlyAppreciated;

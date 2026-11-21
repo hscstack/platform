@@ -12,6 +12,7 @@ import {
     Loader2,
     Pencil,
     MessageSquare,
+    Trash2,
 } from 'lucide-vue-next';
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 
@@ -176,6 +177,18 @@ const handleReject = () => {
             },
         },
     );
+};
+
+const handleDelete = () => {
+    if (
+        !confirm(
+            'Are you sure you want to permanently delete this resource? This cannot be undone.',
+        )
+    ) {
+        return;
+    }
+
+    router.delete(`/admin/resources/${props.resource.id}`);
 };
 
 // Determine which renderer to mount based on items format
@@ -595,6 +608,18 @@ onUnmounted(() => {
                 >
                     <Pencil class="h-3.5 w-3.5" />
                     <span>সম্পাদনা</span>
+                </button>
+
+                <!-- Delete Button (Moderator only) -->
+                <button
+                    v-if="can_moderate"
+                    type="button"
+                    @click="handleDelete"
+                    class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-red-300 hover:bg-red-50/50 hover:text-red-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-red-400"
+                    title="রিসোর্স মুছে ফেলুন"
+                >
+                    <Trash2 class="h-3.5 w-3.5" />
+                    <span>মুছুন</span>
                 </button>
             </div>
 
