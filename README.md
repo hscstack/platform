@@ -29,6 +29,17 @@ It replaces scattered social media groups and private drives with an all-in-one 
 
 ---
 
+## 🌍 Impact & Reach
+
+HSCStack is growing into a student-powered academic community, bringing learners together to share knowledge, access resources, and support one another throughout their academic journey.
+
+- 👥 **2,200+ Registered Accounts** — A growing community of students on the platform.
+- 📚 **Open Academic Resources** — Free, community-contributed learning materials for SSC & HSC students.
+- 🌐 **Nationwide Reach** — Connecting students beyond their individual schools and colleges.
+- 🤝 **Student-Powered** — Built around peer learning, knowledge sharing, and collaboration.
+
+Our goal is to make quality academic resources and a supportive learning community accessible to every student in Bangladesh, regardless of their background or access to paid resources.
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
@@ -101,7 +112,7 @@ platform/
 
 ## 📬 Contact & Support
 
-- 📧 Email: `com.tajim@gmail.com`
+- 📧 Email: `support@hscstack.com`
 - 🐛 Issues: [GitHub Issues](../../issues)
 - ❤️ Donate: [hscstack.com/donate](https://hscstack.com/donate)
 
